@@ -722,13 +722,28 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     never reached and there is no context fault to see. MemAvailable was
     2.5 GB throughout, so this is CMA contiguity, not memory pressure.
 
-    So the open blocker on the full readout is **CMA capacity/fragmentation for
-    a ~49 MB contiguous frame**, and the earlier `fsynr=0x13` context fault did
-    not recur at either configuration — it may have been specific to a third
-    size, or resolved by a clean state, but it is not what stands between here
-    and a full-resolution capture now. The device is left on the padded path
-    (r48 + r10 libcamera); at the app's capped ≤1912x1080 size (item 33) the
-    camera works, so the deploy did not regress it.
+    The root cause is capacity, not fragmentation, and it has a one-line fix.
+    `CmaTotal` is **32 MB** (`/proc/meminfo`), and there is no `cma=` on the
+    cmdline and no `linux,cma` reserved-memory node in the live device tree, so
+    that 32 MB comes straight from `CONFIG_CMA_SIZE_MBYTES=32` in
+    `config-fp3.aarch64` (with `CONFIG_CMA_SIZE_SEL_MBYTES=y`). The full readout
+    asks for **~49 MB in one allocation** (11907 pages — about three 4032x3024
+    stride-5120 buffers), which is larger than the whole CMA region: even fully
+    defragmented, 32 MB cannot hold it. So **the fix is to raise
+    `CONFIG_CMA_SIZE_MBYTES`** (32 -> 96 leaves headroom against a ~49 MB pool),
+    which costs ~64 MB off a 2.5 GB general pool and wants one build-and-measure
+    cycle to confirm it boots and that full-res then captures. The earlier
+    `fsynr=0x13` context fault did not recur at either configuration — it may
+    have been specific to a third size, or resolved by a clean state, but it is
+    not what stands between here and a full-resolution capture now.
+
+    The device is left on the padded path (r48 + r10 libcamera); at the app's
+    capped ≤1912x1080 size (item 33) the camera works, so the deploy did not
+    regress it. Note the corollary: a full-resolution *photo* (the app's
+    restored large-photo setting) will hit this same CMA ceiling until the config
+    is bumped — but so would r45, since the 5040->5120 stride delta is 1.6% and
+    cannot flip a 49 MB allocation, so this is a pre-existing ceiling, not a
+    regression.
 
 35. **The camera app renders in software, and so does everything else.** The
     distro sets `GSK_RENDERER=cairo` session-wide for the a506; with a
