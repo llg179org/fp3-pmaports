@@ -497,8 +497,20 @@ accepted all afternoon.
 Read back after the fix: `CHGR_CFG2 = 0x05` (VBAT recharge + inhibit),
 `CHGR_NO_SAMPLE_TERM_RCHG_CFG = 0x0f` (three samples), and the threshold
 registers at `0x544a` = 4.199 V — which is the PMIC's own power-on value, still
-in place because this test swapped only the module and the 4.30 V from the
+in place because that test swapped only the module and the 4.30 V from the
 device tree needs the new DTB.
+
+**Then the DTB was deployed and the threshold moved, measured 2026-08-08.** On a
+full package build carrying the recharge property (`linux-fp3-7.1.3-r48`,
+`#49-fp3`), the same registers read `0x107E/0x7F = 56 4c` = raw 22092 =
+**4.30 V** — up from `0x544a` = 4.199 V on the kernel booted before the deploy
+(`#43-fp3`), a clean before/after with nothing else changed. The running kernel's
+`/proc/device-tree` carried no `auto-recharge` node before the reboot, so the
+4.199 V was the property simply not being present, not the write failing; after
+the reboot the register can only hold 4.30 V if `smb_set_recharge_threshold()`
+read `qcom,auto-recharge-microvolt = <4300000>` from the deployed DTB and
+programmed it. So the DT-controlled recharge voltage is now live on the device,
+not only in the driver.
 
 ☠️ **A wrong register was written first, and the phone said so.** The same fix
 was attempted one revision earlier against `FG_UPDATE_CFG_2_SEL`, which is what
