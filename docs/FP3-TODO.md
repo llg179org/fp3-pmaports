@@ -701,17 +701,34 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     search is the open question; the measurements are in
     [`camera/README.md`](camera/README.md#why-the-sensor-is-always-read-out-whole-and-what-it-costs).
 
-34. **The GPU faults on the camera buffer once it is allowed to read it.** The
-    stride half is done: camss grants a padded bytesperline on VFE 4.1 (checked
-    with a direct VIDIOC_TRY_FMT), and libcamera's request now reaches the
-    driver at all — it did not before, because the multiplanar path copies
-    bytesperline only for the planes named in a count the upstream patch left
-    at zero. With both in place the import succeeds and the shader faults:
-    `Unhandled context fault ... fsynr=0x13` from `1c48000.iommu-ctx`, with a
-    frame rate too high to be physical. **Unmeasured hypothesis:** camss
-    allocates through `videobuf2-dma-sg`, so the exported buffer is scattered
-    pages, and what the importer assumes about the mapping does not hold. The
-    device is on the frame-based path meanwhile, which is the state that works.
+34. **The padded-stride path works at the 1920x1080 sensor mode; the full
+    readout is blocked by CMA, not by the GPU.** The stride half is done: camss
+    grants a padded bytesperline on VFE 4.1 (checked with a direct
+    VIDIOC_TRY_FMT), and libcamera's request now reaches the driver at all — it
+    did not before, because the multiplanar path copies bytesperline only for
+    the planes named in a count the upstream patch left at zero.
+
+    **Re-measured 2026-08-08 on the deployed package (`linux-fp3-7.1.3-r48`,
+    `#49-fp3`, with the r10 libcamera that carries the stride request), and the
+    earlier "GPU faults" account did not hold up.** `cam` at the 1920x1080
+    sensor mode (a 1280x960 request selects it) reports `Input 1920x1080 stride
+    2560`, imports through EGL and **captures frames with no context fault** —
+    the padded buffer is read by the GPU and comes back. What fails is the
+    **full 4032x3024 readout** (a 1920x1080 or larger request selects it, the
+    size cliff): `Input 4032x3024 stride 5120`, then
+    `cma: __cma_alloc_frozen: reserved: alloc failed, req-size: 11907 pages`
+    — ~48.8 MB contiguous — while CMA is fragmented to a largest run of ~30 MB.
+    The dma-buf allocation fails *before* any buffer exists, so the GPU is
+    never reached and there is no context fault to see. MemAvailable was
+    2.5 GB throughout, so this is CMA contiguity, not memory pressure.
+
+    So the open blocker on the full readout is **CMA capacity/fragmentation for
+    a ~49 MB contiguous frame**, and the earlier `fsynr=0x13` context fault did
+    not recur at either configuration — it may have been specific to a third
+    size, or resolved by a clean state, but it is not what stands between here
+    and a full-resolution capture now. The device is left on the padded path
+    (r48 + r10 libcamera); at the app's capped ≤1912x1080 size (item 33) the
+    camera works, so the deploy did not regress it.
 
 35. **The camera app renders in software, and so does everything else.** The
     distro sets `GSK_RENDERER=cairo` session-wide for the a506; with a
