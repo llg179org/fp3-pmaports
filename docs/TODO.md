@@ -353,8 +353,24 @@ Then, in rough order of cost:
       downstream source. So the open question is not the broken link, it is
       whether **anything** in `f5759717` derives from the 2018 patch. If it does,
       it must be cited; if it does not, adding the citation would be a false
-      derivation claim — the camera mistake in mirror image. Answer it by reading,
-      not by assuming either way.
+      derivation claim — the camera mistake in mirror image.
+
+      **Read and answered 2026-08-08: nothing derives from it, so it must not be
+      cited.** The two are different code, not two versions of one. Kandagatla's
+      10587057 touches `wcd9335.c` and nothing else — a codec-private
+      implementation (`wcd9335_mbhc_sw_irq`, `wcd9335_mbhc_btn_press_irq`,
+      `wcd9335_program_btn_threshold`, `wcd9335_mbhc_initialise`), with no
+      reference to `wcd-mbhc-v2` or `wcd-mbhc-legacy`. `f5759717` adds a backend
+      to the shared `wcd-mbhc-v2.c` through its function table, in the
+      `wcd_mbhc_*` namespace, ported from OnePlus's `wcd-mbhc-legacy.c`
+      (Copyright 2015-2017 The Linux Foundation) — a different file, a different
+      namespace and a different integration model. The one thing they share is
+      the comparator-and-current-source FSM instead of an ADC read, and that is
+      dictated by the hardware — the WCD9335 has no MBHC ADC — and traces to the
+      common Linux Foundation downstream that predates both, which each derived
+      from independently. So the reviewer reply states this and adds no
+      Kandagatla citation; citing him would be the false-derivation mistake the
+      camera series taught, run in reverse.
     * **The TX-hold fix is codec-wide, and one other mainline board notices.**
       Mainline takes the hold in `wcd9335_codec_enable_adc()` and never releases
       it, so the change cannot regress anyone: it supplies a missing half. By
@@ -577,7 +593,7 @@ something new to blink — see the missed-call item above.
 `/dev/v4l-subdev` exists for it and libcamera cannot drive the flash yet; that
 was kept out so the bring-up measured one change.
 
-## Parked: the camera, after a WirePlumber crash traced to our own AF code
+## ~~Parked: the camera, after a WirePlumber crash traced to our own AF code~~ — found and fixed, 2026-08-08
 
 Measured 2026-08-03, `linux-fp3` and `snapshot-50.0-r26` both otherwise fine.
 WirePlumber itself segfaulted mid-session — not the Snapshot app, not the
@@ -606,11 +622,17 @@ a crash instead of an upgrade: killing and relaunching the app (which reopens
 the portal session fresh) recovered it immediately, and no amount of
 resolution-probing on the app side could have.
 
-**Decision: camera work is paused here rather than chased further tonight.**
-Next step when picked back up: reproduce `interpolatePeak()`'s crash
-deliberately (short of that, read the algorithm's zone-grid bounds against
-whatever statistics shape can currently reach it) before touching anything
-else in that patch.
+**Localised and fixed 2026-08-08** (`059c6de`, in `0101-simple-autofocus.patch`).
+The out-of-bounds read was not in the zone grid but in the peak fit itself:
+`interpolatePeak()` took its bound from `positions_`, but `planScan()` appends a
+revisit of the first position and `detrend()` drops its sample, so `scores_` is
+one entry shorter — and a peak at the last swept position made the `i+1`
+neighbour lookup read one past the end of `scores_` every time. The fit now
+bounds `i` against `scores_.size()` (empty-guard, a `< 3` early return, and the
+`i==0`/`i+1>=size` clamp), so the three neighbour reads are always in range.
+**Still unverified on hardware:** the fix builds and the reasoning is closed, but
+nothing has re-run the live preview to confirm the crash is gone — fold that into
+the next camera session on the device rather than a separate cold-boot.
 
 ## Untested: interconnect path for the SCM/crypto node
 
