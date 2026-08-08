@@ -701,14 +701,26 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     search is the open question; the measurements are in
     [`camera/README.md`](camera/README.md#why-the-sensor-is-always-read-out-whole-and-what-it-costs).
 
-34. **camss cannot pad an RDI line, so the GPU copies every input frame.** The
-    dmabuf import is rejected purely on stride (measured at the importer: packed
-    2400/5040 rejected, 64-aligned 2432/5056 accepted), and the fallback is
-    sticky for the life of the process. Fixing it means programming the RDI
-    write master line-based and teaching its words-per-line helper about raw
-    Bayer — a change with no upstream reference in either VFE generation. Worth
-    about four points of a core in the small sensor mode and twenty-four in the
-    full one, i.e. less than item 33 and much more work.
+34. **The GPU faults on the camera buffer once it is allowed to read it.** The
+    stride half is done: camss grants a padded bytesperline on VFE 4.1 (checked
+    with a direct VIDIOC_TRY_FMT), and libcamera's request now reaches the
+    driver at all — it did not before, because the multiplanar path copies
+    bytesperline only for the planes named in a count the upstream patch left
+    at zero. With both in place the import succeeds and the shader faults:
+    `Unhandled context fault ... fsynr=0x13` from `1c48000.iommu-ctx`, with a
+    frame rate too high to be physical. **Unmeasured hypothesis:** camss
+    allocates through `videobuf2-dma-sg`, so the exported buffer is scattered
+    pages, and what the importer assumes about the mapping does not hold. The
+    device is on the frame-based path meanwhile, which is the state that works.
+
+35. **The camera app renders in software, and so does everything else.** The
+    distro sets `GSK_RENDERER=cairo` session-wide for the a506; with a
+    viewfinder running that costs 130% of a core in the app against 32% under
+    `gl`, and it is why an interface stutters while the compositor sits at 2%.
+    Overridden per user here, not in the package-owned file. Open: the app is
+    reported to freeze under `gl`, with no core dump and nothing in the kernel
+    log, so whether the distro's choice is protecting against something real on
+    this GPU is not yet settled.
 
 ## The `vendor/*` and `archive/*` namespaces
 
