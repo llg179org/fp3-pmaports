@@ -71,6 +71,7 @@ Try this first. It is one commit containing all three source changes.
 
 ```sh
 git am ../fp3-pmaports/docs/debug/files/0001-watchdog-qcom-optionally-start-the-watchdog-at-probe.patch
+git am ../fp3-pmaports/docs/debug/files/0002-power-supply-qcom_smbx-report-every-charger-interrupt.patch
 ```
 
 **If it succeeds**, skip to [§3 Verify](#3-verify-in-three-places).
@@ -319,6 +320,7 @@ stored payloads, whereas `git am` needs neither.
 | file | what it is |
 |---|---|
 | [`files/0001-watchdog-qcom-optionally-start-the-watchdog-at-probe.patch`](files/0001-watchdog-qcom-optionally-start-the-watchdog-at-probe.patch) | the whole change as one `git am`-able patch (Route A) |
+| [`files/0002-power-supply-qcom_smbx-report-every-charger-interrupt.patch`](files/0002-power-supply-qcom_smbx-report-every-charger-interrupt.patch) | the charger event tracer, same way |
 | [`files/sdm632-fairphone-fp3-debug.dtsi`](files/sdm632-fairphone-fp3-debug.dtsi) | the board file verbatim, for Route B |
 
 **`sdm632-fairphone-fp3.dts` is deliberately not stored here**, and that is not
