@@ -1,0 +1,67 @@
+From 3ae226ac9e11d0af5c088b85a588326d0e051639 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?=
+ <lajoshazilg@gmail.com>
+Date: Wed, 12 Aug 2026 21:12:16 +0200
+Subject: [PATCH] power: supply: qcom_smbx: DEBUG: stop tracing bsm-active
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Third source to come out of the traced set for the same reason, and the
+loudest by far. After a charge terminates the switcher moves into battery
+supplemental mode, and the bit reporting it toggles as it does: 746
+events out of 785, arriving a dozen at a time inside a single
+millisecond, every time a charge ends.
+
+It says nothing about a decision the charger made, which is what this
+instrument is for, and at that rate it buries the events that do - a
+charge-state change is three lines in the same window. Left in, an
+overnight run would be mostly this.
+
+Measured after removing it: a full charge to termination produced zero.
+
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
+---
+ drivers/power/supply/qcom_smbx.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
+index 2ba0df5a32c4..42c800c92401 100644
+--- a/drivers/power/supply/qcom_smbx.c
++++ b/drivers/power/supply/qcom_smbx.c
+@@ -1387,13 +1387,15 @@ static void smb_log_event(struct smb_chip *chip, const char *name)
+  * since a board's device tree need not describe any of them, and they are
+  * grouped by the peripheral that raises them.
+  *
+- * Four sources are deliberately absent. Two of them are the gauge keeping its
+- * own house rather than the charger deciding anything, and both arrive far too
+- * often to sit in a log next to events that matter: BATIF's all-chnl-conv-done
+- * marks an ADC conversion, and CHGR's fg-fvcal-qualified marks a float-voltage
+- * calibration sample - measured on a Fairphone 3 at roughly one a second while
+- * merely discharging, which was 87 of the first 88 events traced and would be
+- * some thirty-six thousand lines across a night on the cable. The Type-C block
++ * Five sources are deliberately absent. Three of them say nothing about a
++ * decision the charger made and arrive far too often to sit in a log beside the
++ * events that do. BATIF's all-chnl-conv-done marks an ADC conversion. CHGR's
++ * fg-fvcal-qualified marks a float-voltage calibration sample - measured on a
++ * Fairphone 3 at roughly one a second while merely discharging, 87 of the first
++ * 88 events traced. And DCDC's bsm-active toggles as the switcher enters
++ * supplemental mode after a charge ends: 746 events out of 785, arriving in
++ * bursts of a dozen inside a single millisecond, every time a charge finishes.
++ * The Type-C block
+  * belongs to another driver on this PMIC and describes its own interrupts on
+  * its own node, so requesting them here would take them away from it. And the
+  * flash module's are about a camera flash's current budget rather than about
+@@ -1405,7 +1407,7 @@ static const char * const smb_event_irqs[] = {
+ 	"step-chg-soc-update-fail", "step-chg-soc-update-req",
+ 	"vph-alarm", "vph-drop-prechg",
+ 	/* DCDC - the switcher feeding it */
+-	"otg-fail", "otg-oc-disable-sw", "otg-oc-hiccup", "bsm-active",
++	"otg-fail", "otg-oc-disable-sw", "otg-oc-hiccup",
+ 	"high-duty-cycle", "input-current-limiting", "concurrent-mode-disable",
+ 	"switcher-power-ok",
+ 	/* BATIF - the pack */
+-- 
+2.53.0
+
