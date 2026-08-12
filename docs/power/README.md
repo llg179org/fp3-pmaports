@@ -97,5 +97,23 @@ than a general observation about the bus.
 so it cannot appear in this comparison either way. `0-000c` on `i2c-0` is the
 CCI bus, and `media-ctl` names the entity outright (`ak7375 0-000c ... Lens`).
 
-All of this is a lead and not a finding — nothing here measures what any of
-those devices costs.
+Following that one address the rest of the way turns the lead into a named
+mechanism, still without measuring what it costs:
+
+* **wireplumber holds the camera open at idle** — it has `/dev/video0`,
+  `/dev/media0` *and* `/dev/v4l-subdev17` (the actuator) open with nothing
+  taking pictures, found by walking `/proc/*/fd`;
+* `ak7375` takes a runtime-PM reference when its subdev is opened
+  (`pm_runtime_resume_and_get` in `ak7375_open`), which is why the device reads
+  `active` rather than the `suspended` its probe asks for with
+  `pm_runtime_idle()`;
+* and that reference keeps its supplies up: `cam_af_2p85` (2.85 V) and
+  `cam_io_1p8` are both `enabled` with one user each on an idle phone.
+  `cam2_dig_1p2` is `disabled`, which is what makes the other two worth
+  noticing rather than a general statement about the camera.
+
+**The experiment this sets up** needs the cable out, because with it in
+`current_now` measures the charger and not the phone: stop wireplumber, confirm
+the two regulators drop and `0-000c` goes `suspended`, and read the idle current
+either side of that single change. Until then this is a mechanism with no price
+on it.
