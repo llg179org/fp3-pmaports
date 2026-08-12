@@ -506,6 +506,36 @@ the LKML carries `Assisted-by:` and never a `Signed-off-by` from the assistant.
 That is also why the LKML is the only open destination — see
 [`FP3-TODO.md`](FP3-TODO.md) and the top-level README.
 
+## `15-hwtest` cries wolf twice, and is the one check that is audible by default
+
+Two components of `hwtest` call this device broken when a check of our own says
+otherwise, measured 2026-08-12 with `--verbose`:
+
+* **camera** — it asks for a 320x240 and then a 640x480 JPEG and gets neither
+  (`[Errno 2] ... '/tmp/320x240.jpg'`), on a sensor that captures its full
+  4032x3024 on demand. `40-camera` judges the sensor, its subdev and its link
+  into CAMSS, and passes.
+* **proximity** — it wants `in_proximity_scale`, which this driver does not
+  expose and does not have to: the channel reports raw counts with no physical
+  unit. `25-sensor` reads `in_proximity_raw` (274 counts) and the
+  iio-sensor-proxy properties in-call blanking depends on, and passes.
+
+Separately, this is the **only check that makes noise without `--acoustic`** —
+its audio component drives the loudspeaker (at half volume, since the check
+borrows the level helpers) and its vibrator component runs the motor. The
+suite's rule everywhere else is that anything audible is opt-in, and a full run
+at night is not the moment to find the exception.
+
+☠️ **`--skip` is not the fix, which is what makes this an open item rather than
+a one-line change.** A skipped component is *missing* from the run, and
+`hwtest --verify` reads missing as regressed: skipping Camera, Audio and
+Vibrator turned a one-line failure into a three-line one. Whatever is skipped
+has to be skipped when the reference is exported too, so the fix is a reference
+regenerated under the same flags — a decision about what the baseline means,
+not an edit to the check. The alternatives are to stop using `--verify` and
+compare the components we care about ourselves, or to drop `15-hwtest` and rely
+on the per-subsystem checks that already cover its ground better.
+
 ## The notification LED blinks forever after a missed call
 
 **Symptom:** after a missed call the LED keeps blinking; dismissing the
