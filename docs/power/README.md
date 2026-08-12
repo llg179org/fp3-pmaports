@@ -85,9 +85,17 @@ same two-sided diff that found the charger bug:
 | `unsupported` (no runtime PM at all) | 719 | 293 |
 
 The totals are not comparable — the vendor kernel enumerates far more devices —
-but the `active` list is. Ours keeps two i2c buses and a USB PHY awake that the
-vendor stack does not, and one of them is `i2c 0-000c`, which is the aw8898
-speaker amplifier: the part whose PLL is [known never to
-lock](../audio/README.md) on this port, leaving the driver to park the chip.
-That is a lead and not a finding — nothing here measures what any of those
-devices costs.
+but the `active` list is. Ours keeps two i2c buses and a USB PHY resumed that
+the vendor stack does not, and the named one is **`i2c 0-000c`, the `ak7375`
+lens actuator** — the camera's focus motor, left runtime-resumed with nothing
+using the camera. Its neighbour on the same bus, the `imx363` at `0-001a`, is
+correctly `suspended`, which is what makes the actuator worth a look rather
+than a general observation about the bus.
+
+☠️ Do not read that address as the speaker amplifier: the `aw8898` is at
+`4-0034`, on a different bus, and it has no runtime PM at all (`unsupported`),
+so it cannot appear in this comparison either way. `0-000c` on `i2c-0` is the
+CCI bus, and `media-ctl` names the entity outright (`ak7375 0-000c ... Lens`).
+
+All of this is a lead and not a finding — nothing here measures what any of
+those devices costs.

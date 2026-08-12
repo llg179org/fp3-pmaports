@@ -639,6 +639,27 @@ of them. Validated with `dt_binding_check` on both examples, `yamllint` against
 the bindings' own config, and `dtbs_check` against this board's DTB, where the
 charger node passes. It closed the last `checkpatch` complaint on the series.
 
+**Re-validated 2026-08-12** after the properties moved, against the DTB the
+package actually shipped, with `dtschema` 2026.6:
+
+```sh
+dt-mk-schema -j Documentation/devicetree/bindings > /tmp/schema.json
+dt-validate -s /tmp/schema.json <the package's>/boot/dtbs/qcom/sdm632-fairphone-fp3.dtb
+```
+
+* the **battery node reports nothing at all** — which is the whole point of the
+  move, and is now measured rather than intended;
+* the charger node reports its type errors gone, after one real defect the
+  checker caught and reading would not have: a recognised **unit suffix already
+  types a property**, so the `$ref: uint32` that had been carrying
+  `qcom,batt-id-pullup-ohm` became a contradiction the moment it was renamed to
+  `-ohms`, and the board failed with *"100000 is not of type 'array'"*;
+* ☠️ what remains on the charger node is the **debug layer**, not the charger
+  work: `debug-int/<base>` gives that node 40 interrupts for the event tracer
+  and the binding documents four, so `interrupts` and `interrupt-names` are
+  *too long* there. Validate `integration/<base>` when the question is whether
+  the submit series is clean; `debug-int` cannot answer it.
+
 ### Where these properties belong
 
 **Settled 2026-08-12**, in the shape this section used to only propose: the
