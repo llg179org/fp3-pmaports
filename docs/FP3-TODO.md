@@ -123,13 +123,14 @@ Cross-cutting, mostly `dtbs_check` fallout. Detail:
 4. ~~**`wcd-intr-default-state` fails the `qcom,msm8953-pinctrl` schema.**~~
    **Fixed 2026-07-30** by dropping `input-enable`. Details for 2-4 in
    [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-5. **The battery node's four `qcom,*` properties.** `battery.yaml` has
-   `additionalProperties: false` and zero vendor properties; the one JEITA
-   precedent (`qcom,jeita-extended-temp-range`) sits on the *charger* node. There
-   is a layering argument against the current placement too — see
-   [`docs/charger/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/charger/README.md#where-these-properties-belong).
-6. **`-ohm` → `-ohms`.** The canonical suffix is plural; `-microamp`/`-percent`
-   are already right. Same cycle as 5, same properties.
+5. ~~**The battery node's `qcom,*` properties.**~~ **Moved 2026-08-12**, four
+   commits on `wip/7.1.3/charger`: the JEITA thresholds, the soft-zone currents,
+   the recharge voltage and the ID tolerance are properties of the charger node
+   now, and the pack's identification resistor became the generic
+   `id-resistor-ohms` in `battery.yaml`. Details in
+   [`TODO.md`](TODO.md#open-before-anything-is-submitted).
+6. ~~**`-ohm` → `-ohms`.**~~ **Done in the same commits**;
+   `qcom,batt-id-pullup-ohms` is the only one left carrying a vendor prefix.
 7. **The camera driver's two-line `Kconfig` conflict** — the neighbouring IMX355
    entry gained a `select V4L2_CCI_I2C`. Trivial, but manual.
 8. **The audio prerequisite is named and was posted:** Adam Skladowski,
@@ -181,7 +182,7 @@ six to `psy/for-next`, two dts and one `adc5` channel to mainline. Gaps, in
 12. **2 A has never been seen flowing.** Needs a wall charger, a low state of
     charge and a USB meter. Physical.
 13. **The mismatch path has never run on hardware.** A DTB-only cycle with a
-    deliberately wrong `qcom,batt-id-ohm = <50000>`; expected: the refusal message
+    deliberately wrong `id-resistor-ohms = <50000>`; expected: the refusal message
     plus `0x1061` staying at `0x14`. Two DTB deploys, no kernel build, no flash.
 14. **After a mismatch the previous boot's JEITA thresholds stay in the
     comparators**, not the PMIC defaults — a warm reboot does not reset the PMIC.
@@ -673,16 +674,15 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     is missing.
 31. **Untested: the interconnect path for the SCM/crypto node.** Non-blocking;
     kept in case the ADSP-boot timing question reopens.
-32. **The package now pins `debug-int/7.1.3`, not `integration/7.1.3`.** Two
-    rewrites have moved out from under the old pin — the camera provenance and
-    then the debug split — so `_commit` is reached only through
+32. ~~**The package now pins `debug-int/7.1.3`, not `integration/7.1.3`.**~~
+    **Done and running.** The pin moved on 2026-07-30, and the package has been
+    built and deployed from that branch many times since; what the phone runs
+    carries the watchdog. The two rewrites this item was written about — the
+    camera provenance and the debug split — are still only reachable through
     `archive/integration-7.1.3-pre-camera-provenance` and
-    `archive/integration-7.1.3-pre-debug-split`. Anything built from that pin has
-    **no watchdog**, which is the practical reason to bump rather than a
-    bookkeeping one.
+    `archive/integration-7.1.3-pre-debug-split`, which is why those tags exist.
     ☠️ GitHub serves a source tarball only while the commit is reachable from some
-    ref, which is why those archive tags exist at all — check before trusting a
-    pin:
+    ref — check before trusting a pin:
 
     ```sh
     curl -sI -o /dev/null -w '%{http_code}\n' \
@@ -701,8 +701,9 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     search is the open question; the measurements are in
     [`camera/README.md`](camera/README.md#why-the-sensor-is-always-read-out-whole-and-what-it-costs).
 
-34. **The padded-stride path works at the 1920x1080 sensor mode; the full
-    readout is blocked by CMA, not by the GPU.** The stride half is done: camss
+34. ~~**The padded-stride path works at the 1920x1080 sensor mode; the full
+    readout is blocked by CMA, not by the GPU.**~~ **The full readout works,
+    2026-08-12 — CMA was never on its path.** The stride half is done: camss
     grants a padded bytesperline on VFE 4.1 (checked with a direct
     VIDIOC_TRY_FMT), and libcamera's request now reaches the driver at all — it
     did not before, because the multiplanar path copies bytesperline only for
@@ -722,28 +723,37 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     never reached and there is no context fault to see. MemAvailable was
     2.5 GB throughout, so this is CMA contiguity, not memory pressure.
 
-    The root cause is capacity, not fragmentation, and it has a one-line fix.
-    `CmaTotal` is **32 MB** (`/proc/meminfo`), and there is no `cma=` on the
-    cmdline and no `linux,cma` reserved-memory node in the live device tree, so
-    that 32 MB comes straight from `CONFIG_CMA_SIZE_MBYTES=32` in
-    `config-fp3.aarch64` (with `CONFIG_CMA_SIZE_SEL_MBYTES=y`). The full readout
-    asks for **~49 MB in one allocation** (11907 pages — about three 4032x3024
-    stride-5120 buffers), which is larger than the whole CMA region: even fully
-    defragmented, 32 MB cannot hold it. So **the fix is to raise
-    `CONFIG_CMA_SIZE_MBYTES`** (32 -> 96 leaves headroom against a ~49 MB pool),
-    which costs ~64 MB off a 2.5 GB general pool and wants one build-and-measure
-    cycle to confirm it boots and that full-res then captures. The earlier
-    `fsynr=0x13` context fault did not recur at either configuration — it may
-    have been specific to a third size, or resolved by a clean state, but it is
-    not what stands between here and a full-resolution capture now.
+    That measurement stood, and the fix proposed from it — raising
+    `CONFIG_CMA_SIZE_MBYTES` from 32 to 96 — **would not have worked, because
+    the capture path does not allocate from CMA at all.** Re-measured 2026-08-12
+    before spending the build cycle it asked for:
 
-    The device is left on the padded path (r48 + r10 libcamera); at the app's
-    capped ≤1912x1080 size (item 33) the camera works, so the deploy did not
-    regress it. Note the corollary: a full-resolution *photo* (the app's
-    restored large-photo setting) will hit this same CMA ceiling until the config
-    is bumped — but so would r45, since the 5040->5120 stride delta is 1.6% and
-    cannot flip a 49 MB allocation, so this is a pre-existing ceiling, not a
-    regression.
+    | | |
+    |---|---|
+    | full readout | `cam -c1 -C15 -s width=4032,height=3024` captures **every frame**, `Input 4032x3024-RGGB-10-CSI2P stride 5120`, `bytesused 48771072` |
+    | CMA during the capture | `CmaFree` sampled four times a second: **30304 kB throughout**, not one kilobyte moved |
+    | CMA failures | none in `dmesg` |
+    | camss | behind an IOMMU (`1b00020.camss` → `iommu_groups/1`), so the sensor readout never needs contiguous pages |
+
+    `CmaFree` is the decisive one, and it settles the question in both
+    directions: 30 MB free cannot satisfy a 49 MB request, so had the
+    allocation come from CMA it would have failed — and had it come from CMA
+    and succeeded, `CmaFree` would have dropped by ~48 MB. It does neither.
+
+    Note also that 11907 pages is **exactly** 48 771 072 bytes, which is the
+    `bytesused` of the ABGR8888 **output** frame, not the raw sensor readout.
+    So the failing allocation was always the output buffer, and what changed is
+    where that buffer comes from: `/dev/dma_heap/` offers only `default_cma_region`
+    and `reserved`, both CMA-backed, but `/dev/udmabuf` exists and libcamera is
+    now **r12** where the note was written against r10. The likely reason is
+    therefore that libcamera's allocator now falls back to udmabuf instead of
+    the CMA heap — likely, not measured: an A/B against r10 would settle it, and
+    nothing depends on the answer while full resolution works.
+
+    So the item is **not a blocker**: at the app's capped ≤1912x1080 size
+    (item 33) the camera works, and the full readout works too. What remains
+    open is only the *cost* — the full readout runs at about 5 fps, which is
+    fine for a photo and not for a viewfinder.
 
 35. **The camera app renders in software, and so does everything else.** The
     distro sets `GSK_RENDERER=cairo` session-wide for the a506; with a

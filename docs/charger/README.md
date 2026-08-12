@@ -103,7 +103,7 @@ Measured on the device unless a row says otherwise.
 | the fallback when the ID does *not* match | **implemented, not measured** — no second pack here to fit; see [Known gaps](#known-gaps) |
 | 2 A actually flowing | **not measured** — needs a low state of charge and a wall charger; see [Testing](#testing) |
 | the device-tree binding | **written and validated** since 2026-07-30; `dt_binding_check`, `yamllint` and `dtbs_check` all clean on the charger node, and the series is now `checkpatch --strict`-clean end to end |
-| the battery node's four `qcom,*` properties | **fail `dtbs_check`** and are the one thing still blocking this series — [why, and what to do](#where-these-properties-belong) |
+| the battery node's `qcom,*` properties | **moved to the charger node, 2026-08-12**, with the pack's ID resistor left behind as the generic `id-resistor-ohms` — [the argument, and what went where](#where-these-properties-belong) |
 | high-voltage (QC) negotiation | **not done**, and now the only thing between this and a faster charge — see [the ceilings](#why-2-a-and-what-the-ceilings-would-be-on-the-other-pack) |
 
 ## The starting premise was wrong
@@ -218,11 +218,11 @@ describes Fuji — the pack that can be measured here. What it can do, since
 of its limits**:
 
 ```
-                    qcom,batt-id-pullup-ohm      (charger node: board wiring)
+                    qcom,batt-id-pullup-ohms     (charger node: board wiring)
                              |
 BAT_ID pin --> ADC --> uV -->+--> R = pullup x uV / (1.875 V - uV)
                                             |
-       qcom,batt-id-ohm (battery node) -->  compare, +/-15%
+          id-resistor-ohms (battery node) -->  compare, +/-15%
                                             |
                         match  -> apply the battery's current and JEITA
                      mismatch  -> leave the init sequence's ~1 A, and say so
@@ -579,41 +579,42 @@ fp3_battery: battery {
 	constant-charge-current-max-microamp = <2000000>;
 	constant-charge-voltage-max-microvolt = <4390000>;
 
-	qcom,batt-id-ohm = <10000>;
+	id-resistor-ohms = <10000>;
+};
+```
+
+**On the charger** — the board's and the PMIC's own facts, and the charging
+policy expressed in this PMIC's units:
+
+```dts
+&pmi632_charger {
+	monitored-battery = <&fp3_battery>;
+	qcom,batt-id-pullup-ohms = <100000>;
 	qcom,auto-recharge-microvolt = <4300000>;
 	qcom,jeita-hard-thresholds = <0x5675 0x1987>;   /* cold 0 degC, hot 55 degC */
 	qcom,jeita-soft-thresholds = <0x44ff 0x2204>;   /* cool 15 degC, warm 45 degC */
 	qcom,jeita-soft-fcc-microamp = <600000 1000000>;
+	qcom,thermal-mitigation = <2000000 1500000 1000000 500000>;
 };
 ```
 
 Each threshold pair is `<cold hot>`, as raw ADC codes; a higher code is a colder
 battery, so the driver rejects a pair whose hot value is not the smaller one.
+Being codes rather than temperatures is exactly why they are here and not on the
+battery — see [Where these properties belong](#where-these-properties-belong).
 
 `qcom,jeita-soft-fcc-microamp` is the current to be **left** in each soft zone,
-not the register's own offset — so the battery node describes a charge current
-and the driver works out the delta. It reads the fast-charge current back out of
-the hardware to do that, rather than trusting the device tree to match.
+not the register's own offset — so the board describes a charge current and the
+driver works out the delta. It reads the fast-charge current back out of the
+hardware to do that, rather than trusting the device tree to match.
 
 An optional `qcom,batt-id-tolerance-percent` overrides the default 15, which is
 the window the vendor's `batt-id-range-pct` uses on this board.
 
 `qcom,auto-recharge-microvolt` is the voltage a finished charge is started again
-at. It sits on the battery because how far a cell may relax before it is worth
-cycling is a property of that cell, not of the board — and it is optional, since
-a comparator left at its power-on threshold still works and a made-up threshold
-for an unknown pack does not improve on it. SMB5 only: on SMB2 the same decision
-is configured elsewhere.
-
-**On the charger** — what belongs to the board rather than to the pack:
-
-```dts
-&pmi632_charger {
-	monitored-battery = <&fp3_battery>;
-	qcom,batt-id-pullup-ohm = <100000>;
-	qcom,thermal-mitigation = <2000000 1500000 1000000 500000>;
-};
-```
+at. It is optional: a comparator left at its power-on threshold still works, and
+a made-up threshold for an unknown pack does not improve on it. SMB5 only — on
+SMB2 the same decision is configured elsewhere.
 
 The pull-up follows from the ADC channel chosen in `pmi632.dtsi`, but nothing in
 the IIO consumer interface exposes which channel a consumer was given, so the
@@ -640,24 +641,30 @@ charger node passes. It closed the last `checkpatch` complaint on the series.
 
 ### Where these properties belong
 
-The split above is the one this port runs, and it is **not settled for
-upstream**. Two things argue against the battery node as written:
+**Settled 2026-08-12**, in the shape this section used to only propose: the
+charging policy is on the **charger** node, the pack identity on the battery.
+Two things decided it.
 
 * `battery.yaml` sets `additionalProperties: false` and contains **no**
-  vendor-prefixed property at all, so `dtbs_check` rejects all four `qcom,*`
-  names — measured, not predicted. The only JEITA precedent in tree,
+  vendor-prefixed property at all, so `dtbs_check` rejected every `qcom,*` name
+  on that node — measured, not predicted. The only JEITA precedent in tree,
   `qcom,jeita-extended-temp-range`, lives on a **charger** node
   (`qcom,pm8941-charger.yaml`).
 * the thresholds are **raw BAT_THERM ADC codes**, and a code depends on the
   PMIC's ADC full scale and on the board's 100 kΩ pull-up as much as on the cell.
   By the same layering rule that moved the current ceiling out of the driver,
-  a raw code is not a property of the battery.
+  a raw code is not a property of the battery — and a board that fitted two
+  packs would have to repeat the same codes on both of them.
 
-The likely upstream shape is therefore: thresholds on the charger node, and the
-pack identity as a **generic** `id-resistor-ohms` in `battery.yaml` — an ID
-resistor is not a Qualcomm idea. That is a driver change as well as a device-tree
-one, since the driver would read them from a different node, so it wants its own
-build-and-measure cycle rather than an edit here.
+So both JEITA threshold pairs, the soft-zone currents, the recharge voltage and
+the battery-ID tolerance are properties of `&pmi632_charger` now, alongside the
+pull-up that was already there. The identification resistor stays with the pack,
+because it physically is inside it, as the **generic `id-resistor-ohms`** added
+to `battery.yaml` — an ID resistor is not a Qualcomm idea, and naming it
+generically is what lets it sit on a node that admits no vendor properties.
+`qcom,batt-id-pullup-ohm` was pluralised to `-ohms` in the same change; nothing
+outside this tree could have been relying on either old spelling, since both are
+this port's own additions.
 
 ## Thermal mitigation
 
@@ -806,7 +813,7 @@ were fixed on 2026-07-30.
 * **The mismatch path has not been exercised on hardware.** There is no second
   pack here to fit, and the check is written but only ever seen taking the
   matching branch. The cheap way to measure it is a device-tree-only cycle with
-  `qcom,batt-id-ohm` deliberately set to the other pack's 50000: the log should
+  `id-resistor-ohms` deliberately set to the other pack's 50000: the log should
   carry *"Battery ID is … ohm, but the described battery is 50000 ohm"* and
   `0x1061` should stay at `0x14`. Two DTB deploys, no kernel build.
 * **A mismatch leaves the previous boot's JEITA thresholds in place, not the

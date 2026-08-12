@@ -101,16 +101,30 @@ Then, in rough order of cost:
    `23-audio-slimbus` passes with a headset plugged in — a 1 kHz tone crossing
    the bus in both directions, **999.76 Hz at 32.97 dB**. The jack still
    detects: `SW_HEADPHONE_INSERT` is active.
-5. **The battery node's four `qcom,*` properties cannot stay there.**
-   `battery.yaml` has `additionalProperties: false` and **zero** vendor-prefixed
-   properties, so there is no precedent to follow; the JEITA precedent that does
-   exist (`qcom,jeita-extended-temp-range` in `qcom,pm8941-charger.yaml`) is on
-   the *charger* node. There is also a layering argument against the current
-   placement, made in [`charger/README.md`](charger/README.md#where-these-properties-belong).
-6. **`-ohm` should be `-ohms`.** The canonical unit suffix is plural
-   (`qcom,batt-id-ohm`, `qcom,batt-id-pullup-ohm`); `-microamp` and `-percent`,
-   which this work also uses, are already right. Worth doing in the same cycle as
-   item 5, since it touches the same properties.
+5. ~~**The battery node's `qcom,*` properties cannot stay there.**~~ **Moved
+   2026-08-12**, in the shape `charger/README.md` had already argued for, as
+   four commits: the generic property, the charger binding, the driver, the
+   board.
+
+   There were **five**, not four - the count in this item predated
+   `qcom,auto-recharge-microvolt`. Four of them moved to the charger node: both
+   JEITA threshold pairs, the soft-zone currents and the recharge voltage. The
+   argument that decides it is not the schema but the layering: a threshold here
+   is a **raw BAT_THERM ADC code**, and which code a temperature produces
+   depends on the PMIC's ADC full scale and on the board's pull-up as much as on
+   the cell, so it cannot travel with a pack. The battery-ID tolerance follows
+   the pull-up onto the charger for the same reason - it has to cover the
+   divider and the ADC, not only the resistor.
+
+   The fifth stays with the pack, because the identification resistor really is
+   inside it, and became the **generic `id-resistor-ohms`** added to
+   `battery.yaml`. An ID resistor is not a Qualcomm idea, and a vendor-prefixed
+   name on that node is rejected outright.
+6. ~~**`-ohm` should be `-ohms`.**~~ **Done in the same commits.**
+   `qcom,batt-id-ohm` is gone entirely (it is `id-resistor-ohms` now) and
+   `qcom,batt-id-pullup-ohm` became `qcom,batt-id-pullup-ohms`. Nothing outside
+   this tree can have been relying on either spelling: both are this port's own
+   additions.
 7. **Every branch is based on `v7.1.3-r0`.** Sending means rebasing first: ASoC
    onto `sound/for-next`, device trees onto mainline. Trial-rebased on
    2026-07-30, so this is no longer a guess: **11 of the 21 commits apply with no
@@ -699,7 +713,7 @@ so it was a no-op.
 * **Charging asks for 2 A**, where it used to be capped at 1 A, and the battery
   it asks on behalf of is now verified before its limits are applied. What is
   left, in order: the **mismatch path has never run on hardware** (a
-  device-tree-only cycle with a deliberately wrong `qcom,batt-id-ohm` would
+  device-tree-only cycle with a deliberately wrong `id-resistor-ohms` would
   measure it), **2 A has not been seen flowing** (needs a wall charger and a low
   state of charge), and the **input side** — without high-voltage negotiation the
   USB port supplies about 1.9 A into the cell. Still open beyond that: selection
@@ -732,11 +746,17 @@ layer, so what runs on the phone always carries the watchdog started at probe.
 `integration/<base>` deliberately does not, because it is the branch that has to
 keep matching the `submit` series.
 
-Still open: **the build and the deploy.** `./pmb checksum` has run and the pin
-resolves, but the package has not been rebuilt or installed, so the phone is still
-running `linux-fp3-7.1.3-r22` — which is to say, still without a watchdog. That is
-one build-and-flash cycle, and until it happens an early hang still needs a thumb
-on the power button.
+The build and the deploy followed, and have been repeated many times since, so
+the kernel the phone runs is built from that branch and carries the watchdog.
+
+What is worth keeping an eye on is that the package and the device stay in
+step. Between a hurried fix and the next bump the phone can end up running
+hand-copied modules and a hand-copied DTB on top of an older package - a state
+where `uname -v` and `apk info` disagree, and where any `apk` operation on
+`linux-fp3` silently reverts the DTB through the mkinitfs trigger. The check
+that catches it is `tests/fp3-selftest --only identity,modules,dtb`, which
+compares the build stamp, the installed package, the source commit, the module
+tree and the booted DTB against each other rather than trusting any one of them.
 
 Both old tips are kept alive as tags —
 `archive/integration-7.1.3-pre-camera-provenance` and

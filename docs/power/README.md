@@ -30,6 +30,7 @@ finished.
 | `2026-08-12_ut_terminates.txt` | the vendor stack reaching `TERMINATE` within a minute of the current crossing the threshold |
 | `2026-08-12_pmos_iterm-fix-terminates.txt` | the same on pmOS, after `I_TERM_BIT` was left set — the single-change A/B |
 | `2026-08-12_pmos_idle-discharge.txt` | pmOS idle, matched against the UT night |
+| `2026-08-12_pmos_day-to-r51-termination.txt` | a day on pmOS ending in the first termination reached by the **packaged** kernel rather than by hand-deployed pieces: `linux-fp3-7.1.3-r51`, taper at 87 mA, then `Full` with `chgr_status_reg` at `0x45`. The uptime column resets partway through, at the reboot onto that package |
 
 ## What these say, and what they do not
 
@@ -51,9 +52,42 @@ never suspended at all during these runs — `/sys/power/suspend_stats/success`
 stayed at 0, because `sleep-inactive-battery-type` is `nothing`, not because
 anything blocked it.
 
-**One number here has no explanation yet.** pmOS idled at 198 mA against Ubuntu
-Touch's 86 mA. That pmOS never suspends is measured; that this is *why* is not,
-because 86 mA is itself far too high for a phone that is really asleep, so the
-vendor side may not be sleeping either. Until `/sys/power/autosleep` and the
-suspend counters have been read on that side, the gap is observed and not
-accounted for.
+**One number here still has no explanation, and the leading candidate is now
+ruled out.** pmOS idled at 198 mA against Ubuntu Touch's 86 mA. That pmOS never
+suspends is measured — but so is the other side, as of 2026-08-12: **Ubuntu
+Touch does not suspend either.**
+
+The counter alone could not say so, because `success` is since boot and the
+oracle slot had just been rebooted. What settles it is comparing the two clocks,
+which needs no counter and no root: `CLOCK_MONOTONIC` does not advance across a
+suspend, so an idle phone that sleeps shows less uptime than wall time. Sampled
+twice five minutes apart on UT, with the display off and nothing but the SSH
+link up:
+
+```
+1786567461 436
+1786567491 466      # 30 s of wall clock, 30 s of uptime — awake the whole way
+```
+
+Neither kernel offers `/sys/power/autosleep` at all. The vendor one has the
+Android wakelock interface (`/sys/power/wake_lock`, owned by `radio`) and would
+suspend on a userspace daemon's say-so; ours has neither the interface nor
+anything asking. So the 2.3x gap is **not** a sleeping phone against a waking
+one: it is two awake phones, one of which costs more to keep awake.
+
+Where that goes next is runtime PM, measured the same way on both sides — the
+same two-sided diff that found the charger bug:
+
+| | Ubuntu Touch | postmarketOS |
+|---|---|---|
+| devices with runtime PM `active` | 8 | **17** |
+| `suspended` | 65 | 46 |
+| `unsupported` (no runtime PM at all) | 719 | 293 |
+
+The totals are not comparable — the vendor kernel enumerates far more devices —
+but the `active` list is. Ours keeps two i2c buses and a USB PHY awake that the
+vendor stack does not, and one of them is `i2c 0-000c`, which is the aw8898
+speaker amplifier: the part whose PLL is [known never to
+lock](../audio/README.md) on this port, leaving the driver to park the chip.
+That is a lead and not a finding — nothing here measures what any of those
+devices costs.
