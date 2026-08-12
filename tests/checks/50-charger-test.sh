@@ -42,12 +42,31 @@ else
 	fail=1
 fi
 
-if [ "$status" != "Charging" ]; then
+# A full pack on a cable legitimately reports Full or Not charging: the charger
+# has terminated and is sitting in inhibit until the recharge threshold. That is
+# the charger working, not failing, so do not demand Charging once the gauge
+# reads full - and say which case this run is, so a green result still tells you
+# what was measured.
+case "$status" in
+Charging)
+	echo "PASS: status is Charging"
+	;;
+Full|Not\ charging)
+	if [ "${capacity:-0}" -ge 99 ]; then
+		echo "PASS: status is '$status' at ${capacity}% - a finished charge"
+		echo "      (the charger terminated; 53-charge-termination judges that)"
+		exit $fail
+	fi
+	echo "FAIL: battery status is '$status' at only ${capacity}%"
+	echo "      (charging stopped short - not a missing cable)"
+	exit 1
+	;;
+*)
 	echo "FAIL: battery status is '$status', not Charging"
 	echo "      (plug the cable in, or pass --no-cable if that is intentional)"
 	exit 1
-fi
-echo "PASS: status is Charging"
+	;;
+esac
 
 # Does anything actually flow? current_now sign convention varies, so take the
 # magnitude; the question is whether it is non-zero, not which way it points.
