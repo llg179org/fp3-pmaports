@@ -506,6 +506,35 @@ the LKML carries `Assisted-by:` and never a `Signed-off-by` from the assistant.
 That is also why the LKML is the only open destination — see
 [`FP3-TODO.md`](FP3-TODO.md) and the top-level README.
 
+## Holding the camera open costs ~100 mA of idle current
+
+Measured 2026-08-13, and it accounts for most of the pmOS-versus-Ubuntu-Touch
+idle gap: three twelve-minute phases on one discharge, one change between each,
+72 samples apiece — **166 mA as found, 68 mA with the camera released**, and
+stopping wireplumber outright saves nothing beyond that. Full numbers and the
+two explanations that were tested and failed (it is not CPU, and `clk_summary`
+is identical) in [`power/README.md`](power/README.md).
+
+The mechanism is a pair of behaviours that are each defensible alone:
+
+* `ak7375_open()` takes a runtime-PM reference, so **opening** the subdev powers
+  the voice-coil motor — the upstream pattern for VCM drivers;
+* libcamera's pipeline handler keeps every device of a camera open for as long
+  as the `CameraManager` lives, and wireplumber keeps one alive to publish the
+  camera to PipeWire.
+
+Together they mean a phone with an autofocus motor pays for it whenever anything
+enumerates cameras, whether or not a picture is ever taken.
+
+☠️ **Disabling wireplumber's `monitor.v4l2` / `monitor.libcamera` is the
+measurement, not the fix** — it removes the camera from PipeWire entirely. What
+a fix looks like is the open question, and the options sit in different projects:
+have libcamera close the subdevs when no camera is acquired; give the actuator an
+autosuspend delay so an idle open costs nothing; or have the session manager
+enumerate and then let go. Worth measuring the rail directly first — ~100 mA on
+2.85 V is a lot for a motor that is not being asked to move, and that number is
+the one thing here nobody has explained.
+
 ## `15-hwtest` cries wolf twice, and is the one check that is audible by default
 
 Two components of `hwtest` call this device broken when a check of our own says

@@ -30,6 +30,7 @@ finished.
 | `2026-08-12_ut_terminates.txt` | the vendor stack reaching `TERMINATE` within a minute of the current crossing the threshold |
 | `2026-08-12_pmos_iterm-fix-terminates.txt` | the same on pmOS, after `I_TERM_BIT` was left set — the single-change A/B |
 | `2026-08-12_pmos_idle-discharge.txt` | pmOS idle, matched against the UT night |
+| `2026-08-13_pmos_camera-hold-idle-cost.txt` | the three-phase A/B/C above: idle current with the camera held, with wireplumber stopped, and with wireplumber running but not claiming the camera |
 | `2026-08-12_pmos_day-to-r51-termination.txt` | a day on pmOS ending in the first termination reached by the **packaged** kernel rather than by hand-deployed pieces: `linux-fp3-7.1.3-r51`, taper at 87 mA, then `Full` with `chgr_status_reg` at `0x45`. The uptime column resets partway through, at the reboot onto that package |
 
 ## What these say, and what they do not
@@ -52,10 +53,10 @@ never suspended at all during these runs — `/sys/power/suspend_stats/success`
 stayed at 0, because `sleep-inactive-battery-type` is `nothing`, not because
 anything blocked it.
 
-**One number here still has no explanation, and the leading candidate is now
-ruled out.** pmOS idled at 198 mA against Ubuntu Touch's 86 mA. That pmOS never
-suspends is measured — but so is the other side, as of 2026-08-12: **Ubuntu
-Touch does not suspend either.**
+**The 198 mA against Ubuntu Touch's 86 mA is now accounted for**, and neither of
+the two obvious explanations was right. The first to go was suspend. That pmOS
+never suspends is measured — but so is the other side, as of 2026-08-12:
+**Ubuntu Touch does not suspend either.**
 
 The counter alone could not say so, because `success` is since boot and the
 oracle slot had just been rebooted. What settles it is comparing the two clocks,
@@ -75,8 +76,10 @@ suspend on a userspace daemon's say-so; ours has neither the interface nor
 anything asking. So the 2.3x gap is **not** a sleeping phone against a waking
 one: it is two awake phones, one of which costs more to keep awake.
 
-Where that goes next is runtime PM, measured the same way on both sides — the
-same two-sided diff that found the charger bug:
+What it *is* turned out to be one held-open device, worth about 100 mA — the
+measurement is below. It was found by carrying on with runtime PM, measured the
+same way on both sides, which is the same two-sided diff that found the charger
+bug:
 
 | | Ubuntu Touch | postmarketOS |
 |---|---|---|
@@ -97,8 +100,56 @@ than a general observation about the bus.
 so it cannot appear in this comparison either way. `0-000c` on `i2c-0` is the
 CCI bus, and `media-ctl` names the entity outright (`ak7375 0-000c ... Lens`).
 
-Following that one address the rest of the way turns the lead into a named
-mechanism, still without measuring what it costs:
+### ★ Measured 2026-08-13: holding the camera open costs about 100 mA
+
+Three twelve-minute phases on the same discharge, cable out, display off, one
+change between each, 72 samples apiece
+(`2026-08-13_pmos_camera-hold-idle-cost.txt`):
+
+| phase | state | median battery current |
+|---|---|---|
+| **A** | as found — wireplumber running and holding the camera | **166.3 mA** |
+| **B** | wireplumber stopped outright | 80.3 mA |
+| **C** | wireplumber running, its `monitor.v4l2` and `monitor.libcamera` disabled | **67.6 mA** |
+
+**A → C is −98.7 mA, about 60 % of the idle draw**, and their interquartile
+ranges do not overlap (A's p25 is 137 mA, C's p75 is 106 mA). B and C are
+indistinguishable, which is the point of running C at all: it separates *the
+camera being held* from *the session manager existing*. Stopping wireplumber
+entirely saves nothing beyond releasing the camera.
+
+That also accounts for most of the gap this section opened with. Ubuntu Touch
+idled at 86 mA; pmOS with the camera released idles at 68 mA.
+
+☠️ **What it is not, measured rather than assumed.** Two explanations were
+tested and both failed:
+
+* **not CPU** — wireplumber sits at 0 % with a load average of 0.06 in phase A;
+* **not the clocks** — `clk_summary` is *identical* between phases A and C.
+  The only persistent difference in the whole system is two regulators,
+  `cam_af_2p85` and `cam_io_1p8`, and the `ak7375` runtime state.
+
+So ~100 mA is flowing somewhere on a 2.85 V rail feeding a **voice-coil motor**
+that is powered but not being asked to move. That is the remaining question, and
+it is a question about the part rather than about the software.
+
+☠️ **Disabling those monitors is a measurement, not a fix.** It removes the
+camera from PipeWire, so no application can find it. The drop-in used here was
+written into `~/.config/wireplumber/wireplumber.conf.d/`, never into the
+package's own files, and removed again afterwards — the device is back to
+normal, camera node present.
+
+Where a real fix would go: `ak7375_open()` takes a runtime-PM reference, so
+merely *opening* the subdev powers the motor, and libcamera's pipeline handler
+keeps every device of a camera open for as long as the `CameraManager` lives.
+Neither is obviously wrong on its own; together they mean a phone with a VCM
+pays for an autofocus motor it is not using, whenever anything enumerates
+cameras.
+
+### How the lead was followed
+
+Following the one address in the runtime-PM table the rest of the way turned it
+into a named mechanism before any of it was priced:
 
 * **wireplumber holds the camera open at idle** — it has `/dev/video0`,
   `/dev/media0` *and* `/dev/v4l-subdev17` (the actuator) open with nothing
@@ -112,8 +163,4 @@ mechanism, still without measuring what it costs:
   `cam2_dig_1p2` is `disabled`, which is what makes the other two worth
   noticing rather than a general statement about the camera.
 
-**The experiment this sets up** needs the cable out, because with it in
-`current_now` measures the charger and not the phone: stop wireplumber, confirm
-the two regulators drop and `0-000c` goes `suspended`, and read the idle current
-either side of that single change. Until then this is a mechanism with no price
-on it.
+That experiment is the one measured above.
