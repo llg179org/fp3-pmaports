@@ -654,6 +654,51 @@ several. Whatever is skipped has to be skipped when the reference is exported
 too — which is what was done above, and it is a decision about what the
 baseline means rather than an edit to the check.
 
+## The handset microphone is dead on a fresh boot, and logging in does not fix it
+
+Measured 2026-08-13 on `linux-fp3-7.1.3-r53`, in a full `fp3-selftest` run:
+
+```
+FAIL: 20-audio   capture PCM hw:0,1 (MultiMedia2) does not open
+FAIL: 35-pulse   no fp3-handset-mic source - the mic drop-in did not load
+dmesg:           MultiMedia2: ASoC: no backend DAIs enabled for MultiMedia2,
+                 possibly missing ALSA mixer-based routing or UCM profile
+```
+
+Everything userspace is present and running: `90-fp3-mic.pa` is installed,
+`fp3-mic-select` is enabled and active (and restarting it changes nothing), the
+UCM files are in place, and PulseAudio is up with the speaker sink. What is
+missing is the **capture routing**, and with it the source: `pactl list short
+modules` shows no `module-alsa-source` at all, because the drop-in loads it
+inside `.nofail` and it fails silently.
+
+What has been established, so the next session does not repeat it:
+
+* **Setting the route by hand gets further, and says where the wall is.**
+  `amixer -c0 cset name='MultiMedia2 Mixer SLIMBUS_0_TX' 1` makes `arecord`
+  *open* the PCM; the read then fails with `I/O error`. So the front end is a
+  routing question and there is a second problem behind it on the SLIMbus TX
+  side. The control was set back to `off` afterwards.
+* ☠️ **"Nobody is logged in" was a good hypothesis and it is wrong.** The phone
+  was indeed sitting at the greeter (`loginctl` showed `greetd ... greeter tty7`
+  and no user session on seat0), and the drop-in's own comment says the capture
+  routing comes from the HiFi UCM verb's `EnableSequence` when the card profile
+  activates. But after a real login — `c68 fp3 seat0 tty7`, greeter gone,
+  PulseAudio restarted — the source is still absent and `hw:0,1` still returns
+  `Invalid argument`.
+* **The UCM verb cannot even be queried** by that card name: `alsaucm -c
+  "Fairphone 3" get _verb` answers *"No such file or directory"*, and `set _verb
+  HiFi` changes nothing. Whether the card is addressable under another name is
+  the obvious next thread.
+
+**Whether this is a regression is not known**, and the cheapest way to find out
+is already in place: `/boot/extlinux/extlinux.conf` has a `postmarketOS-fallback`
+entry pointing at the previous kernel, so one reboot answers it. Nothing in r53
+touches audio — its only kernel change is `ak7375` — so a fault on both sides
+would point at userspace or at the boot-time SLIMbus race visible in the same
+log (`wcd9335-slim: Failed to get logical address`, `SLIM TX timed out`, then a
+recovery two seconds later).
+
 ## The notification LED blinks forever after a missed call
 
 **Symptom:** after a missed call the LED keeps blinking; dismissing the
@@ -685,9 +730,32 @@ or restart feedbackd.
 1. Find out who fails to call `EndFeedback` when the notification is dismissed —
    phosh or the calls app. That is the actual bug; everything else limits the
    damage.
-2. Ship a `fairphone,fp3.json` feedbackd theme that gives those LED feedbacks a
-   bounded duration. It belongs next to the other userspace drop-ins this repo
-   carries (`userspace-audio/udev`, `pulse`, `ucm2`).
+2. ~~Ship a `fairphone,fp3.json` feedbackd theme that gives those LED feedbacks a
+   bounded duration.~~ ☠️ **Not possible with this feedbackd**, measured
+   2026-08-13: an LED feedback has no duration to bound. The JSON keys the
+   binary understands are `event-name`, `type`, `color`, `frequency`,
+   `duration`, `effect`, `magnitude` and `parent-name`, and `duration` belongs
+   to the vibra feedbacks alone — the only accessors are
+   `fbd_feedback_vibra_get/set_duration`, there is no `max-duration` string in
+   the binary at all, and `FbdFeedbackLed` has nothing but colours and
+   `fbd_feedback_led_run`. An LED feedback runs until the client ends it, by
+   construction.
+
+   The timeout that does exist is **client-side**: `fbcli -t` passes one when
+   triggering, so a caller can bound its own feedback. That makes item 1 the
+   only real fix rather than merely the deeper one.
+
+   What a `fairphone,fp3.json` theme *could* do is override
+   `phone-missed-call` and `notification-missed-generic` with a bounded feedback
+   of another type — a short `VibraRumble`, say — which stops the endless blink
+   by removing the LED notification altogether. That is a decision about what
+   the phone should do, not a bug fix, so it is not shipped here unasked. The
+   theme would live next to the other userspace drop-ins this repo carries
+   (`userspace-audio/udev`, `pulse`, `ucm2`).
+
+   ☠️ Note also that those LED rules live in the theme's **silent** profile, not
+   in `full` — the profiles cascade, so reading only `full` finds nothing and
+   suggests, wrongly, that no rule applies.
 
 ## ~~Parked: the PMI632 camera flash~~ — it works, 2026-08-03
 
