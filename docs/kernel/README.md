@@ -113,7 +113,7 @@ which is the same 4.9 kernel with the Halium patches on top.
 | SMB5 register offsets, current step, charge-status bit positions | downstream [`qpnp-smb2.c`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/halium-10.0/drivers/power/supply/qcom/qpnp-smb2.c) / [`qpnp-smb5.c`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/halium-10.0/drivers/power/supply/qcom/qpnp-smb5.c), [`smb5-reg.h`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/halium-10.0/drivers/power/supply/qcom/smb5-reg.h) |
 | PMI632 interrupt numbers and ADC channel assignment | downstream [`pmi632.dtsi`](../device_tree/downstream/fairphone/3.A.0136/arch/arm64/boot/dts/qcom/pmi632.dtsi) |
 | `BAT_THERM` channel number, 100k pull-up, ratiometric calibration | downstream [`pmi632.dtsi`](../device_tree/downstream/fairphone/3.A.0136/arch/arm64/boot/dts/qcom/pmi632.dtsi), `chan@4a` |
-| the OCV curve behind `capacity` | downstream [`qg-batterydata-Kayo-3000mah-Nov4th2019-pmi632.dtsi`](../device_tree/downstream/fairphone/3.A.0136/arch/arm64/boot/dts/qcom/qg-batterydata-Kayo-3000mah-Nov4th2019-pmi632.dtsi) |
+| the OCV curve behind `capacity`, and the cell parameters beside it | downstream [`qg-batterydata-Fuji-3000mah-Jan22th2019-pmi632.dtsi`](../device_tree/downstream/fairphone/3.A.0136/arch/arm64/boot/dts/qcom/qg-batterydata-Fuji-3000mah-Jan22th2019-pmi632.dtsi) — **Fuji**, the pack this phone measures as fitted, not the Kayo this row used to name |
 
 ## Audio: the WCD9335 codec
 
