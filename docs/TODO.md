@@ -531,11 +531,103 @@ measurement, not the fix** — it removes the camera from PipeWire entirely. Wha
 a fix looks like is the open question, and the options sit in different projects:
 have libcamera close the subdevs when no camera is acquired; give the actuator an
 autosuspend delay so an idle open costs nothing; or have the session manager
-enumerate and then let go. Worth measuring the rail directly first — ~100 mA on
-2.85 V is a lot for a motor that is not being asked to move, and that number is
-the one thing here nobody has explained.
+enumerate and then let go.
 
-## `15-hwtest` cries wolf twice, and is the one check that is audible by default
+**Which of them is worth doing is now measured.** The hold was split on
+2026-08-13, using a bare shell as the holder (`sh -c 'exec 3</dev/v4l-subdev17;
+sleep 100000'`) so that exactly one node is open per phase — three more
+twelve-minute phases on one discharge
+([capture](power/2026-08-13_pmos_lens-vs-chain.txt)):
+
+| phase | held open | median current | median power |
+|---|---|---|---|
+| P0 | nothing | 79.7 mA | 0.342 W |
+| **P1** | **the `ak7375` subdev alone** | **152.4 mA** | **0.643 W** |
+| P2 | `media0`, `video0`, CSIPHY/CSID/ISPIF/VFE, `imx363` — all but the actuator | 76.4 mA | 0.323 W |
+
+P2 lands on P0: **the sensor and the whole CSI/VFE front end cost nothing while
+merely open, and the entire hold cost is the lens motor** — +0.30 W on its own,
+with `cam_af_2p85`/`cam_io_1p8` `enabled` in P1 and `disabled` in both others.
+
+So the fix belongs in **`ak7375`**: `ak7375_open()` takes the runtime-PM
+reference and only `ak7375_close()` drops it, so the motor is up for as long as
+any file descriptor lives. Closing the subdev in libcamera would work too, but
+it treats the symptom in one consumer while the driver keeps charging every
+other one.
+
+☠️ **Adding an autosuspend delay is not the fix**, however much it sounds like
+one: autosuspend acts when a device goes idle, and this device never does — the
+reference is held, not slow to expire. ☠️ **And moving the reference to the
+position write with a delay after it is not the fix either** — a voice coil
+holds its position only while driven, so a timer expiring under a focused
+preview would let the spring pull the lens out of focus.
+
+**Written and measured 2026-08-13.** Power follows the **requested position**: a
+reference is taken for the first position away from rest and dropped when the
+lens is asked back to it. Focus is never lost, because a non-zero position keeps
+the reference; idle costs nothing, because idle *is* the rest position.
+Hot-swapped into the running kernel and measured with the same phases: **holding
+the subdev costs +2.8 mA / +0.011 W**, against +72.7 mA / +0.30 W on the stock
+driver ([capture](power/2026-08-13_pmos_ak7375-position-power.txt)).
+
+What is left on it:
+
+* **the autofocus regression is unrun** — a real capture must still focus and
+  *hold* focus. It could not be done in the swap session: unbinding the subdev
+  left the media graph inconsistent (`Failed to find MediaObject with id 0`) and
+  libcamera stopped enumerating the camera until a reboot. Note that `cam` alone
+  does not exercise AF — `focus_absolute` stays 0 — so this needs the AF path
+  the camera app uses;
+* **the verdict must come from a package build**: `insmod` of a locally built
+  module raised an `ftrace_bug` warning. It is a hot-swap artefact, but it makes
+  the vehicle unfit for a final answer;
+* **`driven` is one flag shared by all consumers**, so with two opens a
+  `close()` could drop the reference out from under the other. Consumers are
+  single here, but this has to be resolved before the driver goes to
+  `linux-media`, where other boards use it.
+
+Left open underneath all of it: why a VCM that is powered and commanded nowhere
+dissipates a third of a watt at all — a question about the part, and the only
+one a rail probe could still answer.
+
+☠️ Compare those phases against the earlier A/B/C **in power, not in current**:
+they ran at a different state of charge, and the same power draws less current
+at a higher terminal voltage.
+
+☠️ Kill such holders **by PID found in `/proc/*/fd`**: `pkill -f` matches the
+very SSH command line that carries the pattern, and kills the shell issuing it —
+silently, with no output and no error.
+
+## ~~`15-hwtest` cries wolf twice, and is the one check that is audible by default~~ — settled 2026-08-13
+
+**Settled by narrowing what `hwtest` is asked to judge.** The check and the
+reference now skip the same eleven components, and both list them, so `--verify`
+keeps its regression semantics over what is left: the framebuffer, the DRM
+connector and every input device — touchscreen, power key, volume keys and the
+headset jack's input node, which nothing else in the suite covers. It runs
+silently in two seconds and passes; the vibrator coverage it gave up came back
+as a new `16-vibrator`, which reads the device and its force-feedback mask
+without shaking the phone.
+
+Three things were measured on the way, and each changed the answer:
+
+* ☠️ **`--skip` takes one component per flag.** It is `action='append'` and the
+  test is `c.__name__ in args.skip`, so `--skip Camera,Audio` matches nothing
+  and skips nothing, silently.
+* ☠️ **`hwtest --export` crashes on this device**, which is why the skip list is
+  eleven long rather than three. It writes each result's path as a
+  comment-shaped key, and Python 3.14's configparser refuses a key containing
+  the delimiter — every IIO path has one (`iio:device2`), and so does the LED
+  (`rgb:status`). The export dies with `InvalidWriteError` partway through,
+  leaving a truncated file. Worth reporting upstream.
+* ☠️ **The suite could not run over WiFi at all**, and the symptom was
+  `device <ip> unreachable`. `lib/common.sh` forced
+  `PreferredAuthentications=password -o PubkeyAuthentication=no`, while sshd
+  here accepts a password only on the USB subnet — so our own SSH hardening
+  locked the tests out of the wireless link. Fixed by letting the key be tried
+  first, with the password as the fallback it always was.
+
+The original report follows.
 
 Two components of `hwtest` call this device broken when a check of our own says
 otherwise, measured 2026-08-12 with `--verbose`:
@@ -555,15 +647,12 @@ borrows the level helpers) and its vibrator component runs the motor. The
 suite's rule everywhere else is that anything audible is opt-in, and a full run
 at night is not the moment to find the exception.
 
-☠️ **`--skip` is not the fix, which is what makes this an open item rather than
-a one-line change.** A skipped component is *missing* from the run, and
-`hwtest --verify` reads missing as regressed: skipping Camera, Audio and
-Vibrator turned a one-line failure into a three-line one. Whatever is skipped
-has to be skipped when the reference is exported too, so the fix is a reference
-regenerated under the same flags — a decision about what the baseline means,
-not an edit to the check. The alternatives are to stop using `--verify` and
-compare the components we care about ourselves, or to drop `15-hwtest` and rely
-on the per-subsystem checks that already cover its ground better.
+☠️ **`--skip` alone is not the fix.** A skipped component is *missing* from the
+run, and `hwtest --verify` exits 1 on a removal as well as on a regression:
+skipping components on the run but not in the reference turns one failure into
+several. Whatever is skipped has to be skipped when the reference is exported
+too — which is what was done above, and it is a decision about what the
+baseline means rather than an edit to the check.
 
 ## The notification LED blinks forever after a missed call
 

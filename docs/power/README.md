@@ -1,13 +1,175 @@
-# Power measurements on the Fairphone 3
+# Power on the Fairphone 3
 
 > ⚠️ **AI-generated.** These pages, and the code and measurements they describe,
 > were written by Claude (Opus 5) working under the direction of Lajosházi,
 > László Gergely, who reviewed every change and made or reviewed every
 > measurement they rest on.
 
-Raw captures from the charger and power-management work, kept because the
-conclusions drawn from them are only as good as the data, and because a host
-reboot has already eaten one of these files once.
+What this phone draws under a mainline kernel, how that compares with the vendor
+stack on the same hardware, and the raw captures every one of those numbers came
+from — kept because the conclusions are only as good as the data, and because a
+host reboot has already eaten one of these files once.
+
+**How this was worked out is not on this page.** The investigation — the two
+hypotheses that were held with confidence and then disproved, and the one device
+that was named wrongly — is in [`bringup/`](bringup/README.md). This page is the
+reference; that one is the reasoning, and it is not revised when the device
+changes.
+
+## Where the numbers stand
+
+Idle here means display off, WiFi associated, one SSH session open. It is not a
+measurement of a sleeping phone, and neither operating system sleeps.
+
+| | draw |
+|---|---|
+| pmOS, as a stock image ships it | **166 mA** |
+| pmOS, with the camera released | **68 mA** |
+| Ubuntu Touch, same protocol | 86 mA |
+| what releasing the camera is worth | **−98.7 mA**, about 60 % of idle |
+
+☠️ **Percentages are not comparable between the two.** They run different
+gauges. Over one matched 6.66 h idle window the vendor gauge reported 6 points
+against 571 mAh integrated, and ours reported 36 points against 1319 mAh.
+Compare integrated current and terminal voltage; treat the percentage as a
+measurement *of the gauge*.
+
+**pmOS does not suspend on its own**, and nothing blocks it — nothing asks
+(`sleep-inactive-battery-type` is `nothing`). Neither kernel offers
+`/sys/power/autosleep`. Asked explicitly, it suspends and resumes cleanly: see
+below.
+
+☠️ **The Ubuntu Touch side of that claim is withdrawn pending a re-measurement**,
+because the instrument it rested on cannot work. It compared wall clock against
+`/proc/uptime` on the theory that `CLOCK_MONOTONIC` does not advance across a
+suspend — but `/proc/uptime` does not report `CLOCK_MONOTONIC`. It calls
+`ktime_get_boottime_ts64()`, and boottime **includes** time spent suspended, so
+uptime tracks wall clock whether the phone slept or not. Verified against a
+suspend we know happened: 71 s of wall clock, 71 s of uptime, across a
+demonstrated 60 s sleep.
+
+**What does answer "did it sleep?"**, in order of cost:
+
+* `/sys/power/suspend_stats/success` read **before and after** the window — the
+  delta is valid; the absolute number is not, since it counts from boot;
+* `dmesg | grep 'PM: suspend'` — the `entry (s2idle)` / `exit` pair. Note the
+  printk clock stops while suspended, so a 60 s sleep shows as a fraction of a
+  second between the two lines. The pair is the evidence, not the gap.
+
+## Holding the camera open costs about 100 mA
+
+Measured 2026-08-13, three twelve-minute phases on one discharge, cable out,
+display off, 72 samples apiece, one change between each
+(`2026-08-13_pmos_camera-hold-idle-cost.txt`):
+
+| phase | state | median battery current |
+|---|---|---|
+| **A** | as found — wireplumber running and holding the camera | **166.3 mA** |
+| **B** | wireplumber stopped outright | 80.3 mA |
+| **C** | wireplumber running, its `monitor.v4l2` and `monitor.libcamera` disabled | **67.6 mA** |
+
+The interquartile ranges of A and C do not overlap (A's p25 is 137 mA, C's p75
+is 106 mA). B and C are indistinguishable, which is the point of running C at
+all: it separates *the camera being held* from *the session manager existing*.
+Stopping wireplumber saves nothing beyond releasing the camera.
+
+**The mechanism**, and why it is nobody's bug in particular:
+
+* wireplumber holds `/dev/video0`, `/dev/media0` **and** `/dev/v4l-subdev17`
+  open at idle, because libcamera's pipeline handler keeps every device of a
+  camera open for as long as the `CameraManager` lives;
+* `ak7375_open()` takes a runtime-PM reference, so merely *opening* the subdev
+  powers the voice-coil motor — the upstream pattern for VCM drivers;
+* which keeps `cam_af_2p85` (2.85 V) and `cam_io_1p8` `enabled` with one user
+  each. `cam2_dig_1p2` is `disabled`, which is what makes the other two worth
+  noticing.
+
+Each is defensible alone; together they mean a phone with an autofocus motor
+pays for it whenever anything enumerates cameras. A fix belongs in libcamera
+(close subdevs when no camera is acquired) or in the actuator's autosuspend —
+not in this repository.
+
+☠️ **Two explanations were tested and failed**, so do not reach for them again:
+it is **not CPU** (wireplumber at 0 %, load average 0.06 in phase A) and **not
+the clocks** (`clk_summary` is *identical* between A and C).
+
+☠️ **Disabling those monitors is a measurement, not a fix.** It removes the
+camera from PipeWire, so no application can find it. The drop-in used here went
+into `~/.config/wireplumber/wireplumber.conf.d/`, never into the package's own
+files, and was removed afterwards.
+
+### Measured 2026-08-13: it is the lens actuator, and nothing else
+
+The hold was then split, to find out whether the cost is the actuator or the
+rest of the camera chain. Three more twelve-minute phases on one discharge, the
+nodes held open by a bare `sh -c 'exec 3</dev/…; sleep'` rather than by
+wireplumber, so exactly one thing changes between them
+(`2026-08-13_pmos_lens-vs-chain.txt`):
+
+| phase | what is held open | median current | median power |
+|---|---|---|---|
+| **P0** | nothing | 79.7 mA | 0.342 W |
+| **P1** | **`/dev/v4l-subdev17` alone** — the `ak7375` | **152.4 mA** | **0.643 W** |
+| **P2** | `media0`, `video0`, CSIPHY/CSID/ISPIF/VFE and the `imx363` — **everything except the actuator** | 76.4 mA | 0.323 W |
+
+**P2 is indistinguishable from P0, and P1 costs +0.30 W on its own.** The whole
+of the camera-hold cost is the lens actuator; the sensor, the CSI receiver and
+the VFE front end cost nothing at all while merely open. The phases carry their
+own state annotations and they agree: `ak7375=active` with `cam_af_2p85` and
+`cam_io_1p8` `enabled` in P1, `suspended`/`disabled` in both others.
+
+Compare in power rather than current between runs — these phases sit at a
+different state of charge from the ones above, and the same power draws less
+current at a higher terminal voltage.
+
+So the remaining question is no longer *which device*; it is why a VCM that is
+powered but commanded nowhere dissipates ~0.3 W.
+
+Where a fix goes is now specific. `ak7375_open()` takes a runtime-PM reference
+and `ak7375_close()` is the only thing that drops it, so the motor stays up for
+exactly as long as any file descriptor lives.
+
+☠️ **An autosuspend delay would not help**, which is the first trap here: the
+reference is *held*, not merely slow to expire, so the device never becomes idle
+for autosuspend to act on.
+
+☠️ **Nor can the reference simply move to the position write with a delay after
+it** — the second trap, and a physical one. A voice coil holds a position only
+while it is driven, so a timer that expires while a preview is focused would let
+the spring pull the lens back to rest and the picture out of focus.
+
+What works is to make the power follow the **requested position** rather than
+the file descriptor: take the reference on the first position away from rest,
+drop it when the lens is asked back to rest, where the spring holds it for
+nothing. Focus is never lost, because a non-zero position keeps the reference;
+the idle case costs nothing, because idle *is* the rest position.
+
+### Measured 2026-08-13: with that change, holding the subdev is free
+
+Same phases again, on a patched `ak7375` hot-swapped into the running kernel
+(`2026-08-13_pmos_ak7375-position-power.txt`):
+
+| phase | what is held open | median current | median power |
+|---|---|---|---|
+| Q0 | nothing | 82.4 mA | 0.327 W |
+| Q1 | the `ak7375` subdev | 85.2 mA | 0.338 W |
+| | **difference** | **+2.8 mA** | **+0.011 W** |
+
+Against **+72.7 mA / +0.30 W** for the same pair on the stock driver. The phase
+annotations agree: `ak7375` stays `suspended` and both rails `disabled` for the
+whole of Q1, with the subdev open. Q0 at 0.327 W also lands on the earlier P0 at
+0.342 W — two runs, different states of charge, same baseline, which is what
+makes the comparison worth anything.
+
+☠️ **Not yet validated end to end.** The autofocus regression — that a real
+capture still focuses and holds focus — could not be run in the same session:
+unbinding the subdev to swap the module left the media graph inconsistent
+(`Failed to find MediaObject with id 0`) and libcamera stopped enumerating the
+camera until a reboot. And `insmod` of a locally built module raised an
+`ftrace_bug` warning, so the final word has to come from a package build rather
+than a hot swap.
+
+## Reading the captures
 
 Each log is one line per sample with the same fields on both operating systems,
 so the two can be compared directly:
@@ -23,6 +185,9 @@ are kept on the pmOS side with `-` so the files line up. `chgr_status_reg` is
 the charger's own state machine, and code 5 is the one that says a charge
 finished.
 
+The loggers themselves (`powerlog-pmos.sh`, `powerlog-ut.sh`) are in the
+[FP3 skills](https://github.com/llg179org/Claude-skills-Fairphone3) repository.
+
 | file | what it holds |
 |---|---|
 | `2026-08-11_regs-pmos.txt`, `2026-08-11_regs-ut.txt` | the charger's CHGR, DCDC, BATIF, USB and MISC registers, 1280 of them, read on each OS with the same pack in the same state. 45 differed; `CHGR_CFG2` was the one that mattered |
@@ -30,137 +195,31 @@ finished.
 | `2026-08-12_ut_terminates.txt` | the vendor stack reaching `TERMINATE` within a minute of the current crossing the threshold |
 | `2026-08-12_pmos_iterm-fix-terminates.txt` | the same on pmOS, after `I_TERM_BIT` was left set — the single-change A/B |
 | `2026-08-12_pmos_idle-discharge.txt` | pmOS idle, matched against the UT night |
-| `2026-08-13_pmos_camera-hold-idle-cost.txt` | the three-phase A/B/C above: idle current with the camera held, with wireplumber stopped, and with wireplumber running but not claiming the camera |
 | `2026-08-12_pmos_day-to-r51-termination.txt` | a day on pmOS ending in the first termination reached by the **packaged** kernel rather than by hand-deployed pieces: `linux-fp3-7.1.3-r51`, taper at 87 mA, then `Full` with `chgr_status_reg` at `0x45`. The uptime column resets partway through, at the reboot onto that package |
+| `2026-08-13_pmos_camera-hold-idle-cost.txt` | the three-phase A/B/C above |
+| `2026-08-13_pmos_ak7375-position-power.txt` | the same pair once more, with the driver patched so power follows the requested position: holding the subdev now costs 2.8 mA |
+| `2026-08-13_pmos_lens-vs-chain.txt` | the follow-up three phases that split the hold: nothing held, the `ak7375` subdev alone, the rest of the chain without it |
+| `2026-08-13_pmos_r52-charge-to-termination.txt` | a charge from 87 % to termination on `linux-fp3-7.1.3-r52`, over an SDP port (`usb_imax_uA` 500000, so ~340 mA into the pack). The taper crosses the threshold at **99.3 mA** and the charger is `Full` at `0x45` within the minute |
 
-## What these say, and what they do not
+## Two biases these numbers carry
 
-**Percent is not comparable between the two.** They run different gauges. Over
-one matched 6.66 h idle window the vendor gauge reported 6 points against 571
-mAh integrated, and ours reported 36 points against 1319 mAh. Compare the
-integrated current and the terminal voltage; treat the percentage as a
-measurement *of the gauge*, not of the phone.
+Both apply identically on both sides, so the *difference* between two captures
+survives them; an absolute figure does not.
 
-**The logger biases its own numbers.** It wakes once a minute and reads the
-current while it is itself running, so the mean it produces is high. This is
-identical on both sides, so the difference between them survives; the absolute
-figure does not.
+* **The logger biases its own numbers.** It wakes once a minute and reads the
+  current while it is itself running, so the mean it produces is high.
+* **Idle means idle with the link up.** Every one of these ran with WiFi
+  associated and an SSH session open, because that is how the data got off the
+  phone.
 
-**Idle here means idle with the link up.** Every one of these ran with WiFi
-associated and an SSH session open, because that is how the data got off the
-phone. None of them is a measurement of a sleeping phone. pmOS in particular
-never suspended at all during these runs — `/sys/power/suspend_stats/success`
-stayed at 0, because `sleep-inactive-battery-type` is `nothing`, not because
-anything blocked it.
+## Before running a suspend experiment
 
-**The 198 mA against Ubuntu Touch's 86 mA is now accounted for**, and neither of
-the two obvious explanations was right. The first to go was suspend. That pmOS
-never suspends is measured — but so is the other side, as of 2026-08-12:
-**Ubuntu Touch does not suspend either.**
+Everything needed is present: `/sys/power/state` offers `freeze mem disk`,
+`mem_sleep` is `[s2idle]` (mainline qcom has no separate `deep`, which is
+normal), `rtcwake` and `/dev/rtc0` work, and cpuidle has `WFI` plus
+`cpu-power-collapse`.
 
-The counter alone could not say so, because `success` is since boot and the
-oracle slot had just been rebooted. What settles it is comparing the two clocks,
-which needs no counter and no root: `CLOCK_MONOTONIC` does not advance across a
-suspend, so an idle phone that sleeps shows less uptime than wall time. Sampled
-twice five minutes apart on UT, with the display off and nothing but the SSH
-link up:
-
-```
-1786567461 436
-1786567491 466      # 30 s of wall clock, 30 s of uptime — awake the whole way
-```
-
-Neither kernel offers `/sys/power/autosleep` at all. The vendor one has the
-Android wakelock interface (`/sys/power/wake_lock`, owned by `radio`) and would
-suspend on a userspace daemon's say-so; ours has neither the interface nor
-anything asking. So the 2.3x gap is **not** a sleeping phone against a waking
-one: it is two awake phones, one of which costs more to keep awake.
-
-What it *is* turned out to be one held-open device, worth about 100 mA — the
-measurement is below. It was found by carrying on with runtime PM, measured the
-same way on both sides, which is the same two-sided diff that found the charger
-bug:
-
-| | Ubuntu Touch | postmarketOS |
-|---|---|---|
-| devices with runtime PM `active` | 8 | **17** |
-| `suspended` | 65 | 46 |
-| `unsupported` (no runtime PM at all) | 719 | 293 |
-
-The totals are not comparable — the vendor kernel enumerates far more devices —
-but the `active` list is. Ours keeps two i2c buses and a USB PHY resumed that
-the vendor stack does not, and the named one is **`i2c 0-000c`, the `ak7375`
-lens actuator** — the camera's focus motor, left runtime-resumed with nothing
-using the camera. Its neighbour on the same bus, the `imx363` at `0-001a`, is
-correctly `suspended`, which is what makes the actuator worth a look rather
-than a general observation about the bus.
-
-☠️ Do not read that address as the speaker amplifier: the `aw8898` is at
-`4-0034`, on a different bus, and it has no runtime PM at all (`unsupported`),
-so it cannot appear in this comparison either way. `0-000c` on `i2c-0` is the
-CCI bus, and `media-ctl` names the entity outright (`ak7375 0-000c ... Lens`).
-
-### ★ Measured 2026-08-13: holding the camera open costs about 100 mA
-
-Three twelve-minute phases on the same discharge, cable out, display off, one
-change between each, 72 samples apiece
-(`2026-08-13_pmos_camera-hold-idle-cost.txt`):
-
-| phase | state | median battery current |
-|---|---|---|
-| **A** | as found — wireplumber running and holding the camera | **166.3 mA** |
-| **B** | wireplumber stopped outright | 80.3 mA |
-| **C** | wireplumber running, its `monitor.v4l2` and `monitor.libcamera` disabled | **67.6 mA** |
-
-**A → C is −98.7 mA, about 60 % of the idle draw**, and their interquartile
-ranges do not overlap (A's p25 is 137 mA, C's p75 is 106 mA). B and C are
-indistinguishable, which is the point of running C at all: it separates *the
-camera being held* from *the session manager existing*. Stopping wireplumber
-entirely saves nothing beyond releasing the camera.
-
-That also accounts for most of the gap this section opened with. Ubuntu Touch
-idled at 86 mA; pmOS with the camera released idles at 68 mA.
-
-☠️ **What it is not, measured rather than assumed.** Two explanations were
-tested and both failed:
-
-* **not CPU** — wireplumber sits at 0 % with a load average of 0.06 in phase A;
-* **not the clocks** — `clk_summary` is *identical* between phases A and C.
-  The only persistent difference in the whole system is two regulators,
-  `cam_af_2p85` and `cam_io_1p8`, and the `ak7375` runtime state.
-
-So ~100 mA is flowing somewhere on a 2.85 V rail feeding a **voice-coil motor**
-that is powered but not being asked to move. That is the remaining question, and
-it is a question about the part rather than about the software.
-
-☠️ **Disabling those monitors is a measurement, not a fix.** It removes the
-camera from PipeWire, so no application can find it. The drop-in used here was
-written into `~/.config/wireplumber/wireplumber.conf.d/`, never into the
-package's own files, and removed again afterwards — the device is back to
-normal, camera node present.
-
-Where a real fix would go: `ak7375_open()` takes a runtime-PM reference, so
-merely *opening* the subdev powers the motor, and libcamera's pipeline handler
-keeps every device of a camera open for as long as the `CameraManager` lives.
-Neither is obviously wrong on its own; together they mean a phone with a VCM
-pays for an autofocus motor it is not using, whenever anything enumerates
-cameras.
-
-### How the lead was followed
-
-Following the one address in the runtime-PM table the rest of the way turned it
-into a named mechanism before any of it was priced:
-
-* **wireplumber holds the camera open at idle** — it has `/dev/video0`,
-  `/dev/media0` *and* `/dev/v4l-subdev17` (the actuator) open with nothing
-  taking pictures, found by walking `/proc/*/fd`;
-* `ak7375` takes a runtime-PM reference when its subdev is opened
-  (`pm_runtime_resume_and_get` in `ak7375_open`), which is why the device reads
-  `active` rather than the `suspended` its probe asks for with
-  `pm_runtime_idle()`;
-* and that reference keeps its supplies up: `cam_af_2p85` (2.85 V) and
-  `cam_io_1p8` are both `enabled` with one user each on an idle phone.
-  `cam2_dig_1p2` is `disabled`, which is what makes the other two worth
-  noticing rather than a general statement about the camera.
-
-That experiment is the one measured above.
+☠️ **The first attempt must happen with someone holding the phone.** On ports it
+is the *resume* that fails, and a phone that does not come back needs a physical
+power-cycle. Run `rtcwake -m mem -s 60` once, in person, before enabling
+automatic sleep anywhere.
