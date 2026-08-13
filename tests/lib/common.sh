@@ -2,16 +2,23 @@
 # Host-side helpers shared by the fp3-selftest runner.
 #
 # Every device command goes through ssh_run/ssh_root here, so the connection
-# conventions (password auth only, sudo prompt discarded) live in exactly one
-# place. See tests/README.md for why each convention exists.
+# conventions (key first with the password as fallback, sudo prompt discarded)
+# live in exactly one place. See tests/README.md for why each convention exists.
 
 FP3_HOST="${FP3_HOST:-172.16.42.1}"
 FP3_USER="${FP3_USER:-fp3}"
 FP3_PW="${FP3_PW:-}"
 FP3_PIN="${FP3_PIN:-}"
 
-SSH_OPTS="-o PreferredAuthentications=password -o PubkeyAuthentication=no
-	-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+# Key authentication is tried first and the password is the fallback - which is
+# what sshpass does on its own, since it only ever answers a prompt it is given.
+#
+# ☠️ Forcing `PreferredAuthentications=password -o PubkeyAuthentication=no` here
+# made the whole suite unrunnable over WiFi: sshd on this device accepts a
+# password only on the USB subnet (`Match Address 172.16.0.0/16`), so the
+# hardening that keeps the WiFi link key-only also locked the tests out of it.
+# The only symptom was `device <ip> unreachable`, which reads like a link fault.
+SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 	-o LogLevel=ERROR -o ConnectTimeout=10"
 
 # Run a command on the device as the normal user.
