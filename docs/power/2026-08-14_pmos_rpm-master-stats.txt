@@ -1,0 +1,92 @@
+=== RPM master sleep statistics, 2026-08-14T18:56:07+02:00 ===
+kernel 7.1.3-postmarketos-qcom-msm8953 #54-fp3, DTB with rpm-master-stats,
+rpm_master_stats.ko loaded by hand; uptime and cable state below.
+
+uptime=98.66
+power=Charging/61%
+
+--- qcom_stats (SoC-wide) ---
+[vlow]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x11151715
+[vmin]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+
+--- qcom_rpm_master_stats (per master) ---
+APSS:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x1
+LPASS:
+	Last shutdown @ 495547152
+	Last bringup req @ 497253590
+	Last bringup ack @ 497260827
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 495551885
+	Last XO shutdown exit @ 497257547
+	XO total duration: 1705662
+	Last sleep transition duration: 5211
+	Last wake transition duration: 5395
+	XO shutdown count: 1
+	Wakeup reason: 0x0
+	Shutdown count: 1
+	Active cores bitmask: 0x1
+MPSS:
+	Last shutdown @ 2157945846
+	Last bringup req @ 2157724069
+	Last bringup ack @ 2157724181
+	Last wakeup idx: 2157723765
+	Last XO shutdown enter @ 2157957243
+	Last XO shutdown exit @ 2157709964
+	XO total duration: 1366813149
+	Last sleep transition duration: 16653
+	Last wake transition duration: 21584
+	XO shutdown count: 275
+	Wakeup reason: 0x0
+	Shutdown count: 284
+	Active cores bitmask: 0x0
+PRONTO:
+	Last shutdown @ 2151263320
+	Last bringup req @ 2152840296
+	Last bringup ack @ 2152840407
+	Last wakeup idx: 2152839858
+	Last XO shutdown enter @ 2151274475
+	Last XO shutdown exit @ 2152832848
+	XO total duration: 926014221
+	Last sleep transition duration: 12187
+	Last wake transition duration: 13024
+	XO shutdown count: 612
+	Wakeup reason: 0x1
+	Shutdown count: 612
+	Active cores bitmask: 0x1
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0

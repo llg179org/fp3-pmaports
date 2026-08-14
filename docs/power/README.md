@@ -99,6 +99,39 @@ aggregate would, and `vmin` reports `0x0` throughout. The field is meaningful on
 RPMh, not on this generation. The `Count` and `Accumulated Duration` fields are
 the ones that carry the finding.
 
+### And the per-master records name the one that never goes down
+
+The SoC-wide counters say the system stayed up; the RPM's per-master records say
+who kept it there. Read on the same evening
+([capture](2026-08-14_pmos_rpm-master-stats.txt)):
+
+| master | Shutdown count | XO shutdown count | Active cores |
+|---|---|---|---|
+| **APSS** — the application processor | **0** | **0** | **0x1** |
+| MPSS — the modem | 170 | 161 | 0x0 |
+| PRONTO — the WLAN subsystem | 284 | 284 | 0x1 |
+| LPASS — the audio DSP | 1 | 1 | 0x1 |
+| TZ | 0 | 0 | 0x0 |
+
+**The modem and the WLAN subsystem put themselves down hundreds of times. The
+application processor has never done it once**, and its active-cores bitmask
+still reads `0x1`. VDD_MIN needs every master down, so one master that never
+votes is sufficient on its own to explain every zero on this page — the SoC-wide
+counters, the unreachable 10.4 mA, and the fuel-gauge anchor that never fires.
+
+TZ reads zero too, which fits rather than complicates: on this SoC the APSS
+shutdown is signalled to the RPM through the secure side, and the cluster
+power-collapse that would trigger it records five entries and 0 ms of residency.
+
+So the question is now specific enough to work on: **what should send the APSS
+sleep vote on mainline msm8953, and why does nothing send it.** That is a
+platform gap, not a tuning problem, and no amount of removing userspace or
+lowering the floor addresses it.
+
+☠️ **The module was loaded by hand and `insmod` raised the known `ftrace_bug`
+warning**, as a locally built module does on this device. It does not affect
+reading debugfs, but the final word belongs to a package build.
+
 ### The instrument had to be added first, and it was missing for everyone
 
 `msm8953.dtsi` carried no RPM sleep-stats node, so `/sys/kernel/debug/qcom_stats`
@@ -327,6 +360,7 @@ The loggers themselves (`powerlog-pmos.sh`, `powerlog-ut.sh`) are in the
 | `2026-08-13_pmos_lens-vs-chain.txt` | the follow-up three phases that split the hold: nothing held, the `ak7375` subdev alone, the rest of the chain without it |
 | `2026-08-13_pmos_r52-charge-to-termination.txt` | a charge from 87 % to termination on `linux-fp3-7.1.3-r52`, over an SDP port (`usb_imax_uA` 500000, so ~340 mA into the pack). The taper crosses the threshold at **99.3 mA** and the charger is `Full` at `0x45` within the minute |
 | `2026-08-14_pmos_rpm-sleep-stats.txt` | four `rtcwake` suspends of 60, 120, 300 and 600 s with the RPM sleep-stats, cluster genpd residency and the QG S3 witnesses read either side of each. The finding is that every RPM-level counter stays at zero |
+| `2026-08-14_pmos_rpm-master-stats.txt` | the RPM per-master sleep records, read once the master-stats node and driver were in place. APSS has a shutdown count of zero; the modem and WLAN are in the hundreds |
 | `2026-08-14_pmos_resume-early-rest-anchor.txt` | a 300 s `rtcwake` suspend with the [parked](../charger/bringup/parked/README.md) `.resume_early` patch applied: the anchor fires and moves the reading 93.87 % → 91.00 % off a rested OCV. Kept because it is the evidence that the parked patch works, not that it ships |
 
 ## Two biases these numbers carry
