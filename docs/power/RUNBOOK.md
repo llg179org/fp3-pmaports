@@ -29,20 +29,34 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-Two, in this order:
+**In flight right now (2026-08-14, ~23:10):**
 
-* **Finish the current A/B that is running.** `/usr/local/bin/dischg.sh` logs
-  `current_now`/`voltage_now`/`charge_now` every 30 s to `/tmp/d-fix.txt` on the
-  fixed kernel. Repeat the identical run on `/boot/vmlinuz.base-mpm` (the same
-  tree minus the one-word fix) and compare. ☠️ With the battery at `Full` and
-  VBUS at 0 the gauge reports `current_now = 0`; the usable signal is the
-  `voltage_now` / `charge_now` slope, or a run started after it has fallen out of
-  `Full`.
-* **Why the RPM records nothing.** The AP side is now doing everything visible:
-  MPM genpd powers off 3582 times a minute, which is the mailbox write. Next
-  instruments: does the vMPM SRAM slice actually change (dump `0x1d4..0x21c` of
-  the RPM MSG RAM before/after), and does the oracle's own vMPM look different at
-  the same moment.
+* An idle-current A/B is running. `systemd-run --unit=dischg` runs
+  `/usr/local/bin/dischg.sh /tmp/d-fix.txt` (30 s samples of
+  `current_now`/`voltage_now`/`charge_now`), display off, `greetd` stopped.
+  ☠️ The battery is `Full` and VBUS reads 0, so `current_now` is a constant 0 —
+  **the usable signal is the `voltage_now` slope**, about 42 mV/h in the first
+  five minutes. Design: 25 min on the fixed kernel (`/boot/vmlinuz`), 25 min on
+  `/boot/vmlinuz.base-mpm` (identical tree minus the one-word fix), then 25 min
+  on the fixed one again — the third leg controls for post-charge voltage
+  relaxation, which decays with time and would otherwise be read as a difference
+  between the kernels.
+* `pmb build --arch aarch64 --force linux-fp3` is building r54, pinned to
+  `debug-int/7.1.3` `162f27abc328`, with `CONFIG_QCOM_MPM=y` now in
+  `config-fp3.aarch64`.
+
+**Then: why the RPM still records nothing.** The likely answer is already in
+view and needs confirming rather than searching for. On the oracle, APSS
+`xo_count` is 0 too — only `numshutdowns` moves — so what the RPM counts for the
+AP is the AP telling it, not an XO vote. Downstream that telling is
+`msm_rpm_enter_sleep()`, which flushes the RPM **sleep set** over SMD before the
+PSCI call; mainline's `qcom_smd_rpm` has no sleep-set/active-set split at all and
+sends everything to the active set. If that is right, mainline msm8953 can power
+collapse the AP as deeply as it likes and the RPM will never drop the SoC rails
+on its behalf, and the MPM mailbox — which is about programming the wakeup
+controller, not about sleep votes — cannot substitute for it. Check by reading
+`drivers/soc/qcom/smd-rpm.c` for a sleep-set path and the downstream
+`rpm-smd.c` for what it sends.
 
 ## Device and tree state
 
