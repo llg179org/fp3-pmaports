@@ -307,6 +307,82 @@ sides — the *difference* survives, the absolute figure does not:
 
 ---
 
+## Step 10 — the subtraction ran out, so the question changed
+
+Steps 1 to 9 all had the same shape: name a consumer, remove it, price the
+difference. That works while a consumer dominates. By 2026-08-14 it had stopped
+working — ten daemons came out one after another and the floor did not move once,
+and the CPU was already idle 99.7 % of the time. A subtraction that subtracts
+nothing is not a failed measurement; it is a signal that the thing being looked
+for is not in the set being subtracted from.
+
+☠️ **And that null result turned out to be doubly worthless**, for a reason that
+had nothing to do with the reasoning. Checked afterwards, the lens actuator was
+powered throughout — `focus_absolute` stood at 930, so a single 152 mA consumer
+sat under every one of those ten phases. Whatever each daemon was worth, it was
+being measured against a total that one unmeasured device dominated. **Record the
+state of the known large consumer in every sample, not once at the start**: this
+run had a per-phase annotation for the daemon under test and none for the
+actuator, which is exactly backwards.
+
+## Step 11 — asking a different question, with a counter instead of a meter
+
+The change that unstuck it was to stop asking *how many milliamps* and start
+asking *what state is the chip in*. Those need different instruments: the first
+needs a meter and a discharge, the second needs a counter and nothing else. The
+second can be read with the cable in, while the phone charges, at any hour,
+without a probe.
+
+The counters were already there. `cpuidle` said the CPUs power-collapse 95 % of
+the time. The genpd domains said both clusters sit in `cluster-gdhs` about 92 %
+of the time and reach `cluster-power-collapse` **five times in twelve hours**,
+against two million occasions the governor itself recorded as "could have gone
+deeper". So the CPUs were not the problem and had not been for some time; the
+level above them never went down.
+
+☠️ **The obvious suspect was wrong, and cheap to exclude.** `cluster-pc` has a
+700 µs exit latency, so a tighter latency constraint would forbid it exactly.
+`/dev/cpu_dma_latency` reads unconstrained — and `tuned` holds that file open
+without writing anything to it, which looks like a smoking gun in a process
+listing and is not one. Read the aggregate value, not the list of openers.
+
+## Step 12 — the instrument that was missing for everyone
+
+One level further up, the RPM's own record of whether the SoC reached `vlow` or
+`vmin` could not be read at all: `msm8953.dtsi` had no sleep-stats node, so
+`/sys/kernel/debug/qcom_stats` did not exist. `CONFIG_QCOM_STATS` was already
+enabled and the hardware was already there. **Only the description was missing,
+and it had been missing for every msm8953 board in mainline, not just ours.**
+
+Three sibling SoCs describe the same region, and the downstream msm8953 tree
+independently agrees on it. The confirmation that the address is right is not the
+absence of an error: it is that the driver names its records `vlow` and `vmin`
+rather than printing garbage, because those names are read out of the region
+itself.
+
+The answer arrived within a minute of the reboot and reframed everything before
+it: **zero, and still zero after four suspends of 60, 120, 300 and 600 s.** The
+phone stops its CPUs and leaves the SoC up. Every milliamp counted in steps 1 to
+9 was counted on a chip that never goes to sleep — which is why the PMIC's
+10.4 mA threshold reads like a threshold from another device, and why the fuel
+gauge's rest anchor could never fire.
+
+☠️ **`Client Votes` looks like the answer to "who is holding it" and is not.**
+It changes between consecutive reads of the same file. The field is an RPMh
+concept; on this generation only `Count` and `Accumulated Duration` mean
+anything. A field that moves when nothing moved is a field that is not measuring
+what its name says.
+
+## Step 13 — the lesson the earlier steps were teaching by omission
+
+Every step from 1 to 9 measured *a consumer*. None of them asked whether the
+platform was in the state where consumers matter. Both questions are legitimate
+and they are not interchangeable — but the second one is far cheaper, needs no
+probe and no discharge, and if it comes back "the chip is fully on", it explains
+an entire page of numbers at once.
+
+**Ask what state the machine is in before pricing what is running on it.**
+
 ## Every claim on this page that had to be retracted
 
 | the claim | what disproved it |
@@ -319,6 +395,9 @@ sides — the *difference* survives, the absolute figure does not:
 | "the resumed i2c device is the `aw8898` amplifier" | `media-ctl` names it: `ak7375 0-000c ... Lens`. The amplifier is on another bus with no runtime PM |
 | "the two camera regulators are the cost" | held as a candidate rather than a finding, and then confirmed the cheap way: splitting the hold put all of it on the actuator and none on the rest of the chain |
 | "the next step is to measure the 2.85 V rail" | it was not — the phases that priced the hold could also split it, with no probe and nothing built |
+
+| "the floor is 139-143 mA with the camera released" | the camera was **not** released - `focus_absolute` was 930 and the actuator was powered, so the daemon subtraction under it proves much less than it appeared to |
+| "the next step is the ak7375 runtime-PM reference" | already shipped: `fa5d294c`, which r53 pins, is that change. The driver holds the coil correctly for a commanded position; what is missing is anything that returns the lens to rest |
 
 ## What is still open here
 
