@@ -60,7 +60,19 @@ demonstrated 60 s sleep.
 
 ## What the remaining floor is not
 
-Measured 2026-08-14, with the camera already released. The floor is **139 to
+☠️ **The floor quoted below is not a camera-released floor, and the daemon
+subtraction under it proves less than it appears to.** It is the one measurement
+on this page with no capture file, and three that do have one disagree with it:
+67.6, 79.7 and 82.4 mA with the camera released, against 139–143 mA here. What
+reconciles them is that the lens actuator was almost certainly still powered —
+checked on 2026-08-14 evening, `wireplumber` held `/dev/video0`, `/dev/media0`
+**and** `/dev/v4l-subdev17`, the `ak7375` read `active`, and `focus_absolute`
+stood at 930. A single 152 mA consumer dominating the total is also the simplest
+explanation for why stopping ten daemons moved nothing. Read the two exclusions
+below as sound in method and unproven in this instance; the floor itself needs
+re-measuring with the actuator state recorded per sample.
+
+Measured 2026-08-14. The floor is **139 to
 143 mA**, and two whole categories of explanation are excluded:
 
 * **Not userspace.** Ten daemons were stopped cumulatively —
@@ -197,6 +209,26 @@ annotations agree: `ak7375` stays `suspended` and both rails `disabled` for the
 whole of Q1, with the subdev open. Q0 at 0.327 W also lands on the earlier P0 at
 0.342 W — two runs, different states of charge, same baseline, which is what
 makes the comparison worth anything.
+
+### The kernel half shipped, and the cost moved to userspace
+
+That change is **in the running kernel**: `fa5d294c`, which `linux-fp3-7.1.3-r53`
+pins, is the commit that makes power follow the requested position. So the
+`ak7375` is no longer powered by the mere fact of an open file descriptor.
+
+It is still powered, though, and now for a reason the driver is right about.
+Checked 2026-08-14 evening: `focus_absolute` stood at **930** — a commanded
+position away from rest — so the driver held the coil exactly as designed.
+**Nothing returns the lens to rest when the preview stops.** The remaining ~70 mA
+is therefore a userspace policy question — who parks the lens, and when — and it
+belongs with
+[`0101-simple-autofocus.patch`](../../userspace-camera/libcamera/0101-simple-autofocus.patch),
+not in the kernel.
+
+☠️ **What that means for the driver's design is the opposite of a complaint.**
+Position-following power is only worth anything if something eventually asks for
+the rest position. A fix that nobody drives back to zero is a fix that never
+fires.
 
 ☠️ **Not yet validated end to end.** The autofocus regression — that a real
 capture still focuses and holds focus — could not be run in the same session:
