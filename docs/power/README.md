@@ -644,3 +644,49 @@ zero rejected counts to show for it.
 RPM's APSS master record is still all zeros. Those are the next question, and
 they are now a question about the RPM handshake alone, with the AP side doing
 its part 47 times a second.
+
+## What is still missing: nobody tells the RPM the AP went to sleep
+
+*Same night, after the genpd fix. This section is **source-based inference plus a
+one-sided measurement**, not a two-sided one — the oracle half of the differential
+has not been captured yet.*
+
+Measured on the fixed kernel: the AP completes a system-level power collapse
+~47 times a second, and the RPM records nothing. `qcom_stats` `vlow` and `vmin`
+both read `Count: 0`, and the APSS record in
+`/sys/kernel/debug/qcom_rpm_master_stats/APSS` is all zeros.
+
+☠️ The first thing to rule out is the instrument, and it passes: `vlow` also
+prints `Client Votes: 0x13111517`, a non-zero value read out of the same SMEM
+structure. The reader is live and the structure is populated — the zero counts
+are a fact about the RPM, not about the driver.
+
+What the downstream kernel does at that moment, and mainline does not:
+
+* `msm8953-pm.dtsi` marks the system level `qcom,notify-rpm`, and
+  `lpm-levels.c` acts on that flag before the PSCI call.
+* The action is `rpm-smd.c`'s `msm_rpm_enter_sleep()`: mask the RPM's SMD receive
+  interrupt so it cannot wake the AP, then **flush the accumulated sleep-set
+  requests** to the RPM. `msm_rpm_exit_sleep()` drains the sleep acks and unmasks
+  on the way back up.
+* On the oracle those two numbers line up: `[system] system-pc` succeeds 8263
+  times and APSS `numshutdowns` reads `0x1ed1` = 7889. Whatever increments the
+  RPM's record is the system-pc entry, not an XO vote — APSS `xo_count` is `0`
+  on the oracle too.
+
+Mainline's `drivers/soc/qcom/smd-rpm.c` has **no suspend or resume hook of any
+kind** — no sleep-set flush, no notifier, no PM ops. It writes every request to
+the active set. The sleep-set constant exists (`QCOM_SMD_RPM_SLEEP_STATE`) and
+`clk-smd-rpm.c` is its only user.
+
+So the shape of the remaining gap is: the MPM work added the **wakeup** half of
+the handshake — telling the RPM which interrupts must bring the AP back. The
+**sleep** half, telling the RPM that the AP is down and that its sleep-set votes
+now apply, does not exist in mainline for any RPM-generation Qualcomm SoC. That
+is why the clusters and the system domain can collapse 47 times a second while
+the RPM never drops to vmin.
+
+☠️ Not yet verified, and it is the next thing to capture: the oracle's own
+`vlow`/`vmin` counts. Everything above says the RPM *should* be reaching them on
+the working system, and until that file is read it is an expectation, not a
+control.
