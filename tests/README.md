@@ -51,6 +51,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `05-modules` | required modules built; module tree matches the package; no hot-swap leftovers |
 | `10-health` | no panic/oops/BUG/remoteproc crash; rootfs has room; no new failed units |
 | `15-hwtest` | display, input devices, camera presence and vibrator against a recorded reference |
+| `19-ucm-ownership` | the installed UCM verbs are ours **and** a package of ours owns the paths — the distro ships its own files there, and a hand-copied override reverts on the next upgrade |
 | `20-audio` | codec enumerated on SLIMbus, playback and capture PCMs open |
 | `21/22-audio-*` | a tone on the speaker reaches the handset/headset mic (`--acoustic`) |
 | `25-sensor` | the SSC sensors enumerate and read: registry server running, all four IIO devices bound, proximity and ambient light readable, and `iio-sensor-proxy` sees both |

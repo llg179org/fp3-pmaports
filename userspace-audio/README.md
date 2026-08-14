@@ -16,9 +16,10 @@ microphone both work through pulseaudio, surviving a cold reboot.
 ## What's here
 
 ```
-ucm2/conf.d/Fairphone_3/Fairphone_3.conf   -> /usr/share/alsa/ucm2/conf.d/Fairphone_3/
-ucm2/Fairphone/fp3/HiFi.conf               -> /usr/share/alsa/ucm2/Fairphone/fp3/
-ucm2/Fairphone/fp3/VoiceCall.conf          -> /usr/share/alsa/ucm2/Fairphone/fp3/   (call routing; registered in the master conf)
+fp3-audio-ucm/APKBUILD                      (the three UCM files below, as a package - install this, do not copy them)
+fp3-audio-ucm/Fairphone_3.conf             -> /usr/share/alsa/ucm2/conf.d/Fairphone_3/
+fp3-audio-ucm/HiFi.conf                    -> /usr/share/alsa/ucm2/Fairphone/fp3/
+fp3-audio-ucm/VoiceCall.conf               -> /usr/share/alsa/ucm2/Fairphone/fp3/   (call routing; registered in the master conf)
 pulse/90-fp3-mic.pa                         -> /etc/pulse/default.pa.d/
 systemd/fp3-mic-select                      -> /usr/local/bin/
 systemd/fp3-mic-select.service             -> /etc/systemd/system/   (systemctl enable)
@@ -223,8 +224,21 @@ Traps that cost real debugging time:
 
 ## Installing
 
+☠️ **The UCM files are installed as a package, not copied.** Two of the three
+paths are also shipped by the distro's `soc-qcom-msm8953-ucm`, which copies the
+whole `ucm2` tree of the msm8953-mainline `alsa-ucm-conf` fork. A hand-copied
+override there survives only until that package is next upgraded, and the revert
+is silent: the stock HiFi verb routes no capture path, so the handset microphone
+stops existing, and the stock master config does not register the voice-call
+verb, so calls lose their routing. `fp3-audio-ucm` uses `replaces` to take
+ownership of the paths, which is what makes apk leave them alone — verified by
+reinstalling the stock package and watching our files stay put. The guard is
+`tests/checks/19-ucm-ownership-test.sh`, and it checks ownership as well as
+content, because content alone is a guarantee with an expiry date.
+
 ```sh
-sudo cp -r ucm2/* /usr/share/alsa/ucm2/
+# build with pmbootstrap, then on the device:
+sudo apk add --allow-untrusted ./fp3-audio-ucm-*.apk
 sudo install -m644 pulse/90-fp3-mic.pa          /etc/pulse/default.pa.d/
 sudo install -m755 systemd/fp3-mic-select       /usr/local/bin/
 sudo install -m644 systemd/fp3-mic-select.service /etc/systemd/system/

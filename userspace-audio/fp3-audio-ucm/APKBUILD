@@ -1,0 +1,63 @@
+# Maintainer: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+#
+# Fairphone 3 ALSA use-case configuration.
+#
+# This exists to own two files rather than to introduce them. The stock UCM tree
+# for this SoC arrives inside soc-qcom-msm8953-ucm, which copies the whole ucm2/
+# directory of the msm8953-mainline alsa-ucm-conf fork - including a Fairphone 3
+# master config and a HiFi verb that predate this port's codec work. Copying our
+# versions over them by hand works until the next upgrade of that package
+# silently puts the stock files back, at which point the handset microphone
+# stops existing and the voice-call verb stops being registered. That failure
+# surfaces days later and reads as a kernel regression; it has cost a session
+# once already (see docs/TODO.md).
+#
+# `replaces` is therefore the entire point: it transfers ownership of the two
+# conflicting paths to this package, so apk leaves them alone when the stock
+# package is upgraded or reinstalled.
+#
+# VoiceCall.conf has no counterpart upstream, so it is not a conflict - it is
+# packaged here only because it is meaningless without the master config that
+# registers it, and the two must not be able to drift apart.
+pkgname=fp3-audio-ucm
+pkgver=1
+pkgrel=0
+pkgdesc="Fairphone 3 ALSA UCM: handset mic capture routing and the voice-call verb"
+url="https://github.com/llg179org/fp3-pmaports"
+# Text files, so noarch would be defensible - but the tree this overrides is
+# built for aarch64 only, and a package that cannot be installed anywhere it
+# claims to fit is worse than a narrow one.
+arch="aarch64"
+license="BSD-3-Clause"
+options="!check !archcheck"
+
+# The verb includes /lib/card-init.conf and /lib/ctl-remap.conf from the stock
+# tree, so that tree has to be installed - this package is an override of it,
+# not a replacement for it.
+depends="soc-qcom-msm8953-ucm"
+
+# Ownership of the two paths the stock package also ships. The priority makes
+# the outcome explicit rather than dependent on install order.
+replaces="soc-qcom-msm8953-ucm"
+replaces_priority=100
+
+source="
+	Fairphone_3.conf
+	HiFi.conf
+	VoiceCall.conf
+"
+
+package() {
+	install -Dm644 "$srcdir"/Fairphone_3.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/conf.d/Fairphone_3/Fairphone_3.conf
+	install -Dm644 "$srcdir"/HiFi.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/Fairphone/fp3/HiFi.conf
+	install -Dm644 "$srcdir"/VoiceCall.conf \
+		"$pkgdir"/usr/share/alsa/ucm2/Fairphone/fp3/VoiceCall.conf
+}
+
+sha512sums="
+3b25c86022073bac3f6eaea92ab593072e50dacc4813b477fc4ecce6666db7364fb7faa8ebea27dda95b957fc823bbe7c16ef0b41a7e732d30f3cd3fe9e3c146  Fairphone_3.conf
+2741d39188d5ba2210eaa3424034250a059c4b961a384148c4c2f889594272fe8b20f96ac17845ea7aded443ce68b2c4fadae0c9ef9fa818152abe61558fb414  HiFi.conf
+ebbe536a527f90dd43a267beb142d681891d19ae31a6a033c71077cb5e6c29d5718b9428e88ce03ec4a9a5fffc57b85ea1eb970eda0d7b97bcb5e6216ec67d4b  VoiceCall.conf
+"
