@@ -794,3 +794,40 @@ Two details that sharpen the comparison rather than blur it:
 That leaves the statement in the previous section standing and now two-sided:
 the AP collapses at a comparable rate on both systems, and only downstream tells
 the RPM about it.
+
+### The GPIO wakeup map is deployed, and cannot be shown to work yet
+
+`pinctrl-msm8953` now carries the MPM map (transposed from downstream's
+`mpm_msm8953_gpio_chip_data[]`) and the TLMM has `wakeup-parent = <&mpm>`. Every
+wake-capable line on this board is in it: volume_up on GPIO 85, the hx83112b
+touchscreen on 65, NFC on 17, the SD card-detect on 133, `wcd9335_pin1_irq` on 73.
+
+Deployed from `debug-int/7.1.3` `6cbf488a28f0`, md5-verified on both `Image` and
+DTB against the build tree. `dmesg` shows only the one known, expected line —
+`failed to map pin 58 as GIC hwirq 136 is already mapped`, which is downstream
+mapping both `qusb2phy_dpse_hv` and `qusb2phy_dmse_hv` to the same GIC IRQ.
+
+Then the test, and the test says: **not yet.**
+
+```
+rtcwake -m mem -s 20    ->  suspend_stats success 1, fail 0
+qcom_mpm (irq 13)       ->  0 before, 0 after
+power-domain-system     ->  S2idle 1
+```
+
+The suspend works and the system domain does power off, but the wake did **not**
+arrive through the MPM — its interrupt never fired. That is the correct
+behaviour for s2idle: the GIC stays powered, so it delivers the wake itself and
+the always-on controller is never needed. The MPM only becomes the delivering
+controller once the SoC actually drops below that, which is exactly the state the
+RPM has to be told about.
+
+So the GPIO map is in place and inert, and it will stay inert until the sleep
+half of the RPM handshake exists. It is not dead code — it is the second half of
+a mechanism whose first half is still missing — but nothing here should be
+described as working.
+
+☠️ **`CONFIG_GENERIC_IRQ_DEBUGFS` is off in this config**, so
+`/sys/kernel/debug/irq/` does not exist and the obvious check — reading an IRQ's
+parent domain after arming its wake — is unavailable. The instrument that works
+is the MPM's own interrupt count in `/proc/interrupts`.
