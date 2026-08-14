@@ -1185,12 +1185,15 @@ so it was a no-op.
   light. What is left there is calibration rather than bring-up: the
   magnetometer has an unknown hard-iron offset and scale, and the mount matrix
   is inherited from msm8996. See [`sensors/README.md`](sensors/README.md).
-* **Camera streaming is not working end to end.** The sensor probes and its
-  link into CAMSS enables; what remains is on the CAMSS side, not in the
-  driver — see the `submit/<base>/camera` commit message. The one lead inside
-  the driver is that its two modes carry link frequencies that disagree with the
-  device tree's `link-frequencies`, and one of them is commented
-  `// NOT SURE HOW TO FIND THIS VALUE` by its author.
+* ~~**Camera streaming is not working end to end.**~~ **Stale — it streams.**
+  `VIDIOC_STREAMON` succeeds and frames arrive at the full
+  `SRGGB10_1X10/4032x3024`, 15 240 960 bytes each, which is exactly
+  4032 × 3024 × 10 / 8: packed 10-bit, no padding, no short frames. See
+  [`camera/README.md`](camera/README.md). The lead that remains from the original
+  entry is narrower than it was: the driver's two modes carry link frequencies
+  that disagree with the device tree's `link-frequencies`, and one is commented
+  `// NOT SURE HOW TO FIND THIS VALUE` by its author — worth resolving before the
+  series is sent, but it is not what blocks streaming, because nothing does.
 
 ## The package moved to `debug-int/7.1.3`
 
