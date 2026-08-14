@@ -732,3 +732,32 @@ section above: the AP-side collapse is real and the RPM never hears about it, so
 the SoC rails and the XO stay up. Deeper AP idle with the same rails up is
 expected to be a small effect. That is a reason to expect little here, not a
 reason to skip measuring it.
+
+### The matched re-run: still no difference, and now it is a real measurement
+
+Same protocol on both legs — reboot, `greetd` stopped, settle 600 s, then 50
+samples 30 s apart, written to `/home/fp3/` so a reboot could not eat them. The
+only difference between the two kernels is `bool` → `unsigned int`.
+
+| leg | samples | span | ΔV | slope | window |
+|---|---|---|---|---|---|
+| A2, fixed | 50 | 1474 s | 8.18 mV | **19.97 mV/h** | 4.3497 → 4.3416 V |
+| B2, control | 50 | 1473 s | 6.81 mV | **16.65 mV/h** | 4.3603 → 4.3534 V |
+
+**The result is negative, and it does not even point the flattering way**: the
+kernel that spends two thirds of its wall-clock in a system power collapse
+discharges marginally *faster* than the one that never enters the state at all.
+The 3.3 mV/h gap is not a finding — the two legs sit at slightly different
+voltages on a non-linear OCV curve, and the gauge quantises at ~780 µV — but it
+is comfortably enough to say that **the deepest AP idle states are not what
+determines this phone's idle current.**
+
+That is consistent with the section above rather than in tension with it. The AP
+collapsing costs the AP's own rail, which is a small share of an idle phone; the
+SoC rails, the XO and the memory stay up because the RPM is never told the AP has
+gone. Until the sleep half of that handshake exists, deeper AP idle buys close to
+nothing measurable.
+
+☠️ Worth saying plainly, because the counters are seductive: 14516 entries a
+minute and 47 system collapses a second look like a result. The milliamps are
+the result, and they did not move.
