@@ -259,6 +259,28 @@ excludes most of the window the hardware actually uses, so that number is a
 candidate cause rather than a neutral transcription — re-derive it from the
 histogram, not from the latency sum.
 
+
+### And with the display off, the governor says so itself
+
+60 s of idle with the compositor stopped, read off
+`pm_genpd/power-domain-cluster0/idle_states`:
+
+| state | min-residency | usages in 60 s | time accumulated |
+|---|---|---|---|
+| `cluster-gdhs` | 1800 us | **7628** | 55.8 s (mean **7.3 ms**) |
+| `cluster-pc` | 2500 us | **0** | 0 |
+
+A mean idle window of 7.3 ms clears `cluster-pc`'s 2500 us threshold with room
+to spare even after its 270+430 us latencies, and the state is still never
+chosen - `Rejected` is 0 as well, so it was not refused, it was never selected.
+The governor's own counters name the fault: **4741 of the 7628 entries (62 %)
+are "Below"**, meaning the domain stayed idle longer than the state it was put
+into was sized for. It is systematically choosing too shallow a state, which is
+exactly the shape the oracle comparison predicted.
+
+The next question is therefore why the CPU domain governor's estimate of the
+next wakeup is short, not why the RPM is silent.
+
 ## What the remaining floor is not
 
 ☠️ **The floor quoted below is not a camera-released floor, and the daemon
