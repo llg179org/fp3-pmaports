@@ -124,7 +124,11 @@ shutdown is signalled to the RPM through the secure side, and the cluster
 power-collapse that would trigger it records five entries and 0 ms of residency.
 
 So the question is now specific enough to work on: **what should send the APSS
-sleep vote on mainline msm8953, and why does nothing send it.** That is a
+sleep vote on mainline msm8953, and why does nothing send it.** One answer has
+already been tried and disproved — that mainline never requests the system-level
+PSCI state which downstream marks `qcom,notify-rpm`. Adding it works, is accepted
+by the firmware, and changes nothing:
+[the patch and the measurement](bringup/disproven/README.md). That is a
 platform gap, not a tuning problem, and no amount of removing userspace or
 lowering the floor addresses it.
 

@@ -1,0 +1,42 @@
+diff --git a/arch/arm64/boot/dts/qcom/msm8953.dtsi b/arch/arm64/boot/dts/qcom/msm8953.dtsi
+index 095f27bb7522..0b1ec2eb83a4 100644
+--- a/arch/arm64/boot/dts/qcom/msm8953.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8953.dtsi
+@@ -282,6 +282,18 @@ cluster_pc: cluster-power-collapse {
+ 			};
+ 		};
+ 
++		system-idle-states {
++			system_pc: system-power-collapse {
++				compatible = "domain-idle-state";
++				idle-state-name = "system-pc";
++				arm,psci-suspend-param = <0x41000353>;
++				entry-latency-us = <1495>;
++				exit-latency-us = <11027>;
++				min-residency-us = <13000>;
++				local-timer-stop;
++			};
++		};
++
+ 		l2_0: l2-cache-0 {
+ 			compatible = "cache";
+ 			cache-level = <2>;
+@@ -611,11 +623,18 @@ cpu_pd7: power-domain-cpu7 {
+ 		cluster0_pd: power-domain-cluster0 {
+ 			#power-domain-cells = <0>;
+ 			domain-idle-states = <&cluster_ret>, <&cluster_gdhs>, <&cluster_pc>;
++			power-domains = <&system_pd>;
+ 		};
+ 
+ 		cluster1_pd: power-domain-cluster1 {
+ 			#power-domain-cells = <0>;
+ 			domain-idle-states = <&cluster_ret>, <&cluster_gdhs>, <&cluster_pc>;
++			power-domains = <&system_pd>;
++		};
++
++		system_pd: power-domain-system {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&system_pc>;
+ 		};
+ 	};
+ 
