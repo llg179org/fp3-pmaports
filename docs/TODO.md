@@ -849,6 +849,67 @@ recovery two seconds later).
 
 </details>
 
+## `pd-mapper.service` is permanently failed, and the RTC cannot be set
+
+Two findings from one investigation, 2026-08-14. Neither is urgent; both are
+written down because each looks like something worse than it is.
+
+### `pd-mapper` — nothing to serve, and a restart policy that gives up
+
+`systemctl` reports it `failed (Result: start-limit-hit)`. Run by hand it says
+what it means:
+
+```
+# /usr/bin/pd-mapper
+no pd maps available
+```
+
+It reads the protection-domain map files the vendor firmware ships, and
+`find /lib/firmware -name '*.jsn'` returns **zero** on this device — the FP3
+firmware carries none. The package ships only the binary
+(`apk info -L pd-mapper` → `usr/bin/pd-mapper`), so there is nothing to supply
+them either. The unit then has `Restart=always` with no `RestartSec` or
+`StartLimit` tuning, so it burns the default five restarts in ten seconds and
+stops for good.
+
+**Nothing is broken by it.** All three remoteprocs are `running`, and the two
+subsystems that would care — audio over APR and the SSC sensors over QMI — work.
+On this SMD-era SoC nothing asks for a PD map. The honest fix is to **disable the
+unit rather than repair it**, and the reason to bother at all is that a
+permanently-failed unit is noise in `10-health`, which asserts no new failed
+units.
+
+### The RTC is read-only, which is why the failure looks a month old
+
+`systemctl` dates the failure to 2026-07-15 — four weeks before a boot that
+happened eleven hours earlier. The clock explains it:
+
+```
+# date                → Fri Aug 14 17:13:07 CEST 2026
+# uptime -s           → 2026-08-14 06:09:34        (agrees with /proc/uptime)
+# hwclock -r          → 1970-01-01 12:03:46
+# hwclock -w          → ioctl(RTC_SET_TIME) ... failed: No such device
+```
+
+The hardware clock never advances past the epoch, so early boot runs on a
+fictional date until NTP corrects it, and anything that fails before then is
+stamped with that fiction. `rtcwake` is unaffected — an alarm is relative to
+whatever the counter reads — which is why the suspend work never noticed.
+
+**Why it cannot be set**, from `drivers/rtc/rtc-pm8xxx.c`: mainline offers three
+ways to persist time and the FP3 device tree enables none of them. Without
+`allow-set-time` the driver takes the offset path (`:353`), and
+`pm8xxx_rtc_update_offset()` returns `-ENODEV` immediately when there is neither
+an `offset` nvmem cell nor `qcom,uefi-rtc-info` — which is exactly the error
+`hwclock` printed. Our `rtc@6000` node (`pm8953.dtsi:106`) has none of the three.
+
+☠️ **`allow-set-time` is the tempting one-line fix and the wrong first move.** On
+Qualcomm the RTC counter is commonly owned by the secure world, so a direct write
+can fail or be silently discarded; the offset-in-nvmem path exists precisely
+because of that. Establish first whether pm8953 exposes an SDAM cell for it —
+and check what the vendor kernel does on this board — before adding a property
+and declaring victory.
+
 ## The notification LED blinks forever after a missed call
 
 **Symptom:** after a missed call the LED keeps blinking; dismissing the
