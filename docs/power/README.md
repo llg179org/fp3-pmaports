@@ -34,10 +34,12 @@ against 571 mAh integrated, and ours reported 36 points against 1319 mAh.
 Compare integrated current and terminal voltage; treat the percentage as a
 measurement *of the gauge*.
 
-**pmOS does not suspend on its own**, and nothing blocks it — nothing asks
-(`sleep-inactive-battery-type` is `nothing`). Neither kernel offers
-`/sys/power/autosleep`. Asked explicitly, it suspends and resumes cleanly: see
-below.
+**pmOS does not suspend on its own here, because we asked it not to.** Automatic
+sleep works and was demonstrated on this base; it is switched back off because an
+incoming call cannot wake the phone, and a missed call costs more than 140 mA
+does. `sleep-inactive-battery-type` is `'nothing'`; neither kernel offers
+`/sys/power/autosleep`. The whole finding is in
+[Suspend works, and is switched off on purpose](#suspend-works-and-is-switched-off-on-purpose).
 
 ☠️ **The Ubuntu Touch side of that claim is withdrawn pending a re-measurement**,
 because the instrument it rested on cannot work. It compared wall clock against
@@ -55,6 +57,41 @@ demonstrated 60 s sleep.
 * `dmesg | grep 'PM: suspend'` — the `entry (s2idle)` / `exit` pair. Note the
   printk clock stops while suspended, so a 60 s sleep shows as a fraction of a
   second between the two lines. The pair is the evidence, not the gap.
+
+## What the remaining floor is not
+
+Measured 2026-08-14, with the camera already released. The floor is **139 to
+143 mA**, and two whole categories of explanation are excluded:
+
+* **Not userspace.** Ten daemons were stopped cumulatively —
+  `iio-sensor-proxy`, `snsregd`, `ModemManager`, `bluetooth`, `avahi-daemon`,
+  `cups`, `tuned-ppd`, `tuned`, `sleep-inhibitor`, `upower` — never restoring
+  between phases, 120 s per phase. The floor did not move for any of them, and
+  the means wandered non-monotonically and ended where they started. Consistent
+  with the CPU total: 6.6 s of userspace time over 285 s across 8 cores, **0.3 %
+  of the machine**.
+* **Not the power profile.** `tuned` and `tuned-ppd` are the daemons behind
+  Settings → Power Mode (`power-profiles-daemon` is not installed). Stopping both
+  left the floor at 140.2 and 139.3 mA. Structurally it could not have helped:
+  power saver caps CPU frequency, and the CPU is at 0.3 %.
+
+What is left is wakeups rather than load: **143 timer IRQ/s, 134 IPI/s, 118
+timer-broadcast/s, 33/s `smd-edge`**. That is where the next measurement should
+go — together with the `ak7375` lens actuator, which
+[on its own accounts for 152 mA](#measured-2026-08-13-it-is-the-lens-actuator-and-nothing-else)
+whenever the camera stack holds it.
+
+☠️ **A 60 s sampling interval invented a signal that is not there.** It showed a
+tidy ~2-minute cycle in the current draw. At 5 s the cycle vanishes: the floor is
+flat with irregular peaks, and the underlying periods are `systemd-oomd` ~5 s,
+`sleep-inhibitor` and `fp3-voiced` ~10 s, `ModemManager` ~20 s, `tuned` ~25 s and
+`upowerd` ~30 s — four different periods beating against the sampler. Sample
+several times faster than the fastest thing you are willing to believe in.
+
+☠️ **Stopping `upowerd` makes the UI report 0 %**, which looks exactly like a
+gauge that has fallen apart. It is not: phosh sources the percentage from UPower
+over D-Bus, while the kernel's own `fg:` log stays continuous and physical
+throughout. Check the kernel log before believing a number on the screen.
 
 ## Holding the camera open costs about 100 mA
 
@@ -200,6 +237,7 @@ The loggers themselves (`powerlog-pmos.sh`, `powerlog-ut.sh`) are in the
 | `2026-08-13_pmos_ak7375-position-power.txt` | the same pair once more, with the driver patched so power follows the requested position: holding the subdev now costs 2.8 mA |
 | `2026-08-13_pmos_lens-vs-chain.txt` | the follow-up three phases that split the hold: nothing held, the `ak7375` subdev alone, the rest of the chain without it |
 | `2026-08-13_pmos_r52-charge-to-termination.txt` | a charge from 87 % to termination on `linux-fp3-7.1.3-r52`, over an SDP port (`usb_imax_uA` 500000, so ~340 mA into the pack). The taper crosses the threshold at **99.3 mA** and the charger is `Full` at `0x45` within the minute |
+| `2026-08-14_pmos_resume-early-rest-anchor.txt` | a 300 s `rtcwake` suspend with the [parked](../charger/bringup/parked/README.md) `.resume_early` patch applied: the anchor fires and moves the reading 93.87 % → 91.00 % off a rested OCV. Kept because it is the evidence that the parked patch works, not that it ships |
 
 ## Two biases these numbers carry
 
@@ -212,14 +250,47 @@ survives them; an absolute figure does not.
   associated and an SSH session open, because that is how the data got off the
   phone.
 
-## Before running a suspend experiment
+## Suspend works, and is switched off on purpose
 
 Everything needed is present: `/sys/power/state` offers `freeze mem disk`,
 `mem_sleep` is `[s2idle]` (mainline qcom has no separate `deep`, which is
 normal), `rtcwake` and `/dev/rtc0` work, and cpuidle has `WFI` plus
 `cpu-power-collapse`.
 
-☠️ **The first attempt must happen with someone holding the phone.** On ports it
-is the *resume* that fails, and a phone that does not come back needs a physical
-power-cycle. Run `rtcwake -m mem -s 60` once, in person, before enabling
-automatic sleep anywhere.
+☠️ **A first attempt on a new base must happen with someone holding the phone.**
+On ports it is the *resume* that fails, and a phone that does not come back needs
+a physical power-cycle. Run `rtcwake -m mem -s 60` once, in person, before
+enabling automatic sleep anywhere.
+
+**Run and passed on 7.1.3, 2026-08-14.** Both a 60 s `rtcwake` and, with the
+phone in hand, real GNOME idle suspends of 116 s and 8 min: `PM: suspend entry
+(s2idle)` … `exit`, `suspend_stats/success` incrementing with `fail` at 0, wake
+on the power button, and WiFi re-associating unaided.
+
+Then it was turned back off. `sleep-inactive-battery-type` is `'nothing'`, which
+is **a decision, not a default that nobody looked at**:
+
+* **An incoming call does not wake the phone.** Measured: across an 8-minute
+  sleep the call arrived at the modem, the AP never woke, and on the button wake
+  the queued event replayed — the dialer showed busy and closed. Of 151 IRQs only
+  three are wake-armed (`wcn36xx_rx` and two thermal sensors). The modem's SMD
+  edge, `irq 140` = `GIC-0 57` = the device tree's `GIC_SPI 25`, reads
+  `wakeup=disabled`, and `drivers/rpmsg/qcom_smd.c` registers no wake IRQ at all,
+  so there is not even a knob for it. Enabling the one knob that does exist,
+  `smp2p-modem`, changed nothing — its counter did not move once across the whole
+  sleep, which is what proves the call does not travel that line. See
+  [`TODO.md`](../TODO.md).
+* **SSH does not wake it either**, despite `wcn36xx_rx` being wake-armed: the
+  connection times out with `No route to host` until the phone is woken by hand.
+  Convenient for measurement — the logger cannot be contaminated by the observer
+  — and a warning for anything that expects to reach the device while it sleeps.
+* **The gauge gains nothing from it.** After a real s2idle, `S3_GOOD_OCV` and
+  `LAST_S3_SLEEP_V` both still read `0x8000`. Suspending does not take this board
+  under the PMIC's 10.4 mA S3 threshold, so the plan of *fix sleep and the gauge
+  corrects itself* is measured dead. Twice, independently.
+
+☠️ **The kernel clock stops during s2idle, so `dmesg` timestamps cannot measure
+how long the phone slept.** An 8-minute sleep reads as 0.5 s between `suspend
+entry` and `suspend exit`. The instrument that works is a wall-clock logger
+writing to a file — run it under `systemd-run --unit=… --collect` so it survives
+both the suspend and the SSH drop.

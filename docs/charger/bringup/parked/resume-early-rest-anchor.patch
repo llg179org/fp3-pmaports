@@ -1,0 +1,120 @@
+diff --git a/drivers/power/supply/qcom_smbx.c b/drivers/power/supply/qcom_smbx.c
+index d180ccc5d479..1c7d04b0fe3d 100644
+--- a/drivers/power/supply/qcom_smbx.c
++++ b/drivers/power/supply/qcom_smbx.c
+@@ -504,6 +504,14 @@
+  * open-circuit voltage instead, which a rested battery reports accurately.
+  */
+ #define SMB_FG_STALE_MS					60000
++/*
++ * How long the system must have been suspended before the sample taken on the
++ * way out of it is treated as a rested one. A pack needs time to shed the
++ * overpotential left by the load it was carrying, and a suspend shorter than
++ * this has not given it that time.
++ */
++#define SMB_FG_REST_MS					60000
++
+ 
+ /*
+  * How far the persisted state of charge may sit from the gauge's own rested
+@@ -723,6 +731,10 @@ struct smb_variant {
+  * @fg_charging:	The charger is driving the pack right now, so its terminal
+  *			voltage is imposed rather than chosen and says nothing
+  *			the OCV table can answer
++ * @fg_good_ocv_uv:	Raw voltage of the last hardware rest capture taken, so
++ *			that a capture which has not moved is recognised as the
++ *			one already used rather than as a fresh reading
++ * @var:		Per-variant register offsets and capabilities
+  */
+ struct smb_chip {
+ 	struct device *dev;
+@@ -2997,6 +3009,81 @@ static int smb_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++/**
++ * smb_resume_early() - take the rest reading a suspend has just made possible
++ * @dev: the charger device
++ *
++ * Every correction this gauge has is conditioned on catching the pack at rest,
++ * and on a phone that is never quiet while it runs, none of them fire: the
++ * hardware captures S3_GOOD_OCV only below its S3 entry threshold, and the
++ * software anchor wants a sample under SMB_FG_OCV_QUIET_UA. A board idling an
++ * order of magnitude above both never satisfies either, and nothing corrects
++ * the integral at all.
++ *
++ * A resume is the exception, and the only one. This callback runs before
++ * userspace is unfrozen, so the wake burst has not started, and the pack has had
++ * the whole suspend to shed the overpotential its last load left. If the sample
++ * here is quiet, its voltage is a real open-circuit voltage.
++ *
++ * The suspend interval is deliberately not integrated. No sample measures it:
++ * what flowed while the machine was down is far below both the draw before it
++ * and the draw at wake. Anchoring on the voltage corrects the uncounted charge
++ * and the accumulated counting error together, without needing to know either.
++ */
++static int smb_resume_early(struct device *dev)
++{
++	struct smb_chip *chip = dev_get_drvdata(dev);
++	int v_uv, i_ua, ocv_uv, soc_ocv, was;
++	ktime_t now = ktime_get_boottime();
++	bool changed = false;
++	s64 rested_ms;
++
++	if (smb_qg_read_sample(chip, QG_LAST_ADC_V_DATA0, &v_uv, &i_ua) < 0)
++		return 0;
++
++	ocv_uv = smb_batt_ocv(chip, v_uv, i_ua);
++	soc_ocv = smb_ocv_to_permyriad(chip, ocv_uv);
++
++	scoped_guard(mutex, &chip->fg_lock) {
++		/*
++		 * Time since the last integration, which for a suspend is the
++		 * suspend itself: the poll before the machine went down set
++		 * this, and nothing has run since. That is what makes a
++		 * separate .suspend_late callback to record the moment
++		 * unnecessary.
++		 */
++		rested_ms = ktime_ms_delta(now, chip->fg_last);
++		chip->fg_last = now;
++		chip->fg_residue = 0;
++
++		dev_dbg(chip->dev, "fg: resumed after %lldms, vbat=%duV ibat=%duA\n",
++			rested_ms, v_uv, i_ua);
++
++		if (rested_ms < SMB_FG_REST_MS || chip->fg_charging ||
++		    abs(i_ua) > SMB_FG_OCV_QUIET_UA || soc_ocv < 0)
++			return 0;
++
++		was = chip->fg_ready ? chip->soc_permyriad : -1;
++		chip->soc_permyriad = soc_ocv;
++		chip->fg_ready = true;
++
++		dev_dbg(chip->dev, "fg: rest anchor after %llds, %d.%02d%% from ocv=%duV\n",
++			rested_ms / 1000, soc_ocv / 100, soc_ocv % 100, ocv_uv);
++
++		changed = DIV_ROUND_CLOSEST(soc_ocv, 100) !=
++			  DIV_ROUND_CLOSEST(was, 100);
++	}
++
++	if (changed)
++		power_supply_changed(chip->batt_psy);
++
++	return 0;
++}
++
++static const struct dev_pm_ops smb_pm_ops = {
++	LATE_SYSTEM_SLEEP_PM_OPS(NULL, smb_resume_early)
++};
++
+ static const struct of_device_id smb_match_id_table[] = {
+ 	{ .compatible = "qcom,pmi8998-charger", .data = &smb_variant_pmi8998 },
+ 	{ .compatible = "qcom,pm660-charger", .data = &smb_variant_pm660 },
+@@ -3010,6 +3097,7 @@ static struct platform_driver qcom_spmi_smb = {
+ 	.driver = {
+ 		.name = "qcom-smbx-charger",
+ 		.of_match_table = smb_match_id_table,
++		.pm = pm_sleep_ptr(&smb_pm_ops),
+ 		},
+ };
+ 

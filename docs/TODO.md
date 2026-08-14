@@ -12,6 +12,92 @@ context to pick up later. Each entry says what was measured, not what was
 guessed. Items that are already written up elsewhere are linked rather than
 repeated.
 
+## Where this stopped, 2026-08-14 — read this first after a long gap
+
+Three facts and one direction. Everything else on this page is detail under one
+of them.
+
+**The device is on `linux-fp3-7.1.3-r53` and nothing is half-applied.** The
+package pins `_commit=fa5d294c702d75aa447fe8ca90b65d49b1075c36`, that commit is
+the tip of `debug-int/7.1.3`, it is what the phone is running, and the kernel
+working tree is clean. Automatic sleep is off, the `smp2p-modem` wake experiment
+is reverted, and no transient units are left on the device.
+
+**The one thing worth working on is idle current.** The floor is **139–143 mA**
+against Ubuntu Touch's 86 mA on the same hardware, and it is the gate on
+everything downstream: the fuel gauge cannot self-correct until the board can
+enter the PMIC's S3 state, which wants **10.4 mA**. Measured and excluded: it is
+[not userspace and not the power profile](power/README.md#what-the-remaining-floor-is-not).
+What remains is wakeups — 143 timer IRQ/s, 134 IPI/s, 33/s `smd-edge` — and the
+`ak7375` lens actuator, which
+[accounts for 152 mA on its own](power/README.md#measured-2026-08-13-it-is-the-lens-actuator-and-nothing-else)
+whenever the camera stack holds it open. **That last one is the cheapest next
+step: a known, localised bug worth roughly half the floor.**
+
+**Two lines of work were deliberately stopped, not abandoned.** Both are written
+up so they need no re-investigation:
+
+* the fuel gauge's `.resume_early` rest anchor — written, measured working,
+  [parked as a patch](charger/bringup/parked/README.md) because it is a
+  workaround for an unreachable precondition, and the `S3_GOOD_OCV` path it
+  substitutes for is already in the driver and merely starved;
+* automatic sleep — demonstrated working, then switched back off because an
+  incoming call cannot wake the phone. See the next section.
+
+☠️ **Do not restart either by building a kernel.** Neither is blocked on code
+that has not been written; both are blocked on the same 140 mA.
+
+## An incoming call cannot wake the phone from s2idle
+
+Measured 2026-08-14, and the reason automatic sleep is off. Across an 8 min 3 s
+sleep (wall-clock log gap, `suspend_stats/success` 3→4) a call reached the modem,
+the AP never woke, and on the button wake the queued event replayed — the dialer
+showed busy and closed.
+
+Of 151 IRQs, **three** are wake-armed: `wcn36xx_rx` and two thermal sensors.
+Nothing modem-related is:
+
+```
+140:  2379  GIC-0  57  Edge  smd-edge   →  wakeup=disabled     (DT: GIC_SPI 25, the modem edge)
+ 15:     3  GIC-0  59  Edge  smp2p-modem →  wakeup=disabled
+```
+
+`drivers/rpmsg/qcom_smd.c:1421` requests the edge IRQ with plain
+`IRQF_TRIGGER_RISING` and registers no wake IRQ at all, so there is not even a
+userspace knob. During s2idle `suspend_device_irqs()` masks it, the call
+interrupt waits, and it is replayed at resume.
+
+**The one knob that does exist was tried and is measured useless.** `smp2p.c:731`
+does `device_set_wakeup_capable()` + `dev_pm_set_wake_irq()`, disabled by default,
+with a comment citing *"to not miss phone calls"*. Enabling
+`/sys/devices/platform/smp2p-modem/power/wakeup` changed nothing: the `smp2p`
+counter did not move once across the whole sleep, which is what proves the call
+does not travel that line. It travels the SMD data edge.
+
+**The fix, when it is worth building:** mirror smp2p in `qcom_smd_parse_edge()`,
+after `edge->irq = irq`. `device_register()` happens first (`:1500` before
+`:1507`), so the sysfs attribute lands correctly, and it is off by default like
+its precedent:
+
+```c
+device_set_wakeup_capable(dev, true);
+ret = dev_pm_set_wake_irq(dev, irq);
+```
+
+`CONFIG_RPMSG_QCOM_SMD=y`, so this needs a full build and flash — no module
+hot-swap. A second layer is untested: even once the AP wakes, something must hold
+an inhibitor while ringing or the system re-suspends immediately.
+
+**Open question, not decided:** this belongs to no branch category. It is not
+FP3-specific — `qcom_smd.c` is upstream and every SMD-era Qualcomm SoC is
+affected, which with the smp2p precedent makes it unusually defensible on the
+LKML. Functionally it is the call path, so `voice` is the closest fit.
+
+☠️ **SSH does not wake the phone either**, despite `wcn36xx_rx` being wake-armed
+— it times out with `No route to host`. Useful, because a logger left running
+under `systemd-run --collect` cannot be contaminated by the observer polling it;
+and a warning for anything that assumes the device is reachable while asleep.
+
 ## Open before anything is submitted
 
 A red-team pass over the five `submit/7.1.3/*` branches on 2026-07-30 produced
@@ -654,7 +740,69 @@ several. Whatever is skipped has to be skipped when the reference is exported
 too — which is what was done above, and it is a decision about what the
 baseline means rather than an edit to the check.
 
-## The handset microphone is dead on a fresh boot, and logging in does not fix it
+## ~~The handset microphone is dead on a fresh boot~~ — solved 2026-08-14: a package upgrade overwrote our UCM verb
+
+**Cause, measured:** `/usr/share/alsa/ucm2/Fairphone/fp3/HiFi.conf` on the
+device was **not ours**. It was the 423-byte stock file shipped by
+`soc-qcom-msm8953-ucm-20-r0`, carrying a single `Speaker` device — where ours is
+4057 bytes with Speaker, Earpiece and Headphones. The whole `ucm2/` tree was
+rewritten `Aug 6 22:37`, when a package install last resolved `world`. Nothing
+outside the tree was touched: `90-fp3-mic.pa`, `fp3-mic-select`, `fp3-voiced`,
+the vibra rule and both services were all still in place, because they live in
+`/etc` and `/usr/local` and are not package-owned.
+
+That one file explains every symptom at once, and both mechanisms are already
+written down in `userspace-audio/README.md`:
+
+* our verb pre-routes MultiMedia1 to a backend, because a q6asm front end
+  returns `EINVAL` on open until it is routed. The stock verb does not, so
+  PulseAudio's profile probe failed, it found no working profile, and the card
+  sat at `Active Profile: off` behind an `auto_null` sink — which is also why
+  no `module-alsa-source` ever appeared.
+* our verb pre-routes `DMIC0 → DEC0 → SLIMBUS_0_TX`, which is what makes
+  `hw:0,1` openable. The stock verb does not, hence `Invalid argument`.
+
+**Fix applied:** copied `userspace-audio/ucm2/Fairphone/fp3/HiFi.conf` back into
+place and restarted the sound server with `pulseaudio -k`. Verified immediately
+after: `Active Profile: HiFi (Speaker)`, the real sink back, `fp3-handset-mic`
+present, and both checks green — `20-audio` (`capture PCM hw:0,1 opens`) and
+`35-pulse`. No reboot, no kernel change.
+
+☠️ **It was never a kernel regression, and the planned fallback-kernel A/B would
+have proved nothing** — both kernels would have failed identically, since the
+fault was a userspace file neither of them ships. The reboot was queued because
+"whether this is a regression is not known"; what actually answered it was
+looking at the file the failing layer reads. **Read the config the failing
+component actually loaded before bisecting the thing underneath it.**
+
+☠️ **Two files were reverted, not one — and the second was still broken after
+the microphone came back.** The master config
+`ucm2/conf.d/Fairphone_3/Fairphone_3.conf` was stock too (274 bytes against our
+280), and the stock one does not register the `Voice Call` verb at all. So the
+voice-call routing had no verb to apply, silently, and the passing microphone
+checks said nothing about it. Found only by inventorying every file the package
+ships against the repo, rather than by stopping at the one that explained the
+reported symptom.
+
+**Durability, done the same day:** the hand-copy is replaced by a package,
+`userspace-audio/fp3-audio-ucm/`, which owns all three paths through
+`replaces="soc-qcom-msm8953-ucm"`. Verified rather than assumed — reinstalling
+the stock package left our files untouched and still owned by ours:
+
+```
+before:  4057  280
+(1/1) Reinstalling soc-qcom-msm8953-ucm (20-r0)
+after:   4057  HiFi.conf         owner=fp3-audio-ucm-1-r0
+          280  Fairphone_3.conf  owner=fp3-audio-ucm-1-r0
+```
+
+`alsaucm` now lists both verbs (`HiFi`, `Voice Call`), and `20-audio`,
+`35-pulse` and the new `19-ucm-ownership` all pass. That last check asserts
+**identity and ownership separately**, since either can hold while audio is
+broken: the right content with no owner is correct only until the next upgrade.
+
+<details>
+<summary>The original report and the three dead ends it recorded (2026-08-13)</summary>
 
 Measured 2026-08-13 on `linux-fp3-7.1.3-r53`, in a full `fp3-selftest` run:
 
@@ -698,6 +846,8 @@ touches audio — its only kernel change is `ak7375` — so a fault on both side
 would point at userspace or at the boot-time SLIMbus race visible in the same
 log (`wcd9335-slim: Failed to get logical address`, `SLIM TX timed out`, then a
 recovery two seconds later).
+
+</details>
 
 ## The notification LED blinks forever after a missed call
 

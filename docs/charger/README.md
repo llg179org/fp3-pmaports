@@ -298,12 +298,14 @@ before acting as the vendor driver does, and programs the threshold from
 ## The fuel gauge
 
 `qcom_smbx` carries the QG base per PMIC variant (`smb_variant.qg_base`), polls
-the voltage/current pair every ten seconds and integrates it. The OCV table is
-still the reference, but only as a correction weighted by how quiet the current
-is: strongly below 50 mA, weakly below 150 mA, not at all above. A poll more
-than a minute late means the machine was suspended — a rested battery, the one
-state where the table needs no correction — so those re-anchor outright rather
-than integrating a current nobody drew.
+the voltage/current pair every ten seconds and integrates it. Between fixed
+points the capacity is counted, not read off the live voltage: a voltage taken
+under load is not an open-circuit voltage, and on the flat middle of this
+discharge curve — eighteen table points inside forty millivolts — the tens of
+millivolts the series-resistance correction cannot recover become a large,
+one-directional error. So the live sample steers nothing, and correction comes
+only from readings the hardware took at rest: the gauge's own `S3_GOOD_OCV` and
+the charger's completion.
 
 The seed comes from the open-circuit voltage the PMIC measured at power-on with
 nothing drawing, rather than a live sample taken while the machine is busy
@@ -313,6 +315,50 @@ measured 120 mΩ and the profile's 166 mΩ is worth a few millivolts.
 
 Load sensitivity, measured: **229 mV of sag moves the reported capacity by zero
 points.**
+
+### None of those rest paths is reachable on this board
+
+Every correction listed above depends on catching the pack at rest, and measured
+here **not one of them is**. Read the QG block to check, at 0x4800 in
+`/sys/kernel/debug/regmap/0-02/registers` (nine bytes per line, so
+`dd bs=9 skip=$((0xNNNN)) count=N`):
+
+| register | read | means |
+|---|---|---|
+| `0x485E` | `0x11` | S3 entry threshold = 17 × 610 µA = **10.4 mA** |
+| `0x485F` | `0x21` | S3 exit = 20.1 mA |
+| `0x485D` | `0x02` | qualifying FIFO length 3 |
+| `0x4874/75` | `0x8000` | `S3_GOOD_OCV` = `QG_ADC_INVALID` — **never captured since boot** |
+| `0x48CC/CD` | `0x8000` | `LAST_S3_SLEEP_V` — never latched either |
+| `0x480A` | `0x00` | STATUS3: not in S3 |
+| `0x4870/71` | `0x4593` | PON OCV = 3.467 V — valid, this is the boot seed |
+
+Read `LAST_S3_SLEEP_V` as well as `S3_GOOD_OCV`: it latches even when the
+good-OCV qualification fails, so it is a second and independent witness to
+whether the PMIC ever entered S3.
+
+Against that 10.4 mA hardware threshold — and the driver's own 50 mA software one
+— this board idles at **68 to 166 mA** and bursts to 546 mA on wake. Both
+corrections are gated on a quiet current the phone never reaches.
+
+The suspend path fails one way only, which is worth knowing when reading a
+reported capacity. Across a suspend nothing is counted: the interval falls into
+the stale-poll branch, which zeroes the residue and leaves the count untouched
+unless the wake sample is quiet, which it never is. The pack does draw while
+suspended and cannot charge without a cable, so the uncounted charge is always
+discharge — every suspend leaves the figure slightly above the truth, and nothing
+pulls it back. On this device the error stays latent, because
+[automatic sleep is deliberately switched off](../power/README.md#suspend-works-and-is-switched-off-on-purpose)
+— not because the phone cannot suspend, which it demonstrably can.
+
+A patch closing that suspend gap exists, works and is **not** on any branch:
+[`bringup/parked/`](bringup/parked/README.md) says what it does and why shipping
+it would be solving the wrong problem. The short version is that the
+`S3_GOOD_OCV` path above is not missing code, only a quiet board — so the fix
+worth making is to the idle current, not to the gauge.
+
+How this was found, including the hypothesis it disproved, is in
+[`bringup/README.md`](bringup/README.md#step-13--the-gauge-had-no-rest-reference-at-all).
 
 ## Thermal mitigation
 

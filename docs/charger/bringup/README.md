@@ -442,6 +442,73 @@ away the thing that had been doing the work.
 
 ---
 
+## Step 13 — the gauge had no rest reference at all
+
+The symptom was not subtle: the gauge reported 48% on a pack sitting at 3.53 V,
+and the phone died shortly afterwards. Counting charge cannot correct itself, so
+the only question was which of the corrections was failing.
+
+The obvious hypothesis was that our SMB2-derived init never programs the QG S3
+registers — the sleep state in which the PMIC captures a rested open-circuit
+voltage. That is the kind of hypothesis which is cheap to act on and expensive to
+be wrong about, so it went to the vendor device tree first. The vendor does not
+set `qcom,s3-entry-ibat-ua` either. Both sides leave the hardware at its
+defaults, and the hypothesis was dead before a line of code was written for it.
+
+What those defaults are turned out to be the whole answer. `0x485E` reads `0x11`,
+which at 610 µA per count is a **10.4 mA** entry threshold. This board idles at
+68 to 166 mA and bursts to 546 mA on wake. The driver's own software gate, 50 mA,
+is equally out of reach. Every correction the gauge has was waiting for a quiet
+this phone does not produce.
+
+Two registers then said the same thing independently, which is what made it safe
+to stop looking. `S3_GOOD_OCV` at `0x4874/75` read `0x8000`, the invalid-ADC
+marker — no rested capture since boot. On its own that is ambiguous, because the
+register only latches when a capture *qualifies*, so it could have meant a
+qualification problem rather than a sleep problem. `LAST_S3_SLEEP_V` at
+`0x48CC/CD` latches whether or not the capture qualifies, and it read `0x8000`
+too. The PMIC had not entered S3 once. `STATUS3` agreed.
+
+The seed, by contrast, was fine: `0x4870/71` held 3.467 V, a valid power-on OCV
+measured before anything was drawing. So the gauge starts from a true number and
+then has nothing to correct it with, ever — which is exactly the failure shape a
+48% reading on a nearly empty pack has.
+
+There is a second, quieter error in the same place, found by reading the
+integrate path rather than by measuring. Across a suspend the driver counts
+nothing: the interval lands in the stale-poll branch, which zeroes the residue
+and leaves the count alone unless the wake sample is quiet — the same unreachable
+gate. The pack draws while suspended and cannot charge without a cable, so what
+goes uncounted is always discharge. Every suspend leaves the reported figure a
+little high, and nothing pulls it back. On this device that stays latent, because
+automatic sleep is switched off on purpose; it is written down because the fix
+for the first error should not be built in a way that leaves the second one
+standing.
+
+### Step 13b — the fix for it was written, measured, and then parked
+
+A `.resume_early` callback closes exactly that second error: it re-anchors on the
+sample taken on the way out of a suspend, before userspace is unfrozen. It was
+written, it builds `W=1`-silent, and it was measured moving a live reading from
+93.87 % to 91.00 % off a genuine rested OCV.
+
+It is on no branch. Two measurements taken the same day, 2026-08-14, argued it
+into [`parked/`](parked/README.md) instead:
+
+* the hardware path it substitutes for — `S3_GOOD_OCV` — is **already
+  implemented in the driver** and starved rather than missing; and
+* it samples at *wake*, and a user wake is never quiet. On a power-button resume
+  the sample read **150 mA** against its own 50 mA gate, so the anchor declined
+  to fire. `S3_GOOD_OCV` is captured *during* sleep and has no such problem.
+
+The lesson is worth more than the patch. **A workaround for an unreachable
+precondition is worth less than making the precondition reachable** — and it
+costs more, because now two mechanisms correct the same integral on different
+schedules. What the gauge needs is not code; it is an idle current low enough for
+the code that already exists.
+
+---
+
 ## Every claim on this page that had to be retracted
 
 Collected because the pattern matters more than any one of them: each was
@@ -457,6 +524,7 @@ hardware.
 | "the board does not populate a connector thermistor" | the vendor stack reads it in range on the same phone, with four BATIF registers configured differently |
 | "no coulomb counter exists for this PMIC in mainline" | true of the *driver*, false of the hardware — QG was already running at `0x4800` |
 | "the termination threshold is not programmed" | it was: `0xFD65` = −101.8 mA, with the ADC source already selected. What was wrong was *whose* number it was |
+| "our init never programs the QG sleep registers" | the vendor device tree does not set `qcom,s3-entry-ibat-ua` either — both sides run the hardware defaults, and the defaults were the problem |
 
 ## What is still open here
 

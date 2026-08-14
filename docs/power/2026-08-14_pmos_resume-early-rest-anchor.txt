@@ -1,0 +1,24 @@
+== pre-suspend Fri Aug 14 11:20:17 CEST 2026
+capacity=94
+status=Discharging
+voltage_now=4241530
+current_now=-198974
+dyndbg-on rc=0
+success_before=0
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Thu Jan  1 05:15:57 1970
+rtcwake rc=0 at Fri Aug 14 11:25:19 CEST 2026
+success_after=1
+== kernel log
+[18642.894521] PM: suspend entry (s2idle)
+[18643.235535] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: fg: 93.87% vbat=4247563uV ibat=-97656uA ocv=4259281uV(soc 9000)
+[18643.253067] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: fg: resumed after 300738ms, vbat=4270530uV ibat=-43487uA
+[18643.253116] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: fg: rest anchor after 300s, 91.00% from ocv=4275748uV
+[18643.479451] PM: suspend exit
+[18646.150798] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: fg: 91.00% vbat=4208636uV ibat=-294037uA ocv=4243920uV(soc 8800)
+== post-resume
+capacity=91
+status=Discharging
+voltage_now=4228683
+current_now=-210266
+== DONE
