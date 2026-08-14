@@ -1,0 +1,138 @@
+ssh: connect to host 10.42.0.1 port 22: Connection timed out
+201.24 1399.97
+=== MASTER ===
+APSS
+	shutdown_req:0xF6690657
+	wakeup_ind:0xF6666348
+	bringup_req:0xF66A9CD7
+	bringup_ack:0xF66AD9D6
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x3399
+	last_wake_transition_duration:0x3354
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x1ed1
+	active_cores:0x1
+		core0
+MPSS
+	shutdown_req:0xF68EA3AD
+	wakeup_ind:0xF68A06E2
+	bringup_req:0xF68A0AC9
+	bringup_ack:0xF68A0B39
+	xo_last_entered_at:0xF68ED12F
+	xo_last_exited_at:0xF689CE7E
+	xo_accumulated_duration:0xAE0147EB
+	last_sleep_transition_duration:0x436e
+	last_wake_transition_duration:0x4ca6
+	xo_count:0x292
+	wakeup_reason:0x0
+	numshutdowns:0x2b7
+	active_cores:0x0
+PRONTO
+	shutdown_req:0xF61E05DA
+	wakeup_ind:0xF63A2786
+	bringup_req:0xF63A294F
+	bringup_ack:0xF63A29BE
+	xo_last_entered_at:0xF61E24B0
+	xo_last_exited_at:0xF63A0E97
+	xo_accumulated_duration:0x8A5DBEE7
+	last_sleep_transition_duration:0x248c
+	last_wake_transition_duration:0x2939
+	xo_count:0x523
+	wakeup_reason:0x1
+	numshutdowns:0x523
+	active_cores:0x1
+		core0
+TZ
+	shutdown_req:0x0
+	wakeup_ind:0x0
+	bringup_req:0x0
+	bringup_ack:0x0
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x0
+	last_wake_transition_duration:0x0
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x0
+	active_cores:0x0
+LPASS
+	shutdown_req:0xF6A2A068
+	wakeup_ind:0xF65DB3ED
+	bringup_req:0xF6BF75DB
+	bringup_ack:0xF6A2377F
+	xo_last_entered_at:0xF6A2BBDC
+	xo_last_exited_at:0xF6BF835A
+	xo_accumulated_duration:0x9AB8C38B
+	last_sleep_transition_duration:0x1dde
+	last_wake_transition_duration:0x1e6f
+	xo_count:0x71c
+	wakeup_reason:0x0
+	numshutdowns:0x756
+	active_cores:0x1
+		core0
+=== LPM ===
+[system] system-active:
+  success count:       0
+  total success time: 0.000000000
+	<     0.000062500:       0 (0-0)
+	<     0.000250000:       0 (0-0)
+	<     0.001000000:       0 (0-0)
+	<     0.004000000:       0 (0-0)
+	<     0.016000000:       0 (0-0)
+	<     0.064000000:       0 (0-0)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[system] system-wfi:
+  success count:    1884
+  total success time: 6.528420168
+  failed count:     267
+	<     0.000062500:       3 (22606-62086)
+	<     0.000250000:     115 (63956-249219)
+	<     0.001000000:     449 (250318-989948)
+	<     0.004000000:     339 (1001661-3940573)
+	<     0.016000000:     978 (4006406-7571206)
+	<     0.064000000:       0 (0-0)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[system] system-pc:
+  success count:    8263
+  total success time: 93.798156984
+  failed count:     506
+	<     0.000062500:       2 (47036-62046)
+	<     0.000250000:     118 (62759-249995)
+	<     0.001000000:     254 (252454-725479)
+	<     0.004000000:     513 (1410365-3997499)
+	<     0.016000000:    7084 (4004694-15998132)
+	<     0.064000000:     292 (16001224-18981123)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[perf] perf-l2-wfi:
+  success count:       0
+  total success time: 0.000000000
+	<     0.000062500:       0 (0-0)
+	<     0.000250000:       0 (0-0)
+	<     0.001000000:       0 (0-0)
+	<     0.004000000:       0 (0-0)
+	<     0.016000000:       0 (0-0)
+	<     0.064000000:       0 (0-0)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[perf] perf-l2-retention:
+  success count:     304
+  total success time: 0.296578406
+  failed count:      15
+	<     0.000062500:       0 (0-0)
+	<     0.000250000:      27 (132812-246875)
+=== RPM STATS ===

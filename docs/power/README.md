@@ -152,6 +152,113 @@ those names come out of the region itself.
 Deployed DTB-only — the kernel binary was untouched, and the previous device tree
 is on the phone as `sdm632-fairphone-fp3.dtb.pre-rpmstats`.
 
+## Later the same evening: the notification path was missing, and now runs
+
+The reason nothing above the CPU clusters ever told the RPM anything is that
+**mainline msm8953 describes no MPM**. The MSM Power Manager sits in the
+always-on domain, monitors wakeup interrupts while the SoC sleeps, and — in the
+mainline driver — is also a power domain whose `power_off` callback is what
+hands the vMPM contents to the RPM over a mailbox. Two in-tree SoCs already wire
+it exactly this way, `sm6375` and `agatti`, by making the CPU cluster domain a
+child of `&mpm`. On msm8953 the cluster domains had **no parent at all**, so
+there was no callback to run.
+
+Every value needed to describe it is in the downstream tree and each one was
+cross-checked against mainline's own numbers before use:
+
+| what | downstream source | value used |
+|---|---|---|
+| vMPM slice | `wake-gic@601d4` reg | offset `0x1d4` in `rpm_msg_ram`, size `0x48` |
+| RPM→APSS wakeup line | same node's `interrupts` | `GIC_SPI 171`, edge rising |
+| mailbox channel | driver's `writel(2, 0xb011008)` | `<&apcs 1>` — bit 1, next to glink-rpm on bit 0 |
+| pin map | `mpm_msm8953_gic_chip_data[]` | raw hwirq **− 32** = SPI number |
+
+The −32 conversion is not assumed: all five entries land on interrupt numbers
+`msm8953.dtsi` already uses elsewhere (tsens 184, spmi 190, usb 136 and 220,
+mdss 72).
+
+**Measured with the node in place**, over a 180 s idle and two `rtcwake` sleeps
+of 120 s and 300 s: the MPM domain's `idle_states` usage goes 0 → 1 → 2, one per
+suspend, and the cluster's `cluster-pc` gains an `S2idle` count in the same
+steps. So the callback runs and the mailbox write happens. The RPM's own view
+did **not** move: `vlow` 0, `vmin` 0, APSS `Shutdown count` 0.
+
+That is a narrower result than it looks. It removes "nobody notifies the RPM"
+as the explanation, and it reopens the system-level PSCI state recorded as
+disproven earlier the same evening — because **that experiment ran without the
+MPM**, so the firmware was being asked to collapse a system whose wakeup
+configuration had never been handed over.
+
+☠️ Note for anyone reading the counters: the debugfs file is
+`/sys/kernel/debug/qcom_rpm_master_stats/<MASTER>`, one file per master — not
+`rpm_master_stats`. A `grep` against the wrong path reads as an unbound driver.
+
+### A kernel ordering bug had to be fixed first, and it is upstream's
+
+Making the cluster domains children of the MPM broke cpuidle outright — no
+states at all, `/sys/devices/system/cpu/cpu0/cpuidle/` absent, the CPUs left on
+plain WFI. The chain:
+
+* `psci_idle_init()` creates a **faux device**, which is probed synchronously
+  and has no way to return `-EPROBE_DEFER`.
+* Its probe attaches each CPU to the `psci` power domain, so it needs the CPU PM
+  domain provider in `cpuidle-psci-domain.c` to have probed.
+* That provider is an ordinary platform driver, and it now defers, because the
+  cluster domains reference a supplier whose driver probes later.
+* The deferred probe is retried by `deferred_probe_initcall()`, a
+  `late_initcall`, while `psci_idle_init()` is a `device_initcall` — so it
+  always runs first and always loses.
+
+The boot log states all three steps in order: `failed to create CPU PM domains
+ret=-517`, then the MPM probing, then `CPU 0 failed to PSCI idle` and `Failed to
+create psci-cpuidle device`. Moving the init to `late_initcall_sync` puts it
+after the flush and restores cpuidle; on a board where nothing defers, the same
+successful init simply happens slightly later. This is not msm8953-specific —
+any SoC that puts a domain above its CPU clusters hits it.
+
+## ★ The oracle reframes all of it: this is an idle-depth problem, not a suspend problem
+
+Every measurement above is one-sided. Booting `slot_a` (Ubuntu Touch, downstream
+4.9) and reading the same records changes the question outright
+([capture](2026-08-14_ut_oracle_rpm-stats.txt)):
+
+| record | oracle (UT), ~200 s uptime | mainline (pmOS), ~700 s |
+|---|---|---|
+| APSS `numshutdowns` | **0x16df = 5855** | **0** |
+| APSS `xo_count` | 0 | 0 |
+| APSS `active_cores` | `0x1` (core0) | `0x1` (core0) |
+| `[system] system-pc` success count | **8263**, 93.8 s accumulated | n/a |
+| deepest state actually entered | system power collapse, ~30×/s | `cluster-pc` **3 times total** |
+
+Two things follow, and both retire earlier readings:
+
+* **`active_cores: 0x1` is not a symptom.** The working system reports exactly
+  the same value, so every reading of it as "the RPM thinks a core is up" was
+  wrong.
+* **The oracle's system power collapse is an *idle* state, not a suspend state.**
+  Its residency histogram peaks in the 4–16 ms bucket (7084 of 8263 entries),
+  i.e. the SoC collapses and comes back every few milliseconds all day long. It
+  is not something a `rtcwake` produces; it is what ordinary idle looks like when
+  the topology works.
+
+So the whole evening's framing — "does a suspend reach the RPM" — was aimed one
+level too deep. The measurable gap is that **mainline almost never selects the
+deepest cluster state at all**: `cluster-gdhs` was entered 41142 times against 3
+for `cluster-pc`, and the two `system-pc` entries were the two forced suspends.
+The RPM records nothing because nothing is being asked of it thirty times a
+second, not because the request is malformed.
+
+That also explains why every "make the request more correct" experiment produced
+`Rejected 0` and no change: the requests were accepted, there were just three of
+them.
+
+☠️ **Note on the residency numbers we chose.** `system_pc` was given
+`min-residency-us = 13000`, derived from the downstream latency figures. The
+oracle's own histogram says the state pays for itself at 4–16 ms. A 13 ms floor
+excludes most of the window the hardware actually uses, so that number is a
+candidate cause rather than a neutral transcription — re-derive it from the
+histogram, not from the latency sum.
+
 ## What the remaining floor is not
 
 ☠️ **The floor quoted below is not a camera-released floor, and the daemon
