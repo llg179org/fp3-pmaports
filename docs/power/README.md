@@ -690,3 +690,45 @@ the RPM never drops to vmin.
 `vlow`/`vmin` counts. Everything above says the RPM *should* be reaching them on
 the working system, and until that file is read it is an expectation, not a
 control.
+
+## And the deep idle states did not, by themselves, move the current
+
+*2026-08-14, past midnight. A negative result, stated as one.*
+
+The genpd fix takes the AP from never entering `cluster-pc` to entering it
+14516 times a minute, and gets the system domain collapsing 47 times a second.
+The obvious next question is what that is worth in milliamps, and the first
+answer is: **nothing this instrument can resolve.**
+
+First attempt, 26 min per leg, display off, greetd stopped, battery at 100 % and
+VBUS at 0:
+
+| leg | slope |
+|---|---|
+| fixed kernel | 23.7 mV/h |
+| same kernel minus the one word | 25.4 mV/h |
+
+☠️ Do not read those two numbers as a result yet — the protocol was not matched,
+and two traps showed up while measuring:
+
+* **The gauge reports `current_now = 0` while `status` is `Full`.** With the
+  battery full and nothing on VBUS the only signal left is the terminal-voltage
+  slope, which is quantised in ~780 µV steps and confounded by post-charge
+  relaxation.
+* **The control leg's slope depended entirely on how much of its head was
+  dropped**: −142, +141, +156 or +25 mV/h for offsets of 0, 150, 300 and 600 s
+  from boot. The post-boot voltage recovery is an order of magnitude larger than
+  the effect. Only the ≥600 s figure means anything, and the other leg had no
+  reboot at all, so the two are not the same measurement.
+* ☠️ **And the first leg's raw data is gone** — it was written to the phone's
+  `/tmp`, which is tmpfs, and the A/B's own reboot took it. Only the summary
+  printed at the time survived.
+
+A matched re-run is in progress: reboot, settle 600 s, log 25 min, both legs
+identical, output under `/home/fp3/` so a reboot cannot eat it.
+
+Whatever it returns, the shape of the answer is already constrained by the
+section above: the AP-side collapse is real and the RPM never hears about it, so
+the SoC rails and the XO stay up. Deeper AP idle with the same rails up is
+expected to be a small effect. That is a reason to expect little here, not a
+reason to skip measuring it.
