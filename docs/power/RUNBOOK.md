@@ -29,33 +29,38 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-**Running right now (started 00:40, ends ~01:15):** the control leg of the
-matched idle-current A/B. `systemd-run --unit=legB2 --collect
-/usr/local/bin/idleleg.sh B2ctl` on `/boot/vmlinuz.base-mpm` — reboot, settle
-600 s, then 50 samples at 30 s into `/home/fp3/idleleg-B2ctl.txt`. Compare
-against the fixed-kernel leg already captured:
+**Device state right now (2026-08-15 01:29):** back on `slot_b`, running a hand
+deployed `Image` + DTB from `debug-int/7.1.3` `6cbf488a28f0` (md5-verified against
+the build tree on both files). `/boot` backups: `vmlinuz.genpdfix`,
+`vmlinuz.base-mpm` (the control), `vmlinuz.pre-mpm`,
+`sdm632-fairphone-fp3.dtb.pre-gpiowake`.
 
-* **A2 (fixed):** 50 samples, 1474 s, 8.18 mV, **19.97 mV/h**, 4.3497 → 4.3416 V.
-  Raw data: `docs/power/2026-08-15_idleleg-A2fixed.txt`.
+**Immediately in progress: does the GPIO wakeup map actually work?** First look
+after the deploy is *not yet convincing* and needs finishing:
 
-Analyse with the same window on both (skip nothing — the 600 s settle is already
-outside the file). ☠️ `current_now` reads a constant 0 at `Full` with VBUS at 0;
-the signal is the `voltage_now` slope.
+* `dmesg` shows only the known, expected `failed to map pin 58 as GIC hwirq 136
+  is already mapped` — no new errors, and notably **no pin-53 collision message**,
+  which needs explaining rather than celebrating.
+* `/proc/interrupts` has exactly one `qcom_mpm` line (`GIC-0 203`, the MPM's own
+  IRQ) and no GPIO line has moved to an MPM parent.
 
-**Then, in order:**
+That is consistent with "nothing has requested a GPIO wakeup yet" — `pinctrl-msm`
+only hands a line over on `enable_irq_wake`. So the test is not "is it in
+`/proc/interrupts`" but: arm a wakeup on a GPIO that is in the map, and see it
+survive a system power collapse. Candidates already wake-armed on this board are
+in `/proc/interrupts` with `wakeup` in `/sys/.../power/wakeup`; the volume keys
+and the touchscreen are the obvious ones. Check
+`cat /sys/kernel/debug/irq/irqs/<n>` for the parent domain after arming.
 
-1. **Boot `slot_a` and capture the oracle's RPM side** — the missing half of the
-   differential. Script ready at
-   `<scratchpad>/oracle-capture.sh`; the two files that matter are
-   `/sys/kernel/debug/rpm_stats` (the oracle's own vlow/vmin) and
-   `/sys/kernel/debug/rpm_master_stats`. Reach it with `ut-ssh`.
-2. **Test the GPIO wakeup map on the device.** Deploy `debug-int/7.1.3`
-   `6cbf488a28f0`, then check `/proc/interrupts` for GPIO lines moving to the MPM
-   domain and `dmesg | grep qcom_mpm` for the expected pin-53 collision.
-3. **The RPM sleep half.** See "What is still missing" in
-   [`README.md`](README.md): mainline's `smd-rpm.c` has no suspend hook at all,
-   while downstream flushes the RPM sleep set via `msm_rpm_enter_sleep()` before
-   the PSCI call. That is the remaining structural gap.
+**Then:**
+
+1. **The RPM sleep half** — the remaining structural gap. Mainline's
+   `smd-rpm.c` has no suspend hook at all; downstream flushes the RPM sleep set
+   via `msm_rpm_enter_sleep()` before the PSCI call. See "What is still missing"
+   in [`README.md`](README.md).
+2. Bump `_commit`/`pkgrel` to `6cbf488a28f0` and rebuild the package **once the
+   GPIO work is tested** — r54 deliberately pins the earlier, tested
+   `162f27abc328`.
 
 ## Device and tree state
 
