@@ -551,3 +551,96 @@ how long the phone slept.** An 8-minute sleep reads as 0.5 s between `suspend
 entry` and `suspend exit`. The instrument that works is a wall-clock logger
 writing to a file — run it under `systemd-run --unit=… --collect` so it survives
 both the suspend and the SSH drop.
+
+---
+
+## ★★★ The real cause: a `bool` that should have been an `unsigned int`
+
+*2026-08-14, late night. This is the answer to the question the oracle raised.*
+
+The idle-depth question had a one-word answer, and it was not on this SoC at all.
+In `include/linux/pm_domain.h`:
+
+```c
+struct genpd_governor_data {
+	...
+	bool cached_power_down_ok;
+	bool cached_power_down_state_idx;   /* <- a state index, stored in a bool */
+};
+```
+
+`drivers/pmdomain/governor.c` writes a state index into it and reads one back:
+
+```c
+	gd->cached_power_down_state_idx = genpd->state_idx;   /* 2 becomes true */
+	...
+	genpd->state_idx = gd->cached_power_down_state_idx;   /* true becomes 1 */
+```
+
+So **any idle-state index above 1 survives exactly one call.** A genpd computes
+the right depth once, on the single uncached pass, caches it as `1`, and from
+then on every call takes the cached path and hands the governor a `1`.
+`cpu_power_down_ok()` starts its search at `genpd->state_idx` and only ever walks
+*downwards*, so no state deeper than index 1 can ever be selected again.
+
+The msm8953 cluster domain has three: `cluster-ret`, `cluster-gdhs`,
+`cluster-pc`. Index 2 was unreachable from the first second of uptime.
+
+### How it was localised
+
+Three instrumented boots, each about two minutes to build on top of the existing
+`.output`:
+
+1. A `trace_printk` in `cpu_power_down_ok()` printing the computed
+   `idle_duration_ns`, the starting index and the pick. **1622 decisions,
+   `start=1` in every single one**, and 73 % of them had an idle window past
+   `cluster-pc`'s 2770 µs requirement (p50 3.5 ms, p90 235 ms). So the
+   next-wakeup estimate was never the problem — the search simply began one
+   state too shallow. That retired the hypothesis this run started with.
+2. A print on both exits of `_default_power_down_ok()`. Every runtime call was
+   `CACHED idx=1`; not one fresh computation in a 3 s window.
+3. A print on the fresh path only, read straight after boot. **Two lines in the
+   whole trace buffer, both `FRESH idx=2 cnt=3`** — the fresh path computes the
+   correct index, once, at 0.74 s, and is never taken again. Between `idx=2`
+   going in and `idx=1` coming out sat the `bool`.
+
+☠️ The measurement that would have been wrong: reading the *outcome* counters.
+`cluster-pc` showed `usage 0, rejected 0` — indistinguishable from "the hardware
+refuses it" and from "the window is too short". Only printing the governor's
+*input* separated them.
+
+### What it changes, measured
+
+Same phone, display off, 60 s, the only difference being `bool` →
+`unsigned int`:
+
+| | before | after |
+|---|---|---|
+| `cluster-pc`, cluster0 | **0** entries | **14516** entries, 67.3 s |
+| `cluster-pc`, cluster1 | 1 entry, 2 ms | 8243 entries, 59.1 s |
+| `system-pc` (`power-domain-system`) | **0** | **3531** entries, 34.8 s |
+| MPM domain power-off | 0 | 3582 |
+
+The system domain matters twice over: `genpd_power_off()` refuses to power off a
+parent unless **every child is already in its deepest state**
+(`drivers/pmdomain/core.c`, `child->state_idx < child->state_count - 1`), so with
+the clusters pinned at index 1 the level above them was structurally
+unreachable — which is why the MPM notification to the RPM, added earlier the
+same evening and demonstrably working, still had nothing to notify about.
+
+47 system power collapses a second is the same order as the oracle's 41/s.
+
+### Provenance
+
+Introduced by commit `e94999688e3a` ("PM / Domains: Add genpd governor for
+CPUs", Ulf Hansson, 2019-04-11) and carried unchanged through `f38d1a6d0025`
+("PM: domains: Allocate governor data dynamically based on a genpd governor",
+2022) when the field moved into `struct genpd_governor_data`. It has been a
+`bool` for six years. Nothing here is msm8953-specific: **every SoC whose genpd
+has three or more idle states has been losing its deepest ones**, silently, with
+zero rejected counts to show for it.
+
+☠️ What still does not move: `qcom_stats` `vlow`/`vmin` are both still 0 and the
+RPM's APSS master record is still all zeros. Those are the next question, and
+they are now a question about the RPM handshake alone, with the AP side doing
+its part 47 times a second.
