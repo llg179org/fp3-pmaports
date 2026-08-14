@@ -1,0 +1,202 @@
+=== suspend series started 2026-08-14T18:27:03+02:00 ===
+kernel=7.1.3-postmarketos-qcom-msm8953
+
+--- sleep 60s, wall 2026-08-14T18:27:03+02:00 ---
+ before:
+  suspend_success=0
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x15171517
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=1562 usage=1834
+  genpd power-domain-cluster0 S1 time_ms=34998 usage=18791
+  genpd power-domain-cluster0 S2 time_ms=0 usage=0
+  genpd power-domain-cluster1 S0 time_ms=1061 usage=925
+  genpd power-domain-cluster1 S1 time_ms=19900 usage=8305
+  genpd power-domain-cluster1 S2 time_ms=0 usage=0
+  power status=Charging capacity=55 ibat=544128 vbat=4412810
+  qg 0x480A: 480a: 00480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+  wall_elapsed_s=61 requested_s=60
+ after:
+  suspend_success=1
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x13171317
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=1887 usage=2072
+  genpd power-domain-cluster0 S1 time_ms=52524 usage=24776
+  genpd power-domain-cluster0 S2 time_ms=0 usage=1
+  genpd power-domain-cluster1 S0 time_ms=1595 usage=1284
+  genpd power-domain-cluster1 S1 time_ms=35702 usage=13130
+  genpd power-domain-cluster1 S2 time_ms=0 usage=1
+  power status=Charging capacity=56 ibat=501861 vbat=4412421
+  qg 0x480A: 480a: 02480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+
+--- sleep 120s, wall 2026-08-14T18:28:25+02:00 ---
+ before:
+  suspend_success=1
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x17131713
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=1890 usage=2076
+  genpd power-domain-cluster0 S1 time_ms=52530 usage=24791
+  genpd power-domain-cluster0 S2 time_ms=0 usage=1
+  genpd power-domain-cluster1 S0 time_ms=1597 usage=1287
+  genpd power-domain-cluster1 S1 time_ms=35726 usage=13156
+  genpd power-domain-cluster1 S2 time_ms=0 usage=1
+  power status=Charging capacity=56 ibat=501251 vbat=4412226
+  qg 0x480A: 480a: 02480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+  wall_elapsed_s=122 requested_s=120
+ after:
+  suspend_success=2
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x11151115
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=2021 usage=2186
+  genpd power-domain-cluster0 S1 time_ms=71087 usage=27101
+  genpd power-domain-cluster0 S2 time_ms=0 usage=2
+  genpd power-domain-cluster1 S0 time_ms=1771 usage=1427
+  genpd power-domain-cluster1 S1 time_ms=53550 usage=15365
+  genpd power-domain-cluster1 S2 time_ms=0 usage=2
+  power status=Charging capacity=56 ibat=473480 vbat=4412032
+  qg 0x480A: 480a: 03480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+
+--- sleep 300s, wall 2026-08-14T18:30:47+02:00 ---
+ before:
+  suspend_success=2
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x15111511
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=2023 usage=2190
+  genpd power-domain-cluster0 S1 time_ms=71093 usage=27114
+  genpd power-domain-cluster0 S2 time_ms=0 usage=2
+  genpd power-domain-cluster1 S0 time_ms=1781 usage=1436
+  genpd power-domain-cluster1 S1 time_ms=53568 usage=15384
+  genpd power-domain-cluster1 S2 time_ms=0 usage=2
+  power status=Charging capacity=56 ibat=473480 vbat=4412032
+  qg 0x480A: 480a: 03480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+  wall_elapsed_s=302 requested_s=300
+ after:
+  suspend_success=3
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x17131713
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=2110 usage=2272
+  genpd power-domain-cluster0 S1 time_ms=89659 usage=28758
+  genpd power-domain-cluster0 S2 time_ms=0 usage=3
+  genpd power-domain-cluster1 S0 time_ms=1904 usage=1542
+  genpd power-domain-cluster1 S1 time_ms=71680 usage=17170
+  genpd power-domain-cluster1 S2 time_ms=0 usage=3
+  power status=Charging capacity=57 ibat=415649 vbat=4412615
+  qg 0x480A: 480a: 00480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+
+--- sleep 600s, wall 2026-08-14T18:36:09+02:00 ---
+ before:
+  suspend_success=3
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x13171317
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=2111 usage=2276
+  genpd power-domain-cluster0 S1 time_ms=89667 usage=28771
+  genpd power-domain-cluster0 S2 time_ms=0 usage=3
+  genpd power-domain-cluster1 S0 time_ms=1909 usage=1547
+  genpd power-domain-cluster1 S1 time_ms=71701 usage=17194
+  genpd power-domain-cluster1 S2 time_ms=0 usage=3
+  power status=Charging capacity=57 ibat=415649 vbat=4412615
+  qg 0x480A: 480a: 00480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+  wall_elapsed_s=602 requested_s=600
+ after:
+  suspend_success=4
+  suspend_fail=0
+  qcom_stats vlow: Count: 0
+  qcom_stats vlow: Last Entered At: 0
+  qcom_stats vlow: Last Exited At: 0
+  qcom_stats vlow: Accumulated Duration: 0
+  qcom_stats vlow: Client Votes: 0x17131713
+  qcom_stats vmin: Count: 0
+  qcom_stats vmin: Last Entered At: 0
+  qcom_stats vmin: Last Exited At: 0
+  qcom_stats vmin: Accumulated Duration: 0
+  qcom_stats vmin: Client Votes: 0x0
+  genpd power-domain-cluster0 S0 time_ms=2194 usage=2356
+  genpd power-domain-cluster0 S1 time_ms=108579 usage=30310
+  genpd power-domain-cluster0 S2 time_ms=0 usage=5
+  genpd power-domain-cluster1 S0 time_ms=2026 usage=1653
+  genpd power-domain-cluster1 S1 time_ms=89974 usage=18896
+  genpd power-domain-cluster1 S2 time_ms=0 usage=5
+  power status=Charging capacity=59 ibat=332641 vbat=4412226
+  qg 0x480A: 480a: 00480b: 06
+  qg 0x4874: 4874: 004875: 80
+  qg 0x48CC: 48cc: 0048cd: 80
+
+=== done 2026-08-14T18:46:31+02:00 ===
+ wakeup sources with a non-zero count:
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time

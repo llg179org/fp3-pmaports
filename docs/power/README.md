@@ -58,6 +58,63 @@ demonstrated 60 s sleep.
   printk clock stops while suspended, so a 60 s sleep shows as a fraction of a
   second between the two lines. The pair is the evidence, not the gap.
 
+## Measured 2026-08-14: the SoC never reaches an RPM low-power mode
+
+This is the finding the rest of the page should be read against, and it sits a
+layer above every milliamp counted below. **The RPM has not taken this SoC to
+`vlow` or `vmin` once since boot — not while idle, and not during a ten-minute
+suspend** ([capture](2026-08-14_pmos_rpm-sleep-stats.txt)).
+
+Four `rtcwake` suspends of 60, 120, 300 and 600 s, all successful, wall clock
+matching the request to within a second:
+
+| | before | after four suspends |
+|---|---|---|
+| `qcom_stats/vlow` Count | 0 | **0** |
+| `qcom_stats/vmin` Count | 0 | **0** |
+| `cluster-pc` (genpd S2) usage | 0 | 5 |
+| `cluster-pc` accumulated | 0 ms | **0 ms** |
+
+The cluster does enter its power-collapse state, exactly once per suspend, and
+records no residency in it. Meanwhile the RPM-level states are untouched. So
+suspending this phone stops the CPUs and leaves the SoC up, which is why the
+PMIC's 10.4 mA S3 threshold is never crossed and why `S3_GOOD_OCV` stays
+`0x8000` — measured again here, still `0x8000` after all four.
+
+The same shape shows in ordinary idle, without suspending at all. Over 43 566 s
+of uptime both clusters sat in **`cluster-gdhs` about 92 % of the time** and
+reached `cluster-power-collapse` **4 and 5 times**, against 1.66 and 2.03 million
+occasions the governor recorded as "could have gone deeper". Per-CPU
+`cpu-power-collapse` residency is 95 %, so the CPUs are not the problem; nothing
+above them goes down.
+
+☠️ **It is not a latency-QoS constraint**, which is the obvious first suspect
+because `cluster-pc` has a 700 µs exit latency. `/dev/cpu_dma_latency` reads
+2 000 000 000 µs, i.e. unconstrained. `tuned` holds the file open without writing
+a constraint, which looks alarming in a process listing and means nothing.
+
+☠️ **Do not read `Client Votes` as a vote mask here.** It changes between
+consecutive reads (`0x15171517`, `0x13171317`, `0x17131713`) in a way no vote
+aggregate would, and `vmin` reports `0x0` throughout. The field is meaningful on
+RPMh, not on this generation. The `Count` and `Accumulated Duration` fields are
+the ones that carry the finding.
+
+### The instrument had to be added first, and it was missing for everyone
+
+`msm8953.dtsi` carried no RPM sleep-stats node, so `/sys/kernel/debug/qcom_stats`
+did not exist, even though `CONFIG_QCOM_STATS` was already enabled. The driver
+and the hardware were both there; only the description was missing.
+
+The region is the one `msm8996`, `msm8998` and `qcs404` already describe, and the
+downstream msm8953 tree confirms it — it puts the offset pointers at `0x290014`
+and `0x29001c`, both inside `0x290000 + 0x10000`, which is what the driver's
+dynamic-offset scheme reads. That the driver then names its two records `vlow`
+and `vmin` rather than producing garbage is the check that the address is right:
+those names come out of the region itself.
+
+Deployed DTB-only — the kernel binary was untouched, and the previous device tree
+is on the phone as `sdm632-fairphone-fp3.dtb.pre-rpmstats`.
+
 ## What the remaining floor is not
 
 ☠️ **The floor quoted below is not a camera-released floor, and the daemon
@@ -269,6 +326,7 @@ The loggers themselves (`powerlog-pmos.sh`, `powerlog-ut.sh`) are in the
 | `2026-08-13_pmos_ak7375-position-power.txt` | the same pair once more, with the driver patched so power follows the requested position: holding the subdev now costs 2.8 mA |
 | `2026-08-13_pmos_lens-vs-chain.txt` | the follow-up three phases that split the hold: nothing held, the `ak7375` subdev alone, the rest of the chain without it |
 | `2026-08-13_pmos_r52-charge-to-termination.txt` | a charge from 87 % to termination on `linux-fp3-7.1.3-r52`, over an SDP port (`usb_imax_uA` 500000, so ~340 mA into the pack). The taper crosses the threshold at **99.3 mA** and the charger is `Full` at `0x45` within the minute |
+| `2026-08-14_pmos_rpm-sleep-stats.txt` | four `rtcwake` suspends of 60, 120, 300 and 600 s with the RPM sleep-stats, cluster genpd residency and the QG S3 witnesses read either side of each. The finding is that every RPM-level counter stays at zero |
 | `2026-08-14_pmos_resume-early-rest-anchor.txt` | a 300 s `rtcwake` suspend with the [parked](../charger/bringup/parked/README.md) `.resume_early` patch applied: the anchor fires and moves the reading 93.87 % → 91.00 % off a rested OCV. Kept because it is the evidence that the parked patch works, not that it ships |
 
 ## Two biases these numbers carry
