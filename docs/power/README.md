@@ -761,3 +761,36 @@ nothing measurable.
 ☠️ Worth saying plainly, because the counters are seductive: 14516 entries a
 minute and 47 system collapses a second look like a result. The milliamps are
 the result, and they did not move.
+
+### The oracle control for the RPM half, measured 2026-08-15
+
+Booted `slot_a`, let Ubuntu Touch settle, and differenced the APSS record over a
+180 s window (`docs/power/2026-08-15_ut_oracle_rpm-master-stats.txt`):
+
+```
+T0  uptime 192.35   numshutdowns 0x1da6 =  7590
+T1  uptime 372.39   numshutdowns 0x489b = 18587
+                    ------------------------------
+                    10997 in 180 s  =  61 per second
+```
+
+So the downstream kernel has the RPM record an APSS shutdown **61 times a
+second**. Mainline with the genpd fix reaches the same order of AP-level collapse
+— genpd counts ~47 system power collapses a second — and the RPM records **zero**
+of them.
+
+Two details that sharpen the comparison rather than blur it:
+
+* `xo_accumulated_duration` for APSS is `0x0` on the oracle as well, and
+  `xo_count` is `0`. The AP never votes the crystal down on either system; what
+  the RPM counts for the AP is the shutdown itself. So the missing number on our
+  side is not an XO vote we forgot to cast.
+* ☠️ **The oracle has no `/sys/kernel/debug/rpm_stats`** — the SMEM-backed
+  vlow/vmin file that mainline's `qcom_stats` provides does not exist in the
+  downstream 4.9 tree, because that driver is not built there. The vlow/vmin
+  counters therefore have **no oracle control at all** and cannot be used as a
+  differential. `rpm_master_stats` is the instrument both sides have.
+
+That leaves the statement in the previous section standing and now two-sided:
+the AP collapses at a comparable rate on both systems, and only downstream tells
+the RPM about it.
