@@ -11,36 +11,38 @@ the reasoning lives in [`bringup/`](bringup/README.md) and the findings in
 
 ## Where the question stands
 
-The search moved twice on 2026-08-14 and is now one level shallower than it
-started:
+The search moved three times on 2026-08-14 and landed outside this SoC:
 
 1. *Does a suspend reach the RPM?* — wrong level.
-2. *Does anything notify the RPM?* — answered: nothing did, because mainline
-   msm8953 described no MPM. Added; the notification now demonstrably runs.
-3. **Current: why does the CPU domain governor almost never select the deepest
-   cluster state?** With the display off, `cluster-gdhs` is entered 7628 times a
-   minute for a 7.3 ms mean, `cluster-pc` zero times, `Rejected` zero — and the
-   governor books 62 % of its own entries as "Below". The oracle enters a system
-   power collapse ~30 times a second in 4–16 ms bursts.
+2. *Does anything notify the RPM?* — nothing did; mainline msm8953 described no
+   MPM. Added, and the notification demonstrably runs.
+3. *Why does the governor never select the deepest cluster state?* — **answered**:
+   `genpd_governor_data::cached_power_down_state_idx` is declared `bool`, so a
+   cached state index of 2 comes back as 1 and the search, which only walks
+   downwards, can never reach index 2 again. Six years old, not msm8953-specific.
+   Fixed; `cluster-pc` 0 → 14516 per minute, `system-pc` 0 → 3531. Written up in
+   [`README.md`](README.md) under "The real cause".
+4. **Current: the RPM still records nothing.** `qcom_stats` `vlow`/`vmin` are 0
+   and the APSS master record is all zeros, while the AP now completes a
+   system-level power collapse ~47 times a second. The question is now the RPM
+   handshake alone.
 
 ## Next step
 
-Measure the governor's next-wakeup estimate rather than its outcome:
-`drivers/pmdomain/governor.c`, `cpu_power_down_ok()` — what `idle_duration_ns`
-does it compute, against `cluster-pc`'s 270 + 430 µs latencies and 2500 µs
-residency. An ftrace or a temporary `trace_printk` in that function answers it in
-one boot.
+Two, in this order:
 
-Two cheaper A/Bs that can run first, either of which is a real result:
-
-* drop `system_pc`'s `min-residency-us` from 13000 toward the oracle's measured
-  4–16 ms window — the 13000 came from summing downstream latencies, not from a
-  histogram, so it is a candidate cause rather than a transcription;
-* `pinctrl-msm8953.c` has no `wakeirq_map` while five sibling RPM-generation SoCs
-  do; the table is downstream's `mpm_msm8953_gpio_chip_data[]`, in `{gpio,
-  mpm-pin}` order. ☠️ Pin 53 is claimed twice downstream — GIC `mdss_irq` and
-  GPIO 62 — and mainline's driver accepts only the first, so decide which one
-  before sending it.
+* **Finish the current A/B that is running.** `/usr/local/bin/dischg.sh` logs
+  `current_now`/`voltage_now`/`charge_now` every 30 s to `/tmp/d-fix.txt` on the
+  fixed kernel. Repeat the identical run on `/boot/vmlinuz.base-mpm` (the same
+  tree minus the one-word fix) and compare. ☠️ With the battery at `Full` and
+  VBUS at 0 the gauge reports `current_now = 0`; the usable signal is the
+  `voltage_now` / `charge_now` slope, or a run started after it has fallen out of
+  `Full`.
+* **Why the RPM records nothing.** The AP side is now doing everything visible:
+  MPM genpd powers off 3582 times a minute, which is the mailbox write. Next
+  instruments: does the vMPM SRAM slice actually change (dump `0x1d4..0x21c` of
+  the RPM MSG RAM before/after), and does the oracle's own vMPM look different at
+  the same moment.
 
 ## Device and tree state
 
