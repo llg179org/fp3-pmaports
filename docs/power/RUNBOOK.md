@@ -45,6 +45,16 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
   `debug-int/7.1.3` `162f27abc328`, with `CONFIG_QCOM_MPM=y` now in
   `config-fp3.aarch64`.
 
+**Also in progress (uncommitted, in `fp3-power-wt`):** the GPIO wakeup map.
+`pinctrl-msm8953.c` now carries `msm8953_mpm_map[]`, inverted from downstream
+`mpm-8953.c`'s `mpm_msm8953_gpio_chip_data[]` (which is `{mpm-pin, gpio}`;
+mainline wants `{gpio, mpm-pin}`), plus `.wakeirq_map`/`.nwakeirq_map`. Still to
+do: `wakeup-parent = <&mpm>;` on the `tlmm` node in `msm8953.dtsi` — a **separate
+commit**, driver and DTS never mixed. ☠️ MPM pin 53 is claimed twice downstream,
+by GIC `mdss_irq` (SPI 72) and by GPIO 62; mainline has one MPM pin space and the
+DT `qcom,mpm-pin-map` claims it first, so GPIO 62 will log a mapping error and
+never arm. Left in the table because it is SoC data; say so in the commit.
+
 **Then: why the RPM still records nothing.** The likely answer is already in
 view and needs confirming rather than searching for. On the oracle, APSS
 `xo_count` is 0 too — only `numshutdowns` moves — so what the RPM counts for the
