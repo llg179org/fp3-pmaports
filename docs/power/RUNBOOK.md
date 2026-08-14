@@ -29,51 +29,33 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-**In flight right now (2026-08-14, ~23:10):**
+**Running right now (started 00:40, ends ~01:15):** the control leg of the
+matched idle-current A/B. `systemd-run --unit=legB2 --collect
+/usr/local/bin/idleleg.sh B2ctl` on `/boot/vmlinuz.base-mpm` — reboot, settle
+600 s, then 50 samples at 30 s into `/home/fp3/idleleg-B2ctl.txt`. Compare
+against the fixed-kernel leg already captured:
 
-* An idle-current A/B is running. `systemd-run --unit=dischg` runs
-  `/usr/local/bin/dischg.sh /tmp/d-fix.txt` (30 s samples of
-  `current_now`/`voltage_now`/`charge_now`), display off, `greetd` stopped.
-  ☠️ The battery is `Full` and VBUS reads 0, so `current_now` is a constant 0 —
-  **the usable signal is the `voltage_now` slope**, about 42 mV/h in the first
-  five minutes. Design: 25 min on the fixed kernel (`/boot/vmlinuz`), 25 min on
-  `/boot/vmlinuz.base-mpm` (identical tree minus the one-word fix), then 25 min
-  on the fixed one again — the third leg controls for post-charge voltage
-  relaxation, which decays with time and would otherwise be read as a difference
-  between the kernels.
-* `pmb build --arch aarch64 --force linux-fp3` is building r54, pinned to
-  `debug-int/7.1.3` `162f27abc328`, with `CONFIG_QCOM_MPM=y` now in
-  `config-fp3.aarch64`.
+* **A2 (fixed):** 50 samples, 1474 s, 8.18 mV, **19.97 mV/h**, 4.3497 → 4.3416 V.
+  Raw data: `docs/power/2026-08-15_idleleg-A2fixed.txt`.
 
-**Done since the last update:** the GPIO wakeup map landed as two commits
-(`pinctrl: qcom: msm8953: add the MPM wakeup interrupt map` and `arm64: dts:
-qcom: msm8953: wake through the MPM from the TLMM`), plus a DT fix renaming the
-`system-idle-states` container to `domain-idle-states` — that name was matching
-a different schema and producing three `dtbs_check` warnings. All on
-`wip/7.1.3/power`, `integration/7.1.3` and `debug-int/7.1.3`, pushed. The
-package `linux-fp3-7.1.3-r54` built (pinned at `162f27abc328`, the genpd-fix
-state — deliberately *not* the GPIO work, which is untested on the device).
-Two patches are LKML-ready under `docs/power/*.patch` and on
-`submit/7.1.3/power`. ☠️ Never run `fp3-kbuild.sh` while `pmb build` is in
-flight — they share the `/mnt/linux` bind mount and the package build dies at
-teardown.
+Analyse with the same window on both (skip nothing — the 600 s settle is already
+outside the file). ☠️ `current_now` reads a constant 0 at `Full` with VBUS at 0;
+the signal is the `voltage_now` slope.
 
-**Still to test on the device:** the GPIO wakeup map. Build it, deploy, and
-check `/proc/interrupts` shows the GPIO lines moving to the MPM domain, plus
-`dmesg | grep qcom_mpm` for the expected pin-53 collision message.
+**Then, in order:**
 
-**Then: why the RPM still records nothing.** The likely answer is already in
-view and needs confirming rather than searching for. On the oracle, APSS
-`xo_count` is 0 too — only `numshutdowns` moves — so what the RPM counts for the
-AP is the AP telling it, not an XO vote. Downstream that telling is
-`msm_rpm_enter_sleep()`, which flushes the RPM **sleep set** over SMD before the
-PSCI call; mainline's `qcom_smd_rpm` has no sleep-set/active-set split at all and
-sends everything to the active set. If that is right, mainline msm8953 can power
-collapse the AP as deeply as it likes and the RPM will never drop the SoC rails
-on its behalf, and the MPM mailbox — which is about programming the wakeup
-controller, not about sleep votes — cannot substitute for it. Check by reading
-`drivers/soc/qcom/smd-rpm.c` for a sleep-set path and the downstream
-`rpm-smd.c` for what it sends.
+1. **Boot `slot_a` and capture the oracle's RPM side** — the missing half of the
+   differential. Script ready at
+   `<scratchpad>/oracle-capture.sh`; the two files that matter are
+   `/sys/kernel/debug/rpm_stats` (the oracle's own vlow/vmin) and
+   `/sys/kernel/debug/rpm_master_stats`. Reach it with `ut-ssh`.
+2. **Test the GPIO wakeup map on the device.** Deploy `debug-int/7.1.3`
+   `6cbf488a28f0`, then check `/proc/interrupts` for GPIO lines moving to the MPM
+   domain and `dmesg | grep qcom_mpm` for the expected pin-53 collision.
+3. **The RPM sleep half.** See "What is still missing" in
+   [`README.md`](README.md): mainline's `smd-rpm.c` has no suspend hook at all,
+   while downstream flushes the RPM sleep set via `msm_rpm_enter_sleep()` before
+   the PSCI call. That is the remaining structural gap.
 
 ## Device and tree state
 
