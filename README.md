@@ -49,7 +49,7 @@ For a base `X.Y.Z` there are four layers, each base-relative:
 |---|---|---|
 | `X.Y.Z/main` | base | the upstream `msm8953-mainline` release; not ours to rename, we just follow the newest |
 | `wip/X.Y.Z/<category>` | work | the category's commits rebased onto the base, **plus the bump fixes** — messy, evolving history |
-| `integration/X.Y.Z` | build | the cherry-pick union of the **upstream-bound** `wip/X.Y.Z/*` branches — audio, voice, camera, charger, sensor. Versioned so the last working `integration/<prev>` survives while the new base is still being fixed |
+| `integration/X.Y.Z` | build | the cherry-pick union of the **upstream-bound** `wip/X.Y.Z/*` branches — audio, voice, camera, charger, sensor, power. Versioned so the last working `integration/<prev>` survives while the new base is still being fixed |
 | `debug-int/X.Y.Z` | build | `integration/X.Y.Z` plus the `debug` layer; **this is what the package builds** |
 | `submit/X.Y.Z/<category>` | upstream | the **minimal** series distilled from `wip/X.Y.Z/<category>` — created only once everything works, ready to post to the LKML |
 
@@ -89,6 +89,7 @@ from, where there is going to be one. There are six:
 | `camera` | the Sony IMX363 rear sensor | yes |
 | `charger` | the PMI632 charger via `qcom_smbx`: the battery thermistor, hardware JEITA, thermal mitigation and a device-tree-driven charge current ([`docs/charger/`](docs/charger/README.md)) | yes |
 | `sensor` | proximity, ambient light and the IMU, over the SSC's QMI Sensor Manager | **one patch of twelve** — the imported base cannot carry a DCO and its author's own series is in flight ([why](docs/sensors/README.md#why-the-submit-series-is-one-patch)) |
+| `power` | the platform's own low-power plumbing and the instruments that measure it: the RPM sleep-stats region and the per-master sleep records ([`docs/power/`](docs/power/README.md)) | not yet — the description patches are upstream material, the fix they point at is not written |
 | `debug` | the bring-up safety net and nothing else: the SoC watchdog started at probe, so a hung boot resets instead of waiting for hands ([`docs/debug/`](docs/debug/README.md)) | never — deliberately not upstream material. **The only category with no `wip` branch:** one commit on `debug-int/<base>`, reproducible from [`docs/debug/files/`](docs/debug/files/) without any branch at all |
 
 Reading it: "what runs on the phone" is always `debug-int/<pkgver>`; "what the

@@ -23,16 +23,26 @@ the tip of `debug-int/7.1.3`, it is what the phone is running, and the kernel
 working tree is clean. Automatic sleep is off, the `smp2p-modem` wake experiment
 is reverted, and no transient units are left on the device.
 
-**The one thing worth working on is idle current.** The floor is **139–143 mA**
-against Ubuntu Touch's 86 mA on the same hardware, and it is the gate on
-everything downstream: the fuel gauge cannot self-correct until the board can
-enter the PMIC's S3 state, which wants **10.4 mA**. Measured and excluded: it is
-[not userspace and not the power profile](power/README.md#what-the-remaining-floor-is-not).
-What remains is wakeups — 143 timer IRQ/s, 134 IPI/s, 33/s `smd-edge` — and the
-`ak7375` lens actuator, which
-[accounts for 152 mA on its own](power/README.md#measured-2026-08-13-it-is-the-lens-actuator-and-nothing-else)
-whenever the camera stack holds it open. **That last one is the cheapest next
-step: a known, localised bug worth roughly half the floor.**
+**The one thing worth working on is idle current — and as of 2026-08-14 evening
+it is a platform gap, not a tuning problem.** The application processor has
+**never once told the RPM it is going down**: its shutdown count is zero while
+the modem's is 170 and the WLAN subsystem's is 284, and the SoC has consequently
+reached neither `vlow` nor `vmin` since boot — not while idle, and not across
+suspends of 60, 120, 300 and 600 s. That single zero explains the rest: the
+unreachable 10.4 mA S3 threshold, the fuel gauge's rest anchor that never fires,
+and why removing ten userspace daemons moved the floor by nothing. The whole
+measurement, and the instruments that had to be added to make it, are in
+[`power/README.md`](power/README.md#measured-2026-08-14-the-soc-never-reaches-an-rpm-low-power-mode).
+
+**So the next question is: what should send the APSS sleep vote on mainline
+msm8953, and why does nothing send it.** Everything below about milliamps is
+downstream of that answer.
+
+☠️ **The 139–143 mA floor and its daemon subtraction are retracted** — the lens
+actuator was powered underneath the whole run. And the `ak7375` kernel fix that
+was queued as "the cheapest next step" **already shipped**: `fa5d294c` is that
+commit and r53 pins it. What remains there is userspace — nothing returns the
+lens to rest when the preview stops.
 
 **Two lines of work were deliberately stopped, not abandoned.** Both are written
 up so they need no re-investigation:
