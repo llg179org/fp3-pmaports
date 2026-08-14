@@ -1,0 +1,88 @@
+From a6a979169cdcfd3f7b532f553e474bd5248806a9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?=
+ <lajoshazilg@gmail.com>
+Date: Fri, 14 Aug 2026 22:49:55 +0200
+Subject: [PATCH] PM: domains: Fix the cached power-down state index being a
+ bool
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+genpd_governor_data::cached_power_down_state_idx has been declared bool
+since it was introduced in commit e94999688e3a ("PM / Domains: Add genpd
+governor for CPUs"), while every value assigned to and read from it is a
+state index of type unsigned int:
+
+	gd->cached_power_down_state_idx = genpd->state_idx;
+	...
+	genpd->state_idx = gd->cached_power_down_state_idx;
+
+Any index above 1 is therefore stored as 1. A genpd with three or more
+idle states can compute the correct deepest index once, on the single
+uncached pass, and then loses it forever: every later call takes the
+cached path and hands the governor a 1. cpu_power_down_ok() starts its
+search at genpd->state_idx and only ever walks downwards, so from that
+point on no state deeper than index 1 can be selected again.
+
+Measured on an msm8953 phone, whose CPU cluster domains have three idle
+states (retention, GDHS, power collapse) and whose system domain sits
+above them. Over 60 s of display-off idle before the fix, the deepest
+cluster state was entered 0 times out of 22 thousand domain idle entries,
+with a rejected count of 0 - it was never refused, it was never offered.
+A trace of the governor showed 73% of those decisions had a next-wakeup
+estimate beyond the state's residency plus power-off latency, and every
+single one of them started its search at index 1. After the fix the same
+60 s enters it 14516 times for 67 s of residency, and the system-level
+domain above the clusters, which can only power off once every child is
+in its deepest state, goes from 0 to 3531 power-offs.
+
+Fixes: e94999688e3a ("PM / Domains: Add genpd governor for CPUs")
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+Assisted-by: Claude:claude-opus-5
+Cc: stable@vger.kernel.org
+---
+
+Tool disclosure, per Documentation/process/generated-content.rst:
+
+This patch was produced with the assistance of Claude (claude-opus-5) driven
+from Claude Code, working under my direction on a mainline port of the
+Fairphone 3 (sdm632/msm8953). The assistant was asked why the CPU cluster
+power domain never selected its deepest idle state; it wrote the temporary
+trace_printk instrumentation described in the commit message, ran the three
+instrumented boots on the device, read the resulting traces, located the
+field, and drafted this patch and its message. I reviewed the change and the
+measurements.
+
+The tool-affected portion is the whole of this patch, which is a one-word
+type change, and all of the commit message.
+
+Testing: built and booted on a Fairphone 3 (sdm632, four cpu domains per
+cluster, three cluster idle states, a system domain above them). Measured
+with the genpd debugfs idle_states counters over 60 s of display-off idle,
+before and after, with no other difference between the two kernels. The
+figures in the commit message are those two runs. scripts/checkpatch.pl
+--strict is clean; the patch applies to torvalds master as of 2026-08-14.
+
+Recipients from scripts/get_maintainer.pl: Rafael J. Wysocki, Ulf Hansson,
+Daniel Lezcano, linux-pm, linux-kernel.
+ include/linux/pm_domain.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b299dc0128d6..9b1aa61692d3 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -171,7 +171,7 @@ struct genpd_governor_data {
+ 	ktime_t last_enter;
+ 	bool reflect_residency;
+ 	bool cached_power_down_ok;
+-	bool cached_power_down_state_idx;
++	unsigned int cached_power_down_state_idx;
+ };
+ 
+ struct genpd_power_state {
+
+base-commit: 7213855948c70fd165356526f1de1c3b6bf4d554
+-- 
+2.53.0
+
