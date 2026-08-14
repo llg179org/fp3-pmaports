@@ -1181,6 +1181,19 @@ so it was a no-op.
   `monitored-battery`; the float-voltage half of JEITA; step charging; and the
   thermal trip temperatures, which are a choice rather than a measurement. See
   [`charger/README.md`](charger/README.md).
+* **Only the discharge half of the two-OS comparison is matched.** The idle
+  discharges were run against each other deliberately; the charges were not.
+  Ubuntu Touch charged from a wall charger, and both pmOS captures came off an
+  SDP port at `usb_imax_uA 500000` — about 340 mA into the pack — so they show
+  *that* charging terminates, not how it compares. A like-for-like charge needs
+  the same charger and the same starting state of charge on both sides, and it
+  pairs naturally with the two hardware measurements above, since all three want
+  a wall charger and a low battery.
+
+  ☠️ **The two halves age differently.** A charge measurement stays valid across
+  the idle-current work; a discharge measurement does not, because the floor it
+  rests on is the thing being changed. Re-running the matched discharge before
+  the `ak7375` fix lands is work thrown away.
 * **Sensors work**, including proximity blanking during a call and ambient
   light. What is left there is calibration rather than bring-up: the
   magnetometer has an unknown hard-iron offset and scale, and the mount matrix
