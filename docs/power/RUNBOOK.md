@@ -45,15 +45,22 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
   `debug-int/7.1.3` `162f27abc328`, with `CONFIG_QCOM_MPM=y` now in
   `config-fp3.aarch64`.
 
-**Also in progress (uncommitted, in `fp3-power-wt`):** the GPIO wakeup map.
-`pinctrl-msm8953.c` now carries `msm8953_mpm_map[]`, inverted from downstream
-`mpm-8953.c`'s `mpm_msm8953_gpio_chip_data[]` (which is `{mpm-pin, gpio}`;
-mainline wants `{gpio, mpm-pin}`), plus `.wakeirq_map`/`.nwakeirq_map`. Still to
-do: `wakeup-parent = <&mpm>;` on the `tlmm` node in `msm8953.dtsi` — a **separate
-commit**, driver and DTS never mixed. ☠️ MPM pin 53 is claimed twice downstream,
-by GIC `mdss_irq` (SPI 72) and by GPIO 62; mainline has one MPM pin space and the
-DT `qcom,mpm-pin-map` claims it first, so GPIO 62 will log a mapping error and
-never arm. Left in the table because it is SoC data; say so in the commit.
+**Done since the last update:** the GPIO wakeup map landed as two commits
+(`pinctrl: qcom: msm8953: add the MPM wakeup interrupt map` and `arm64: dts:
+qcom: msm8953: wake through the MPM from the TLMM`), plus a DT fix renaming the
+`system-idle-states` container to `domain-idle-states` — that name was matching
+a different schema and producing three `dtbs_check` warnings. All on
+`wip/7.1.3/power`, `integration/7.1.3` and `debug-int/7.1.3`, pushed. The
+package `linux-fp3-7.1.3-r54` built (pinned at `162f27abc328`, the genpd-fix
+state — deliberately *not* the GPIO work, which is untested on the device).
+Two patches are LKML-ready under `docs/power/*.patch` and on
+`submit/7.1.3/power`. ☠️ Never run `fp3-kbuild.sh` while `pmb build` is in
+flight — they share the `/mnt/linux` bind mount and the package build dies at
+teardown.
+
+**Still to test on the device:** the GPIO wakeup map. Build it, deploy, and
+check `/proc/interrupts` shows the GPIO lines moving to the MPM domain, plus
+`dmesg | grep qcom_mpm` for the expected pin-53 collision message.
 
 **Then: why the RPM still records nothing.** The likely answer is already in
 view and needs confirming rather than searching for. On the oracle, APSS
