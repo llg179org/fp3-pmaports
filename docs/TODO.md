@@ -910,6 +910,39 @@ because of that. Establish first whether pm8953 exposes an SDAM cell for it —
 and check what the vendor kernel does on this board — before adding a property
 and declaring victory.
 
+### The cellular network already supplies the time, and nothing consumes it
+
+Measured 2026-08-14, registered on Vodafone HU at 78 % signal. This is NITZ,
+carried on the signalling channel — **no mobile data and no data subscription are
+involved**, which makes it the one time source available when there is no WiFi:
+
+```
+# mmcli -m 0 --time            (needs root; polkit refuses the plain user)
+  Time     | current: 2026-08-14T15:37:52+02
+  Timezone | current: 120
+```
+
+☠️ **The value is UTC and the string labels it as local.** Real local time at
+that instant was 17:37:53 CEST, so UTC was 15:37:53 — which is what the modem
+reported, to the second. The appended `+02` claims it is already local, so
+anything parsing that string at face value sets the clock **two hours slow**. The
+offset itself is separately reported and correct (120 minutes). Whether this is
+ModemManager's assembly or the QMI plugin is not established; what is established
+is that the two fields are individually right and the composed string is not.
+
+**The shape of a fix that is safe without resolving that.** Use it only as a
+bootstrap: if the system clock is near the epoch — the state this device boots
+into every time — set it from the network value; if the clock is already
+plausible, do nothing. A two-hour error is irrelevant against 1970, and it is
+enough to make TLS, `apk` and log timestamps work until NTP refines it. That way
+the ambiguity above never has to be decided, and the rule stays simple enough to
+be correct on any phone and any operator.
+
+Not yet established, and both are cheap reads: whether anything currently
+consumes the value at all (`timedatectl`, ModemManager's `NetworkTimeChanged`),
+and how long after boot the modem can first answer — if registration takes
+minutes, the bootstrap has to wait for it rather than run at a fixed point.
+
 ## The notification LED blinks forever after a missed call
 
 **Symptom:** after a missed call the LED keeps blinking; dismissing the
