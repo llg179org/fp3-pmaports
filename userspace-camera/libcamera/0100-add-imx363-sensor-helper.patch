@@ -1,0 +1,21 @@
+--- a/src/ipa/libipa/camera_sensor_helper.cpp	2026-07-20 12:45:14.844665875 +0200
++++ b/src/ipa/libipa/camera_sensor_helper.cpp	2026-07-20 12:46:39.006591771 +0200
+@@ -542,6 +542,18 @@
+ };
+ REGISTER_CAMERA_SENSOR_HELPER("imx214", CameraSensorHelperImx214)
+ 
++class CameraSensorHelperImx363 : public CameraSensorHelper
++{
++public:
++	CameraSensorHelperImx363()
++	{
++		/* Same analogue-gain model as the IMX214; black level 64 at 10 bits. */
++		blackLevel_ = 4096;
++		gain_ = AnalogueGainLinear{ 0, 512, -1, 512 };
++	}
++};
++REGISTER_CAMERA_SENSOR_HELPER("imx363", CameraSensorHelperImx363)
++
+ class CameraSensorHelperImx219 : public CameraSensorHelper
+ {
+ public:
