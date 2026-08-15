@@ -29,54 +29,41 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-★★ **There is now a direct current instrument** - no cable to unplug, no voltage
-fitting. `qcom_smbx` maps the charger supply's writable `POWER_SUPPLY_PROP_STATUS`
-onto `USBIN_SUSPEND_BIT`:
+★★★ **Answered: with the display genuinely off, the genpd fix is worth ~9 %.**
+Two legs per arm, fresh boot each, 200 samples after a 300 s settle, display gate
+enforced: **−119.0 mA with the fix, −130.5 mA without**, arms non-overlapping.
+The earlier panel-on set had the opposite sign and was also correct - it was a
+different regime, not noise. Full write-up in [`README.md`](README.md), data in
+[`2026-08-15_ab-current-legs.txt`](2026-08-15_ab-current-legs.txt).
 
-```sh
-echo Unknown  > /sys/class/power_supply/pmi632-charger/status   # off VBUS
-echo Charging > /sys/class/power_supply/pmi632-charger/status   # restore
-```
+**Baseline to attack next: ~130 mA idle with the screen off.** The instrument is
+`docs/power/idle-leg.sh` (copy it to `/home/fp3/` and run as root); it suspends
+USBIN so nothing needs unplugging, gates on the display really being off, and
+restores the charger on every exit path.
 
-after which `pmi632-battery/current_now` reads real discharge current. The
-protocol is `docs/power/idle-leg.sh` (host copy) / `/home/fp3/currleg.sh` (the
-device-side one used for the legs so far).
-
-**Baseline: an idle FP3 with the screen off draws about 155 mA.** That is the
-number worth attacking; everything measured so far moves it by single digits.
-
-**In flight:** an interleaved A/B of the genpd fix, fresh boot per leg.
-
-```
-FIX  -160.6  FIX2 -158.2  FIX3 -164.3          (genpd bool fix in)
-CTL  -154.4  CTL2 -155.4  CTL3 running         (that one commit reverted)
-```
-
-The deep-idle kernel looks 4-9 mA *worse*, consistently. ☠️ But the per-sample
-standard deviation is ~60 mA - the load is bursty - so a 100-sample mean has a
-standard error near 6 mA. The groups separating is suggestive, not established;
-keep alternating legs until the arms are clearly apart or clearly not. A coherent
-reason for the sign exists: the AP pays ~143 domain entries a second while the
-RPM never collapses, so the transitions buy nothing downstream.
-
-**Withdrawn, do not re-cite:** every mV/h figure in this directory (voltage-slope
-method, unusable at 99 % on a suspended port - it read *backwards* in a controlled
-test), and the claim that the panel dominated the budget (it is ~10 mA of 150).
+**The obvious next question, and it is cheap:** bisect that 130 mA by subsystem
+with the same instrument - one leg with WiFi down, one with the modem stopped,
+one with `pd-mapper` disabled. Each is a leg, each is ten minutes, and the
+instrument now resolves ~7 mA comfortably.
 
 **The RPM question is parked, not open.** Every AP-side precondition is verified
 and the two-sided vMPM dump is structurally identical; what remains is past the
-PSCI call, in TZ or RPM firmware, where this kernel has no instrument. See
-[`README.md`](README.md).
+PSCI call, in TZ or RPM firmware, where this kernel has no instrument.
 
-**Not submission-ready:** the vMPM timer commit (`wip/7.1.3/power`
-`97951baf7a85`) is a real omission but changes nothing measurable yet. The two
-LKML patches that *are* ready (genpd bool, cpuidle-psci ordering) are unaffected -
-though if the A/B holds, the genpd cover letter should say plainly that on this
-SoC the fix costs current until the platform's sleep handshake works.
+**Upstream:** the genpd patch can now say plainly that it measurably improves
+idle current on an SDM632 phone. The cpuidle-psci ordering patch is unaffected.
+The vMPM timer commit (`wip/7.1.3/power` `97951baf7a85`) stays on the fork - it is
+a real omission but still changes nothing measurable.
 
 **Also still open:** GPIO wakeup map inert until the RPM takes over; the regulator
 sleep set must exist *before* the RPM ever collapses; `_commit`/`pkgrel` still pin
-`162f27abc328`.
+`162f27abc328` and should move to the current `debug-int/7.1.3` tip.
+
+☠️ **Two traps this cost:** never reboot with USBIN suspended (the bit is in the
+PMIC, survives a warm reboot, and wedged the bootloader into a fastboot that
+answered nothing - it took a held power button). And `systemctl stop greetd`
+returns before the compositor releases DRM master, so a single write to
+`fb0/blank` is silently undone.
 
 ## Device and tree state
 
