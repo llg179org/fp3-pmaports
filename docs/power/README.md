@@ -1100,3 +1100,35 @@ than the panel term itself, so even this needs repeating.
 The number that matters is the baseline: **an idle Fairphone 3 with the screen
 off is drawing about 145 mA.** That is roughly an order of magnitude more than an
 idle phone should, and it is now measurable directly, in a minute, per boot.
+
+## And with the panel actually off, the genpd fix saves 9 %
+
+*2026-08-15 morning. Data: [`2026-08-15_ab-current-legs.txt`](2026-08-15_ab-current-legs.txt).*
+
+The A/B was run again with the display gate actually enforced - `idle-leg.sh`
+retries the blank until `card0-DSI-1/dpms` reads `Off` and refuses to run if it
+never does. Two legs per arm, fresh boot each, 200 samples after a 300 s settle:
+
+| | leg 1 | leg 2 | mean |
+|---|---|---|---|
+| genpd fix in | −115.9 mA | −122.2 mA | **−119.0** |
+| that one commit reverted | −131.1 mA | −129.8 mA | **−130.5** |
+
+The arms do not overlap. **The fix is worth about 11.5 mA of 130, roughly 9 %.**
+
+☠️ And it is the *opposite sign* from the earlier set, which was run with the
+panel refreshing at 65 Hz. That earlier set was not noisy and it was not wrong -
+it was measuring a different regime. When something wakes the CPU 65 times a
+second the idle windows never get long enough for `cluster-pc` to repay its entry
+cost, so the fixed kernel pays for transitions and gets nothing back. Turn the
+display off and the windows are long enough for the deeper state to win.
+
+The general form of that, which is worth more than this number: **a confound can
+be a regime rather than a bias.** No amount of extra samples or interleaving
+would have found this one, because both arms were measured correctly - just not
+in the state the question was about. The only thing that found it was gating the
+precondition and letting the gate fail loudly.
+
+This also settles the phrasing for the upstream submission. The genpd bug is
+SoC-independent and the patch stands on its own; on this board it measurably
+improves idle current, and that is now a number rather than an expectation.
