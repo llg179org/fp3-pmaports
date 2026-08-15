@@ -41,25 +41,41 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
  
          #[template_child]
          pub measure_revealer: TemplateChild<gtk::Revealer>,
-@@ -497,6 +499,17 @@
+@@ -497,6 +499,7 @@
                      // control - are flowing.
                      if matches!(viewfinder.state(), aperture::ViewfinderState::Ready) {
                          viewfinder.reapply_autofocus();
 +
-+                        // The same lateness hides the distance slider: it is
-+                        // built from the lens's own bounds, and at start-up
-+                        // there is no camera to ask, so the popover came up
-+                        // without it and stayed that way. Build it again now
-+                        // that the camera describes itself - but only while it
-+                        // is still missing, so that reaching Ready again does
-+                        // not shut a popover the user has open.
-+                        if obj.imp().focus_scale.borrow().is_none() {
-+                            obj.build_focus_popover();
-+                        }
                      }
                  }
              ));
-@@ -1075,6 +1088,9 @@
+@@ -669,7 +672,24 @@
+             let _ = self.flash.set(flash);
+             obj.update_flash_button();
+ 
+-            obj.build_focus_popover();
++            // The popover is built when it is about to be shown, not now:
++            // the distance slider is made from the lens's own bounds, and at
++            // this point there is no camera to ask for them. Every attempt to
++            // guess a later moment - the viewfinder reaching Ready, the first
++            // frame - can still be too early, because the node exists before
++            // its controls are published. The one moment that cannot be too
++            // early is the user reaching for the menu.
++            self.focus_button.set_create_popup_func(glib::clone!(
++                #[weak]
++                obj,
++                move |_| {
++                    if obj.imp().focus_scale.borrow().is_none() {
++                        obj.build_focus_popover();
++                    } else {
++                        obj.update_focus_controls();
++                    }
++                }
++            ));
+         }
+     }
+ 
+@@ -1075,6 +1095,9 @@
          let imp = self.imp();
          let settings = imp.settings();
  
@@ -69,7 +85,43 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
          let box_ = gtk::Box::new(gtk::Orientation::Vertical, 6);
          box_.set_margin_top(6);
          box_.set_margin_bottom(6);
-@@ -1155,7 +1171,7 @@
+@@ -1103,9 +1126,23 @@
+             button.connect_toggled(glib::clone!(
+                 #[strong]
+                 settings,
++                #[weak(rename_to = obj)]
++                self,
+                 move |button| {
+-                    if button.is_active() {
+-                        let _ = settings.set_string("focus-mode", mode.as_setting());
++                    if !button.is_active() {
++                        return;
++                    }
++
++                    let _ = settings.set_string("focus-mode", mode.as_setting());
++
++                    // The choice is made; leaving the menu open over the
++                    // picture only hides what the choice just changed. Off
++                    // keeps it open, because there the slider below is the
++                    // point of the menu.
++                    if mode != aperture::FocusMode::Off {
++                        if let Some(popover) = obj.imp().focus_button.popover() {
++                            popover.popdown();
++                        }
+                     }
+                 }
+             ));
+@@ -1140,7 +1177,8 @@
+                 scale.set_width_request(180);
+                 scale.set_draw_value(true);
+                 scale.set_value_pos(gtk::PositionType::Right);
+-                scale.set_value(min);
++                /* Where the lens actually is, if the user has put it somewhere. */
++                scale.set_value(imp.viewfinder.lens_position().unwrap_or(min));
+ 
+                 scale.connect_value_changed(glib::clone!(
+                     #[weak(rename_to = obj)]
+@@ -1155,7 +1193,7 @@
                  ));
  
                  box_.append(&scale);
@@ -78,7 +130,7 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
              }
          }
  
-@@ -1173,7 +1189,7 @@
+@@ -1173,7 +1211,7 @@
          let imp = self.imp();
          let mode = aperture::FocusMode::from_setting(&imp.settings().string("focus-mode"));
  
@@ -149,7 +201,7 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
      }
  
      /// Re-applies the focus mode after the pipeline was reconfigured - a
-@@ -2367,19 +2411,7 @@
+@@ -2367,25 +2411,18 @@
      /// its own default mode. A distance the user dialled in is re-sent too,
      /// since the reconfigure lost that as well.
      pub fn reapply_autofocus(&self) {
@@ -170,7 +222,18 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
      }
  
      pub fn focus_mode(&self) -> crate::camera_control::FocusMode {
-@@ -2428,18 +2460,19 @@
+         self.imp().focus_mode.get()
+     }
+ 
++    /// Where the user last put the lens, if anywhere.
++    pub fn lens_position(&self) -> Option<f64> {
++        self.imp().lens_position.get()
++    }
++
+     /// Focuses once, now.
+     pub fn trigger_autofocus(&self) {
+         self.request_autofocus(crate::camera_control::AfRequest::Trigger);
+@@ -2428,18 +2465,19 @@
          crate::camera_control::set_control(node_id, control, value);
      }
  
