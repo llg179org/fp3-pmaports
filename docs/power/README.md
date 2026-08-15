@@ -886,3 +886,35 @@ buffering matters. The missing thing was never a message. It is the sleep-set
 read out of one function is not the mechanism. `msm_rpm_enter_sleep()` looked
 decisive because it is named for exactly the moment in question, and the thing it
 actually does is mundane.
+
+### First probe of that theory: a sleep entry existing is not enough
+
+Throwaway experiment on top of `debug-int/7.1.3` `6cbf488a28f0` (uncommitted, in
+the build tree only): mirror every active regulator vote into the sleep set with
+an **identical** value, so nothing can brown out, and see whether the RPM needs a
+sleep-set entry to merely *exist*.
+
+```c
+	ret = qcom_rpm_smd_write(smd_vreg_rpm, QCOM_SMD_RPM_ACTIVE_STATE, ...);
+	if (!ret)
+		qcom_rpm_smd_write(smd_vreg_rpm, QCOM_SMD_RPM_SLEEP_STATE, ...);
+```
+
+Result, display off, 45 s after boot: **no change.** `vlow` and `vmin` both still
+`Count: 0`, the APSS master record is still entirely zeros, and the kernel boots
+with no regulator or RPM-timeout errors (`dmesg` match count 0).
+
+So existence is not the missing property — the RPM is not looking for "is there a
+sleep vote for this resource", it is looking at what the sleep vote *says*, and a
+sleep vote identical to the active one holds the rail up exactly as the active one
+does. In hindsight that is the only sensible protocol.
+
+☠️ The `Client Votes` field is **not** usable as the signal here: it read
+`0x13111517`, then `0x17151715`, then `0x11151115` across three reads with no
+deliberate change between them. It moves on its own, so a difference across an
+experiment proves nothing. The counters (`Count`, `numshutdowns`) are the
+instruments that mean something.
+
+The next probe therefore has to send a sleep value that actually releases
+something, which is the part that can brown a rail out mid-sleep — so it must be
+one rail with no consumer, chosen deliberately, not a blanket change.
