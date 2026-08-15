@@ -73,6 +73,13 @@ mdss1=$(awk '/msm_mdss/ {for (i=2;i<=NF;i++) if ($i ~ /^[0-9]+$/) s+=$i} END {pr
 [ "$mdss1" -eq "$mdss0" ] || die "msm_mdss still counting ($((mdss1 - mdss0)) in 5 s) - the panel is alive"
 
 # --- take the phone off VBUS -------------------------------------------------
+# ☠️ USBIN_SUSPEND_BIT lives in the PMIC and a warm reboot does not clear it.
+# Leaving it set once wedged the bootloader: the phone enumerated as fastboot
+# but answered no command, and it took a hold-power-button cycle to recover.
+# Restore it on every exit path, and never reboot while it is set.
+restore_vbus() { echo Charging > "$CHG/status" 2>/dev/null || true; }
+trap restore_vbus EXIT INT TERM
+
 echo Unknown > "$CHG/status"
 sleep 10
 [ "$(cat "$CHG/online")" = 0 ] || die "charger still online after suspending USBIN"
@@ -95,3 +102,7 @@ while [ "$i" -lt "$N" ]; do
 done
 
 echo "$TAG mean_uA=$((s / N)) n=$N settle=${SETTLE}s" | tee -a "$OUT"
+
+# The EXIT trap puts the charger back; say so, because a leg that ends without
+# this line has left the phone off VBUS and must not be rebooted as-is.
+echo "idle-leg: restoring charger input" >&2
