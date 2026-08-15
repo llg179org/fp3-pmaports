@@ -1272,3 +1272,47 @@ tarball only while its commit is reachable from some ref. Rewriting `integration
 without them would have left the pinned package un-buildable, a failure that
 shows up much later than the change that caused it. The one-line check is in
 [the branch model](../README.md#the-branch-model).
+
+## AfWindows cannot reach the camera through PipeWire
+
+Tap-to-focus points at nothing. The tapped position never reaches libcamera,
+because PipeWire's libcamera plugin maps only `bool`, `int32` and `float`
+controls to node properties and returns early for arrays — and `AfWindows` is
+an array of rectangles. Measured 2026-08-15 by dumping what the camera node
+publishes:
+
+```sh
+pw-dump | python3 -c 'import json,sys
+for o in json.load(sys.stdin):
+    for pr in o.get("info",{}).get("params",{}).get("PropInfo",[]):
+        i = pr.get("id")
+        if isinstance(i, str) and i.startswith("id-01"):
+            print(i, pr.get("description"), pr.get("type"))'
+```
+
+Only `AfMode`, `AfMetering`, `AfTrigger` and `LensPosition` come back. The
+stand-in that shipped is `AfMeteringWindows` meaning *the centre 3×3 of the
+5×5 zones*, defined in the IPA, which removes the dilution but cannot aim.
+
+Fixing it properly means teaching the SPA plugin to carry rectangle controls,
+in `spa/plugins/libcamera` in the PipeWire tree, and then giving the aperture
+control layer a way to write one — `pw-cli set-param` with a rectangle array
+rather than the single number it writes today.
+
+## Does centre metering recover the focus signal?
+
+**Not yet measured.** The A/B ran (2026-08-15) and proved only that the code
+path works: the score falls to 0.385 of the whole-frame value, against 9/25 =
+0.36 of the zones. Both legs were run on a bench scene with no focus peak in
+it at all, so neither could show a peak and the comparison says nothing about
+whether narrowing the zones recovers the modulation. Repeat it on the scene
+that produced the 4.9 % figure — a phone held close over a keyboard, in room
+light — with `AfMetering: 0` and `AfMetering: 1` alternating:
+
+```sh
+LIBCAMERA_LOG_LEVELS=IPASoftAf:INFO cam -c1 --capture=200 \
+    -s width=640,height=480 --script=<script setting AfMode 1, AfMetering N, AfTrigger 0>
+```
+
+Only once that number exists is there anything to say about `min-contrast`,
+which is 0.08 and was being missed by 3 percentage points.

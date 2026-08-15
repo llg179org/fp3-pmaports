@@ -241,7 +241,7 @@ new file mode 100644
 index 0000000..cd6cb8c
 --- /dev/null
 +++ b/src/ipa/simple/algorithms/af.cpp
-@@ -0,0 +1,740 @@
+@@ -0,0 +1,766 @@
 +/* SPDX-License-Identifier: LGPL-2.1-or-later */
 +/*
 + * Copyright (C) 2026, Lajosházi, László Gergely
@@ -466,6 +466,28 @@ index 0000000..cd6cb8c
 +		zones_.fill(true);
 +}
 +
++/**
++ * \brief Meter the middle of the frame
++ *
++ * What AfMeteringWindows means when no windows have been given. A caller that
++ * asks for windowed metering without being able to say where is asking to stop
++ * metering the whole frame, and the middle is what a camera pointed at
++ * something has in it. Over the whole frame a close subject's sharpening is
++ * diluted by everything behind it, which never sharpens at any lens position,
++ * and the response flattens until the scan cannot tell a peak from noise.
++ *
++ * Not merely a smaller rectangle: the surrounding zones are what does the
++ * diluting, so they have to be excluded rather than down-weighted.
++ */
++void Af::selectCentre()
++{
++	zones_.fill(false);
++
++	for (unsigned int y = 1; y + 1 < SwIspStats::kAfZonesY; y++)
++		for (unsigned int x = 1; x + 1 < SwIspStats::kAfZonesX; x++)
++			zones_[y * SwIspStats::kAfZonesX + x] = true;
++}
++
 +int Af::configure(IPAContext &context,
 +		  [[maybe_unused]] const IPAConfigInfo &configInfo)
 +{
@@ -520,14 +542,18 @@ index 0000000..cd6cb8c
 +	}
 +
 +	const auto &metering = controls.get(controls::AfMetering);
-+	if (metering.has_value() &&
-+	    metering.value() == controls::AfMeteringAuto) {
-+		zones_.fill(true);
++	if (metering.has_value()) {
++		if (metering.value() == controls::AfMeteringAuto) {
++			zones_.fill(true);
++		} else if (!windowsSet_) {
++			selectCentre();
++		}
 +	}
 +
 +	const auto &windows = controls.get(controls::AfWindows);
 +	if (windows.has_value()) {
 +		auto previous = zones_;
++		windowsSet_ = true;
 +		selectZones(context, windows.value());
 +
 +		/*
@@ -987,7 +1013,7 @@ new file mode 100644
 index 0000000..3cff742
 --- /dev/null
 +++ b/src/ipa/simple/algorithms/af.h
-@@ -0,0 +1,98 @@
+@@ -0,0 +1,104 @@
 +/* SPDX-License-Identifier: LGPL-2.1-or-later */
 +/*
 + * Copyright (C) 2026, Lajosházi, László Gergely
@@ -1044,6 +1070,7 @@ index 0000000..3cff742
 +	void detrend();
 +	void selectZones(IPAContext &context, Span<const Rectangle> windows);
 +
++	void selectCentre();
 +	void startScan(IPAContext &context);
 +	void planScan(int32_t centre, int32_t span, unsigned int steps);
 +	void moveTo(IPAContext &context, int32_t position);
@@ -1081,6 +1108,11 @@ index 0000000..3cff742
 +	unsigned int steadyCount_ = 0;
 +	unsigned int steadyWait_ = 0;
 +	unsigned int disagreed_ = 0;
++	/*
++	 * Whether AfWindows was ever given, which decides what windowed
++	 * metering falls back to.
++	 */
++	bool windowsSet_ = false;
 +};
 +
 +} /* namespace ipa::soft::algorithms */
