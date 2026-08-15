@@ -36,6 +36,20 @@ single one of them started its search at index 1. After the fix the same
 domain above the clusters, which can only power off once every child is
 in its deepest state, goes from 0 to 3531 power-offs.
 
+Residency counters are not by themselves a power saving, so the effect
+was also measured at the battery. With the panel genuinely off and the
+charger's USB input suspended so the fuel gauge reports real discharge,
+interleaved A/B legs of 200 samples each taken after a 300 s settle give
+130.5 mA unfixed against 119.0 mA fixed, the two arms not overlapping:
+about 9% of the idle draw of the entire phone.
+
+That figure is conditional on the display being off, and worth stating
+because it caught me out. With the panel refreshing at 65 Hz the same
+comparison reverses sign, and correctly so - the idle windows never grow
+long enough for the deepest state to repay its entry cost. The fix makes
+a deeper state reachable; whether reaching it pays depends, as it should,
+on how long the domain gets to stay there.
+
 Fixes: e94999688e3a ("PM / Domains: Add genpd governor for CPUs")
 Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
 Assisted-by: Claude:claude-opus-5
