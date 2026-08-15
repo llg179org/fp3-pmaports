@@ -1081,6 +1081,49 @@ After which `pmi632-charger/online` reads 0, the battery reports `Discharging`,
 and `pmi632-battery/current_now` becomes a **direct current reading** - no cable
 to unplug, no human at the phone, no curve fitting.
 
+### Why that works, since "measuring discharge on the charger" sounds wrong
+
+It is not measuring discharge *while charging*. It takes the phone off VBUS
+electrically, and only the cable stays.
+
+```c
+/* drivers/power/supply/qcom_smbx.c */
+#define USBIN_CMD_IL        0x340
+#define USBIN_SUSPEND_BIT   BIT(0)
+
+case POWER_SUPPLY_PROP_STATUS:
+        return regmap_update_bits(chip->regmap, chip->base + USBIN_CMD_IL,
+                                  USBIN_SUSPEND_BIT, !val->intval);
+```
+
+The write opens the PMIC's input FET. VBUS is still present on the connector,
+the USB PHY and the data link sit on the phone's side of that FET and keep
+running, but the charging path is broken, so the phone runs off its own pack.
+Note the `!val->intval`: `Unknown` is `POWER_SUPPLY_STATUS_UNKNOWN` = 0, so it
+*sets* the bit; any non-zero status string clears it again.
+
+Three gates, because each one alone can be fooled and together they cannot:
+
+```sh
+[ "$(cat $CHG/online)" = 0 ]              || die "charger still online"
+[ "$(cat $BATT/status)" = Discharging ]   || die "battery is '...'"
+[ "$i0" -lt 0 ]                           || die "current_now is $i0, expected negative"
+```
+
+`online` asks the PMIC, `status` asks the charger state machine, and a negative
+`current_now` asks the current ADC itself. All three are in
+[`idle-leg.sh`](idle-leg.sh) and [`suspend-leg.sh`](suspend-leg.sh).
+
+☠️ **The cost of the trick: `USBIN_SUSPEND_BIT` lives in the PMIC and survives a
+warm reboot.** Left set through a restart it once wedged the bootloader - the
+phone enumerated as fastboot and answered no command, a host-side USB reset did
+nothing, and it took a held power button to recover. Every script therefore
+carries `trap restore EXIT INT TERM`, and nothing reboots while the bit is set.
+
+☠️ **`current_now` is the only real reading here.** `charge_now` is not a coulomb
+count on this platform, so this instrument works awake and cannot be carried
+across a suspend - see the withdrawal below.
+
 ### What that immediately says
 
 | condition | mean current |
@@ -1132,3 +1175,76 @@ precondition and letting the gate fail loudly.
 This also settles the phrasing for the upstream submission. The genpd bug is
 SoC-independent and the patch stands on its own; on this board it measurably
 improves idle current, and that is now a number rather than an expectation.
+
+## ☠️ All of the above is runtime idle: the phone had never suspended
+
+*2026-08-15, ~09:30.*
+
+Everything measured so far, the 9 % included, was taken with the whole session
+alive. `/sys/power/suspend_stats/success` read **0** after fifty minutes of
+uptime, and `/sys/power/mem_sleep` offers only `[s2idle]`, which on this
+platform is the suspend path rather than a fallback for a missing one. The
+"~130 mA idle baseline" is therefore runtime idle with `greetd`, pipewire,
+wireplumber, five `xdg-desktop-portal`s, gvfsd, avahi and `wpa_supplicant`
+running, and a modem talking at 28 `smd-edge` interrupts a second.
+
+That matters for the target as much as for the number. **10 mA is a different
+regime, not a smaller figure in this one** - downstream phones reach it in full
+suspend with the modem in its own power-save, never in runtime idle. The
+subsystem bisect that was queued next would have apportioned a quantity nobody
+should be trying to shave.
+
+The AP side, for its part, is not idle-broken: the genpd `interrupt-controller`
+domain had been entered 56 048 times and held for 67 % of uptime.
+
+### s2idle works, and the read-only RTC does not stop it
+
+90 s requested through the RTC wakealarm, **91 s slept**, `suspend_stats`
+`success` 0 → 1 with `fail` 0, and the WiFi link reassociated on its own. The
+RTC time is stuck in 1970 for want of an `offset` nvmem cell (see
+[`../TODO.md`](../TODO.md)), but an alarm is *relative* to the counter, so it is
+unaffected - which is exactly what makes an unattended suspend leg safe to run.
+
+☠️ Prove that before relying on it. On a platform whose clock cannot be set it
+is a perfectly reasonable guess that its alarm is dead too; the guess was wrong
+here, and only the two-minute probe could say so.
+
+### ☠️ The first suspend instrument was wrong, and its numbers are withdrawn
+
+`current_now` has to be sampled and nothing samples while userspace is frozen,
+so the first version of [`suspend-leg.sh`](suspend-leg.sh) integrated `charge_now`
+instead - on the assumption that a µAh-valued attribute counts charge.
+
+It does not. There is no coulomb counter on this platform: `qcom_smbx` takes its
+capacity from `drivers/power/supply/adc-battery-helper.c`, which polls every
+30 s and looks the voltage up in an OCV table (`power_supply_batinfo_ocv2cap`)
+through a moving average. The file's own header says it exists for devices whose
+hardware gauge is absent or limited.
+
+| window | what it reported | what it actually measured |
+|---|---|---|
+| awake, 600 s | 209 mA | the estimator still walking the SoC down after USBIN was suspended - motion unrelated to the load. `current_now` says 130 mA under the same conditions |
+| asleep, 601 s | **0 µAh, 0 mA** | a poll worker that does not run while userspace is frozen |
+
+**A unit is not a mechanism.** One `grep` for the provider would have cost less
+than the write-up of a wrong result.
+
+And the awake window was in that script purely as a same-instrument control, in
+a regime where a second instrument could contradict it. That is the only reason
+the asleep reading did not get published as a spectacular sub-2 mA result: **an
+instrument aimed solely at the regime nothing can cross-check is unfalsifiable
+by construction.** Give a new one at least one window whose answer is already
+known.
+
+### What can be measured across a suspend here
+
+Voltage. `voltage_now` is a real ADC read, and after hours off VBUS asleep the
+pack is fully relaxed - the one condition in which an OCV-derived capacity is at
+its most trustworthy. So both ends of the window are read relaxed, which is also
+what distinguishes this from the discredited voltage-slope method: that one
+compared a relaxing pack against itself at two different points of its own
+relaxation.
+
+`capacity` is 1 % granular, 30.6 mAh on this pack, so a 3 h window separates
+"still around 100 mA" (a ~13 % drop) from "under 20 mA" (under 2 %) and nothing
+finer. That is deliberate. The open question is which regime, not a 10 mA effect.
