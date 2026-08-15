@@ -49,11 +49,23 @@ and no number had ever been taken there.
 in 1970 (no `offset` nvmem cell, `docs/TODO.md`) but an alarm is *relative*, so
 it is unaffected - which is what makes an unattended suspend leg safe.
 
-**The instrument for that regime is `docs/power/suspend-leg.sh`**, not
-`idle-leg.sh`: `current_now` has to be sampled and nothing samples while
-userspace is frozen, so it integrates the fuel gauge accumulator instead
-(`charge_now` before/after, 306 uAh quanta measured, ~2 mA over a 600 s window).
-Both its windows - awake and asleep - use that same accumulator on purpose.
+☠️ **The first suspend instrument was wrong and its numbers are withdrawn.**
+It integrated `charge_now`, on the assumption that a uAh-valued attribute counts
+charge. There is no coulomb counter on this platform: `qcom_smbx` gets capacity
+from `adc-battery-helper.c`, which polls every 30 s and looks the voltage up in
+an OCV table through a moving average. Its awake control window read **209 mA**
+where `current_now` reads 130 mA, and its asleep window read **exactly zero** -
+the poll worker does not run while userspace is frozen. The control window is
+the only reason this was caught; a script measuring only the regime of interest
+would have produced a clean-looking sub-2 mA result.
+
+**Running now (started ~10:00, due ~13:05): `suspend-leg.sh S2 10800`.** Three
+hours asleep off VBUS, `capacity`/`voltage_now`/`voltage_ocv` read at both ends
+with the pack relaxed at each. `capacity` is 1% granular = 30.6 mAh, so this
+separates "still around 100 mA" (~13% drop) from "under 20 mA" (under 2%) and
+nothing finer - which is the open question. ☠️ The RTC alarm is what brings it
+back; proven twice (`suspend_stats/success` 0 → 2), and the EXIT trap clears
+`USBIN_SUSPEND_BIT` on every path.
 
 **Then** bisect whatever is left by subsystem with `idle-leg.sh` - one leg with
 WiFi down, one with the modem stopped, one with `pd-mapper` disabled. That is
