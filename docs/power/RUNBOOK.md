@@ -59,6 +59,36 @@ the poll worker does not run while userspace is frozen. The control window is
 the only reason this was caught; a script measuring only the regime of interest
 would have produced a clean-looking sub-2 mA result.
 
+### ← RESUME HERE after 13:05 on 2026-08-15
+
+The phone is asleep and unreachable *by design* - WiFi drops in s2idle, so a
+failed ping before 13:05 means it is working, not broken. Confirmed still asleep
+at 11:33, 90 minutes in.
+
+```sh
+ping -c2 -W3 192.168.100.17                       # back up = the leg finished
+ssh fp3@192.168.100.17 'cat /home/fp3/suspend-results.txt'
+```
+
+Read the **`settled`** line, not `after`: the immediate post-resume snapshot is
+the stale pre-freeze value, and the settled one is taken 90 s later once the
+30 s poll worker has caught up. Check `slept=` first - `echo mem` returns on
+*any* wake, so a value well under 10800 means something woke it early and the
+1 % granularity makes that window useless. ☠️ If that happened, the fix is to
+loop the suspend until the alarm time rather than trusting one `echo mem`.
+
+Then: `capacity` drop over 3 h × 30.6 mAh ÷ 3 h = mean current. Under 2 % means
+under ~20 mA (surprising - re-measure before believing it); 10-13 % means
+suspend changed nothing and the RPM question moves from parked back to the main
+event. Prediction on record, **not** a measurement: 60-110 mA, because the genpd
+`interrupt-controller` domain was already collapsed 67 % of the time *while
+awake* at 130 mA, so most of that draw is not the AP and suspending it cannot
+remove it.
+
+Also verify the charger came back: `cat /sys/class/power_supply/pmi632-charger/online`
+should read 1. ☠️ If it reads 0 the EXIT trap did not run - clear
+`USBIN_SUSPEND_BIT` (`echo Charging > .../status`) **before** any reboot.
+
 **Running now (started ~10:00, due ~13:05): `suspend-leg.sh S2 10800`.** Three
 hours asleep off VBUS, `capacity`/`voltage_now`/`voltage_ocv` read at both ends
 with the pack relaxed at each. `capacity` is 1% granular = 30.6 mAh, so this
