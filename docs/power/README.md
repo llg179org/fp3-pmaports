@@ -1051,3 +1051,52 @@ and telephony stack would be. The two are not matched runs and the difference is
 not evidence about the collapse itself. What remains evidence is the count that
 is exactly zero: the oracle's entries produce APSS shutdowns one for one, and
 ours produce none.
+
+## The instrument we lacked all night: suspend USBIN and read the gauge
+
+*2026-08-15, ~06:00. This section corrects the one above it.*
+
+Everything in this directory up to here was measured as a **voltage slope**,
+because `current_now` reads 0 with a cable attached. That method turned out to be
+unusable at this state of charge, and the way it failed is instructive: a paired
+same-boot experiment - panel blanked for 20 minutes, then panel on for 20 minutes
+- returned **8.31 mV/h with the panel off and 5.13 mV/h with it on**. Backwards.
+The pack sits at 99 % on a suspended port, so what the voltage does is *relax*,
+and relaxation flattens with time all by itself. Any later leg reads flatter than
+any earlier leg, whatever the load. ☠️ That also disqualifies the matched A/B
+from earlier tonight: its two legs started at 100 % and 97 % state of charge, so
+they were never on the same part of the curve, and **"the genpd fix did not move
+the current" is withdrawn as unsupported** - not disproved, unsupported.
+
+The fix is to stop measuring a proxy. `qcom_smbx` makes
+`POWER_SUPPLY_PROP_STATUS` writable on the charger supply and maps it straight
+onto `USBIN_SUSPEND_BIT` in `USBIN_CMD_IL`:
+
+```sh
+echo Unknown > /sys/class/power_supply/pmi632-charger/status   # suspend input
+echo Charging > /sys/class/power_supply/pmi632-charger/status  # release it
+```
+
+After which `pmi632-charger/online` reads 0, the battery reports `Discharging`,
+and `pmi632-battery/current_now` becomes a **direct current reading** - no cable
+to unplug, no human at the phone, no curve fitting.
+
+### What that immediately says
+
+| condition | mean current |
+|---|---|
+| panel on | −151 mA |
+| panel blanked | −142 mA |
+| panel on again | −163 mA |
+
+☠️ **So the previous section's headline is wrong and is withdrawn.** The panel is
+worth roughly 10 mA out of 150, not half the budget. Blanking really does remove
+`msm_mdss` and halve the *wakeup count*, and it is still worth doing as part of a
+measurement protocol - but wakeup count and current are not the same quantity,
+and reasoning from one to the other is exactly the mistake that produced the
+claim. The drift between the two panel-on readings (151 → 163 mA) is also larger
+than the panel term itself, so even this needs repeating.
+
+The number that matters is the baseline: **an idle Fairphone 3 with the screen
+off is drawing about 145 mA.** That is roughly an order of magnitude more than an
+idle phone should, and it is now measurable directly, in a minute, per boot.
