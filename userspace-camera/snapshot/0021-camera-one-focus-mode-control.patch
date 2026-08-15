@@ -1,0 +1,823 @@
+From: Lajoshazi, Laszlo Gergely <lajoshazilg@gmail.com>
+Subject: [PATCH] camera: one focus mode control, on the camera page
+
+Focus was spread over two settings that could contradict each other and a
+control the user could not find. An Autofocus switch chose between the
+camera hunting and focusing on demand; a Focus Mode dropdown offered
+"manual", which was wired to nothing at all - apply_focus_mode() acted only
+on "face"; and the lens-distance slider was reachable only by finding a
+switch called "Automatic - Focus Distance" in the preferences, which is not
+where anyone looks while taking a picture.
+
+Replace all of it with one setting, focus-mode, with four values:
+
+  continuous  the camera keeps the whole picture in focus by itself
+  face        the same, while following a face it has found
+  tap         the camera does not hunt; a tap focuses and takes the picture
+  off         nothing moves the lens but the focus-distance slider
+
+and put it on the camera page, in a popover on a button next to the flash,
+together with that slider. Focus is a control, not a preference: it is
+changed while looking at the picture it changes.
+
+A tap now takes the picture on its own in tap mode, rather than one tap
+focusing and two focusing and shooting. The second press of a double tap is
+swallowed there, since GestureClick reports n_press 1 and then 2 for one
+gesture and both would fire the shutter. Double-tap-to-zoom stays in the
+modes where the camera focuses for itself.
+
+Focusing before a picture moves into take_picture(), so a tap and the
+shutter button cannot drift apart: it focuses when the flash has just
+changed the light, or when nothing has been keeping the picture in focus,
+and never in off mode, where the distance is the user's.
+
+Two waits were measured rather than assumed. FOCUS_SETTLE_MS and
+CAPTURE_FOCUS_SETTLE_MS were both 900 ms against a full contrast sweep that
+takes about 4.8 s on this hardware, read off the software ISP's own log:
+twelve coarse positions, seven fine ones and two revisits at about 250 ms
+each. The shutter therefore fired with the lens somewhere in the middle of
+the sweep, which is worse than not focusing at all, an arbitrary sweep
+position being worse than the previous focus. Both become 5.5 s. Making the
+sweep shorter is a separate exercise.
+
+Focusing on demand also asks for AfMeteringWindows, so that the score is
+taken over the middle of the frame rather than all of it: a close subject's
+sharpening is otherwise diluted by everything behind it that never
+sharpens - measured at 4.9 % modulation against an 8 % minimum-contrast
+gate, so the scan was rejected and the lens went back where it started.
+Aiming that window at the tapped point is not possible from here: PipeWire's
+libcamera plugin maps only scalar controls, so AfWindows never reaches the
+camera.
+
+Signed-off-by: Lajoshazi, Laszlo Gergely <lajoshazilg@gmail.com>
+Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
+---
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/aperture/src/camera_control.rs snapshot-50.0/aperture/src/camera_control.rs
+--- a/aperture/src/camera_control.rs	2026-08-03 05:29:25.811593146 +0200
++++ b/aperture/src/camera_control.rs	2026-08-15 15:46:24.809897527 +0200
+@@ -19,6 +19,68 @@
+ use std::process::Command;
+ use std::process::Stdio;
+ 
++/// How the camera is to focus, as the user chose it.
++///
++/// One setting rather than a switch and a mode that could disagree: each value
++/// is a different answer to "who decides when the lens moves, and on what".
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
++pub enum FocusMode {
++    /// The camera keeps the whole picture in focus by itself.
++    #[default]
++    Continuous,
++    /// The camera focuses by itself, following a face it has found.
++    Face,
++    /// The camera does not hunt; a tap focuses and takes the picture.
++    Tap,
++    /// The camera does nothing. The lens stays where it is put, and the focus
++    /// distance is the user's to set.
++    Off,
++}
++
++impl FocusMode {
++    /// The value stored in the setting, and back again. An unknown string is
++    /// the default rather than an error: the setting outlives this list.
++    pub fn from_setting(value: &str) -> Self {
++        match value {
++            "face" => Self::Face,
++            "tap" => Self::Tap,
++            "off" => Self::Off,
++            _ => Self::Continuous,
++        }
++    }
++
++    pub fn as_setting(self) -> &'static str {
++        match self {
++            Self::Continuous => "continuous",
++            Self::Face => "face",
++            Self::Tap => "tap",
++            Self::Off => "off",
++        }
++    }
++
++    /// Whether the camera keeps itself in focus without being asked. Where
++    /// this is false, something has to focus before a picture is taken.
++    pub fn is_automatic(self) -> bool {
++        matches!(self, Self::Continuous | Self::Face)
++    }
++
++    /// Whether a tap on the viewfinder means "focus and shoot".
++    pub fn taps_shoot(self) -> bool {
++        matches!(self, Self::Tap)
++    }
++
++    /// What to ask the camera for to be in this mode.
++    pub fn request(self) -> AfRequest {
++        match self {
++            /* Face detection is drawn by the application; the camera itself
++             * is doing the same continuous whole-frame focus either way. */
++            Self::Continuous | Self::Face => AfRequest::Continuous,
++            Self::Tap => AfRequest::OnDemand,
++            Self::Off => AfRequest::Manual,
++        }
++    }
++}
++
+ /// What to do with a camera's autofocus.
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum AfRequest {
+@@ -28,6 +90,9 @@
+     OnDemand,
+     /// Focus once, now.
+     Trigger,
++    /// Do not focus at all. The lens stays wherever it was left, and only a
++    /// lens position the user dials in moves it.
++    Manual,
+ }
+ 
+ impl AfRequest {
+@@ -37,14 +102,28 @@
+     /// property id to write and the value's meaning come from the camera
+     /// itself, so nothing here has to agree with a copy of libcamera's
+     /// headers.
++    /// The metering rides along with the mode because the two answer one
++    /// question together: whether the camera is judging the whole picture or
++    /// the middle of it. Focusing on demand is aimed - the user pointed the
++    /// phone and asked - so it meters the middle, where a whole-frame score
++    /// would be diluted by everything behind the subject that never sharpens.
++    /// Focusing continuously has nothing to aim at and keeps the whole frame.
+     fn wanted(self) -> &'static [(&'static str, &'static str)] {
+         match self {
+-            Self::Continuous => &[("AfMode", "AfModeContinuous")],
+-            Self::OnDemand => &[("AfMode", "AfModeAuto")],
++            Self::Continuous => &[
++                ("AfMetering", "AfMeteringAuto"),
++                ("AfMode", "AfModeContinuous"),
++            ],
++            Self::OnDemand => &[
++                ("AfMetering", "AfMeteringWindows"),
++                ("AfMode", "AfModeAuto"),
++            ],
+             Self::Trigger => &[
++                ("AfMetering", "AfMeteringWindows"),
+                 ("AfMode", "AfModeAuto"),
+                 ("AfTrigger", "AfTriggerStart"),
+             ],
++            Self::Manual => &[("AfMode", "AfModeManual")],
+         }
+     }
+ }
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/aperture/src/lib.rs snapshot-50.0/aperture/src/lib.rs
+--- a/aperture/src/lib.rs	2026-08-09 18:50:50.316326518 +0200
++++ b/aperture/src/lib.rs	2026-08-15 15:47:29.558821783 +0200
+@@ -31,7 +31,7 @@
+ mod viewfinder;
+ 
+ pub use camera::Camera;
+-pub use camera_control::{CameraControl, ControlKind};
++pub use camera_control::{CameraControl, ControlKind, FocusMode};
+ pub use device_provider::DeviceProvider;
+ pub use enums::{CameraLocation, VideoFormat, ViewfinderState};
+ pub use error::{CaptureError, PipewireError, ProviderError};
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/aperture/src/viewfinder.rs snapshot-50.0/aperture/src/viewfinder.rs
+--- a/aperture/src/viewfinder.rs	2026-08-09 18:54:41.127179618 +0200
++++ b/aperture/src/viewfinder.rs	2026-08-15 15:49:02.032713611 +0200
+@@ -122,13 +122,12 @@
+         /// Set while a picture is being taken at a different resolution.
+         pub restore_res: Cell<Option<usize>>,
+         /// Whether the camera should keep focusing by itself.
+-        pub autofocus: Cell<bool>,
+-        /// Set once the user has taken focus into their own hands (a manual
+-        /// focus mode, or a lens position they dialled in). While it is set the
+-        /// automatic re-application of the autofocus mode - the one that runs
+-        /// after a resolution switch or a fresh stream - leaves the focus
+-        /// alone, so a manual or macro focus is not undone by taking a photo.
+-        pub manual_focus: Cell<bool>,
++        pub focus_mode: Cell<crate::camera_control::FocusMode>,
++        /// The distance the user dialled in, while the focus mode is one where
++        /// that means anything. Kept so that a reconfigure - a resolution
++        /// switch, a fresh stream - can put it back: the camera comes up in its
++        /// own default and would otherwise undo a hand-set focus.
++        pub lens_position: Cell<Option<f64>>,
+         /// What the current camera publishes, asked once per camera.
+         pub controls: RefCell<Vec<crate::camera_control::CameraControl>>,
+         /// Index being tried while looking for a preview size that streams.
+@@ -510,7 +509,6 @@
+ 
+             // Cell<f64> starts at 0.0, while the property's default is 1.0.
+             self.zoom.set(1.0);
+-            self.autofocus.set(true);
+ 
+             let bus = self.camerabin().bus().unwrap();
+             let watch = bus
+@@ -866,8 +864,9 @@
+     /// focus the preview settled on does not carry across it, so the shot
+     /// refocuses first. There is no completion signal from the simple
+     /// pipeline, so the wait is a fixed one, long enough for its contrast
+-    /// sweep on this hardware - the same figure the flash path already uses.
+-    const CAPTURE_FOCUS_SETTLE_MS: u64 = 900;
++    /// sweep on this hardware - the same figure the application's own focus
++    /// waits use, and measured the same way: a full sweep is ~4.8 s.
++    const CAPTURE_FOCUS_SETTLE_MS: u64 = 5_500;
+ 
+     /// Creates a new [`Viewfinder`][crate::Viewfinder]
+     ///
+@@ -991,9 +990,10 @@
+         // comes out at whatever the lens fell back to - which is why every
+         // full-resolution picture was soft. Refocus in the capture mode before
+         // the shutter, the way the flash path already does under its light.
+-        // Only when the camera focuses for itself: a manual focus is the
+-        // user's to keep.
+-        if self.autofocus() {
++        // Only when the camera focuses for itself: a hand-set focus is the
++        // user's to keep, and a mode that focuses on demand has just been
++        // focused by whatever asked for the picture.
++        if self.focus_mode().is_automatic() {
+             self.trigger_autofocus();
+             glib::timeout_future(std::time::Duration::from_millis(
+                 Self::CAPTURE_FOCUS_SETTLE_MS,
+@@ -1778,7 +1778,7 @@
+         imp.resolutions.replace(resolutions);
+         imp.controls.borrow_mut().clear();
+         imp.capture_res.set(0);
+-        self.set_autofocus(imp.autofocus.get());
++        self.set_focus_mode(imp.focus_mode.get());
+         imp.restore_res.set(None);
+         // Another camera's sizes; nothing is known to work on this one yet.
+         imp.good_res.set(None);
+@@ -2344,35 +2344,46 @@
+         }
+     }
+ 
+-    /// Whether the camera focuses continuously, or only when asked.
++    /// How the camera focuses.
+     ///
+-    /// Off does not mean fixed focus: it means the camera stops hunting on its
+-    /// own, and [`fn@Viewfinder::trigger_autofocus`] focuses once.
+-    pub fn set_autofocus(&self, enabled: bool) {
+-        // Choosing to autofocus, either way, ends any hand-set focus.
+-        self.imp().manual_focus.set(false);
+-        self.imp().autofocus.set(enabled);
+-
+-        self.request_autofocus(if enabled {
+-            crate::camera_control::AfRequest::Continuous
+-        } else {
+-            crate::camera_control::AfRequest::OnDemand
+-        });
++    /// [`FocusMode::Off`] does not mean the lens is fixed - it means nothing
++    /// moves it but the user, through [`fn@Viewfinder::set_camera_control`].
++    /// [`FocusMode::Tap`] means the camera focuses only when asked, which
++    /// [`fn@Viewfinder::trigger_autofocus`] does.
++    pub fn set_focus_mode(&self, mode: crate::camera_control::FocusMode) {
++        self.imp().focus_mode.set(mode);
++        self.request_autofocus(mode.request());
++
++        // A hand-set distance only means anything while the camera is not
++        // focusing for itself; leaving it behind on the way out would put the
++        // lens back the next time the mode came round again.
++        if mode != crate::camera_control::FocusMode::Off {
++            self.imp().lens_position.set(None);
++        }
+     }
+ 
+     /// Re-applies the focus mode after the pipeline was reconfigured - a
+-    /// resolution switch, a fresh stream - without disturbing a focus the user
+-    /// set by hand. Called where the camera has just come back up in its
+-    /// default focus mode and needs putting back to what it was.
++    /// resolution switch, a fresh stream - which brings the camera back up in
++    /// its own default mode. A distance the user dialled in is re-sent too,
++    /// since the reconfigure lost that as well.
+     pub fn reapply_autofocus(&self) {
+-        if self.imp().manual_focus.get() {
+-            return;
++        let mode = self.focus_mode();
++        self.request_autofocus(mode.request());
++
++        if let Some(position) = self.imp().lens_position.get() {
++            let control = self
++                .camera_controls()
++                .into_iter()
++                .find(|control| control.name == "LensPosition");
++
++            if let Some(control) = control {
++                self.set_camera_control(&control, position);
++            }
+         }
+-        self.set_autofocus(self.autofocus());
+     }
+ 
+-    pub fn autofocus(&self) -> bool {
+-        self.imp().autofocus.get()
++    pub fn focus_mode(&self) -> crate::camera_control::FocusMode {
++        self.imp().focus_mode.get()
+     }
+ 
+     /// Focuses once, now.
+@@ -2407,17 +2418,11 @@
+             return;
+         };
+ 
+-        // Note when the user has taken focus into their own hands, so the
+-        // automatic re-application of the autofocus mode leaves it be. Dialling
+-        // a lens position, or choosing the manual focus mode, is that; choosing
+-        // an automatic focus mode gives it back.
+-        match control.name.as_str() {
+-            "LensPosition" => self.imp().manual_focus.set(true),
+-            "AfMode" => self
+-                .imp()
+-                .manual_focus
+-                .set(control.manual_value() == Some(value)),
+-            _ => {}
++        // Remember a distance the user dialled in, so that a reconfigure can
++        // put it back. Nothing else here needs noting: the focus mode is a
++        // setting of its own now, not something inferred from a control write.
++        if control.name == "LensPosition" {
++            self.imp().lens_position.set(Some(value));
+         }
+ 
+         crate::camera_control::set_control(node_id, control, value);
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/data/org.gnome.Snapshot.gschema.xml.in snapshot-50.0/data/org.gnome.Snapshot.gschema.xml.in
+--- a/data/org.gnome.Snapshot.gschema.xml.in	2026-08-09 18:58:03.868050622 +0200
++++ b/data/org.gnome.Snapshot.gschema.xml.in	2026-08-15 15:51:58.864551744 +0200
+@@ -29,20 +29,16 @@
+       <summary>Play shutter sound</summary>
+       <description>Whether to play a shutter sound when taking pictures</description>
+     </key>
+-    <key name="autofocus" type="b">
+-      <default>true</default>
+-      <summary>Focus continuously</summary>
+-      <description>Whether the camera keeps focusing by itself. When off, tap the picture to focus and double tap to focus and take a photo.</description>
+-    </key>
+     <key name="focus-mode" type="s">
+       <default>"continuous"</default>
+       <choices>
+         <choice value="continuous"/>
+-        <choice value="manual"/>
+         <choice value="face"/>
++        <choice value="tap"/>
++        <choice value="off"/>
+       </choices>
+       <summary>Focus mode</summary>
+-      <description>How the camera focuses: continuously by itself, manually with the focus-distance slider, or by finding a face and keeping it in focus.</description>
++      <description>How the camera focuses. Continuous keeps the whole picture in focus by itself; Face does the same while following a face it has found; Tap does not focus by itself, and a tap on the picture focuses and takes it; Off leaves the lens where it is put, to be set with the focus-distance slider.</description>
+     </key>
+     <key name="preview-resolution" type="s">
+       <default>''</default>
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/data/resources/ui/camera.ui snapshot-50.0/data/resources/ui/camera.ui
+--- a/data/resources/ui/camera.ui	2026-08-03 14:19:45.354119486 +0200
++++ b/data/resources/ui/camera.ui	2026-08-15 15:49:54.753651942 +0200
+@@ -200,6 +200,18 @@
+                                   </object>
+                                 </child>
+                                 <child>
++                                  <object class="GtkMenuButton" id="focus_button">
++                                    <property name="icon-name">find-location-symbolic</property>
++                                    <property name="valign">center</property>
++                                    <property name="halign">center</property>
++                                    <property name="tooltip-text" translatable="yes">Focus</property>
++                                    <style>
++                                      <class name="circular" />
++                                      <class name="flat" />
++                                    </style>
++                                  </object>
++                                </child>
++                                <child>
+                                   <object class="GtkMenuButton">
+                                     <property name="menu-model">countdown_menu</property>
+                                     <property name="icon-name">camera-timer-symbolic</property>
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/data/resources/ui/preferences_window.ui snapshot-50.0/data/resources/ui/preferences_window.ui
+--- a/data/resources/ui/preferences_window.ui	2026-08-09 18:58:28.218035129 +0200
++++ b/data/resources/ui/preferences_window.ui	2026-08-15 15:50:58.425024922 +0200
+@@ -11,30 +11,6 @@
+             <property name="title" translatable="yes">General</property>
+             <child>
+               <object class="AdwSwitchRow">
+-                <property name="title" translatable="yes">_Autofocus</property>
+-                <property name="subtitle" translatable="yes">When off, tap to focus and double tap to focus and shoot</property>
+-                <property name="action-name">preferences-window.autofocus</property>
+-                <property name="use-underline">True</property>
+-              </object>
+-            </child>
+-            <child>
+-              <object class="AdwComboRow" id="focus_mode_row">
+-                <property name="title" translatable="yes">_Focus Mode</property>
+-                <property name="subtitle" translatable="yes">Face keeps a detected face in focus</property>
+-                <property name="use-underline">True</property>
+-                <property name="model">
+-                  <object class="GtkStringList">
+-                    <items>
+-                      <item translatable="yes">Continuous</item>
+-                      <item translatable="yes">Manual</item>
+-                      <item translatable="yes">Face</item>
+-                    </items>
+-                  </object>
+-                </property>
+-              </object>
+-            </child>
+-            <child>
+-              <object class="AdwSwitchRow">
+                 <property name="title" translatable="yes">_Shutter Sound</property>
+                 <property name="action-name">preferences-window.play-shutter-sound</property>
+                 <property name="use-underline">True</property>
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/src/widgets/camera.rs snapshot-50.0/src/widgets/camera.rs
+--- a/src/widgets/camera.rs	2026-08-09 19:00:31.297956811 +0200
++++ b/src/widgets/camera.rs	2026-08-15 15:50:44.267594025 +0200
+@@ -19,10 +19,19 @@
+ /// to change first if flash pictures come out metered for the dark.
+ const EXPOSURE_SETTLE_MS: u64 = 600;
+ 
+-/// How long a focus run under the flash is given. The request is fire and
+-/// forget - it reaches the camera through PipeWire and reports nothing back -
+-/// so this is a wait, not a wait-for.
+-const FOCUS_SETTLE_MS: u64 = 900;
++/// How long a focus run is given before the shutter runs. The request is fire
++/// and forget - it reaches the camera through PipeWire and reports nothing
++/// back - so this is a wait, not a wait-for, and it has to be longer than the
++/// scan rather than a guess at it.
++///
++/// Measured on the FP3, 2026-08-15, from the software ISP's own log: a full
++/// sweep is 12 coarse positions plus 7 fine ones plus two revisits, at about
++/// 250 ms each, so ~4.8 s. This was 900 ms, which fired the shutter with the
++/// lens somewhere in the middle of the sweep - worse than not focusing, since
++/// a sweep position is arbitrary while the previous focus at least meant
++/// something. Making the sweep shorter is a separate exercise; this only makes
++/// the wait honest.
++const FOCUS_SETTLE_MS: u64 = 5_500;
+ 
+ /// How long the flash may stay lit before it is put out regardless. Comfortably
+ /// past a slow capture at full resolution, and far short of anything that would
+@@ -95,6 +104,12 @@
+         pub flash_button: TemplateChild<gtk::MenuButton>,
+ 
+         #[template_child]
++        pub focus_button: TemplateChild<gtk::MenuButton>,
++        /// The distance slider inside the focus popover, kept so that its
++        /// sensitivity can follow the mode.
++        pub focus_scale: OnceCell<gtk::Scale>,
++
++        #[template_child]
+         pub measure_revealer: TemplateChild<gtk::Revealer>,
+         #[template_child]
+         pub measure_progress: TemplateChild<gtk::ProgressBar>,
+@@ -300,9 +315,14 @@
+             ));
+             obj.add_controller(scroll);
+ 
+-            // With autofocus off the taps mean focus: one to focus, two to
+-            // focus and shoot. With it on the camera is already focusing, so a
+-            // double tap is free to toggle the zoom instead.
++            // In Tap mode a tap takes the picture, focusing on the way - the
++            // focusing itself belongs to take_picture(), so that a tap and the
++            // shutter button do the same thing. Everywhere else the camera is
++            // focusing for itself, which leaves the double tap free to zoom.
++            //
++            // The second press of a double tap is swallowed in Tap mode:
++            // GestureClick reports n_press 1 and then 2 for one double tap, so
++            // acting on both would take two pictures from one gesture.
+             let taps = gtk::GestureClick::new();
+             taps.set_button(gtk::gdk::BUTTON_PRIMARY);
+             taps.connect_pressed(glib::clone!(
+@@ -311,7 +331,7 @@
+                 move |_, n_press, _, _| {
+                     let viewfinder = &obj.imp().viewfinder;
+ 
+-                    if viewfinder.autofocus() {
++                    if !viewfinder.focus_mode().taps_shoot() {
+                         if n_press == 2 {
+                             let zoom = if viewfinder.zoom() > 1.0 { 1.0 } else { 2.0 };
+                             viewfinder.set_zoom(zoom);
+@@ -319,17 +339,14 @@
+                         return;
+                     }
+ 
+-                    // Triggering twice on a double tap is harmless - it is the
+-                    // same request - and it means the picture is taken with a
+-                    // scan already under way.
+-                    viewfinder.trigger_autofocus();
+-
+-                    if n_press == 2 {
+-                        WidgetExt::activate_action(&obj, "win.take-picture", None)
+-                            .unwrap_or_else(|err| {
+-                                log::error!("Could not take a picture on a double tap: {err}");
+-                            });
++                    if n_press != 1 {
++                        return;
+                     }
++
++                    WidgetExt::activate_action(&obj, "win.take-picture", None)
++                        .unwrap_or_else(|err| {
++                            log::error!("Could not take a picture on a tap: {err}");
++                        });
+                 }
+             ));
+             obj.add_controller(taps);
+@@ -356,22 +373,9 @@
+                 .flags(gio::SettingsBindFlags::GET)
+                 .build();
+ 
+-            self.viewfinder.set_autofocus(settings.boolean("autofocus"));
+-            settings.connect_changed(
+-                Some("autofocus"),
+-                glib::clone!(
+-                    #[weak]
+-                    obj,
+-                    move |settings, _| {
+-                        obj.imp()
+-                            .viewfinder
+-                            .set_autofocus(settings.boolean("autofocus"));
+-                    }
+-                ),
+-            );
+-
+-            // The focus mode turns face detection on or off and, in Face mode,
+-            // draws the box the detector reports around the face.
++            // The focus mode is the whole of what the user chose: what the
++            // camera does about focus, whether faces are looked for, and what
++            // a tap means. One setting, so nothing can contradict anything.
+             obj.apply_focus_mode();
+             settings.connect_changed(
+                 Some("focus-mode"),
+@@ -606,6 +610,8 @@
+             self.flash_button.set_visible(flash.is_some());
+             let _ = self.flash.set(flash);
+             obj.update_flash_button();
++
++            obj.build_focus_popover();
+         }
+     }
+ 
+@@ -770,10 +776,21 @@
+         // camera through PipeWire and nothing comes back, so the wait is a fixed
+         // one, long enough for the simple pipeline's contrast sweep on this
+         // hardware.
+-        if self.flash_wants_light() {
++        // A focus the user set by hand is theirs to keep, under any light.
++        let may_focus = imp.viewfinder.focus_mode() != aperture::FocusMode::Off;
++        let lit = self.flash_wants_light();
++
++        if lit {
+             self.set_flash_lit(true);
+             glib::timeout_future(std::time::Duration::from_millis(EXPOSURE_SETTLE_MS)).await;
++        }
+ 
++        // Focus if the light just changed - the scene under the flash is not
++        // the scene that was metered - or if nothing has been keeping this in
++        // focus, in which case whatever asked for the picture is asking for a
++        // focus first. Doing it here rather than in the tap handler is what
++        // makes a tap and the shutter button agree.
++        if may_focus && (lit || !imp.viewfinder.focus_mode().is_automatic()) {
+             imp.viewfinder.trigger_autofocus();
+             glib::timeout_future(std::time::Duration::from_millis(FOCUS_SETTLE_MS)).await;
+         }
+@@ -990,22 +1007,137 @@
+             .set_draw_guidelines(!imp.guidelines.draw_guidelines());
+     }
+ 
+-    /// Applies the current focus mode: switches face detection on for Face and
+-    /// off otherwise, clearing the box when it is off, and keeps the camera on
+-    /// its own autofocus while a face is being tracked.
++    /// Builds the focus popover: the four modes, and the distance the lens is
++    /// held at while nothing is focusing for itself.
++    ///
++    /// This is on the camera page rather than in the preferences because it is
++    /// a control, not a setting - it is changed while looking at the picture it
++    /// changes, next to the flash, which is the same kind of decision.
++    fn build_focus_popover(&self) {
++        let imp = self.imp();
++        let settings = imp.settings();
++
++        let box_ = gtk::Box::new(gtk::Orientation::Vertical, 6);
++        box_.set_margin_top(6);
++        box_.set_margin_bottom(6);
++        box_.set_margin_start(6);
++        box_.set_margin_end(6);
++
++        let modes = [
++            (aperture::FocusMode::Continuous, gettext("Continuous")),
++            (aperture::FocusMode::Face, gettext("Face")),
++            (aperture::FocusMode::Tap, gettext("Tap")),
++            (aperture::FocusMode::Off, gettext("Off")),
++        ];
++
++        let current = aperture::FocusMode::from_setting(&settings.string("focus-mode"));
++        let mut group: Option<gtk::CheckButton> = None;
++
++        for (mode, label) in modes {
++            let button = gtk::CheckButton::with_label(&label);
++            if let Some(first) = &group {
++                button.set_group(Some(first));
++            } else {
++                group = Some(button.clone());
++            }
++            button.set_active(mode == current);
++
++            button.connect_toggled(glib::clone!(
++                #[strong]
++                settings,
++                move |button| {
++                    if button.is_active() {
++                        let _ = settings.set_string("focus-mode", mode.as_setting());
++                    }
++                }
++            ));
++
++            box_.append(&button);
++        }
++
++        // The lens, where the camera publishes one. Dioptres, so the far end is
++        // infinity; the bounds come from the camera rather than from a guess.
++        let lens = self
++            .imp()
++            .viewfinder
++            .camera_controls()
++            .into_iter()
++            .find(|control| control.name == "LensPosition");
++
++        if let Some(control) = lens {
++            if let aperture::ControlKind::Range { min, max, .. } = control.kind {
++                box_.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
++
++                let label = gtk::Label::new(Some(&gettext("Focus Distance")));
++                label.add_css_class("dim-label");
++                label.set_xalign(0.0);
++                box_.append(&label);
++
++                let scale = gtk::Scale::with_range(
++                    gtk::Orientation::Horizontal,
++                    min,
++                    max,
++                    (max - min) / 100.0,
++                );
++                scale.set_width_request(180);
++                scale.set_draw_value(true);
++                scale.set_value_pos(gtk::PositionType::Right);
++                scale.set_value(min);
++
++                scale.connect_value_changed(glib::clone!(
++                    #[weak(rename_to = obj)]
++                    self,
++                    #[strong]
++                    control,
++                    move |scale| {
++                        obj.imp()
++                            .viewfinder
++                            .set_camera_control(&control, scale.value());
++                    }
++                ));
++
++                box_.append(&scale);
++                let _ = imp.focus_scale.set(scale);
++            }
++        }
++
++        let popover = gtk::Popover::new();
++        popover.set_child(Some(&box_));
++        imp.focus_button.set_popover(Some(&popover));
++
++        self.update_focus_controls();
++    }
++
++    /// Keeps the popover's distance slider usable only where a distance means
++    /// anything: with the camera focusing for itself, or focusing on a tap, a
++    /// number dialled in here would be overwritten by the next scan.
++    fn update_focus_controls(&self) {
++        let imp = self.imp();
++        let mode = aperture::FocusMode::from_setting(&imp.settings().string("focus-mode"));
++
++        if let Some(scale) = imp.focus_scale.get() {
++            scale.set_sensitive(mode == aperture::FocusMode::Off);
++        }
++    }
++
++    /// Applies the focus mode the user chose: tells the camera how to focus,
++    /// and switches face detection on for Face and off for everything else,
++    /// clearing any box already drawn.
+     pub fn apply_focus_mode(&self) {
+         let imp = self.imp();
+-        let mode = imp.settings().string("focus-mode");
++        let mode = aperture::FocusMode::from_setting(&imp.settings().string("focus-mode"));
+ 
+-        imp.viewfinder.set_detect_faces(mode == "face");
+-        if mode == "face" {
+-            // The box marks the face; the focus itself is still the continuous
+-            // whole-frame autofocus, since windowing it onto the face needs a
+-            // control the pipeline cannot yet carry.
+-            imp.viewfinder.set_autofocus(true);
+-        } else {
++        // In Face mode the box marks the face; the focus itself is still the
++        // continuous whole-frame one, since windowing it onto the face needs a
++        // control the pipeline cannot yet carry - PipeWire's libcamera plugin
++        // maps only scalar controls, so AfWindows never reaches the camera.
++        imp.viewfinder.set_detect_faces(mode == aperture::FocusMode::Face);
++        if mode != aperture::FocusMode::Face {
+             imp.guidelines.set_face(None);
+         }
++
++        imp.viewfinder.set_focus_mode(mode);
++        self.update_focus_controls();
+     }
+ 
+     pub fn is_recording_active(&self) -> bool {
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/src/widgets/camera_settings.rs snapshot-50.0/src/widgets/camera_settings.rs
+--- a/src/widgets/camera_settings.rs	2026-08-03 14:37:57.459346194 +0200
++++ b/src/widgets/camera_settings.rs	2026-08-15 15:51:43.833317038 +0200
+@@ -314,6 +314,16 @@
+      * that the thing being taken over sits next to the taking over.
+      */
+     for control in controls {
++        /*
++         * Focus is not a setting: it is a control with its own button on the
++         * camera page, next to the flash, where it is changed while looking at
++         * the picture it changes. A second copy here would be two controls
++         * that can disagree.
++         */
++        if control.name.starts_with("Af") || control.name == "LensPosition" {
++            continue;
++        }
++
+         let Some(paired) = control.is_mode_for() else {
+             continue;
+         };
+@@ -377,6 +387,9 @@
+         .collect();
+ 
+     for control in controls {
++        if control.name.starts_with("Af") || control.name == "LensPosition" {
++            continue;
++        }
+         if control.is_mode_for().is_some() || paired.contains(&control.name.as_str()) {
+             continue;
+         }
+diff -ruN '--exclude=target' '--exclude=*.orig' .focus-base/src/widgets/preferences_window.rs snapshot-50.0/src/widgets/preferences_window.rs
+--- a/src/widgets/preferences_window.rs	2026-08-09 18:59:25.877998440 +0200
++++ b/src/widgets/preferences_window.rs	2026-08-15 15:51:24.041707495 +0200
+@@ -14,7 +14,7 @@
+ /// forget the camera out from under the user.
+ const RESETTABLE_KEYS: &[&str] = &[
+     "play-shutter-sound",
+-    "autofocus",
++    "focus-mode",
+     "show-composition-guidelines",
+     "enable-audio-recording",
+     "enable-hardware-encoding",
+@@ -46,8 +46,6 @@
+         pub general_page: TemplateChild<adw::PreferencesPage>,
+         #[template_child]
+         pub experimental_group: TemplateChild<adw::PreferencesGroup>,
+-        #[template_child]
+-        pub focus_mode_row: TemplateChild<adw::ComboRow>,
+     }
+ 
+     #[glib::object_subclass]
+@@ -76,8 +74,6 @@
+ 
+             let play_shutter_sound = settings.create_action("play-shutter-sound");
+             action_group.add_action(&play_shutter_sound);
+-            let autofocus = settings.create_action("autofocus");
+-            action_group.add_action(&autofocus);
+ 
+             let show_composition_guidelines = settings.create_action("show-composition-guidelines");
+             action_group.add_action(&show_composition_guidelines);
+@@ -120,44 +116,6 @@
+             self.obj()
+                 .insert_action_group("preferences-window", Some(&action_group));
+ 
+-            // The focus-mode dropdown is a string setting mapped by index.
+-            const FOCUS_MODES: [&str; 3] = ["continuous", "manual", "face"];
+-            let focus_row = self.focus_mode_row.get();
+-            let cur = settings.string("focus-mode");
+-            focus_row.set_selected(
+-                FOCUS_MODES
+-                    .iter()
+-                    .position(|x| *x == cur.as_str())
+-                    .unwrap_or(0) as u32,
+-            );
+-            focus_row.connect_selected_notify(glib::clone!(
+-                #[strong]
+-                settings,
+-                move |row| {
+-                    let m = FOCUS_MODES
+-                        .get(row.selected() as usize)
+-                        .copied()
+-                        .unwrap_or("continuous");
+-                    let _ = settings.set_string("focus-mode", m);
+-                }
+-            ));
+-            settings.connect_changed(
+-                Some("focus-mode"),
+-                glib::clone!(
+-                    #[weak]
+-                    focus_row,
+-                    move |s, _| {
+-                        let cur = s.string("focus-mode");
+-                        let want = FOCUS_MODES
+-                            .iter()
+-                            .position(|x| *x == cur.as_str())
+-                            .unwrap_or(0) as u32;
+-                        if focus_row.selected() != want {
+-                            focus_row.set_selected(want);
+-                        }
+-                    }
+-                ),
+-            );
+ 
+             self.settings.set(settings).unwrap();
+         }
