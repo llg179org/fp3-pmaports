@@ -29,38 +29,37 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-**Device state right now (2026-08-15 01:29):** back on `slot_b`, running a hand
-deployed `Image` + DTB from `debug-int/7.1.3` `6cbf488a28f0` (md5-verified against
-the build tree on both files). `/boot` backups: `vmlinuz.genpdfix`,
-`vmlinuz.base-mpm` (the control), `vmlinuz.pre-mpm`,
-`sdm632-fairphone-fp3.dtb.pre-gpiowake`.
+**The question is answered; what remains is building it.** Mainline's
+`drivers/regulator/qcom_smd-regulator.c` votes **only** the active set
+(`rpm_reg_write_active()`, hard-coded `QCOM_SMD_RPM_ACTIVE_STATE`), so the RPM
+holds permanent active votes and can never power-collapse — which is why
+`vlow`/`vmin` are 0 and APSS `numshutdowns` never moves while the AP collapses 47
+times a second. Downstream keeps a second per-regulator request
+(`rpm_vreg->handle_sleep`, `RPM_SET_SLEEP`). Full write-up in
+[`README.md`](README.md), "The RPM answer".
 
-**Immediately in progress: does the GPIO wakeup map actually work?** First look
-after the deploy is *not yet convincing* and needs finishing:
+**Build it in this order:**
 
-* `dmesg` shows only the known, expected `failed to map pin 58 as GIC hwirq 136
-  is already mapped` — no new errors, and notably **no pin-53 collision message**,
-  which needs explaining rather than celebrating.
-* `/proc/interrupts` has exactly one `qcom_mpm` line (`GIC-0 203`, the MPM's own
-  IRQ) and no GPIO line has moved to an MPM parent.
+1. **Cheapest possible probe first, before writing a driver.** Pick one rail that
+   is definitely idle — a camera or display regulator with no consumer — and send
+   it a sleep-set vote of 0 by hand, then watch whether `vlow`'s `Client Votes`
+   (`/sys/kernel/debug/qcom_stats/vlow`) loses a bit. There is no sysfs for this,
+   so it needs a throwaway kernel patch calling `qcom_rpm_smd_write(...,
+   QCOM_SMD_RPM_SLEEP_STATE, ...)` for that one id. **This is the measurement
+   that decides whether the whole theory is right**, and it is one boot.
+2. If the bit moves: add a real sleep-set path to `qcom_smd-regulator.c`.
+   The shape to copy is `icc-rpm.c`, which already aggregates and sends both
+   states. Upstream-bound, and it is a feature rather than a fix, so it needs a
+   maintainer conversation before a v1 — `qcom_smd-regulator.c` serves many
+   boards and a wrong sleep vote browns out a rail mid-sleep.
+3. Only then re-run the idle-current A/B. Until the RPM collapses, no AP-side
+   change is expected to move the milliamps — that is what the matched A/B
+   already measured.
 
-That is consistent with "nothing has requested a GPIO wakeup yet" — `pinctrl-msm`
-only hands a line over on `enable_irq_wake`. So the test is not "is it in
-`/proc/interrupts`" but: arm a wakeup on a GPIO that is in the map, and see it
-survive a system power collapse. Candidates already wake-armed on this board are
-in `/proc/interrupts` with `wakeup` in `/sys/.../power/wakeup`; the volume keys
-and the touchscreen are the obvious ones. Check
-`cat /sys/kernel/debug/irq/irqs/<n>` for the parent domain after arming.
-
-**Then:**
-
-1. **The RPM sleep half** — the remaining structural gap. Mainline's
-   `smd-rpm.c` has no suspend hook at all; downstream flushes the RPM sleep set
-   via `msm_rpm_enter_sleep()` before the PSCI call. See "What is still missing"
-   in [`README.md`](README.md).
-2. Bump `_commit`/`pkgrel` to `6cbf488a28f0` and rebuild the package **once the
-   GPIO work is tested** — r54 deliberately pins the earlier, tested
-   `162f27abc328`.
+**Also still open:** the GPIO wakeup map is deployed and provably inert (see
+README) — it cannot be tested until the RPM actually takes over. And bump
+`_commit`/`pkgrel` to `6cbf488a28f0` once that happens; r54 deliberately pins the
+tested `162f27abc328`.
 
 ## Device and tree state
 
