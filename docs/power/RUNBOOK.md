@@ -29,49 +29,60 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-☠️☠️ **The whole night's idle-current work was measured with the panel refreshing
-at 65 Hz.** Stopping `greetd` is not enough - `fbcon` holds DRM DPMS on with no
-userspace client, and `msm_mdss` keeps firing 65 times a second. The fix is
+★★ **There is now a direct current instrument** - no cable to unplug, no voltage
+fitting. `qcom_smbx` maps the charger supply's writable `POWER_SUPPLY_PROP_STATUS`
+onto `USBIN_SUSPEND_BIT`:
 
 ```sh
-echo 4 > /sys/class/graphics/fb0/blank      # msm_mdss disappears from /proc/interrupts
+echo Unknown  > /sys/class/power_supply/pmi632-charger/status   # off VBUS
+echo Charging > /sys/class/power_supply/pmi632-charger/status   # restore
 ```
 
-after which total wakeups roughly halve. **Every mV/h figure in this directory
-predates that discovery and has to be treated as measured under a load that
-dwarfs the effect.** In particular, "the genpd fix did not move the current" is
-not a safe conclusion yet.
+after which `pmi632-battery/current_now` reads real discharge current. The
+protocol is `docs/power/idle-leg.sh` (host copy) / `/home/fp3/currleg.sh` (the
+device-side one used for the legs so far).
 
-**Do this first:** re-run the matched A/B (genpd-fixed kernel vs
-`/boot/vmlinuz.base-mpm` control) with the panel blanked as part of the protocol,
-same reboot → 600 s settle → 50 samples shape as before. A paired panel-on /
-panel-off leg on one boot is running as of 2026-08-15 05:40 to size the display
-term first; its output is `/home/fp3/leg-panel{off,on}.txt` on the device.
+**Baseline: an idle FP3 with the screen off draws about 155 mA.** That is the
+number worth attacking; everything measured so far moves it by single digits.
 
-☠️ The measurement only works while the pack is actually discharging. With a USB
-cable attached `pmi632-charger/online` reads 1 and the voltage sits flat, so
-check it before trusting a slope.
+**In flight:** an interleaved A/B of the genpd fix, fresh boot per leg.
 
-**The RPM question is parked, not open.** Everything on the AP side is verified
-(see [`README.md`](README.md), "What is now known for certain about the AP side"),
-the two-sided vMPM dump is structurally identical, and both of the kernel-side
-theories were measured false. What remains is on the far side of the PSCI call,
-in TZ or RPM firmware, where this kernel has no instrument.
+```
+FIX  -160.6  FIX2 -158.2  FIX3 -164.3          (genpd bool fix in)
+CTL  -154.4  CTL2 -155.4  CTL3 running         (that one commit reverted)
+```
+
+The deep-idle kernel looks 4-9 mA *worse*, consistently. ☠️ But the per-sample
+standard deviation is ~60 mA - the load is bursty - so a 100-sample mean has a
+standard error near 6 mA. The groups separating is suggestive, not established;
+keep alternating legs until the arms are clearly apart or clearly not. A coherent
+reason for the sign exists: the AP pays ~143 domain entries a second while the
+RPM never collapses, so the transitions buy nothing downstream.
+
+**Withdrawn, do not re-cite:** every mV/h figure in this directory (voltage-slope
+method, unusable at 99 % on a suspended port - it read *backwards* in a controlled
+test), and the claim that the panel dominated the budget (it is ~10 mA of 150).
+
+**The RPM question is parked, not open.** Every AP-side precondition is verified
+and the two-sided vMPM dump is structurally identical; what remains is past the
+PSCI call, in TZ or RPM firmware, where this kernel has no instrument. See
+[`README.md`](README.md).
 
 **Not submission-ready:** the vMPM timer commit (`wip/7.1.3/power`
-`97951baf7a85`) is a real omission - the driver documents `TIMER0`/`TIMER1` and
-never writes them - but it changes nothing measurable yet, so it stays on the
-fork until it can be shown to fix something. The two LKML patches that *are*
-ready (genpd bool, cpuidle-psci ordering) are unaffected.
+`97951baf7a85`) is a real omission but changes nothing measurable yet. The two
+LKML patches that *are* ready (genpd bool, cpuidle-psci ordering) are unaffected -
+though if the A/B holds, the genpd cover letter should say plainly that on this
+SoC the fix costs current until the platform's sleep handshake works.
 
-**Also still open:** the GPIO wakeup map is deployed and provably inert until the
-RPM takes over; the regulator sleep set must be built *before* the RPM ever
-collapses, not after; and `_commit`/`pkgrel` still pin `162f27abc328`.
+**Also still open:** GPIO wakeup map inert until the RPM takes over; the regulator
+sleep set must exist *before* the RPM ever collapses; `_commit`/`pkgrel` still pin
+`162f27abc328`.
 
 ## Device and tree state
 
 * Phone on `slot_b`, running a hand-deployed `Image` from `debug-int/7.1.3`
-  `6fd035d9501a` (md5 `2f64535335ff01c395db30000c056a13`, verified on both sides),
+  `6fd035d9501a` (build #18, `/home/fp3/Image.fix`; the A/B control is
+  `/home/fp3/Image.control`, the same tree with 162f27abc328 reverted),
   not a package build. Backups in `/boot`: `vmlinuz.pre-mpmtimer`,
   `vmlinuz.genpdfix`, `vmlinuz.base-mpm`, `vmlinuz.pre-mpm`.
 * The oracle is `slot_a` (Ubuntu Touch); `fastboot set_active a|b` switches, and

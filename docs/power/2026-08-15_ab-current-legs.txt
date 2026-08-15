@@ -1,0 +1,25 @@
+Interleaved A/B of the genpd cached_power_down_state_idx fix, measured as
+current rather than as a voltage slope. Both kernels built minutes apart from
+debug-int/7.1.3 6fd035d9501a; the control is that tree with 162f27abc328
+("PM: domains: Fix the cached power-down state index being a bool") reverted,
+one word of source apart.
+
+Per leg: fresh boot, greetd stopped, panel blanked and verified quiet
+(msm_mdss not counting), USBIN suspended via
+  echo Unknown > /sys/class/power_supply/pmi632-charger/status
+300 s settle, then N samples of pmi632-battery/current_now 3 s apart.
+
+  FIX  mean_uA=-160598 n=100
+  CTL  mean_uA=-154372 n=100
+  FIX2 mean_uA=-158184 n=100
+  CTL2 mean_uA=-155350 n=100
+
+  FIX  legs: -160.6, -158.2 mA   (mean -159.4)
+  CTL  legs: -154.4, -155.4 mA   (mean -154.9)
+  difference: the deep-idle kernel draws 4.5 mA MORE
+
+☠️ Read the dispersion before the means. The per-sample standard deviation is
+about 60 mA in every leg - the load is bursty, not steady - so the standard
+error of a 100-sample mean is around 6 mA, which is larger than the 4.5 mA
+difference being claimed. The two groups do not overlap, which is suggestive,
+but two legs per arm cannot establish it. More legs, appended below as they run.
