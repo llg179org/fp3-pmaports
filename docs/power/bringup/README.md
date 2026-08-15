@@ -383,6 +383,82 @@ an entire page of numbers at once.
 
 **Ask what state the machine is in before pricing what is running on it.**
 
+## Step 14 — and then the machine turned out never to have been in that state
+
+Step 13's own lesson, applied to Step 13. `/sys/power/suspend_stats/success` read
+**0** after fifty minutes of uptime. The phone had never suspended — not once, in
+any session on this page. Every number the investigation had produced, the 9 %
+included, describes *runtime idle with a full phosh session alive*: `greetd`,
+pipewire, wireplumber, five `xdg-desktop-portal`s, gvfsd, avahi, `wpa_supplicant`,
+and a modem talking at 28 `smd-edge` interrupts a second.
+
+`/sys/power/mem_sleep` offers only `[s2idle]`, which on this platform is *the*
+suspend path and not a fallback for a missing one — a distinction that had been
+read the other way round.
+
+The consequence for the goal is larger than the consequence for the numbers.
+**10 mA is a different regime, not a smaller figure inside this one.** The
+subsystem bisect queued at the end of Step 12 would have carefully apportioned a
+quantity nobody should have been trying to shave.
+
+And s2idle works, which took two minutes to establish: 90 s requested through the
+RTC wakealarm, 91 s slept, `success` 0 → 1 with `fail` 0, WiFi reassociating on
+its own. The RTC's clock is stuck in 1970 for want of an `offset` nvmem cell, and
+it was a perfectly reasonable guess that a clock which cannot be set has a dead
+alarm too. The guess was wrong — an alarm is *relative* to the counter — and only
+the probe could say so. ☠️ That is the thing to prove before an unattended leg
+depends on it, not after.
+
+## Step 15 — three instruments, one failure, and none of them read the driver
+
+With the regime finally right, the question became easy to state and hard to
+measure: what does the phone draw asleep? `current_now` has to be sampled and
+nothing samples while userspace is frozen, so three successive instruments went
+looking for something that survives the freeze. All three failed, and they failed
+*the same way*.
+
+| attempt | what it read | what it reported | what it actually measured |
+|---|---|---|---|
+| 1 | integrate `charge_now` | awake 209 mA, **asleep 0 mA** | an OCV estimator still walking down after USBIN was suspended; then a poll worker that does not run while frozen |
+| 2 | `capacity` at both ends of 3 h asleep | **97 % → 97 %**, i.e. under 10 mA | the same worker, given ten pre-suspend samples and three post-resume ones |
+| 3 | `voltage_ocv` at both ends | a 160 mV fall | an 8-deep, 30 s-polled ring average — five of its eight slots still pre-suspend 90 s after resume |
+
+The common cause was in the driver the whole time. `adc-battery-helper.c` reads
+the ADC only in its work function, and `capacity`, `charge_now` and `voltage_ocv`
+are one number under three names. `voltage_now` and `current_now` call
+`get_voltage_and_current_now()` on every sysfs read and are the only live pair.
+
+Attempt 3 is the one worth keeping, because it did not look cached. It equalled
+`voltage_now - current_now × 120 mΩ` *to the microvolt* at every snapshot, which
+is exactly what an instantaneous load-compensated value looks like — and also
+what a ring of eight identical readings from a quantised ADC under a steady load
+looks like. **A value that reproduces the documented formula is evidence about
+the formula, not about when it was evaluated.**
+
+Two lessons, and the second is the expensive one:
+
+- **Several attributes of one device are usually one measurement wearing several
+  names.** They present as independent opinions, so agreement between them reads
+  as corroboration when it is a tautology.
+- **The same failure twice means the next instrument needs its source read, not
+  its design improved.** Each attempt replaced a discredited attribute with a
+  neighbouring attribute of the same driver without once opening it. Twenty
+  minutes of reading would have skipped all three; instead it cost three legs,
+  one of them three hours long.
+
+What caught every one of them was the same thing: a **control window in a regime
+whose answer was already known**. Attempt 1's awake window read 209 mA where
+`current_now` reads 130. Attempt 2's 97 % was contradicted by its own voltage. An
+instrument aimed solely at the regime nothing can cross-check is unfalsifiable by
+construction.
+
+The constructive half, now in [`../suspend-slope.sh`](../suspend-slope.sh):
+prefer a **slope** to a difference whenever the endpoints are conditioned
+differently — a pack still shedding surface charge at one end, polarisation after
+a resume transient at the other, both pushing the same way — and calibrate that
+slope against a directly measured current in a second phase, so the OCV table
+never enters at all.
+
 ## Every claim on this page that had to be retracted
 
 | the claim | what disproved it |
@@ -398,6 +474,13 @@ an entire page of numbers at once.
 
 | "the floor is 139-143 mA with the camera released" | the camera was **not** released - `focus_absolute` was 930 and the actuator was powered, so the daemon subtraction under it proves much less than it appeared to |
 | "the next step is the ak7375 runtime-PM reference" | already shipped: `fa5d294c`, which r53 pins, is that change. The driver holds the coil correctly for a commanded position; what is missing is anything that returns the lens to rest |
+
+| "the ~130 mA is the idle baseline" | it is the *runtime* idle baseline. The phone had never suspended — `suspend_stats/success` was 0 after fifty minutes of uptime |
+| "s2idle is a fallback here for a missing deeper state" | it is the only entry `mem_sleep` offers, and it is the suspend path. Proven working: 91 s slept for a 90 s alarm |
+| "a µAh-valued attribute counts charge" | there is no coulomb counter. `charge_now` is `capacity × charge_full / 100`, and `capacity` is an OCV table lookup |
+| "capacity did not move over 3 h asleep, so the phone drew under 10 mA" | the poll worker that maintains it does not run while userspace is frozen. It never had a chance to move |
+| "`voltage_ocv` is instantaneous — it matches `v - i·R` to the microvolt" | it is an 8-deep 30 s ring average. Matching the formula says the formula is right, not that it was evaluated now |
+| "after hours asleep the pack is relaxed, so both endpoints are comparable" | the snapshot happens *after* resume, not while asleep. The second endpoint was read 90 s after a 725 mA resume transient |
 
 ## What is still open here
 

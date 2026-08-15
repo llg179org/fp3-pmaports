@@ -1176,105 +1176,58 @@ This also settles the phrasing for the upstream submission. The genpd bug is
 SoC-independent and the patch stands on its own; on this board it measurably
 improves idle current, and that is now a number rather than an expectation.
 
-## ☠️ All of the above is runtime idle: the phone had never suspended
+## ☠️ The ~130 mA is runtime idle, not suspend
 
-*2026-08-15, ~09:30.*
+*2026-08-15.* Every number above this line — the 9 % included — was taken with
+the whole session alive and the phone **never once suspended**:
+`/sys/power/suspend_stats/success` read 0 after fifty minutes of uptime. So the
+"idle baseline" is runtime idle with `greetd`, pipewire, wireplumber, five
+`xdg-desktop-portal`s, gvfsd, avahi and `wpa_supplicant` running, and a modem
+talking at 28 `smd-edge` interrupts a second.
 
-Everything measured so far, the 9 % included, was taken with the whole session
-alive. `/sys/power/suspend_stats/success` read **0** after fifty minutes of
-uptime, and `/sys/power/mem_sleep` offers only `[s2idle]`, which on this
-platform is the suspend path rather than a fallback for a missing one. The
-"~130 mA idle baseline" is therefore runtime idle with `greetd`, pipewire,
-wireplumber, five `xdg-desktop-portal`s, gvfsd, avahi and `wpa_supplicant`
-running, and a modem talking at 28 `smd-edge` interrupts a second.
+**10 mA is a different regime, not a smaller figure in this one** — downstream
+phones reach it in full suspend with the modem in its own power-save, never in
+runtime idle. Do not treat 130 mA as a target to shave.
 
-That matters for the target as much as for the number. **10 mA is a different
-regime, not a smaller figure in this one** - downstream phones reach it in full
-suspend with the modem in its own power-save, never in runtime idle. The
-subsystem bisect that was queued next would have apportioned a quantity nobody
-should be trying to shave.
+`/sys/power/mem_sleep` offers only `[s2idle]`, and that is *the* suspend path
+here, not a fallback. It works: 90 s requested through the RTC wakealarm, **91 s
+slept**, `success` 0 → 1 with `fail` 0, WiFi reassociating on its own. The RTC
+clock is stuck in 1970 for want of an `offset` nvmem cell
+([`../TODO.md`](../TODO.md)) but an alarm is *relative* to the counter, so an
+unattended suspend leg is safe to run.
 
-The AP side, for its part, is not idle-broken: the genpd `interrupt-controller`
-domain had been entered 56 048 times and held for 67 % of uptime.
+The AP side is not idle-broken: the genpd `interrupt-controller` domain had been
+entered 56 048 times and held for 67 % of uptime.
 
-### s2idle works, and the read-only RTC does not stop it
+How this was arrived at, and the three instruments that had to be withdrawn on
+the way, is Steps 14–15 of [`bringup/README.md`](bringup/README.md).
 
-90 s requested through the RTC wakealarm, **91 s slept**, `suspend_stats`
-`success` 0 → 1 with `fail` 0, and the WiFi link reassociated on its own. The
-RTC time is stuck in 1970 for want of an `offset` nvmem cell (see
-[`../TODO.md`](../TODO.md)), but an alarm is *relative* to the counter, so it is
-unaffected - which is exactly what makes an unattended suspend leg safe to run.
+## ☠️ Which battery attributes can be believed, and when
 
-☠️ Prove that before relying on it. On a platform whose clock cannot be set it
-is a perfectly reasonable guess that its alarm is dead too; the guess was wrong
-here, and only the two-minute probe could say so.
+Reference, because getting this wrong cost three measurement legs. `qcom_smbx`
+has no coulomb counter; everything comes from
+`drivers/power/supply/adc-battery-helper.c`, whose work function runs every
+`POLL_TIME` = 30 s and maintains an 8-deep ring average
+(`ADC_BAT_HELPER_MOV_AVG_WINDOW_SIZE`) — i.e. a four-minute trailing one.
 
-### ☠️ The first suspend instrument was wrong, and its numbers are withdrawn
-
-`current_now` has to be sampled and nothing samples while userspace is frozen,
-so the first version of [`suspend-leg.sh`](suspend-leg.sh) integrated `charge_now`
-instead - on the assumption that a µAh-valued attribute counts charge.
-
-It does not. There is no coulomb counter on this platform: `qcom_smbx` takes its
-capacity from `drivers/power/supply/adc-battery-helper.c`, which polls every
-30 s and looks the voltage up in an OCV table (`power_supply_batinfo_ocv2cap`)
-through a moving average. The file's own header says it exists for devices whose
-hardware gauge is absent or limited.
-
-| window | what it reported | what it actually measured |
+| attribute | source | across a suspend |
 |---|---|---|
-| awake, 600 s | 209 mA | the estimator still walking the SoC down after USBIN was suspended - motion unrelated to the load. `current_now` says 130 mA under the same conditions |
-| asleep, 601 s | **0 µAh, 0 mA** | a poll worker that does not run while userspace is frozen |
+| `voltage_now` | `get_voltage_and_current_now()` — **live ADC, every read** | usable |
+| `current_now` | `get_voltage_and_current_now()` — **live ADC, every read** | cannot be sampled while frozen |
+| `voltage_ocv` | `help->ocv_avg_uv`, the ring average | **lies** |
+| `capacity` | that average through the DT OCV table | **lies** |
+| `charge_now` | `capacity × charge_full / 100` | **lies** |
 
-**A unit is not a mechanism.** One `grep` for the provider would have cost less
-than the write-up of a wrong result.
+The bottom three are one measurement under three names, so they agree with each
+other by construction and that agreement is not corroboration. The frozen worker
+means all three stay a blend of pre-freeze and post-resume samples for four
+minutes after a resume.
 
-And the awake window was in that script purely as a same-instrument control, in
-a regime where a second instrument could contradict it. That is the only reason
-the asleep reading did not get published as a spectacular sub-2 mA result: **an
-instrument aimed solely at the regime nothing can cross-check is unfalsifiable
-by construction.** Give a new one at least one window whose answer is already
-known.
+`factory-internal-resistance-micro-ohms` in the DT is 120 mΩ; the OCV table
+(`ocv-capacity-table-0`) runs 4.376 V at 100 % down to 3.000 V at 0 %, and is
+close to linear at ~10.6 mV per 1 % between 86 % and 68 %.
 
-### ☠️ The second instrument was wrong too, for the same reason - and so was the third
-
-The replacement read `capacity` at both ends of a three-hour suspend, on the
-argument that the pack would be fully relaxed after hours asleep, so an
-OCV-derived capacity would be at its most trustworthy. The leg ran on
-2026-08-15: `slept=10801s`, one suspend, charger restored cleanly. And
-`capacity` read **97 % at both ends** - no drop at all over three hours off
-VBUS, which taken at face value would mean well under 10 mA.
-
-It is an artifact, and the same artifact as last time. `capacity` is not sampled
-when it is read; it is maintained by the poll worker, which does not run while
-userspace is frozen. Three hours asleep produced ten pre-suspend samples and
-three post-resume ones. It never had a chance to move.
-
-The third attempt was `voltage_ocv`, which looked live - it matched
-`voltage_now - current_now × 120 mΩ` to the microvolt at every snapshot, which
-reads exactly like an instantaneous load-compensated value. It is not.
-`adc-battery-helper.c` settles it:
-
-| attribute | where the value comes from |
-|---|---|
-| `VOLTAGE_NOW` | `get_voltage_and_current_now()` - **live ADC, every read** |
-| `CURRENT_NOW` | `get_voltage_and_current_now()` - **live ADC, every read** |
-| `VOLTAGE_OCV` | `help->ocv_avg_uv` - cached, poll worker only |
-| `CAPACITY` | that average through the device tree's OCV table |
-| `CHARGE_NOW` | `capacity × charge_full / 100` |
-
-`ocv_avg_uv` is the mean of an 8-deep ring (`ADC_BAT_HELPER_MOV_AVG_WINDOW_SIZE`)
-filled at `POLL_TIME` = 30 s, so it is a **four-minute trailing average**. At the
-`settled` snapshot 90 s after resume, five of its eight slots were still
-pre-suspend values and three were taken under the resume transient - one of them
-at 725 mA. The number it reported was a blend of two regimes three hours apart.
-
-The three attributes look like three independent opinions and are one, so say it
-in a line: **`capacity`, `charge_now` and `voltage_ocv` are the same measurement
-under three names, and none of them can cross a suspend boundary.** Everything
-the S2 leg produced through them is withdrawn.
-
-### What does survive from the S2 leg
+### What the withdrawn S2 leg still supports
 
 Only the live pair, and only as a bound. `voltage_now` fell from 4.2055 V (at
 139 mA) to 4.0383 V (at 198 mA) across the three hours; compensated by hand with
@@ -1313,6 +1266,10 @@ phases sit in a similar part of the curve.
 
 Phase B is the same-instrument control, and it is not optional: the awake current
 is known independently, so phase B has to reproduce ~130 mA. If it does not,
-phase A means nothing. That is the third time today a control window is the only
-thing standing between a plausible number and a wrong one -
-[`suspend-slope.sh`](suspend-slope.sh).
+phase A means nothing.
+
+Run it with [`suspend-slope.sh`](suspend-slope.sh) and reduce it with
+[`slope-fit.py`](slope-fit.py), which fits both phases, prints the control block
+first and flags a phase whose points are not a straight line. `slope-fit.py
+--selftest` checks it against a synthetic run of known slope ratio *and* against
+scatter that must fail the straight-line gate.
