@@ -1017,3 +1017,33 @@ where this kernel has no instrument. The next move is therefore not another
 kernel patch but a two-sided capture of the *firmware's* view: the oracle runs the
 same TZ on the same silicon, so anything that differs has to be in what the two
 kernels leave behind in shared memory before the call.
+
+### The two-sided vMPM capture: identical, and that is the result
+
+*2026-08-15, on the oracle. The capture is
+[`2026-08-15_vmpm-two-sided.txt`](2026-08-15_vmpm-two-sided.txt).*
+
+Booted `slot_a` and read the same physical region with the same method. The two
+dumps are **structurally identical**: every differing bit in the register words is
+a wakeup pin the oracle enables and we do not. There is no extra word, no flag,
+no cookie beyond the enable/edge/polarity/status array that mainline fails to
+write. The one behavioural difference is that the oracle's `TIMER0` reads back as
+zero five seconds later - the value gets consumed - which is the positive control
+that the RPM does read those two words.
+
+The same boot also pins the relationship this whole investigation is missing:
+
+| oracle, one boot | |
+|---|---|
+| `[system] system-pc` success | 10168 (611 failed, 117.5 s total) |
+| APSS `numshutdowns` | `0x2619` = 9753 |
+
+The counts track each other one for one. On mainline the left column reads 6233
+and the right column reads 0.
+
+☠️ And a number worth staring at: the oracle spends **117 s of a ten-minute
+uptime** in system power collapse, roughly 20 %. Our earlier reading had mainline
+at 699 s out of 1050 s, roughly 66 % - three times more, on a phone that draws
+slightly *more* current. That is not a small inconsistency to explain away; it is
+the clearest sign yet that what genpd counts as an entered system state and what
+the hardware does are two different things.
