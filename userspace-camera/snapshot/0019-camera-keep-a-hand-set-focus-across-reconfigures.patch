@@ -1,0 +1,93 @@
+From: FP3 camera work
+Subject: [PATCH] camera: keep a hand-set focus across pipeline reconfigures
+
+Manual focus and the autofocus mode are both the AfMode camera control, and
+the viewfinder re-applies the autofocus mode whenever a resolution switch or
+a fresh stream brings the camera back up in its default. That re-application
+undid a focus the user had dialled in - a macro shot, say, lost its focus the
+moment it was taken. Remember when the user has taken focus into their own
+hands (a lens position, or the manual mode) and leave it alone until they ask
+for autofocus again.
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -120,6 +120,12 @@
+         pub restore_res: Cell<Option<usize>>,
+         /// Whether the camera should keep focusing by itself.
+         pub autofocus: Cell<bool>,
++        /// Set once the user has taken focus into their own hands (a manual
++        /// focus mode, or a lens position they dialled in). While it is set the
++        /// automatic re-application of the autofocus mode - the one that runs
++        /// after a resolution switch or a fresh stream - leaves the focus
++        /// alone, so a manual or macro focus is not undone by taking a photo.
++        pub manual_focus: Cell<bool>,
+         /// What the current camera publishes, asked once per camera.
+         pub controls: RefCell<Vec<crate::camera_control::CameraControl>>,
+         /// Index being tried while looking for a preview size that streams.
+@@ -2001,7 +2007,7 @@
+                         // what the viewfinder should be in. Without this a photo
+                         // taken with autofocus off left the camera hunting again
+                         // once the shot's resolution switch restored the preview.
+-                        obj.set_autofocus(obj.autofocus());
++                        obj.reapply_autofocus();
+                         return;
+                     }
+ 
+@@ -2264,6 +2270,8 @@
+     /// Off does not mean fixed focus: it means the camera stops hunting on its
+     /// own, and [`fn@Viewfinder::trigger_autofocus`] focuses once.
+     pub fn set_autofocus(&self, enabled: bool) {
++        // Choosing to autofocus, either way, ends any hand-set focus.
++        self.imp().manual_focus.set(false);
+         self.imp().autofocus.set(enabled);
+ 
+         self.request_autofocus(if enabled {
+@@ -2273,6 +2281,17 @@
+         });
+     }
+ 
++    /// Re-applies the focus mode after the pipeline was reconfigured - a
++    /// resolution switch, a fresh stream - without disturbing a focus the user
++    /// set by hand. Called where the camera has just come back up in its
++    /// default focus mode and needs putting back to what it was.
++    pub fn reapply_autofocus(&self) {
++        if self.imp().manual_focus.get() {
++            return;
++        }
++        self.set_autofocus(self.autofocus());
++    }
++
+     pub fn autofocus(&self) -> bool {
+         self.imp().autofocus.get()
+     }
+@@ -2309,6 +2328,19 @@
+             return;
+         };
+ 
++        // Note when the user has taken focus into their own hands, so the
++        // automatic re-application of the autofocus mode leaves it be. Dialling
++        // a lens position, or choosing the manual focus mode, is that; choosing
++        // an automatic focus mode gives it back.
++        match control.name.as_str() {
++            "LensPosition" => self.imp().manual_focus.set(true),
++            "AfMode" => self
++                .imp()
++                .manual_focus
++                .set(control.manual_value() == Some(value)),
++            _ => {}
++        }
++
+         crate::camera_control::set_control(node_id, control, value);
+     }
+ 
+--- a/src/widgets/camera.rs
++++ b/src/widgets/camera.rs
+@@ -411,8 +411,7 @@
+                     // Ready, by when frames - and so requests to carry the
+                     // control - are flowing.
+                     if matches!(viewfinder.state(), aperture::ViewfinderState::Ready) {
+-                        let settings = gio::Settings::new(config::APP_ID);
+-                        viewfinder.set_autofocus(settings.boolean("autofocus"));
++                        viewfinder.reapply_autofocus();
+                     }
+                 }
+             ));

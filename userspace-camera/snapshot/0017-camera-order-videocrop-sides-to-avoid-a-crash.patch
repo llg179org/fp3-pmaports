@@ -1,0 +1,33 @@
+From: FP3 camera work
+Subject: [PATCH] camera: order videocrop side updates to avoid a segfault
+
+videocrop crashes when left+right exceeds the width, or top+bottom the
+height, a negative output size. Setting the four sides one at a time
+passed through that state whenever the crop grew - the larger left landing
+while right still held its old value - and a fast zoom ramp put a frame in
+that window, segfaulting in libgstvideocrop. Drop the trailing sides to
+zero first so every intermediate state leaves a valid, positive frame.
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -252,9 +252,20 @@
+             let left = ((slack_x as f64 / 2.0) * (1.0 + self.pan_x.get())).round() as i32;
+             let top = ((slack_y as f64 / 2.0) * (1.0 + self.pan_y.get())).round() as i32;
+ 
++            // videocrop segfaults if left + right ever exceeds the width, or
++            // top + bottom the height - a negative output size - and setting
++            // the four sides one at a time passes through exactly that whenever
++            // the crop grows: the new, larger `left` lands while `right` still
++            // holds its old value, and for a frame in between the two sum past
++            // the width. A fast zoom ramp put a frame in that window every time.
++            // Drop the trailing sides to zero first, so every intermediate
++            // state leaves a valid, positive frame no matter the order the crop
++            // moves in.
++            videocrop.set_property("right", 0i32);
++            videocrop.set_property("bottom", 0i32);
+             videocrop.set_property("left", left);
+-            videocrop.set_property("right", slack_x - left);
+             videocrop.set_property("top", top);
++            videocrop.set_property("right", slack_x - left);
+             videocrop.set_property("bottom", slack_y - top);
+         }
+ 

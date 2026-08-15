@@ -1,0 +1,88 @@
+From: FP3 camera work
+Subject: [PATCH] camera: add a Reset to Defaults button to preferences
+
+A single button that puts the user-facing settings back to their schema
+defaults, so a preference explored and regretted can be undone without
+knowing where it is stored. Deliberately not the whole schema: the
+window's own size and maximised state, and the last camera used, are
+session bookkeeping rather than preferences.
+--- a/src/widgets/preferences_window.rs
++++ b/src/widgets/preferences_window.rs
+@@ -7,6 +7,27 @@
+ use crate::config;
+ use crate::widgets::camera_settings;
+ 
++/// The settings the "Reset to Defaults" button puts back to their schema
++/// defaults. Deliberately not the whole schema: the window's own size and
++/// maximised state, and which camera was last used, are session bookkeeping
++/// rather than preferences, and resetting them would move the window and
++/// forget the camera out from under the user.
++const RESETTABLE_KEYS: &[&str] = &[
++    "play-shutter-sound",
++    "autofocus",
++    "show-composition-guidelines",
++    "enable-audio-recording",
++    "enable-hardware-encoding",
++    "preview-resolution",
++    "photo-resolution",
++    "jpeg-quality",
++    "camera-controls",
++    "countdown",
++    "flash-mode",
++    "capture-mode",
++    "picture-format",
++];
++
+ mod imp {
+     use std::cell::{Cell, OnceCell};
+ 
+@@ -76,6 +97,24 @@
+                         aperture::VideoFormat::Vp8Webm,
+                     ))
+             }
++            let obj = self.obj();
++            let reset_defaults = gio::SimpleAction::new("reset-defaults", None);
++            reset_defaults.connect_activate(glib::clone!(
++                #[strong]
++                settings,
++                #[weak]
++                obj,
++                move |_, _| {
++                    for &key in RESETTABLE_KEYS {
++                        settings.reset(key);
++                    }
++                    obj.add_toast(adw::Toast::new(&gettextrs::gettext(
++                        "Settings reset to defaults",
++                    )));
++                }
++            ));
++            action_group.add_action(&reset_defaults);
++
+             self.obj()
+                 .insert_action_group("preferences-window", Some(&action_group));
+ 
+--- a/data/resources/ui/preferences_window.ui
++++ b/data/resources/ui/preferences_window.ui
+@@ -58,6 +58,22 @@
+             </child>
+           </object>
+         </child>
++        <child>
++          <object class="AdwPreferencesGroup">
++            <child>
++              <object class="GtkButton">
++                <property name="label" translatable="yes">_Reset to Defaults</property>
++                <property name="use-underline">True</property>
++                <property name="action-name">preferences-window.reset-defaults</property>
++                <property name="halign">center</property>
++                <property name="margin-top">12</property>
++                <style>
++                  <class name="pill"/>
++                </style>
++              </object>
++            </child>
++          </object>
++        </child>
+       </object>
+     </child>
+   </template>

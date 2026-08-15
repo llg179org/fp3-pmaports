@@ -1,0 +1,26 @@
+From: FP3 camera work
+Subject: [PATCH] camera: restore the autofocus mode after a resolution switch
+
+A photograph switches the source to the capture resolution and back, and
+the switch reconfigures the pipeline, which brings the camera up in its
+default focus mode - continuous. A photo taken with autofocus off left the
+camera hunting again once the shot restored the preview. Re-apply the
+viewfinder's own mode from where a switch is confirmed streaming (frames
+flowing, so a control has a request to ride), which covers every
+reconfiguring switch, not only the shot.
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -1974,6 +1974,13 @@
+                         // does not can be sent back to.
+                         imp.good_res.set(Some(imp.viewfinder_res.get()));
+                         imp.switching.set(false);
++                        // The switch that brought this pipeline up also reset
++                        // the camera to its default focus mode; now that frames
++                        // are flowing to carry a control, put the mode back to
++                        // what the viewfinder should be in. Without this a photo
++                        // taken with autofocus off left the camera hunting again
++                        // once the shot's resolution switch restored the preview.
++                        obj.set_autofocus(obj.autofocus());
+                         return;
+                     }
+ 
