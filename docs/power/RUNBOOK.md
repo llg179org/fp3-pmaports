@@ -86,13 +86,20 @@ s2idle, so a failed ping before ~15:45 means it is working, not broken.
 ssh fp3@192.168.100.17 'cat /home/fp3/suspend-slope.txt'
 ```
 
-Every line carries `phase=`, `t=` (uptime, s), `v=` and `i=`, all live ADC. Fit
-compensated voltage `v + |i| × 120000/1e6` against `t` separately for
-`phase=A` and `phase=B`, then:
+Every line carries `phase=`, `t=` (uptime, s), `v=` and `i=`, all live ADC. Do
+not do the arithmetic by hand - fetch both logs and run the reducer, which also
+uses the dense `curlog.txt` for phase B's mean current (the load swings
+140-490 mA, so 8 spaced samples estimate it badly):
 
+```sh
+scp fp3@192.168.100.17:/home/fp3/{suspend-slope,curlog}.txt docs/power/
+docs/power/slope-fit.py docs/power/suspend-slope.txt docs/power/curlog.txt
 ```
-I_sleep = mean(|i|) over phase B  ×  slope_A / slope_B
-```
+
+It fits compensated voltage `v + |i| × 120 mΩ` against `t` per phase and prints
+`I_sleep = mean(|i|) over phase B × slope_A / slope_B`. `slope-fit.py --selftest`
+proves the fitter on a synthetic run of known ratio and on scatter that must fail
+the straight-line gate.
 
 ☠️ **Check phase B first, before looking at phase A at all.** It is the control:
 its `mean(|i|)` must come out near 130 mA and its slope must be a clean straight
