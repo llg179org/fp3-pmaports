@@ -1,0 +1,244 @@
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?= <lajoshazilg@gmail.com>
+Date: Sat, 15 Aug 2026 17:20:00 +0200
+Subject: [PATCH] camera: make the focus mode and its slider actually arrive
+
+Three faults, one cause: the focus mode is chosen long before there is a
+camera to tell.
+
+The mode is read from the setting while the window is built, and written
+to the camera as a PipeWire property - which only exists once the node is
+configured. A write before that goes nowhere and reports nothing, so the
+camera stayed in its own default, continuous hunting, while the menu
+showed the mode the user had picked. Re-applying at Ready helped but did
+not settle it: the node can be there with its controls not yet
+published. Since nothing can be read back to check, keep asking until
+the controls are there to be written, a few times a second for ten
+seconds, and say so in the log if they never turn up.
+
+The distance slider had the same lateness with a worse ending: it is
+built from the lens's own bounds, so with no camera to ask there was no
+slider, and the popover was built once at start-up and never again. The
+slider was therefore missing for good, including in Off where it is the
+only thing that moves the lens. Build the popover again when the camera
+is up, and only while the slider is still missing, so that a later Ready
+does not shut a popover the user has open.
+
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
+---
+--- a/src/widgets/camera.rs
++++ b/src/widgets/camera.rs
+@@ -106,8 +106,10 @@
+         #[template_child]
+         pub focus_button: TemplateChild<gtk::MenuButton>,
+         /// The distance slider inside the focus popover, kept so that its
+-        /// sensitivity can follow the mode.
+-        pub focus_scale: OnceCell<gtk::Scale>,
++        /// sensitivity can follow the mode. Empty until the camera is up: its
++        /// bounds are the lens's own, so it cannot be built before there is a
++        /// lens to ask.
++        pub focus_scale: std::cell::RefCell<Option<gtk::Scale>>,
+ 
+         #[template_child]
+         pub measure_revealer: TemplateChild<gtk::Revealer>,
+@@ -497,6 +499,17 @@
+                     // control - are flowing.
+                     if matches!(viewfinder.state(), aperture::ViewfinderState::Ready) {
+                         viewfinder.reapply_autofocus();
++
++                        // The same lateness hides the distance slider: it is
++                        // built from the lens's own bounds, and at start-up
++                        // there is no camera to ask, so the popover came up
++                        // without it and stayed that way. Build it again now
++                        // that the camera describes itself - but only while it
++                        // is still missing, so that reaching Ready again does
++                        // not shut a popover the user has open.
++                        if obj.imp().focus_scale.borrow().is_none() {
++                            obj.build_focus_popover();
++                        }
+                     }
+                 }
+             ));
+@@ -1075,6 +1088,9 @@
+         let imp = self.imp();
+         let settings = imp.settings();
+ 
++        /* Whatever is built below is the only slider there is. */
++        imp.focus_scale.replace(None);
++
+         let box_ = gtk::Box::new(gtk::Orientation::Vertical, 6);
+         box_.set_margin_top(6);
+         box_.set_margin_bottom(6);
+@@ -1155,7 +1171,7 @@
+                 ));
+ 
+                 box_.append(&scale);
+-                let _ = imp.focus_scale.set(scale);
++                imp.focus_scale.replace(Some(scale));
+             }
+         }
+ 
+@@ -1173,7 +1189,7 @@
+         let imp = self.imp();
+         let mode = aperture::FocusMode::from_setting(&imp.settings().string("focus-mode"));
+ 
+-        if let Some(scale) = imp.focus_scale.get() {
++        if let Some(scale) = imp.focus_scale.borrow().as_ref() {
+             scale.set_sensitive(mode == aperture::FocusMode::Off);
+         }
+     }
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -2352,7 +2352,6 @@
+     /// [`fn@Viewfinder::trigger_autofocus`] does.
+     pub fn set_focus_mode(&self, mode: crate::camera_control::FocusMode) {
+         self.imp().focus_mode.set(mode);
+-        self.request_autofocus(mode.request());
+ 
+         // A hand-set distance only means anything while the camera is not
+         // focusing for itself; leaving it behind on the way out would put the
+@@ -2360,6 +2359,51 @@
+         if mode != crate::camera_control::FocusMode::Off {
+             self.imp().lens_position.set(None);
+         }
++
++        self.send_focus_mode(0);
++    }
++
++    /// Puts the chosen mode on the camera, and keeps trying until it lands.
++    ///
++    /// The mode is chosen before there is a camera to tell: the setting is
++    /// read when the window is built, while the controls only exist once
++    /// PipeWire has the node configured. A single write at the wrong moment
++    /// goes nowhere and says nothing, which left the camera in its own default
++    /// - continuous hunting - while the menu showed the mode the user picked.
++    /// There is no way to ask the camera what mode it is in, so the only
++    /// honest fix is to keep asking until the controls are there to be written.
++    fn send_focus_mode(&self, attempt: u32) {
++        const RETRIES: u32 = 40;
++        const EVERY_MS: u64 = 250;
++
++        if self.request_autofocus(self.focus_mode().request()) {
++            /* A reconfigure loses a hand-set distance as well. */
++            if let Some(position) = self.imp().lens_position.get() {
++                let control = self
++                    .camera_controls()
++                    .into_iter()
++                    .find(|control| control.name == "LensPosition");
++
++                if let Some(control) = control {
++                    self.set_camera_control(&control, position);
++                }
++            }
++            return;
++        }
++
++        if attempt >= RETRIES {
++            log::warn!("Camera never offered its focus controls; giving up");
++            return;
++        }
++
++        glib::timeout_add_local_once(
++            std::time::Duration::from_millis(EVERY_MS),
++            glib::clone!(
++                #[weak(rename_to = obj)]
++                self,
++                move || obj.send_focus_mode(attempt + 1)
++            ),
++        );
+     }
+ 
+     /// Re-applies the focus mode after the pipeline was reconfigured - a
+@@ -2367,19 +2411,7 @@
+     /// its own default mode. A distance the user dialled in is re-sent too,
+     /// since the reconfigure lost that as well.
+     pub fn reapply_autofocus(&self) {
+-        let mode = self.focus_mode();
+-        self.request_autofocus(mode.request());
+-
+-        if let Some(position) = self.imp().lens_position.get() {
+-            let control = self
+-                .camera_controls()
+-                .into_iter()
+-                .find(|control| control.name == "LensPosition");
+-
+-            if let Some(control) = control {
+-                self.set_camera_control(&control, position);
+-            }
+-        }
++        self.send_focus_mode(0);
+     }
+ 
+     pub fn focus_mode(&self) -> crate::camera_control::FocusMode {
+@@ -2428,18 +2460,19 @@
+         crate::camera_control::set_control(node_id, control, value);
+     }
+ 
+-    fn request_autofocus(&self, request: crate::camera_control::AfRequest) {
++    /// Whether the request reached a camera that could carry it.
++    fn request_autofocus(&self, request: crate::camera_control::AfRequest) -> bool {
+         let Some(camera) = self.camera() else {
+-            return;
++            return false;
+         };
+ 
+         let Some(node_id) = camera.node_id() else {
+             log::debug!("Camera has no PipeWire node; leaving autofocus alone");
+-            return;
++            return false;
+         };
+ 
+         let controls = self.camera_controls();
+-        crate::camera_control::request_autofocus(node_id, request, &controls);
++        crate::camera_control::request_autofocus(node_id, request, &controls)
+     }
+ 
+     fn size_caps(size: crate::utils::Size) -> gst::Caps {
+--- a/aperture/src/camera_control.rs
++++ b/aperture/src/camera_control.rs
+@@ -316,7 +316,14 @@
+ ///
+ /// Failures are logged rather than returned: nothing the user can do about
+ /// them, and a camera that will not focus on demand is still a working camera.
+-pub fn request_autofocus(node_id: u32, request: AfRequest, controls: &[CameraControl]) {
++/// Returns whether the camera offered everything the request needs. A false
++/// here is not a failure to focus but a camera that cannot yet be told
++/// anything - the caller decides whether to ask again.
++pub fn request_autofocus(
++    node_id: u32,
++    request: AfRequest,
++    controls: &[CameraControl],
++) -> bool {
+     let mut writes = Vec::new();
+ 
+     for (name, value) in request.wanted() {
+@@ -328,17 +335,17 @@
+              * logs an error for every attempt.
+              */
+             log::debug!("Camera does not offer {name}; not asking it to focus");
+-            return;
++            return false;
+         };
+ 
+         let ControlKind::Choice { values, .. } = &control.kind else {
+             log::debug!("{name} is not the kind of control it was expected to be");
+-            return;
++            return false;
+         };
+ 
+         let Some((number, _)) = values.iter().find(|(_, label)| label == value) else {
+             log::debug!("{name} has no value called {value}");
+-            return;
++            return false;
+         };
+ 
+         writes.push((control.key.clone(), number.to_string()));
+@@ -349,6 +356,8 @@
+             set_literal(node_id, &key, &value);
+         }
+     });
++
++    true
+ }
+ 
+ fn set_literal(node_id: u32, key: &str, value: &str) {
