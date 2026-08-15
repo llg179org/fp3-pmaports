@@ -49,53 +49,71 @@ and no number had ever been taken there.
 in 1970 (no `offset` nvmem cell, `docs/TODO.md`) but an alarm is *relative*, so
 it is unaffected - which is what makes an unattended suspend leg safe.
 
-☠️ **The first suspend instrument was wrong and its numbers are withdrawn.**
-It integrated `charge_now`, on the assumption that a uAh-valued attribute counts
-charge. There is no coulomb counter on this platform: `qcom_smbx` gets capacity
-from `adc-battery-helper.c`, which polls every 30 s and looks the voltage up in
-an OCV table through a moving average. Its awake control window read **209 mA**
-where `current_now` reads 130 mA, and its asleep window read **exactly zero** -
-the poll worker does not run while userspace is frozen. The control window is
-the only reason this was caught; a script measuring only the regime of interest
-would have produced a clean-looking sub-2 mA result.
+☠️ **Three battery instruments have now failed, all for one reason.** There is
+no coulomb counter here. `qcom_smbx` gets everything from
+`adc-battery-helper.c`, whose poll worker runs every 30 s and maintains an
+8-deep moving average - i.e. a four-minute trailing one - and **that worker does
+not run while userspace is frozen**. So:
 
-### ← RESUME HERE after 13:05 on 2026-08-15
+| attribute | live? |
+|---|---|
+| `voltage_now`, `current_now` | **yes** - straight to the ADC on every sysfs read |
+| `voltage_ocv`, `capacity`, `charge_now` | no - one cached number under three names |
 
-The phone is asleep and unreachable *by design* - WiFi drops in s2idle, so a
-failed ping before 13:05 means it is working, not broken. Confirmed still asleep
-at 11:33, 90 minutes in.
+The casualties, in order: integrating `charge_now` gave **209 mA** in an awake
+control window where `current_now` reads 130, and **exactly zero** asleep;
+`capacity` read **97 % at both ends** of a 3 h suspend; `voltage_ocv` looked
+instantaneous (it equals `voltage_now - current_now × 120 mΩ` to the microvolt)
+but is the ring average, five of whose eight slots were still pre-suspend 90 s
+after resume. Every number from all three is withdrawn. In each case the
+**control window is the only thing that caught it**.
+
+What the S2 leg still supports, from the live pair alone: compensated
+`voltage_now` fell 4.222 V → 4.062 V over 3 h. Both ends are biased the same way
+(surface charge at the start, resume polarisation at the end), so 160 mV is an
+**upper bound**. But a 10 mA leg would move only ~11 mV, so **suspend is not in
+the 10 mA regime** - that much is solid. Full reasoning in [`README.md`](README.md).
+
+### ← RESUME HERE after 17:50 on 2026-08-15
+
+**Running now (started ~13:30, due ~17:50): `suspend-slope.sh S3 900 8`,**
+systemd unit `slope1`. 900 s off-VBUS settle, then 8 sleeps of 900 s each
+followed by a fixed 20 s wake and one live sample, then 8 identical samples
+awake. The phone is unreachable during phase A *by design* - WiFi drops in
+s2idle, so a failed ping before ~15:45 means it is working, not broken.
 
 ```sh
-ping -c2 -W3 192.168.100.17                       # back up = the leg finished
-ssh fp3@192.168.100.17 'cat /home/fp3/suspend-results.txt'
+ssh fp3@192.168.100.17 'cat /home/fp3/suspend-slope.txt'
 ```
 
-Read the **`settled`** line, not `after`: the immediate post-resume snapshot is
-the stale pre-freeze value, and the settled one is taken 90 s later once the
-30 s poll worker has caught up. Check `slept=` first - `echo mem` returns on
-*any* wake, so a value well under 10800 means something woke it early and the
-1 % granularity makes that window useless. ☠️ If that happened, the fix is to
-loop the suspend until the alarm time rather than trusting one `echo mem`.
+Every line carries `phase=`, `t=` (uptime, s), `v=` and `i=`, all live ADC. Fit
+compensated voltage `v + |i| × 120000/1e6` against `t` separately for
+`phase=A` and `phase=B`, then:
 
-Then: `capacity` drop over 3 h × 30.6 mAh ÷ 3 h = mean current. Under 2 % means
-under ~20 mA (surprising - re-measure before believing it); 10-13 % means
-suspend changed nothing and the RPM question moves from parked back to the main
-event. Prediction on record, **not** a measurement: 60-110 mA, because the genpd
-`interrupt-controller` domain was already collapsed 67 % of the time *while
-awake* at 130 mA, so most of that draw is not the AP and suspending it cannot
-remove it.
+```
+I_sleep = mean(|i|) over phase B  ×  slope_A / slope_B
+```
+
+☠️ **Check phase B first, before looking at phase A at all.** It is the control:
+its `mean(|i|)` must come out near 130 mA and its slope must be a clean straight
+line. If phase B does not reproduce the current we already know, the method is
+broken and phase A is meaningless - that has now happened three times running.
+
+Then check the `A<n> slept=` lines: each should read ~900 of 900. A
+systematically short sleep means something is waking it and phase A is not
+measuring suspend. And check the `phase=settle` lines - if compensated voltage
+is still visibly falling at the end of the 900 s settle, surface charge had not
+finished shedding and the first phase-A points are contaminated (the slope fit
+should then drop them).
 
 Also verify the charger came back: `cat /sys/class/power_supply/pmi632-charger/online`
 should read 1. ☠️ If it reads 0 the EXIT trap did not run - clear
 `USBIN_SUSPEND_BIT` (`echo Charging > .../status`) **before** any reboot.
 
-**Running now (started ~10:00, due ~13:05): `suspend-leg.sh S2 10800`.** Three
-hours asleep off VBUS, `capacity`/`voltage_now`/`voltage_ocv` read at both ends
-with the pack relaxed at each. `capacity` is 1% granular = 30.6 mAh, so this
-separates "still around 100 mA" (~13% drop) from "under 20 mA" (under 2%) and
-nothing finer - which is the open question. ☠️ The RTC alarm is what brings it
-back; proven twice (`suspend_stats/success` 0 → 2), and the EXIT trap clears
-`USBIN_SUSPEND_BIT` on every path.
+Prediction on record, **not** a measurement: 60-110 mA, because the genpd
+`interrupt-controller` domain was already collapsed 67 % of the time *while
+awake* at 130 mA, so most of that draw is not the AP and suspending it cannot
+remove it.
 
 **Then** bisect whatever is left by subsystem with `idle-leg.sh` - one leg with
 WiFi down, one with the modem stopped, one with `pd-mapper` disabled. That is
@@ -150,5 +168,5 @@ returns before the compositor releases DRM master, so a single write to
 | the same on the oracle | `ut-ssh 'cat /sys/kernel/debug/rpm_master_stats'` and `.../lpm_stats/stats` |
 | what is waking the CPUs | two `/proc/interrupts` snapshots differenced — ☠️ stop the compositor first, or `msm_mdss` at 65/s makes the run meaningless |
 | has the phone ever suspended | `grep -H . /sys/power/suspend_stats/*` — `success` is the only honest answer; `cat /sys/power/mem_sleep` says which path |
-| current while suspended | `docs/power/suspend-leg.sh` — ☠️ `current_now` cannot be sampled while frozen; integrate `charge_now` instead |
+| current while suspended | `docs/power/suspend-slope.sh` — ☠️ **only `voltage_now`/`current_now` are live**; `capacity`, `charge_now` and `voltage_ocv` are one cached number the frozen poll worker maintains, and all three lie across a suspend. Use a slope of compensated `voltage_now`, calibrated against an awake control |
 | does the RTC alarm wake it | `echo 0 > /sys/class/rtc/rtc0/wakealarm; echo +90 > …` then `echo mem > /sys/power/state` — ☠️ prove this **before** relying on it to bring an unattended leg back |

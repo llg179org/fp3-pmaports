@@ -1,0 +1,9 @@
+suspend-leg: S1 start cap=97% settling 120s
+suspend-leg: S1 awake dq=34884uAh dt=600s mean_uA=209304
+suspend-leg: S1 asleep dq=0uAh dt=601s mean_uA=0 suspends=1
+suspend-leg: S1 done cap=96% - restoring charger and greetd
+suspend-leg: S2 settle 300s from cap=97 v=4262940 ocv=4286322 i=-194854
+suspend-leg: S2 before cap=97 v=4205522 ocv=4222166 i=-138702
+suspend-leg: S2 after cap=97 v=4030932 ocv=4051743 i=-724945 slept=10801s suspends=1
+suspend-leg: S2 settled cap=97 v=4038328 ocv=4062131 i=-198364
+suspend-leg: S2 done - restoring charger and greetd

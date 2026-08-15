@@ -1236,15 +1236,83 @@ instrument aimed solely at the regime nothing can cross-check is unfalsifiable
 by construction.** Give a new one at least one window whose answer is already
 known.
 
-### What can be measured across a suspend here
+### ☠️ The second instrument was wrong too, for the same reason - and so was the third
 
-Voltage. `voltage_now` is a real ADC read, and after hours off VBUS asleep the
-pack is fully relaxed - the one condition in which an OCV-derived capacity is at
-its most trustworthy. So both ends of the window are read relaxed, which is also
-what distinguishes this from the discredited voltage-slope method: that one
-compared a relaxing pack against itself at two different points of its own
-relaxation.
+The replacement read `capacity` at both ends of a three-hour suspend, on the
+argument that the pack would be fully relaxed after hours asleep, so an
+OCV-derived capacity would be at its most trustworthy. The leg ran on
+2026-08-15: `slept=10801s`, one suspend, charger restored cleanly. And
+`capacity` read **97 % at both ends** - no drop at all over three hours off
+VBUS, which taken at face value would mean well under 10 mA.
 
-`capacity` is 1 % granular, 30.6 mAh on this pack, so a 3 h window separates
-"still around 100 mA" (a ~13 % drop) from "under 20 mA" (under 2 %) and nothing
-finer. That is deliberate. The open question is which regime, not a 10 mA effect.
+It is an artifact, and the same artifact as last time. `capacity` is not sampled
+when it is read; it is maintained by the poll worker, which does not run while
+userspace is frozen. Three hours asleep produced ten pre-suspend samples and
+three post-resume ones. It never had a chance to move.
+
+The third attempt was `voltage_ocv`, which looked live - it matched
+`voltage_now - current_now × 120 mΩ` to the microvolt at every snapshot, which
+reads exactly like an instantaneous load-compensated value. It is not.
+`adc-battery-helper.c` settles it:
+
+| attribute | where the value comes from |
+|---|---|
+| `VOLTAGE_NOW` | `get_voltage_and_current_now()` - **live ADC, every read** |
+| `CURRENT_NOW` | `get_voltage_and_current_now()` - **live ADC, every read** |
+| `VOLTAGE_OCV` | `help->ocv_avg_uv` - cached, poll worker only |
+| `CAPACITY` | that average through the device tree's OCV table |
+| `CHARGE_NOW` | `capacity × charge_full / 100` |
+
+`ocv_avg_uv` is the mean of an 8-deep ring (`ADC_BAT_HELPER_MOV_AVG_WINDOW_SIZE`)
+filled at `POLL_TIME` = 30 s, so it is a **four-minute trailing average**. At the
+`settled` snapshot 90 s after resume, five of its eight slots were still
+pre-suspend values and three were taken under the resume transient - one of them
+at 725 mA. The number it reported was a blend of two regimes three hours apart.
+
+The three attributes look like three independent opinions and are one, so say it
+in a line: **`capacity`, `charge_now` and `voltage_ocv` are the same measurement
+under three names, and none of them can cross a suspend boundary.** Everything
+the S2 leg produced through them is withdrawn.
+
+### What does survive from the S2 leg
+
+Only the live pair, and only as a bound. `voltage_now` fell from 4.2055 V (at
+139 mA) to 4.0383 V (at 198 mA) across the three hours; compensated by hand with
+the device tree's 120 mΩ `factory-internal-resistance-micro-ohms`, that is
+4.222 V → 4.062 V, a 160 mV drop.
+
+Both ends are biased the **same** way, so 160 mV is an upper bound and not an
+estimate: the first was taken 300 s after leaving a CV charger, with surface
+charge still elevating it, and the second 90 s after a resume that pulled 725 mA,
+with polarisation depressing it and a static 120 mΩ under-correcting a transient.
+
+The bound is still worth something. The sub-20 mA hypothesis needs essentially
+the whole 160 mV to be artifact: a 10 mA leg over three hours moves 30 mAh, which
+in this region of the table (~10.6 mV per 1 %) is about 11 mV. **So suspend is
+not in the 10 mA regime.** How far it sits from the awake 130 mA, this leg cannot
+say.
+
+### The instrument that follows from all of this
+
+Two live attributes, no cached ones, and a **slope** rather than a difference - a
+slope cancels any constant offset, which is what every bias found so far turns
+out to be, provided the sampling conditions are identical at every point. Then
+calibrate that slope against a current the ADC measures directly, rather than
+against the OCV table:
+
+* **phase A** - N sleeps of T seconds; after each, exactly 20 s of quiet awake
+  time, then one live `(voltage_now, current_now)` read. The fixed wake window is
+  what makes the polarisation offset the same at every sample.
+* **phase B** - the same total time awake and idle, sampled identically, where
+  `current_now` gives the true mean current outright.
+
+`I_sleep = I_awake × (slope_A / slope_B)`. The OCV table never enters, and
+`dV/dQ` is near-constant across the span this covers (the table gives ~10.6 mV
+per 1 % from 86 % down to 68 %), so the ratio holds. Phase A runs first, so both
+phases sit in a similar part of the curve.
+
+Phase B is the same-instrument control, and it is not optional: the awake current
+is known independently, so phase B has to reproduce ~130 mA. If it does not,
+phase A means nothing. That is the third time today a control window is the only
+thing standing between a plausible number and a wrong one -
+[`suspend-slope.sh`](suspend-slope.sh).

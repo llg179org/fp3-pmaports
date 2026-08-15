@@ -1,0 +1,166 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# How much does the phone draw while it is actually asleep?
+#
+# This is the third instrument aimed at that question. The first two failed for
+# the same underlying reason, so state it once, plainly:
+#
+#   ☠️ ON THIS PLATFORM, capacity, charge_now AND voltage_ocv ARE ALL THE SAME
+#      NUMBER, AND NONE OF THEM CAN CROSS A SUSPEND BOUNDARY.
+#
+# qcom_smbx has no coulomb counter. It gets all three from
+# drivers/power/supply/adc-battery-helper.c, whose work function polls every
+# 30 s (POLL_TIME), computes one OCV estimate as volt_uv - curr_ua * R, pushes
+# it into an 8-deep ring (ADC_BAT_HELPER_MOV_AVG_WINDOW_SIZE = 8) and looks the
+# *average* up in the device tree's ocv-capacity-table-0. So voltage_ocv is a
+# four-minute trailing average, capacity is that average through a lookup table,
+# and charge_now is capacity * charge_full / 100. One measurement, three names.
+#
+# A frozen kernel does not run that work function. Every one of the three is
+# therefore stale on resume, and stays a blend of pre-freeze and post-resume
+# samples for the next four minutes. Measured 2026-08-15: 90 s after a three
+# hour suspend, five of the eight ring slots were still pre-suspend values.
+#
+# Only two attributes are live: VOLTAGE_NOW and CURRENT_NOW call
+# get_voltage_and_current_now() on every sysfs read, straight to the ADC. They
+# are the only things this script uses.
+#
+# THE METHOD
+#
+# Take voltage under a controlled load, repeatedly, and use the *slope*. A slope
+# is immune to any constant offset - surface charge from the charger, the static
+# 120 mOhm compensation being wrong, concentration polarisation after a wake -
+# as long as the sampling conditions are identical at every point, which is what
+# the fixed-length wake window buys.
+#
+# Then calibrate the slope against a known current instead of against the OCV
+# table:
+#
+#   phase A - N sleeps of T seconds; after each, exactly SETTLE_WAKE seconds of
+#             quiet awake time, then one live (v, i) read.
+#   phase B - the same total time awake and idle, sampled the same way, where
+#             current_now gives the true mean current directly.
+#
+#   I_sleep = I_awake * (slope_A / slope_B)
+#
+# The OCV table never enters. dV/dQ is near-constant over the span this covers
+# (the table gives ~10.6 mV per 1% from 86% down to 68%), and A runs before B so
+# both phases sit in a similar region of the curve.
+#
+# Phase B is the same-instrument control, and it is not optional. The awake
+# current is already known independently (current_now, ~130 mA), so phase B has
+# to reproduce it. If it does not, the slope method is wrong and phase A means
+# nothing. That check is the entire reason the first instrument's error was
+# caught, and it is cheap.
+#
+# ☠️ USBIN_SUSPEND_BIT lives in the PMIC and survives a warm reboot. If this
+# script dies without restoring it, do NOT reboot the phone as-is - it once
+# wedged the bootloader into a fastboot that answered no command. The EXIT trap
+# clears it on every path.
+#
+#   suspend-slope.sh <tag> [sleep_s] [cycles]
+#
+# Appends to /home/fp3/suspend-slope.txt; one machine-readable sample per line.
+
+set -eu
+
+TAG=${1:?usage: suspend-slope.sh <tag> [sleep_s] [cycles]}
+T=${2:-900}
+N=${3:-8}
+SETTLE_WAKE=20		# quiet awake seconds before each sample
+SETTLE_OFF=900		# shed surface charge after leaving the charger
+
+BATT=/sys/class/power_supply/pmi632-battery
+CHG=/sys/class/power_supply/pmi632-charger
+RTC=/sys/class/rtc/rtc0/wakealarm
+OUT=/home/fp3/suspend-slope.txt
+
+die() { echo "suspend-slope: $*" >&2; exit 1; }
+say() { echo "suspend-slope: $*" | tee -a "$OUT" >&2; }
+
+# Live ADC only. Never capacity, never voltage_ocv, never charge_now.
+sample() {
+	printf '%s phase=%s n=%s t=%s v=%s i=%s\n' \
+		"$TAG" "$1" "$2" "$(cut -d. -f1 /proc/uptime)" \
+		"$(cat "$BATT/voltage_now")" "$(cat "$BATT/current_now")" \
+		| tee -a "$OUT" >&2
+}
+
+[ "$(id -u)" = 0 ] || die "must run as root"
+[ -w "$RTC" ] || die "no writable rtc wakealarm"
+
+# --- pin the display ---------------------------------------------------------
+systemctl stop greetd 2>/dev/null || true
+dpms=unknown
+i=0
+while [ "$i" -lt 15 ]; do
+	for fb in /sys/class/graphics/fb*/blank; do
+		[ -w "$fb" ] && echo 4 > "$fb"
+	done
+	sleep 2
+	dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null || echo unknown)
+	[ "$dpms" = Off ] && break
+	i=$((i + 1))
+done
+[ "$dpms" = Off ] || die "DSI-1 dpms is still '$dpms' after 30 s of blanking"
+
+# --- take the phone off VBUS -------------------------------------------------
+restore() {
+	echo 0 > "$RTC" 2>/dev/null || true
+	echo Charging > "$CHG/status" 2>/dev/null || true
+	systemctl start greetd 2>/dev/null || true
+}
+trap restore EXIT INT TERM
+
+echo Unknown > "$CHG/status"
+sleep 10
+[ "$(cat "$CHG/online")" = 0 ] || die "charger still online after suspending USBIN"
+[ "$(cat "$BATT/status")" = Discharging ] || die "battery is '$(cat "$BATT/status")'"
+
+# Log the relaxation itself rather than assuming a settle time is enough - the
+# shape of these lines says whether SETTLE_OFF was long enough, which no amount
+# of reasoning about surface charge can.
+say "$TAG === settle ${SETTLE_OFF}s off VBUS ==="
+i=0
+while [ "$i" -lt $((SETTLE_OFF / 60)) ]; do
+	sample settle "$i"
+	sleep 60
+	i=$((i + 1))
+done
+
+# --- phase A: asleep ---------------------------------------------------------
+say "$TAG === phase A: $N sleeps of ${T}s ==="
+w0=$(cat /sys/power/suspend_stats/success)
+i=0
+while [ "$i" -lt "$N" ]; do
+	echo 0 > "$RTC"
+	echo "+$T" > "$RTC"
+	a0=$(cut -d. -f1 /proc/uptime)
+	echo mem > /sys/power/state || die "suspend refused in cycle $i"
+	a1=$(cut -d. -f1 /proc/uptime)
+	sleep "$SETTLE_WAKE"
+	sample A "$i"
+	# An early wake makes that interval shorter, not invalid - the sample
+	# carries its own uptime, so the slope fit uses real elapsed time. But
+	# say so, because a systematically short sleep means something is
+	# waking it and phase A is then not measuring suspend.
+	say "$TAG A$i slept=$((a1 - a0))s of ${T}s"
+	i=$((i + 1))
+done
+w1=$(cat /sys/power/suspend_stats/success)
+say "$TAG phase A done suspends=$((w1 - w0)) of $N"
+
+# --- phase B: awake control, same duration, same load ------------------------
+say "$TAG === phase B: awake control, $N x ${T}s ==="
+i=0
+while [ "$i" -lt "$N" ]; do
+	sleep "$T"
+	sleep "$SETTLE_WAKE"
+	sample B "$i"
+	i=$((i + 1))
+done
+
+say "$TAG done - restoring charger and greetd"
