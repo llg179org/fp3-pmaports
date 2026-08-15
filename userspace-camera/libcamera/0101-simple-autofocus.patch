@@ -788,7 +788,7 @@ index 0000000..cd6cb8c
 +{
 +	auto &af = context.activeState.af;
 +
-+	af.position = std::clamp(position, min_, max_);
++	af.position = std::clamp(position, context.lens.min, context.lens.max);
 +	af.updateLens = true;
 +	settle_ = settleFrames_;
 +}
