@@ -252,3 +252,25 @@ returns before the compositor releases DRM master, so a single write to
 | has the phone ever suspended | `grep -H . /sys/power/suspend_stats/*` — `success` is the only honest answer; `cat /sys/power/mem_sleep` says which path |
 | current while suspended | `docs/power/suspend-slope.sh` — ☠️ **only `voltage_now`/`current_now` are live**; `capacity`, `charge_now` and `voltage_ocv` are one cached number the frozen poll worker maintains, and all three lie across a suspend. Use a slope of compensated `voltage_now`, calibrated against an awake control |
 | does the RTC alarm wake it | `echo 0 > /sys/class/rtc/rtc0/wakealarm; echo +90 > …` then `echo mem > /sys/power/state` — ☠️ prove this **before** relying on it to bring an unattended leg back |
+
+### Why suspend only halves it: there is no `deep` state
+
+Measured 2026-08-15, minutes after the S4 leg:
+
+```sh
+cat /sys/power/state      # freeze mem disk
+cat /sys/power/mem_sleep  # [s2idle]
+```
+
+`mem_sleep` offers **s2idle and nothing else**, so `echo mem > /sys/power/state`
+— what the leg ran, and what `suspend_stats` counted 8 of — is s2idle. Tasks
+freeze and the CPUs go idle, but the SoC never reaches VDD_MIN or XO shutdown,
+because that needs every subsystem to have dropped its RPM votes for clocks,
+regulators and buses. One driver still holding one vote is enough to prevent it,
+and mainline msm8953 registers no `deep` (`PM_SUSPEND_MEM`) platform op at all.
+
+This is the same fact as the 0.475 ratio, seen from the other side, and it means
+the ratio is close to the ceiling of what this suspend path can give. Chasing it
+by tuning userspace is the wrong lever; the lever is a `deep` state, which means
+the RPM vote path. Before any of that, get the awake baseline honest (above) —
+a ratio against a wrong reference cannot say how much is left on the table.
