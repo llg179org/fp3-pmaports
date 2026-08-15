@@ -1,0 +1,44 @@
+suspend-slope: S4 === settle 900s off VBUS ===
+S4 phase=settle n=0 t=37167 v=4011469 i=-126037
+S4 phase=settle n=1 t=37227 v=4018086 i=-84686
+S4 phase=settle n=2 t=37287 v=3984219 i=-196228
+S4 phase=settle n=3 t=37347 v=4001347 i=-130157
+S4 phase=settle n=4 t=37407 v=3990642 i=-187683
+S4 phase=settle n=5 t=37467 v=4006213 i=-105438
+S4 phase=settle n=6 t=37527 v=4013026 i=-56457
+S4 phase=settle n=7 t=37587 v=3992978 i=-226745
+S4 phase=settle n=8 t=37647 v=4016140 i=-57678
+S4 phase=settle n=9 t=37707 v=4013999 i=-60272
+S4 phase=settle n=10 t=37767 v=3964561 i=-319061
+S4 phase=settle n=11 t=37827 v=4001737 i=-146484
+S4 phase=settle n=12 t=37887 v=3971373 i=-246887
+S4 phase=settle n=13 t=37947 v=3984025 i=-169067
+S4 phase=settle n=14 t=38007 v=4004851 i=-73700
+suspend-slope: S4 === phase A: 8 sleeps of 900s ===
+S4 phase=A n=0 t=38988 v=3968454 i=-186615
+suspend-slope: S4 A0 slept=901s of 900s
+S4 phase=A n=1 t=39909 v=3925828 i=-302887
+suspend-slope: S4 A1 slept=901s of 900s
+S4 phase=A n=2 t=40830 v=3941594 i=-165863
+suspend-slope: S4 A2 slept=901s of 900s
+S4 phase=A n=3 t=41751 v=3927580 i=-186920
+suspend-slope: S4 A3 slept=901s of 900s
+S4 phase=A n=4 t=42672 v=3915123 i=-217437
+suspend-slope: S4 A4 slept=901s of 900s
+S4 phase=A n=5 t=43593 v=3912204 i=-179748
+suspend-slope: S4 A5 slept=901s of 900s
+S4 phase=A n=6 t=44514 v=3868410 i=-314178
+suspend-slope: S4 A6 slept=901s of 900s
+S4 phase=A n=7 t=45435 v=3876780 i=-311126
+suspend-slope: S4 A7 slept=901s of 900s
+suspend-slope: S4 phase A done suspends=8 of 8
+suspend-slope: S4 === phase B: awake control, 8 x 900s ===
+S4 phase=B n=0 t=46355 v=3844859 i=-162506
+S4 phase=B n=1 t=47275 v=3819751 i=-193939
+S4 phase=B n=2 t=48195 v=3776347 i=-240173
+S4 phase=B n=3 t=49115 v=3776542 i=-177002
+S4 phase=B n=4 t=50035 v=3749293 i=-212402
+S4 phase=B n=5 t=50955 v=3694405 i=-355224
+S4 phase=B n=6 t=51875 v=3665793 i=-381012
+S4 phase=B n=7 t=52795 v=3697714 i=-164642
+suspend-slope: S4 done - restoring charger and greetd
