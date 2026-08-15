@@ -74,7 +74,60 @@ What the S2 leg still supports, from the live pair alone: compensated
 **upper bound**. But a 10 mA leg would move only ~11 mV, so **suspend is not in
 the 10 mA regime** - that much is solid. Full reasoning in [`README.md`](README.md).
 
-### ← PARKED FOR THE NIGHT, 2026-08-15 13:40
+### S4 ran, 2026-08-15 18:55 → 23:16 — the ratio holds, the calibration does not
+
+The leg completed unattended: settle 900 s, `phase A done suspends=8 of 8`,
+every cycle `slept=901s of 900s`, phase B's eight windows, charger and greetd
+restored by the trap. 90 % → 72 %, which is the worst case predicted before it
+started (564 mAh if nothing ever slept). Logs:
+[`2026-08-15_S4-slope.txt`](2026-08-15_S4-slope.txt) and
+[`2026-08-15_S4-curlog.txt`](2026-08-15_S4-curlog.txt).
+
+**Suspend is not in question this time.** The dense logger took 213 samples
+during phase B and only 55 during phase A, over the same 1.79 h — it was frozen
+for the missing ones. A sampler that stops counting *is* the proof that
+userspace was down, and it is independent of anything the slope says.
+
+**What the fit gives:**
+
+| phase | slope of compensated V | r² | dense-logger current |
+|---|---|---|---|
+| settle | −60.3 mV/h | 0.28 ☠️ not a line | 146 mA |
+| A (asleep) | −42.3 mV/h | 0.93 | (frozen) |
+| B (awake) | −89.1 mV/h | 0.97 | 245 mA |
+
+So **asleep the phone draws 0.475 of what it draws awake**, and that ratio rests
+on two clean straight lines. Multiplying it out gives 116 mA — and that number
+is **withdrawn**, because the control fails.
+
+☠️ **Phase B measured 245 mA where ~130 mA was expected — the fourth control
+failure in a row, and the first one that is not obviously the instrument's
+fault.** Checked immediately afterwards, with the panel dark and every CPU at
+0 %, the phone drew −249, −127 and −253 mA on three reads two seconds apart. It
+really is in a ~210-250 mA regime tonight, so phase B is not misreading; the
+**~130 mA reference** is what does not reproduce. Until that is explained, no
+absolute sleep current can be quoted, only the ratio.
+
+Two candidates, neither yet tested, and the first is ours:
+
+- **the instrument drives the load it measures.** Every reading crosses WiFi —
+  the 30 s dense logger, and the SSH session watching it. The skill already
+  states that a periodic sampler measures the load at the instant it is itself
+  running; here it may also be *keeping the radio associated*. The test is a
+  run whose samples go to a file with no network at all, fetched afterwards.
+- **the 130 mA figure was taken in a different regime.** It comes from
+  runtime-idle with a live session, not from a stopped greetd, and the swing
+  between 127 and 253 mA within four seconds says something is duty-cycling.
+  Bracket it: measure awake-idle three ways (session up, greetd stopped, greetd
+  stopped and WiFi down) before using any of them as a calibration.
+
+The ratio is the durable result and it is worth stating on its own: **suspend
+halves the drain, and no more than halves it.** Whatever the absolute figure
+turns out to be, s2idle on this device is not the order-of-magnitude win it is
+on a phone with a working low-power state — which is a bigger finding than the
+number would have been.
+
+### ← PARKED FOR THE NIGHT, 2026-08-15 13:40 (superseded by the run above)
 
 ☠️ **This branch is a night job and must be treated as one.** A slope leg takes
 the phone off VBUS, blanks the display and suspends it for hours, so it makes the
