@@ -111,17 +111,41 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
                      }
                  }
              ));
-@@ -1140,7 +1177,8 @@
-                 scale.set_width_request(180);
-                 scale.set_draw_value(true);
-                 scale.set_value_pos(gtk::PositionType::Right);
+@@ -1126,10 +1163,6 @@
+             if let aperture::ControlKind::Range { min, max, .. } = control.kind {
+                 box_.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
+ 
+-                let label = gtk::Label::new(Some(&gettext("Focus Distance")));
+-                label.add_css_class("dim-label");
+-                label.set_xalign(0.0);
+-                box_.append(&label);
+ 
+                 let scale = gtk::Scale::with_range(
+                     gtk::Orientation::Horizontal,
+@@ -1137,10 +1170,18 @@
+                     max,
+                     (max - min) / 100.0,
+                 );
+-                scale.set_width_request(180);
+-                scale.set_draw_value(true);
+-                scale.set_value_pos(gtk::PositionType::Right);
 -                scale.set_value(min);
++                scale.set_width_request(200);
++                /*
++                 * Dioptres are what libcamera speaks and what the tuning file
++                 * calibrates, but nobody frames a photograph in reciprocal
++                 * metres. The number says nothing the two ends do not, so
++                 * label the ends and drop it.
++                 */
++                scale.set_draw_value(false);
++                scale.add_mark(min, gtk::PositionType::Bottom, Some(&gettext("Far")));
++                scale.add_mark(max, gtk::PositionType::Bottom, Some(&gettext("Near")));
 +                /* Where the lens actually is, if the user has put it somewhere. */
 +                scale.set_value(imp.viewfinder.lens_position().unwrap_or(min));
  
                  scale.connect_value_changed(glib::clone!(
                      #[weak(rename_to = obj)]
-@@ -1155,7 +1193,7 @@
+@@ -1155,7 +1196,7 @@
                  ));
  
                  box_.append(&scale);
@@ -130,7 +154,7 @@ Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
              }
          }
  
-@@ -1173,7 +1211,7 @@
+@@ -1173,7 +1214,7 @@
          let imp = self.imp();
          let mode = aperture::FocusMode::from_setting(&imp.settings().string("focus-mode"));
  
