@@ -1041,9 +1041,13 @@ The same boot also pins the relationship this whole investigation is missing:
 The counts track each other one for one. On mainline the left column reads 6233
 and the right column reads 0.
 
-☠️ And a number worth staring at: the oracle spends **117 s of a ten-minute
-uptime** in system power collapse, roughly 20 %. Our earlier reading had mainline
-at 699 s out of 1050 s, roughly 66 % - three times more, on a phone that draws
-slightly *more* current. That is not a small inconsistency to explain away; it is
-the clearest sign yet that what genpd counts as an entered system state and what
-the hardware does are two different things.
+☠️ A residency comparison looks alarming and mostly is not, so state it
+carefully. The oracle spends 117 s of a ten-minute uptime in system power
+collapse (~20 %); mainline, measured with the panel blanked, spends 224.7 s of
+396.7 s (~57 %). But the *entry rates* are close - 17/s there against 24/s here -
+and the average residency differs the other way round (11.6 ms against 23.7 ms),
+which simply says the oracle is woken more often, as a phone running a full UI
+and telephony stack would be. The two are not matched runs and the difference is
+not evidence about the collapse itself. What remains evidence is the count that
+is exactly zero: the oracle's entries produce APSS shutdowns one for one, and
+ours produce none.

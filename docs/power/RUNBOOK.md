@@ -29,38 +29,44 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-**The regulator sleep-set theory is dead** (it pointed the wrong way — see
-[`README.md`](README.md), "The regulator sleep-set theory was wrong"), and the one
-real gap it uncovered, the **vMPM wakeup timer**, is now fixed and pushed
-(`wip/7.1.3/power` `97951baf7a85`) — and did not move the RPM either.
+☠️☠️ **The whole night's idle-current work was measured with the panel refreshing
+at 65 Hz.** Stopping `greetd` is not enough - `fbcon` holds DRM DPMS on with no
+userspace client, and `msm_mdss` keeps firing 65 times a second. The fix is
 
-Every AP-side precondition is now individually verified: the composed PSCI
-parameter `0x41000353` really reaches firmware (traced), firmware accepts it 98 %
-of the time, the mailbox write matches downstream byte for byte, the wakeup
-deadline is programmed, and the master-stats reader is proven live by a 60 s
-differential in which MPSS gains 150 and PRONTO 563 while APSS gains nothing.
+```sh
+echo 4 > /sys/class/graphics/fb0/blank      # msm_mdss disappears from /proc/interrupts
+```
 
-**So the next step is a two-sided capture of shared memory, not another patch.**
-The oracle runs the same TZ on the same silicon, so whatever makes the RPM record
-an APSS shutdown there has to be visible in what the kernel leaves behind before
-the PSCI call. Concretely:
+after which total wakeups roughly halve. **Every mV/h figure in this directory
+predates that discovery and has to be treated as measured under a load that
+dwarfs the effect.** In particular, "the genpd fix did not move the current" is
+not a safe conclusion yet.
 
-1. Boot `slot_a`, and dump the **same vMPM region** (`/dev/mem`, `0x60000 + 0x1d4`,
-   0x48 bytes — the script is `/home/fp3/vmpm_dump.py`, copy it across) while
-   Ubuntu Touch is idle. Diff it word for word against ours. The enable/edge words
-   should differ (different wakeup sets); anything *structural* that differs is
-   the answer.
-2. If that is inconclusive, widen to the RPM MSG RAM around it and diff the two
-   dumps as a whole.
-3. Only if both are inconclusive does it become a firmware question, and at that
-   point the honest write-up is that mainline cannot reach RPM power collapse on
-   this SoC without knowing what TZ expects.
+**Do this first:** re-run the matched A/B (genpd-fixed kernel vs
+`/boot/vmlinuz.base-mpm` control) with the panel blanked as part of the protocol,
+same reboot → 600 s settle → 50 samples shape as before. A paired panel-on /
+panel-off leg on one boot is running as of 2026-08-15 05:40 to size the display
+term first; its output is `/home/fp3/leg-panel{off,on}.txt` on the device.
 
-**Still open, unchanged:** the GPIO wakeup map is deployed and provably inert
-until the RPM takes over; the regulator sleep set is a real hazard the day it
-does, so it must be built *before* the RPM ever collapses, not after; and
-`_commit`/`pkgrel` still pin the tested `162f27abc328` rather than the current
-`debug-int/7.1.3` tip.
+☠️ The measurement only works while the pack is actually discharging. With a USB
+cable attached `pmi632-charger/online` reads 1 and the voltage sits flat, so
+check it before trusting a slope.
+
+**The RPM question is parked, not open.** Everything on the AP side is verified
+(see [`README.md`](README.md), "What is now known for certain about the AP side"),
+the two-sided vMPM dump is structurally identical, and both of the kernel-side
+theories were measured false. What remains is on the far side of the PSCI call,
+in TZ or RPM firmware, where this kernel has no instrument.
+
+**Not submission-ready:** the vMPM timer commit (`wip/7.1.3/power`
+`97951baf7a85`) is a real omission - the driver documents `TIMER0`/`TIMER1` and
+never writes them - but it changes nothing measurable yet, so it stays on the
+fork until it can be shown to fix something. The two LKML patches that *are*
+ready (genpd bool, cpuidle-psci ordering) are unaffected.
+
+**Also still open:** the GPIO wakeup map is deployed and provably inert until the
+RPM takes over; the regulator sleep set must be built *before* the RPM ever
+collapses, not after; and `_commit`/`pkgrel` still pin `162f27abc328`.
 
 ## Device and tree state
 
