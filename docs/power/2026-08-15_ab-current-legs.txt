@@ -23,3 +23,27 @@ about 60 mA in every leg - the load is bursty, not steady - so the standard
 error of a 100-sample mean is around 6 mA, which is larger than the 4.5 mA
 difference being claimed. The two groups do not overlap, which is suggestive,
 but two legs per arm cannot establish it. More legs, appended below as they run.
+
+--- correction, and a split into two sets -----------------------------------
+
+☠️ The five legs above were described as "panel blanked". They were not. The
+device-side runner wrote 4 to fb0/blank and moved on; it never checked, and on a
+fresh boot the compositor still holds DRM master for a few seconds after
+`systemctl stop greetd` returns and undoes the blank as fast as it is written.
+The gated script caught it the first time it ran:
+
+    idle-leg: DSI-1 dpms is 'On', not Off
+
+Their currents (155-164 mA) also sit squarely in the panel-on range measured by
+hand earlier (151-163 mA on, 142 mA off), which is the independent confirmation.
+
+So the five legs above are a **panel-on** set, internally consistent and still a
+valid A/B against each other:
+
+  FIX  -160.6   FIX2 -158.2   FIX3 -164.3      mean -161.0
+  CTL  -154.4   CTL2 -155.4                    mean -154.9
+
+and everything from CTL3 onwards is a **panel-off** set, run through
+idle-leg.sh, which blanks in a retry loop until dpms actually reads Off and
+restores the charger input on every exit path. Do not compare across the two
+sets; the panel is worth ~10 mA.

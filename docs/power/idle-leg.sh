@@ -58,14 +58,23 @@ die() { echo "idle-leg: $*" >&2; exit 1; }
 [ -r "$BATT/current_now" ] || die "no $BATT - is the charger DT layer deployed?"
 
 # --- pin the display ---------------------------------------------------------
+# ☠️ systemctl stop returns before the compositor has released DRM master, and
+# while it still holds it the blank is undone as fast as it is written. Retry
+# until dpms actually reads Off rather than blanking once and hoping.
 systemctl stop greetd 2>/dev/null || true
-for fb in /sys/class/graphics/fb*/blank; do
-	[ -w "$fb" ] && echo 4 > "$fb"
-done
-sleep 3
 
-dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null || echo unknown)
-[ "$dpms" = Off ] || die "DSI-1 dpms is '$dpms', not Off"
+dpms=unknown
+i=0
+while [ "$i" -lt 15 ]; do
+	for fb in /sys/class/graphics/fb*/blank; do
+		[ -w "$fb" ] && echo 4 > "$fb"
+	done
+	sleep 2
+	dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null || echo unknown)
+	[ "$dpms" = Off ] && break
+	i=$((i + 1))
+done
+[ "$dpms" = Off ] || die "DSI-1 dpms is still '$dpms' after 30 s of blanking"
 
 mdss0=$(awk '/msm_mdss/ {for (i=2;i<=NF;i++) if ($i ~ /^[0-9]+$/) s+=$i} END {print s+0}' /proc/interrupts)
 sleep 5
