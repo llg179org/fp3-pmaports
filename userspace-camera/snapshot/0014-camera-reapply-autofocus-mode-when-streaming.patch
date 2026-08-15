@@ -1,0 +1,37 @@
+From: FP3 camera work
+Subject: [PATCH] camera: re-apply the autofocus mode once the viewfinder streams
+
+The autofocus mode is a camera control, and a control only reaches the
+camera while it is streaming - a mode set before the first frame goes to
+a pipeline with no request to carry it and is lost. The mode was set once
+at start-up, before streaming, and never resent (the setting does not
+change on its own), so the camera kept hunting continuously even with
+autofocus switched off. Re-apply it each time the viewfinder reaches
+Ready, by when frames, and so requests to carry the control, are flowing.
+--- a/src/widgets/camera.rs
++++ b/src/widgets/camera.rs
+@@ -397,8 +397,23 @@
+             self.viewfinder.connect_state_notify(glib::clone!(
+                 #[weak]
+                 obj,
+-                move |_| {
++                move |viewfinder| {
+                     obj.update_state();
++
++                    // The autofocus mode is a camera control, and a control
++                    // only reaches the camera while it is streaming: a mode set
++                    // before the first frame goes to a pipeline with no request
++                    // to carry it and is lost. The setting does not change on
++                    // its own afterwards, so nothing resends it - which left
++                    // the camera hunting continuously even with autofocus
++                    // switched off, the mode set once at start-up never having
++                    // landed. Re-apply it each time the viewfinder reaches
++                    // Ready, by when frames - and so requests to carry the
++                    // control - are flowing.
++                    if matches!(viewfinder.state(), aperture::ViewfinderState::Ready) {
++                        let settings = gio::Settings::new(config::APP_ID);
++                        viewfinder.set_autofocus(settings.boolean("autofocus"));
++                    }
+                 }
+             ));
+ 

@@ -1,0 +1,38 @@
+From: FP3 camera work
+Subject: [PATCH] camera: put a videoconvert before videocrop
+
+videocrop segfaulted the instant it had to crop rather than pass through:
+it walks the frame by its own stride, and the software-ISP buffers are
+padded to a wider one, so a cropped copy ran off the end of the buffer -
+only zoom, which is the only thing that makes it crop, ever crashed. A
+videoconvert ahead of it hands over a tightly packed buffer with the
+stride videocrop assumes.
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -1567,15 +1567,25 @@
+         // still and the recording are cropped to.
+         let videocrop = gst::ElementFactory::make("videocrop").build()?;
+ 
++        // videocrop segfaulted the moment it had to actually crop: it walks the
++        // frame by its own idea of the stride, and the buffers coming down from
++        // the software ISP are padded to a wider one, so a cropped copy ran off
++        // the end of the buffer. It passes a frame through untouched (no zoom)
++        // without ever reading past it, which is why only zoom crashed. A
++        // videoconvert ahead of it hands over a tightly packed buffer whose
++        // stride is the one videocrop assumes.
++        let videoconvert = gst::ElementFactory::make("videoconvert").build()?;
++
+         bin.add_many([
+             device_src,
+             &capsfilter,
+             &decodebin3,
+             &capsfilter_post_decode,
++            &videoconvert,
+             &videocrop,
+         ])?;
+         gst::Element::link_many([device_src, &capsfilter, &decodebin3])?;
+-        gst::Element::link(&capsfilter_post_decode, &videocrop)?;
++        gst::Element::link_many([&capsfilter_post_decode, &videoconvert, &videocrop])?;
+ 
+         self.imp().capsfilter.set(capsfilter).unwrap();
+         let _ = self.imp().videocrop.set(videocrop.clone());

@@ -1,0 +1,36 @@
+From: FP3 camera work
+Subject: [PATCH] camera: remove the Recalibrate View Size preferences row
+
+Drop the manual "Recalibrate View Size" action from preferences: the
+viewfinder size is chosen and remembered on its own, and the row invited a
+step that is not needed and closed the dialog to do it.
+--- a/src/widgets/preferences_window.rs
++++ b/src/widgets/preferences_window.rs
+@@ -150,7 +150,7 @@
+         resolutions: &[aperture::utils::Size],
+         controls: &[aperture::CameraControl],
+         apply: impl Fn(&aperture::CameraControl, f64) + Clone + 'static,
+-        measure: impl Fn() + 'static,
++        _measure: impl Fn() + 'static,
+         encode: impl Fn(u32) -> Option<(u64, u64)> + 'static,
+     ) {
+         let settings = self.imp().settings.get().unwrap();
+@@ -162,17 +162,8 @@
+         });
+ 
+         if let Some(row) = camera_settings::resolution_row(resolutions, settings) {
+-            /* First, because it is the one that changes what is on screen. */
++            /* The one that changes what is on screen. */
+             group.add(&row);
+-            /* Directly under it: the way to have that one filled in for you. */
+-            group.add(&camera_settings::measure_resolution_row({
+-                let dialog = self.clone();
+-                move || {
+-                    /* Out of the way first - the result is on the viewfinder. */
+-                    dialog.close();
+-                    measure();
+-                }
+-            }));
+         }
+ 
+         /*

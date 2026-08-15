@@ -1,0 +1,891 @@
+From: FP3 camera work
+Subject: [PATCH] camera: a Face focus mode that finds and boxes a face
+
+Adds a focus-mode dropdown (Continuous / Manual / Face) and, for Face, a
+small dependency-free face detector - the PICO method, a cascade of
+pixel-comparison trees, the algorithm behind the browser face finders - run
+as a pipeline branch beside the QR-code detector. A found face is reported as
+a signal and drawn as a box over the viewfinder. Windowing the autofocus onto
+the face is left for later: that control is an array, which the PipeWire
+libcamera node does not carry, so the focus stays the continuous whole-frame
+one for now.
+
+The trained cascade `facefinder` is copied in during prepare().
+--- a/aperture/src/lib.rs
++++ b/aperture/src/lib.rs
+@@ -24,6 +24,8 @@
+ mod device_provider;
+ mod enums;
+ mod error;
++mod face_detector;
++mod pico;
+ mod pipeline_tee;
+ pub mod utils;
+ mod viewfinder;
+--- a/aperture/src/pico.rs
++++ b/aperture/src/pico.rs
+@@ -0,0 +1,228 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++//! A small, dependency-free face detector.
++//!
++//! This is the PICO method (Pixel Intensity Comparison-based Object detection,
++//! Markuš et al.): a cascade of shallow binary trees whose every node compares
++//! two pixels, so classifying a window costs only a handful of loads and no
++//! arithmetic on the image. It is the algorithm behind the browser face
++//! detectors (`pico.js`), and light enough to run a few times a second on this
++//! phone without a GPU or a heavy dependency.
++//!
++//! The trained cascade - `facefinder`, from the reference implementation - is
++//! embedded verbatim. Its binary layout, little-endian throughout, is: eight
++//! bytes skipped, then the tree depth and the number of trees as int32, then
++//! each tree as `(2^depth - 1)` four-byte nodes (four int8 pixel offsets), then
++//! `2^depth` float leaf predictions, then one float stage threshold used to
++//! stop early once a window cannot be a face.
++
++const CASCADE: &[u8] = include_bytes!("facefinder");
++
++/// A face found in a frame, in that frame's own pixels: the centre and the
++/// half-size (the detection window is square, `2*radius` on a side).
++#[derive(Debug, Clone, Copy)]
++pub struct Face {
++    pub cx: f32,
++    pub cy: f32,
++    pub radius: f32,
++    pub score: f32,
++}
++
++struct Tree {
++    /// Four int8 pixel offsets per internal node: (r1, c1, r2, c2).
++    nodes: Vec<[i8; 4]>,
++    /// Leaf predictions, one per possible path through the tree.
++    preds: Vec<f32>,
++    /// Accumulated-score floor below which the window is rejected.
++    threshold: f32,
++}
++
++pub struct Detector {
++    depth: u32,
++    trees: Vec<Tree>,
++}
++
++impl Detector {
++    /// Loads the embedded cascade. Panics only if that constant is corrupt,
++    /// which would be a build-time mistake, not a runtime condition.
++    pub fn new() -> Self {
++        Self::parse(CASCADE).expect("embedded facefinder cascade is malformed")
++    }
++
++    fn parse(data: &[u8]) -> Option<Self> {
++        let i32_at = |o: usize| -> Option<i32> {
++            data.get(o..o + 4)
++                .map(|b| i32::from_le_bytes([b[0], b[1], b[2], b[3]]))
++        };
++        let f32_at = |o: usize| -> Option<f32> {
++            data.get(o..o + 4)
++                .map(|b| f32::from_le_bytes([b[0], b[1], b[2], b[3]]))
++        };
++
++        let depth = i32_at(8)? as u32;
++        let ntrees = i32_at(12)? as usize;
++        let internal = (1usize << depth) - 1;
++        let leaves = 1usize << depth;
++
++        let mut trees = Vec::with_capacity(ntrees);
++        let mut o = 16;
++        for _ in 0..ntrees {
++            let mut nodes = Vec::with_capacity(internal);
++            for _ in 0..internal {
++                let b = data.get(o..o + 4)?;
++                nodes.push([b[0] as i8, b[1] as i8, b[2] as i8, b[3] as i8]);
++                o += 4;
++            }
++            let mut preds = Vec::with_capacity(leaves);
++            for _ in 0..leaves {
++                preds.push(f32_at(o)?);
++                o += 4;
++            }
++            let threshold = f32_at(o)?;
++            o += 4;
++            trees.push(Tree {
++                nodes,
++                preds,
++                threshold,
++            });
++        }
++
++        Some(Self { depth, trees })
++    }
++
++    /// Scores one square window centred at (`r`, `c`) of side `s`, all in
++    /// pixels. `None` means a tree rejected it; otherwise the higher the score
++    /// the more face-like. Pixels are 8-bit grey, row-major with `stride`.
++    fn classify(&self, px: &[u8], w: i32, h: i32, stride: i32, r: i32, c: i32, s: i32) -> Option<f32> {
++        let at = |rr: i32, cc: i32| -> u8 {
++            let rr = rr.clamp(0, h - 1);
++            let cc = cc.clamp(0, w - 1);
++            px[(rr * stride + cc) as usize]
++        };
++
++        let mut o = 0.0f32;
++        for tree in &self.trees {
++            let mut idx = 1usize;
++            for _ in 0..self.depth {
++                let n = tree.nodes[idx - 1];
++                let r1 = (256 * r + n[0] as i32 * s) >> 8;
++                let c1 = (256 * c + n[1] as i32 * s) >> 8;
++                let r2 = (256 * r + n[2] as i32 * s) >> 8;
++                let c2 = (256 * c + n[3] as i32 * s) >> 8;
++                let bit = usize::from(at(r1, c1) <= at(r2, c2));
++                idx = 2 * idx + bit;
++            }
++            o += tree.preds[idx - (1 << self.depth)];
++            if o <= tree.threshold {
++                return None;
++            }
++        }
++        Some(o)
++    }
++
++    /// Finds faces across scales and merges the overlapping hits into one per
++    /// face. `min_frac`/`max_frac` bound the face size as a fraction of the
++    /// shorter side; `q` is the minimum clustered score to believe.
++    pub fn detect(&self, px: &[u8], w: usize, h: usize, stride: usize) -> Vec<Face> {
++        let (w, h, stride) = (w as i32, h as i32, stride as i32);
++        let short = w.min(h) as f32;
++
++        // Sizes to look for, and how densely to slide the window.
++        let min_size = (short * MIN_FRACTION) as i32;
++        let max_size = (short * MAX_FRACTION) as i32;
++        let mut raw: Vec<Face> = Vec::new();
++
++        let mut s = min_size.max(24);
++        while s <= max_size {
++            let step = ((s as f32 * STRIDE_FRACTION) as i32).max(1);
++            let mut r = s / 2;
++            while r <= h - s / 2 {
++                let mut c = s / 2;
++                while c <= w - s / 2 {
++                    if let Some(score) = self.classify(px, w, h, stride, r, c, s) {
++                        if score > PER_WINDOW_SCORE {
++                            raw.push(Face {
++                                cx: c as f32,
++                                cy: r as f32,
++                                radius: s as f32 / 2.0,
++                                score,
++                            });
++                        }
++                    }
++                    c += step;
++                }
++                r += step;
++            }
++            s = ((s as f32 * SCALE_FACTOR) as i32).max(s + 1);
++        }
++
++        cluster(raw)
++    }
++}
++
++impl Default for Detector {
++    fn default() -> Self {
++        Self::new()
++    }
++}
++
++/// Bounds and tuning. These are the reference defaults; the honest ones will
++/// come from watching the detector run against real faces on the device.
++const MIN_FRACTION: f32 = 0.12;
++const MAX_FRACTION: f32 = 0.9;
++const STRIDE_FRACTION: f32 = 0.1;
++const SCALE_FACTOR: f32 = 1.1;
++/// A single window barely surviving the cascade is not yet a face; a real one
++/// is found many times over, and the cluster's summed score clears this.
++const PER_WINDOW_SCORE: f32 = 0.0;
++const CLUSTER_SCORE: f32 = 12.0;
++const CLUSTER_OVERLAP: f32 = 0.2;
++
++/// Merges detections of the same face (their windows overlap) into one, summing
++/// their scores so a face seen at many positions and scales outweighs a lone
++/// false positive, and drops clusters that never add up to a believable score.
++fn cluster(mut dets: Vec<Face>) -> Vec<Face> {
++    dets.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(std::cmp::Ordering::Equal));
++
++    let mut used = vec![false; dets.len()];
++    let mut out = Vec::new();
++
++    for i in 0..dets.len() {
++        if used[i] {
++            continue;
++        }
++        let mut sx = 0.0;
++        let mut sy = 0.0;
++        let mut sr = 0.0;
++        let mut ss = 0.0;
++        for j in i..dets.len() {
++            if used[j] || !overlap(&dets[i], &dets[j]) {
++                continue;
++            }
++            used[j] = true;
++            let wgt = dets[j].score.max(0.0);
++            sx += dets[j].cx * wgt;
++            sy += dets[j].cy * wgt;
++            sr += dets[j].radius * wgt;
++            ss += wgt;
++        }
++        if ss >= CLUSTER_SCORE {
++            out.push(Face {
++                cx: sx / ss,
++                cy: sy / ss,
++                radius: sr / ss,
++                score: ss,
++            });
++        }
++    }
++
++    out
++}
++
++/// Whether two detection windows are close enough to be the same face, by the
++/// overlap of the discs their centre and radius describe.
++fn overlap(a: &Face, b: &Face) -> bool {
++    let dx = a.cx - b.cx;
++    let dy = a.cy - b.cy;
++    let dist = (dx * dx + dy * dy).sqrt();
++    dist <= (a.radius + b.radius) * (1.0 - CLUSTER_OVERLAP)
++}
+--- a/aperture/src/face_detector.rs
++++ b/aperture/src/face_detector.rs
+@@ -0,0 +1,218 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++//! A GStreamer element that finds a face in each frame and announces where.
++//!
++//! Built exactly like the QR-code detector next to it - an in-place video
++//! filter that hands the grey plane to a worker thread and posts a message
++//! with the result - but running the [`crate::pico`] face detector. The message
++//! carries the face's centre and radius in the frame's own pixels, plus the
++//! frame size, so the viewfinder can put the autofocus window on the face and
++//! draw a box around it.
++
++use std::sync::LazyLock;
++use std::time::Duration;
++
++use gst_video::{prelude::*, video_frame::VideoFrameRef};
++use gtk::glib;
++
++pub static CAT: LazyLock<gst::DebugCategory> = LazyLock::new(|| {
++    gst::DebugCategory::new(
++        "face-detector",
++        gst::DebugColorFlags::empty(),
++        Some("Face detector"),
++    )
++});
++
++const DETECTOR_COOL_DOWN: Duration = Duration::from_millis(150);
++const DETECTOR_CAPS: &[gst_video::VideoFormat] = &[
++    gst_video::VideoFormat::Gray8,
++    gst_video::VideoFormat::I420,
++    gst_video::VideoFormat::Yv12,
++    gst_video::VideoFormat::Nv12,
++    gst_video::VideoFormat::Nv21,
++    gst_video::VideoFormat::Y41b,
++    gst_video::VideoFormat::Y42b,
++    gst_video::VideoFormat::Yuv9,
++    gst_video::VideoFormat::Yvu9,
++];
++
++mod imp {
++    use std::sync::{Mutex, OnceLock};
++
++    use gst::{BufferRef, subclass::prelude::*};
++    use gst_video::subclass::prelude::*;
++
++    use super::*;
++
++    pub struct FaceDetector {
++        pub last_run_t: Mutex<Option<std::time::Instant>>,
++        pub thread_pool: OnceLock<glib::ThreadPool>,
++        pub detector: LazyLock<crate::pico::Detector>,
++    }
++
++    impl Default for FaceDetector {
++        fn default() -> Self {
++            Self {
++                last_run_t: Mutex::new(None),
++                thread_pool: OnceLock::new(),
++                detector: LazyLock::new(crate::pico::Detector::new),
++            }
++        }
++    }
++
++    #[glib::object_subclass]
++    impl ObjectSubclass for FaceDetector {
++        const NAME: &'static str = "ApertureFaceDetector";
++        type Type = super::FaceDetector;
++        type ParentType = gst_video::VideoFilter;
++    }
++
++    impl ObjectImpl for FaceDetector {}
++    impl GstObjectImpl for FaceDetector {}
++
++    impl ElementImpl for FaceDetector {
++        fn metadata() -> Option<&'static gst::subclass::ElementMetadata> {
++            static ELEMENT_METADATA: LazyLock<gst::subclass::ElementMetadata> =
++                LazyLock::new(|| {
++                    gst::subclass::ElementMetadata::new(
++                        "Face detector",
++                        "Filter/Video",
++                        "Finds a face and reports where it is",
++                        "FP3 camera work",
++                    )
++                });
++
++            Some(&*ELEMENT_METADATA)
++        }
++
++        fn pad_templates() -> &'static [gst::PadTemplate] {
++            static PAD_TEMPLATES: LazyLock<Vec<gst::PadTemplate>> = LazyLock::new(|| {
++                let caps = gst_video::video_make_raw_caps(DETECTOR_CAPS)
++                    .any_features()
++                    .build();
++
++                vec![
++                    gst::PadTemplate::new(
++                        "src",
++                        gst::PadDirection::Src,
++                        gst::PadPresence::Always,
++                        &caps,
++                    )
++                    .unwrap(),
++                    gst::PadTemplate::new(
++                        "sink",
++                        gst::PadDirection::Sink,
++                        gst::PadPresence::Always,
++                        &caps,
++                    )
++                    .unwrap(),
++                ]
++            });
++
++            PAD_TEMPLATES.as_ref()
++        }
++    }
++
++    impl BaseTransformImpl for FaceDetector {
++        const MODE: gst_base::subclass::BaseTransformMode =
++            gst_base::subclass::BaseTransformMode::AlwaysInPlace;
++        const PASSTHROUGH_ON_SAME_CAPS: bool = true;
++        const TRANSFORM_IP_ON_PASSTHROUGH: bool = true;
++    }
++
++    impl VideoFilterImpl for FaceDetector {
++        fn transform_frame_ip_passthrough(
++            &self,
++            frame: &VideoFrameRef<&BufferRef>,
++        ) -> Result<gst::FlowSuccess, gst::FlowError> {
++            let now = std::time::Instant::now();
++
++            // A face does not move fast enough to be worth chasing every frame,
++            // and the detector is not free; leave a gap between runs.
++            if self
++                .last_run_t
++                .lock()
++                .unwrap()
++                .is_some_and(|t| (now - t) < DETECTOR_COOL_DOWN)
++            {
++                return Ok(gst::FlowSuccess::Ok);
++            }
++
++            let thread_pool = self
++                .thread_pool
++                .get_or_init(|| glib::ThreadPool::exclusive(1).unwrap());
++
++            if thread_pool.unprocessed() != 0 {
++                // The previous frame is still being searched; skip this one.
++                return Ok(gst::FlowSuccess::Ok);
++            }
++
++            // Every format above starts with an 8-bit luma plane, which is all
++            // the detector reads; the chroma planes are ignored.
++            let data = frame.comp_data(0).unwrap().to_vec();
++            let width = frame.width() as usize;
++            let height = frame.height() as usize;
++            let stride = frame.comp_stride(0) as usize;
++
++            let res = thread_pool.push(glib::clone!(
++                #[weak(rename_to = detector)]
++                self,
++                move || {
++                    detector.last_run_t.lock().unwrap().replace(now);
++
++                    let faces =
++                        detector.detector.detect(&data, width, height, stride);
++
++                    // The biggest face wins: the subject is the one nearest the
++                    // camera, and a bystander in the background should not steal
++                    // the focus.
++                    let Some(face) = faces
++                        .into_iter()
++                        .max_by(|a, b| a.radius.partial_cmp(&b.radius).unwrap())
++                    else {
++                        return;
++                    };
++
++                    let structure = gst::Structure::builder("face")
++                        .field("cx", face.cx as f64)
++                        .field("cy", face.cy as f64)
++                        .field("radius", face.radius as f64)
++                        .field("frame-width", width as i32)
++                        .field("frame-height", height as i32)
++                        .build();
++                    let msg = gst::message::Element::builder(structure)
++                        .src(&*detector.obj())
++                        .build();
++                    detector.post_message(msg);
++
++                    gst::trace!(
++                        CAT,
++                        "Face search took {}ms",
++                        now.elapsed().as_millis()
++                    );
++                }
++            ));
++            if let Err(err) = res {
++                log::error!("Could not spawn face-detection thread: {err}");
++            }
++
++            Ok(gst::FlowSuccess::Ok)
++        }
++    }
++}
++
++glib::wrapper! {
++    pub struct FaceDetector(ObjectSubclass<imp::FaceDetector>)
++        @extends gst::Object, gst::Element, gst_base::BaseTransform, gst_video::VideoFilter;
++}
++
++impl FaceDetector {
++    pub fn new() -> Self {
++        glib::Object::new()
++    }
++}
++
++impl Default for FaceDetector {
++    fn default() -> Self {
++        Self::new()
++    }
++}
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -95,6 +95,9 @@
+         pub videocrop: OnceCell<gst::Element>,
+ 
+         pub qrcode_branch: RefCell<Option<gst::Element>>,
++        /// The face-detection branch, present exactly while face focus is on.
++        pub face_branch: RefCell<Option<gst::Element>>,
++        pub detect_faces: Cell<bool>,
+         pub devices: OnceCell<crate::DeviceProvider>,
+         pub camera_src: RefCell<Option<gst::Element>>,
+         pub camerabin: OnceCell<gst::Element>,
+@@ -360,6 +363,32 @@
+             self.obj().notify_detect_codes();
+         }
+ 
++        /// Turns face detection on or off by adding or removing its branch of
++        /// the pipeline, the same way QR detection is switched. On is what the
++        /// Face focus mode does; the branch reports each face by message.
++        pub(super) fn set_detect_faces(&self, value: bool) {
++            if value == self.detect_faces.replace(value) {
++                return;
++            }
++
++            let Some(tee) = self.tee.get() else {
++                return;
++            };
++            if value {
++                match create_face_bin() {
++                    Ok(face_branch) => {
++                        tee.add_branch(&face_branch);
++                        self.face_branch.replace(Some(face_branch));
++                    }
++                    Err(err) => {
++                        log::error!("Could not create face detector: {err}");
++                    }
++                }
++            } else if let Some(face_branch) = self.face_branch.take() {
++                tee.remove_branch(&face_branch);
++            }
++        }
++
+         /// Sets the camera that the `ApertureViewfinder` will use.
+         fn set_camera(&self, camera: Option<crate::Camera>) {
+             let obj = self.obj();
+@@ -677,6 +706,16 @@
+                     glib::subclass::Signal::builder("code-detected")
+                         .param_types([glib::Bytes::static_type()])
+                         .build(),
++                    // A face was found. Its centre and radius are fractions of
++                    // the frame (0..1), so a listener needs no frame size to put
++                    // a box on screen or an autofocus window on the face.
++                    glib::subclass::Signal::builder("face-detected")
++                        .param_types([
++                            f64::static_type(),
++                            f64::static_type(),
++                            f64::static_type(),
++                        ])
++                        .build(),
+                 ]
+             });
+             SIGNALS.as_ref()
+@@ -1064,6 +1103,23 @@
+         );
+     }
+ 
++    /// Runs `f` with each detected face's centre and radius, all as fractions
++    /// of the frame (0..1), for the box the camera draws around it.
++    pub fn connect_face_detected<F: Fn(&Self, f64, f64, f64) + 'static>(&self, f: F) {
++        self.connect_closure(
++            "face-detected",
++            false,
++            glib::closure_local!(|obj, x, y, radius| {
++                f(obj, x, y, radius);
++            }),
++        );
++    }
++
++    /// Turns the Face focus mode's detection on or off.
++    pub fn set_detect_faces(&self, value: bool) {
++        self.imp().set_detect_faces(value);
++    }
++
+     /// Starts the viewfinder.
+     pub fn start_stream(&self) {
+         glib::spawn_future_local(glib::clone!(
+@@ -1164,6 +1220,9 @@
+ 
+                     self.emit_code_detected(data);
+                 }
++                Some(s) if s.has_name("face") => {
++                    self.on_face(s);
++                }
+                 _ => (),
+             },
+             _ => (),
+@@ -1298,6 +1357,26 @@
+         self.emit_by_name::<()>("code-detected", &[&data]);
+     }
+ 
++    /// Turns a face message from the detector into the `face-detected` signal,
++    /// with the position expressed as fractions of the frame so nothing
++    /// downstream has to know what size the detector happened to run at.
++    fn on_face(&self, s: &gst::StructureRef) {
++        let cx = s.get::<f64>("cx").unwrap_or(0.0);
++        let cy = s.get::<f64>("cy").unwrap_or(0.0);
++        let radius = s.get::<f64>("radius").unwrap_or(0.0);
++        let fw = s.get::<i32>("frame-width").unwrap_or(0) as f64;
++        let fh = s.get::<i32>("frame-height").unwrap_or(0) as f64;
++        if fw <= 0.0 || fh <= 0.0 {
++            return;
++        }
++
++        let short = fw.min(fh);
++        self.emit_by_name::<()>(
++            "face-detected",
++            &[&(cx / fw), &(cy / fh), &(radius / short)],
++        );
++    }
++
+     fn set_tags(&self) {
+         let imp = self.imp();
+ 
+@@ -2421,6 +2500,55 @@
+     }
+ }
+ 
++fn create_face_bin() -> Result<gst::Element, glib::BoolError> {
++    let bin = gst::Bin::new();
++
++    // A few searches a second is plenty for a face, and each one costs, so cap
++    // the rate before the detector rather than dropping work inside it.
++    let videorate = gst::ElementFactory::make("videorate").build()?;
++    videorate.set_property("max-rate", 8);
++    videorate.set_property("drop-only", true);
++    let videoconvert = gst::ElementFactory::make("videoconvert").build()?;
++
++    // Hand the detector a plain 8-bit grey frame, copied so nothing downstream
++    // is disturbed.
++    let capsfilter = gst::ElementFactory::make("capsfilter").build()?;
++    let caps = gst::Caps::builder("video/x-raw")
++        .field("format", gst_video::VideoFormat::Gray8.to_str())
++        .build();
++    capsfilter.set_property("caps", &caps);
++
++    let queue = gst::ElementFactory::make("queue").build()?;
++    let face = crate::face_detector::FaceDetector::new().upcast::<gst::Element>();
++    let fakesink = gst::ElementFactory::make("fakesink").build()?;
++
++    bin.add_many([
++        &videorate,
++        &videoconvert,
++        &capsfilter,
++        &queue,
++        &face,
++        &fakesink,
++    ])
++    .unwrap();
++    gst::Element::link_many([
++        &videorate,
++        &videoconvert,
++        &capsfilter,
++        &queue,
++        &face,
++        &fakesink,
++    ])
++    .unwrap();
++
++    let pad = videorate.static_pad("sink").unwrap();
++    let ghost_pad = gst::GhostPad::with_target(&pad).unwrap();
++    ghost_pad.set_active(true).unwrap();
++    bin.add_pad(&ghost_pad).unwrap();
++
++    Ok(bin.upcast())
++}
++
+ fn create_qrcode_bin() -> Result<gst::Element, glib::BoolError> {
+     let bin = gst::Bin::new();
+ 
+--- a/src/widgets/guidelines_bin.rs
++++ b/src/widgets/guidelines_bin.rs
+@@ -4,7 +4,7 @@
+ use gtk::{gdk, glib, graphene};
+ 
+ mod imp {
+-    use std::cell::{Cell, OnceCell};
++    use std::cell::{Cell, OnceCell, RefCell};
+     use std::sync::Once;
+ 
+     use super::*;
+@@ -18,6 +18,10 @@
+         pub draw_guidelines: Cell<bool>,
+ 
+         pub animation: OnceCell<adw::TimedAnimation>,
++
++        /// The face to box, as centre and radius in fractions of the frame
++        /// (0..1), or none. Set by the Face focus mode, drawn over the image.
++        pub face: RefCell<Option<(f32, f32, f32)>>,
+     }
+ 
+     impl GuidelinesBin {
+@@ -141,6 +145,40 @@
+ 
+                         snapshot.pop();
+                     }
++
++                    // The face box, over the same image rectangle. Its position
++                    // is a fraction of the frame and its radius a fraction of
++                    // the shorter side, so it maps onto the letterboxed image
++                    // the same way whatever the frame size was.
++                    if let Some((fx, fy, fr)) = *self.face.borrow() {
++                        let offset = graphene::Point::new(
++                            (w_width as f32 - width) / 2.0,
++                            (w_height as f32 - height) / 2.0,
++                        );
++                        let half = fr * width.min(height);
++                        let bx = offset.x() + fx * width - half;
++                        let by = offset.y() + fy * height - half;
++                        let side = 2.0 * half;
++                        let colour = gdk::RGBA::new(1.0, 1.0, 1.0, 0.9);
++                        let t = 2.0;
++
++                        snapshot.append_color(
++                            &colour,
++                            &graphene::Rect::new(bx, by, side, t),
++                        );
++                        snapshot.append_color(
++                            &colour,
++                            &graphene::Rect::new(bx, by + side - t, side, t),
++                        );
++                        snapshot.append_color(
++                            &colour,
++                            &graphene::Rect::new(bx, by, t, side),
++                        );
++                        snapshot.append_color(
++                            &colour,
++                            &graphene::Rect::new(bx + side - t, by, t, side),
++                        );
++                    }
+                 }
+             }
+         }
+@@ -155,6 +193,14 @@
+         @implements gtk::ConstraintTarget, gtk::Buildable, gtk::Accessible;
+ }
+ 
++impl GuidelinesBin {
++    /// Sets the face to draw a box around, or clears it, and redraws.
++    pub fn set_face(&self, face: Option<(f32, f32, f32)>) {
++        self.imp().face.replace(face);
++        self.queue_draw();
++    }
++}
++
+ impl Default for GuidelinesBin {
+     fn default() -> Self {
+         glib::Object::new()
+--- a/src/widgets/preferences_window.rs
++++ b/src/widgets/preferences_window.rs
+@@ -46,6 +46,8 @@
+         pub general_page: TemplateChild<adw::PreferencesPage>,
+         #[template_child]
+         pub experimental_group: TemplateChild<adw::PreferencesGroup>,
++        #[template_child]
++        pub focus_mode_row: TemplateChild<adw::ComboRow>,
+     }
+ 
+     #[glib::object_subclass]
+@@ -118,6 +120,45 @@
+             self.obj()
+                 .insert_action_group("preferences-window", Some(&action_group));
+ 
++            // The focus-mode dropdown is a string setting mapped by index.
++            const FOCUS_MODES: [&str; 3] = ["continuous", "manual", "face"];
++            let focus_row = self.focus_mode_row.get();
++            let cur = settings.string("focus-mode");
++            focus_row.set_selected(
++                FOCUS_MODES
++                    .iter()
++                    .position(|x| *x == cur.as_str())
++                    .unwrap_or(0) as u32,
++            );
++            focus_row.connect_selected_notify(glib::clone!(
++                #[strong]
++                settings,
++                move |row| {
++                    let m = FOCUS_MODES
++                        .get(row.selected() as usize)
++                        .copied()
++                        .unwrap_or("continuous");
++                    let _ = settings.set_string("focus-mode", m);
++                }
++            ));
++            settings.connect_changed(
++                Some("focus-mode"),
++                glib::clone!(
++                    #[weak]
++                    focus_row,
++                    move |s, _| {
++                        let cur = s.string("focus-mode");
++                        let want = FOCUS_MODES
++                            .iter()
++                            .position(|x| *x == cur.as_str())
++                            .unwrap_or(0) as u32;
++                        if focus_row.selected() != want {
++                            focus_row.set_selected(want);
++                        }
++                    }
++                ),
++            );
++
+             self.settings.set(settings).unwrap();
+         }
+     }
+--- a/src/widgets/camera.rs
++++ b/src/widgets/camera.rs
+@@ -370,6 +370,29 @@
+                 ),
+             );
+ 
++            // The focus mode turns face detection on or off and, in Face mode,
++            // draws the box the detector reports around the face.
++            obj.apply_focus_mode();
++            settings.connect_changed(
++                Some("focus-mode"),
++                glib::clone!(
++                    #[weak]
++                    obj,
++                    move |_, _| obj.apply_focus_mode(),
++                ),
++            );
++            self.viewfinder.connect_face_detected(glib::clone!(
++                #[weak]
++                obj,
++                move |_, x, y, r| {
++                    if obj.imp().settings().string("focus-mode") == "face" {
++                        obj.imp()
++                            .guidelines
++                            .set_face(Some((x as f32, y as f32, r as f32)));
++                    }
++                }
++            ));
++
+             self.viewfinder.connect_zoom_notify(glib::clone!(
+                 #[weak]
+                 obj,
+@@ -967,6 +990,24 @@
+             .set_draw_guidelines(!imp.guidelines.draw_guidelines());
+     }
+ 
++    /// Applies the current focus mode: switches face detection on for Face and
++    /// off otherwise, clearing the box when it is off, and keeps the camera on
++    /// its own autofocus while a face is being tracked.
++    pub fn apply_focus_mode(&self) {
++        let imp = self.imp();
++        let mode = imp.settings().string("focus-mode");
++
++        imp.viewfinder.set_detect_faces(mode == "face");
++        if mode == "face" {
++            // The box marks the face; the focus itself is still the continuous
++            // whole-frame autofocus, since windowing it onto the face needs a
++            // control the pipeline cannot yet carry.
++            imp.viewfinder.set_autofocus(true);
++        } else {
++            imp.guidelines.set_face(None);
++        }
++    }
++
+     pub fn is_recording_active(&self) -> bool {
+         self.imp().viewfinder.is_recording()
+     }
+--- a/data/org.gnome.Snapshot.gschema.xml.in
++++ b/data/org.gnome.Snapshot.gschema.xml.in
+@@ -34,6 +34,16 @@
+       <summary>Focus continuously</summary>
+       <description>Whether the camera keeps focusing by itself. When off, tap the picture to focus and double tap to focus and take a photo.</description>
+     </key>
++    <key name="focus-mode" type="s">
++      <default>"continuous"</default>
++      <choices>
++        <choice value="continuous"/>
++        <choice value="manual"/>
++        <choice value="face"/>
++      </choices>
++      <summary>Focus mode</summary>
++      <description>How the camera focuses: continuously by itself, manually with the focus-distance slider, or by finding a face and keeping it in focus.</description>
++    </key>
+     <key name="preview-resolution" type="s">
+       <default>''</default>
+       <summary>Viewfinder resolution</summary>
+--- a/data/resources/ui/preferences_window.ui
++++ b/data/resources/ui/preferences_window.ui
+@@ -18,6 +18,22 @@
+               </object>
+             </child>
+             <child>
++              <object class="AdwComboRow" id="focus_mode_row">
++                <property name="title" translatable="yes">_Focus Mode</property>
++                <property name="subtitle" translatable="yes">Face keeps a detected face in focus</property>
++                <property name="use-underline">True</property>
++                <property name="model">
++                  <object class="GtkStringList">
++                    <items>
++                      <item translatable="yes">Continuous</item>
++                      <item translatable="yes">Manual</item>
++                      <item translatable="yes">Face</item>
++                    </items>
++                  </object>
++                </property>
++              </object>
++            </child>
++            <child>
+               <object class="AdwSwitchRow">
+                 <property name="title" translatable="yes">_Shutter Sound</property>
+                 <property name="action-name">preferences-window.play-shutter-sound</property>

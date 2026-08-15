@@ -1,0 +1,51 @@
+From: FP3 camera work
+Subject: [PATCH] camera: refocus before a full-resolution capture
+
+Taking a picture switches the source to the capture resolution - a
+different sensor mode reached by restarting the pipeline - and the focus
+the preview had settled on does not carry across that switch, so every
+full-resolution shot came out soft. Refocus in the capture mode before
+the shutter, the way the flash path already does under its light, but for
+the ordinary no-flash shot too. Only when the camera focuses for itself;
+a manual focus is the user's to keep.
+--- a/aperture/src/viewfinder.rs
++++ b/aperture/src/viewfinder.rs
+@@ -803,6 +803,15 @@
+     /// How many 100 ms waits to allow the pipeline for coming back up after
+     /// switching resolution for a picture.
+     const CAPTURE_WAIT_TRIES: u32 = 50;
++    /// How long to let a refocus settle after the source switches to the
++    /// capture resolution, before the shutter runs.
++    ///
++    /// The switch restarts the pipeline in a different sensor mode, and the
++    /// focus the preview settled on does not carry across it, so the shot
++    /// refocuses first. There is no completion signal from the simple
++    /// pipeline, so the wait is a fixed one, long enough for its contrast
++    /// sweep on this hardware - the same figure the flash path already uses.
++    const CAPTURE_FOCUS_SETTLE_MS: u64 = 900;
+ 
+     /// Creates a new [`Viewfinder`][crate::Viewfinder]
+     ///
+@@ -920,6 +929,22 @@
+             log::warn!("Pipeline did not come back up before the capture");
+         }
+ 
++        // The source has just switched to the capture resolution: a different
++        // sensor mode, reached by restarting the pipeline. The focus the
++        // preview held is not carried across that switch, so a shot fired now
++        // comes out at whatever the lens fell back to - which is why every
++        // full-resolution picture was soft. Refocus in the capture mode before
++        // the shutter, the way the flash path already does under its light.
++        // Only when the camera focuses for itself: a manual focus is the
++        // user's to keep.
++        if self.autofocus() {
++            self.trigger_autofocus();
++            glib::timeout_future(std::time::Duration::from_millis(
++                Self::CAPTURE_FOCUS_SETTLE_MS,
++            ))
++            .await;
++        }
++
+         camerabin.emit_by_name::<()>("start-capture", &[]);
+     }
+ 

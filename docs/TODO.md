@@ -1316,3 +1316,71 @@ LIBCAMERA_LOG_LEVELS=IPASoftAf:INFO cam -c1 --capture=200 \
 
 Only once that number exists is there anything to say about `min-contrast`,
 which is 0.08 and was being missed by 3 percentage points.
+
+## The tap moves the lens and nothing else
+
+Three loops run on every frame and the tap reaches only the first:
+
+| loop | what it sets | what it looks at | tap reaches it |
+|---|---|---|---|
+| AF | lens position | the centre 3×3 of the 5×5 zones | yes |
+| AGC | exposure time + analogue gain | the whole frame | no |
+| AWB | colour temperature | the whole frame | no |
+
+Measured 2026-08-15 by photographing a lit monitor in a dim room: the letters
+came out readable, so the lens went where the tap asked, while the centre of
+the screen was blown out because the AGC had averaged the dark room in and
+opened up. The camera node publishes no metering control for exposure at all —
+`AnalogueGain`, `ExposureTime`, `ExposureTimeMode`, `AnalogueGainMode`,
+`ColourTemperature` and `AwbEnable` are all scalars with no notion of *where*.
+
+Two pieces, in this order:
+
+1. carry rectangles through PipeWire (the section above). Nothing here can be
+   aimed until a position can cross the socket, and the same fix is what makes
+   `AfWindows` work, so it is one job serving both.
+2. window the metering inside the IPA's AGC, modelled on the focus zones, and
+   publish an `AeMetering`-style control next to `AfMetering` so the pipeline
+   can ask for it.
+
+## The shutter still fires mid-sweep in poor light
+
+`FOCUS_SETTLE_MS` and `CAPTURE_FOCUS_SETTLE_MS` are 5500 ms, chosen against a
+sweep measured at ~4.8 s. The sweep is not a constant: it is 19 positions plus
+2 revisits, and the per-position cost is set by the frame rate, which the AGC
+lengthens in poor light. Measured 2026-08-15: ~250 ms/position in room light
+(~4.7 s) against ~570 ms/position in a dim room (12.7 s, 4:39:44 → 4:39:56).
+So in poor light the capture still happens at an arbitrary lens position.
+
+A longer timeout is the wrong fix — it would make every good-light shot slow.
+The right one is for the IPA to say when the scan finished, which today it
+does not: there is no completion control and `AfState` is not published. Until
+then, note that lowering the position count (`kCoarseSteps` 12, `kFineSteps` 7)
+shortens both cases proportionally.
+
+## Deleting a photograph can take the viewfinder down
+
+Undiagnosed. Symptom is a freeze in the gallery on delete, then "could not
+play camera stream". The journal at 18:02:45 on 2026-08-15 shows the
+**video** branch of camerabin starting without a filename and taking the whole
+stream with it:
+
+```
+videobin-filesink: No file name specified for writing.
+... Failed to start
+pipewiresrc0: streaming stopped, reason not-negotiated (-4)
+```
+
+Why a delete should start the video branch is unknown, and guessing at it is
+what to avoid — the next occurrence with a timestamp gives the full ordering
+out of `journalctl --user -b`.
+
+## The face-focus cascade is not archived here
+
+`userspace-camera/snapshot/` now carries every patch the aport applies, but not
+`facefinder` — the 234 KB binary cascade that `0020-camera-face-focus-mode`
+loads at runtime. It lives only in `/mnt/1TB/pmos/pmaports/temp/snapshot`, an
+upstream clone that is never pushed, so the aport still cannot be rebuilt from
+this repo alone. Before copying it across, establish where it came from and
+under what licence: a binary blob with no provenance is worse in a public
+repository than a missing one, and the README has no row for it.
