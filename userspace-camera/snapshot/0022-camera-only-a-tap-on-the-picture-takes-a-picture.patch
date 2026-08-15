@@ -1,0 +1,102 @@
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?= <lajoshazilg@gmail.com>
+Date: Sat, 15 Aug 2026 16:45:00 +0200
+Subject: [PATCH] camera: only a tap on the picture takes a picture
+
+In Tap mode a tap on the viewfinder takes the photograph. The controls,
+though, are laid over the viewfinder in a layer that spans the whole
+page, and the gesture that reads the tap is on the page rather than on
+the viewfinder - it has to be, or the overlay would swallow every touch.
+So a tap on the menu, on the shutter bar, or on the thumbnail that opens
+the gallery arrived at that gesture exactly like a tap on the picture,
+and fired the shutter on the way past.
+
+The thumbnail is the worst of the three: it takes a photograph while
+leaving the camera, so the picture that gets saved is whatever the phone
+happened to be pointing at as the finger moved.
+
+Ask what the tap landed on before acting on it. Both bars are a
+GtkCenterBox and everything that answers a press is either inside one of
+them or a control in its own right, while the picture lies underneath
+all of it, so walking up from the picked widget separates the two. The
+page has to be showing the camera as well: a tap that arrives while
+another page is up was never aimed here.
+
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+Co-authored-by: Claude Opus 5 <noreply@anthropic.com>
+---
+--- a/src/widgets/camera.rs
++++ b/src/widgets/camera.rs
+@@ -165,6 +165,60 @@
+                 .get_or_init(|| gio::Settings::new(config::APP_ID))
+         }
+ 
++        /// Whether a tap at this point was aimed at the picture itself.
++        ///
++        /// The controls are laid over the viewfinder in a layer that spans the
++        /// whole page, so a tap on the menu, on the shutter bar or on the
++        /// thumbnail that opens the gallery reaches this widget exactly like a
++        /// tap on the picture does. Taking a photograph from any of those is
++        /// wrong twice over: it is not what the finger was pointing at, and in
++        /// the thumbnail's case it fires a shutter on the way out of the
++        /// camera.
++        ///
++        /// So ask what the tap actually landed on. Both bars are a
++        /// `GtkCenterBox`, and everything that answers a press lives inside
++        /// one of them or is a control in its own right; the picture is
++        /// underneath all of it. Anything that names itself is not the
++        /// picture.
++        fn tap_hits_the_picture(&self, x: f64, y: f64) -> bool {
++            let obj = self.obj();
++
++            if self.stack.visible_child_name().as_deref() != Some("camera") {
++                return false;
++            }
++
++            /* Nothing was picked where the layer is not there at all. */
++            let Some(picked) = obj.pick(x, y, gtk::PickFlags::DEFAULT) else {
++                return true;
++            };
++
++            let mut widget = Some(picked.clone());
++            while let Some(current) = widget {
++                if current.eq(obj.upcast_ref::<gtk::Widget>()) {
++                    break;
++                }
++
++                if current.is::<gtk::CenterBox>()
++                    || current.is::<gtk::Button>()
++                    || current.is::<gtk::MenuButton>()
++                    || current.is::<gtk::ToggleButton>()
++                    || current.is::<gtk::Scale>()
++                    || current.is::<gtk::Popover>()
++                    || current.is::<crate::CameraControls>()
++                {
++                    log::debug!(
++                        "Tap at {x}x{y} landed on {}, not on the picture",
++                        current.type_().name()
++                    );
++                    return false;
++                }
++
++                widget = current.parent();
++            }
++
++            true
++        }
++
+         /// The Stop button on the recalibration overlay.
+         #[template_callback]
+         fn cancel_measuring(&self) {
+@@ -328,7 +382,11 @@
+             taps.connect_pressed(glib::clone!(
+                 #[weak]
+                 obj,
+-                move |_, n_press, _, _| {
++                move |_, n_press, x, y| {
++                    if !obj.imp().tap_hits_the_picture(x, y) {
++                        return;
++                    }
++
+                     let viewfinder = &obj.imp().viewfinder;
+ 
+                     if !viewfinder.focus_mode().taps_shoot() {
