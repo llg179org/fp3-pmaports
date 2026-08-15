@@ -1118,6 +1118,27 @@ bounds `i` against `scores_.size()` (empty-guard, a `< 3` early return, and the
 nothing has re-run the live preview to confirm the crash is gone — fold that into
 the next camera session on the device rather than a separate cold-boot.
 
+## Two autofocus experiments held back for want of evidence
+
+Both were sitting uncommitted in the working tree on 2026-08-15 with no recorded
+rationale, and both were reverted so that r13 changed exactly one thing (the
+manual-focus clamp). Neither has ever been built or measured. If either is picked
+up it needs its own leg, not a ride on someone else's:
+
+* **`kCoarseSteps` 12 → 9 and `kFineSteps` 7 → 6.** A scan is currently 19
+  measurements, ~3.5 s at 1920×1080; this would make it 15. The question is
+  whether the settled position stays within a step or two of the 385-394 band
+  that [`camera/README.md`](camera/README.md) records for a lit indoor scene —
+  same scene, same light, both builds, several scans each.
+* **`interpolatePeak()` → `bestPosition_`**, i.e. dropping the parabolic peak
+  fit. ☠️ This looks like a leftover from bisecting the out-of-bounds crash,
+  which was localised and fixed in `059c6de`, so it probably has no reason left
+  to exist. It argues against [the recorded rationale for taking the fit from the
+  Raspberry Pi algorithm](camera/bringup/README.md#what-a-shipped-autofocus-does-differently),
+  and against the other experiment as well: with **fewer** steps the answer is
+  quantised more coarsely, so interpolation matters more, not less. Restore it
+  only on a measurement showing the fit lands worse than the raw best sample.
+
 ## Untested: interconnect path for the SCM/crypto node
 
 An idea from the SLIMbus framer investigation that was never confirmed:

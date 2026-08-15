@@ -494,6 +494,83 @@ No focus peak (50322.1..50922.2, drift 325.9), staying at 0
 1.2% between the best and the worst position, and the algorithm says so instead
 of driving the lens to the noise.
 
+### Manual focus was offered and did nothing, and neither patch was wrong
+
+Two patches on this package are each correct alone and produce a dead control
+together, which is the kind of fault that has no owner.
+
+`0101` keeps the lens travel in two members and sets them where it needs them:
+
+```cpp
+int32_t min_ = 0;
+int32_t max_ = 0;
+
+void Af::startScan(IPAContext &context)
+{
+	min_ = context.lens.min;
+	max_ = context.lens.max;
+	...
+}
+
+void Af::moveTo(IPAContext &context, int32_t position)
+{
+	af.position = std::clamp(position, min_, max_);
+```
+
+Every caller of `moveTo()` in `0101` is downstream of `startScan()`, so the
+members are always set by the time they are used, and the file is self-consistent.
+
+`0104` then added manual focus — and its `moveTo()` is reached from
+`queueRequest()` with no scan anywhere in front of it:
+
+```cpp
+const auto &position = controls.get(controls::LensPosition);
+if (position.has_value() && calibration_.known &&
+    af.mode == controls::AfModeManual) {
+	moveTo(context, positionOf(position.value()));
+```
+
+So in manual mode `min_` and `max_` are still their initialisers, and the clamp
+is `std::clamp(position, 0, 0)`. **Every manual focus request in the lifetime of
+that camera session resolves to actuator code 0.** The lens is pinned at
+infinity, and the control reports back the value it was pinned to rather than
+the one that was asked for, so nothing anywhere says no.
+
+Measured on the device, 2026-08-15, libcamera `99990.7.1-r12`. The algorithm's
+own debug line prints the requested dioptres and the resulting code together,
+which is what makes this a one-shot diagnosis rather than an inference:
+
+```
+INFO  IPASoftAf Manual focus from 0 (infinity) to 1023 (0.1 m)
+DEBUG IPASoftAf AfMode set to 0
+DEBUG IPASoftAf Lens moved to 10 dioptres (0)
+DEBUG IPASoftAf Lens moved to 5 dioptres (0)
+```
+
+Line 1 says the calibration was read and the control was published. Line 2 says
+manual mode was accepted. Lines 3 and 4 ask for the two ends of the range —
+10 dioptres is code 1023, 5 dioptres is about 511 — and both come back 0.
+`focus_absolute` on `/dev/v4l-subdev17` never left 0 across the whole capture.
+
+The fix is to clamp against the context rather than the cached copy, since the
+context is populated before any request is queued:
+
+```cpp
+af.position = std::clamp(position, context.lens.min, context.lens.max);
+```
+
+Two things worth keeping from it:
+
+- ☠️ **A member that is initialised by one code path is a landmine for the
+  next.** `startScan()` setting `min_`/`max_` is not visible from `queueRequest()`,
+  and nothing in either patch is locally wrong. The failure was created by the
+  *combination*, so reviewing either patch on its own could not have found it.
+- **A log line that prints the request and the result together is worth writing
+  before it is needed.** `"Lens moved to 10 dioptres (0)"` contains the whole
+  diagnosis. Had it printed only the dioptres, this would have looked like a
+  lens, an actuator, an I²C or a dioptre-mapping problem, and each of those is a
+  session's work to exclude.
+
 ## The picture and the preview cannot be the same size
 
 Once autofocus worked, the first real use found two things a measurement had
