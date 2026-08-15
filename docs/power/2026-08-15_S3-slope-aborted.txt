@@ -1,0 +1,15 @@
+suspend-slope: S3 === settle 900s off VBUS ===
+S3 phase=settle n=0 t=16422 v=4132144 i=-316925
+S3 phase=settle n=1 t=16482 v=4126304 i=-139618
+S3 phase=settle n=2 t=16542 v=4096136 i=-243225
+S3 phase=settle n=3 t=16602 v=4098277 i=-160369
+S3 phase=settle n=4 t=16662 v=4058376 i=-252685
+S3 phase=settle n=5 t=16722 v=4055651 i=-240631
+S3 phase=settle n=6 t=16782 v=4079008 i=-140075
+S3 phase=settle n=7 t=16842 v=4074726 i=-140838
+S3 phase=settle n=8 t=16902 v=4066551 i=-155181
+S3 phase=settle n=9 t=16962 v=4068497 i=-139618
+S3 phase=settle n=10 t=17022 v=4062074 i=-140686
+S3 phase=settle n=11 t=17082 v=4026456 i=-320129
+S3 phase=settle n=12 t=17142 v=4060517 i=-140533
+S3 phase=settle n=13 t=17202 v=4033657 i=-253906

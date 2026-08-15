@@ -74,13 +74,35 @@ What the S2 leg still supports, from the live pair alone: compensated
 **upper bound**. But a 10 mA leg would move only ~11 mV, so **suspend is not in
 the 10 mA regime** - that much is solid. Full reasoning in [`README.md`](README.md).
 
-### ← RESUME HERE after 17:50 on 2026-08-15
+### ← PARKED FOR THE NIGHT, 2026-08-15 13:40
 
-**Running now (started ~13:30, due ~17:50): `suspend-slope.sh S3 900 8`,**
-systemd unit `slope1`. 900 s off-VBUS settle, then 8 sleeps of 900 s each
-followed by a fixed 20 s wake and one live sample, then 8 identical samples
-awake. The phone is unreachable during phase A *by design* - WiFi drops in
-s2idle, so a failed ping before ~15:45 means it is working, not broken.
+☠️ **This branch is a night job and must be treated as one.** A slope leg takes
+the phone off VBUS, blanks the display and suspends it for hours, so it makes the
+device unusable for any other work. It was started at 13:30 in the middle of a
+working day and had to be aborted at 13:40, during its settle phase, before phase
+A began. Nothing was measured. **Do not start one while the phone is wanted for
+anything else** - schedule it when the device is free for the night.
+
+Aborted cleanly: `slope1` and `curlog` stopped, USBIN restored (`online=1`,
+battery `Charging` at +129 mA), no wakealarm armed, `greetd` back. Partial data
+in [`2026-08-15_S3-slope-aborted.txt`](2026-08-15_S3-slope-aborted.txt) - only
+the settle phase, but it does show the relaxation shape: current settling to
+~140 mA and the compensated fall slowing from 22 to ~3.7 mV/min over 900 s, i.e.
+surface charge still shedding at the end of the settle. That biases a phase-A
+slope steeper, so **it inflates the sleep current rather than hiding it** - the
+safe direction, but a longer settle would be better.
+
+**To resume, at night:**
+
+```sh
+ssh fp3@192.168.100.17 'echo <pw> | sudo -S sh -c "
+  : > /home/fp3/suspend-slope.txt
+  systemd-run --unit=slope1 --collect /home/fp3/suspend-slope.sh S4 900 8
+  systemd-run --unit=curlog --collect sh -c \"/home/fp3/curlog.sh > /home/fp3/curlog.txt\""'
+```
+
+Runs ~4.3 h. The phone is unreachable during phase A *by design* - WiFi drops in
+s2idle, so a failed ping is it working, not broken.
 
 ```sh
 ssh fp3@192.168.100.17 'cat /home/fp3/suspend-slope.txt'
