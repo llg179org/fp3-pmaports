@@ -831,3 +831,58 @@ described as working.
 `/sys/kernel/debug/irq/` does not exist and the obvious check — reading an IRQ's
 parent domain after arming its wake — is unavailable. The instrument that works
 is the MPM's own interrupt count in `/proc/interrupts`.
+
+## ★★ The RPM answer: mainline's regulators only ever vote the active set
+
+*2026-08-15, early morning. This supersedes the guess in "What is still missing"
+above — see the correction at the end of this section.*
+
+`drivers/regulator/qcom_smd-regulator.c` has exactly one write helper, and its
+name is the finding:
+
+```c
+static int rpm_reg_write_active(struct qcom_rpm_reg *vreg)
+{
+	...
+	ret = qcom_rpm_smd_write(smd_vreg_rpm, QCOM_SMD_RPM_ACTIVE_STATE,
+				 vreg->type, vreg->id, ...);
+```
+
+Every path into it — `rpm_reg_enable`, `rpm_reg_disable`, `rpm_reg_set_voltage`,
+`rpm_reg_set_load` — passes `QCOM_SMD_RPM_ACTIVE_STATE`. **Mainline has no
+sleep-set path for RPM regulators at all.** Downstream's
+`rpm-smd-regulator.c` carries a second request handle per regulator
+(`rpm_vreg->handle_sleep`, created with `RPM_SET_SLEEP`) and sends a matching
+sleep vote for every active one.
+
+That single asymmetry accounts for everything measured:
+
+* The RPM ends up holding standing **active** votes for every rail the AP ever
+  enabled, and an active vote is by definition one it may not drop. Downstream's
+  own comment in `msm_rpm_flush_requests()` states the rule from the other side:
+  *"RPM PC would be disallowed if we had pending active requests"*.
+* So the RPM never power-collapses: `vlow`/`vmin` stay at `Count: 0`, and the
+  APSS `numshutdowns` record never moves, no matter how deeply the AP collapses.
+* And `vlow`'s `Client Votes: 0x13111517` — the non-zero field that proved the
+  instrument was live — reads naturally as exactly this: the clients holding it
+  up.
+
+The interconnect driver, by contrast, gets it right: `icc-rpm.c` aggregates and
+sends both `QCOM_SMD_RPM_ACTIVE_STATE` and `QCOM_SMD_RPM_SLEEP_STATE` rates, and
+`clk-smd-rpm.c` does the same for clocks. Regulators are the outlier.
+
+### Correcting the earlier guess
+
+The section above ("nobody tells the RPM the AP went to sleep") proposed that the
+missing piece was downstream's `msm_rpm_enter_sleep()` — a *signal*. Reading
+`msm_rpm_flush_requests()` shows that is wrong: it sends only the **buffered
+sleep-set requests** and no distinguished "AP is asleep" message exists. Mainline
+sends each request eagerly instead of buffering it, so for clocks and
+interconnect the RPM already has the sleep values it needs; nothing about the
+buffering matters. The missing thing was never a message. It is the sleep-set
+*content* for one subsystem.
+
+☠️ The lesson is the one this project keeps re-learning: a plausible mechanism
+read out of one function is not the mechanism. `msm_rpm_enter_sleep()` looked
+decisive because it is named for exactly the moment in question, and the thing it
+actually does is mundane.
