@@ -36,15 +36,33 @@ The earlier panel-on set had the opposite sign and was also correct - it was a
 different regime, not noise. Full write-up in [`README.md`](README.md), data in
 [`2026-08-15_ab-current-legs.txt`](2026-08-15_ab-current-legs.txt).
 
-**Baseline to attack next: ~130 mA idle with the screen off.** The instrument is
-`docs/power/idle-leg.sh` (copy it to `/home/fp3/` and run as root); it suspends
-USBIN so nothing needs unplugging, gates on the display really being off, and
-restores the charger on every exit path.
+★★ **But the 130 mA is the wrong regime, found 2026-08-15.** The phone had
+**never suspended**: `/sys/power/suspend_stats/success` read 0 after 50 minutes
+of uptime, and `mem_sleep` offers only `[s2idle]`. Everything measured so far
+describes *runtime idle with a full phosh session alive* - `greetd`, pipewire,
+wireplumber, five `xdg-desktop-portal`s, gvfsd, avahi, wpa_supplicant - and a
+modem talking at 28 `smd-edge` interrupts a second. A phone's night is s2idle,
+and no number had ever been taken there.
 
-**The obvious next question, and it is cheap:** bisect that 130 mA by subsystem
-with the same instrument - one leg with WiFi down, one with the modem stopped,
-one with `pd-mapper` disabled. Each is a leg, each is ten minutes, and the
-instrument now resolves ~7 mA comfortably.
+**s2idle works.** Probed: 90 s requested via the RTC wakealarm, 91 s slept,
+`success` 0 → 1, `fail` 0, WiFi reassociated on its own. The RTC time is stuck
+in 1970 (no `offset` nvmem cell, `docs/TODO.md`) but an alarm is *relative*, so
+it is unaffected - which is what makes an unattended suspend leg safe.
+
+**The instrument for that regime is `docs/power/suspend-leg.sh`**, not
+`idle-leg.sh`: `current_now` has to be sampled and nothing samples while
+userspace is frozen, so it integrates the fuel gauge accumulator instead
+(`charge_now` before/after, 306 uAh quanta measured, ~2 mA over a 600 s window).
+Both its windows - awake and asleep - use that same accumulator on purpose.
+
+**Then** bisect whatever is left by subsystem with `idle-leg.sh` - one leg with
+WiFi down, one with the modem stopped, one with `pd-mapper` disabled. That is
+worth doing only once the suspend number says how much of the 130 mA is session
+noise rather than platform floor.
+
+☠️ **10 mA is a different regime, not a smaller number.** Downstream phones
+reach it in full suspend with the modem in its own power-save, never in runtime
+idle. Do not treat the 130 mA as a target to shave.
 
 **The RPM question is parked, not open.** Every AP-side precondition is verified
 and the two-sided vMPM dump is structurally identical; what remains is past the
@@ -89,3 +107,6 @@ returns before the compositor releases DRM master, so a single write to
 | how deep does idle actually get | `cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states` |
 | the same on the oracle | `ut-ssh 'cat /sys/kernel/debug/rpm_master_stats'` and `.../lpm_stats/stats` |
 | what is waking the CPUs | two `/proc/interrupts` snapshots differenced — ☠️ stop the compositor first, or `msm_mdss` at 65/s makes the run meaningless |
+| has the phone ever suspended | `grep -H . /sys/power/suspend_stats/*` — `success` is the only honest answer; `cat /sys/power/mem_sleep` says which path |
+| current while suspended | `docs/power/suspend-leg.sh` — ☠️ `current_now` cannot be sampled while frozen; integrate `charge_now` instead |
+| does the RTC alarm wake it | `echo 0 > /sys/class/rtc/rtc0/wakealarm; echo +90 > …` then `echo mem > /sys/power/state` — ☠️ prove this **before** relying on it to bring an unattended leg back |
