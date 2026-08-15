@@ -918,3 +918,102 @@ instruments that mean something.
 The next probe therefore has to send a sleep value that actually releases
 something, which is the part that can brown a rail out mid-sleep — so it must be
 one rail with no consumer, chosen deliberately, not a blanket change.
+
+## The regulator sleep-set theory was wrong, and here is what replaced it
+
+*2026-08-15, early morning. Four measurements, three of them negative, and one
+that rewrites the previous section.*
+
+### First: the theory pointed the wrong way
+
+The previous section reasoned that mainline's active-only regulator votes leave
+the RPM holding permanent votes that block its power collapse. That is backwards.
+An RPM resource is aggregated per set: if APSS contributes **nothing** to the
+sleep set, APSS is not asking for the rail during sleep, and the RPM is free to
+drop it. Mainline's silence is therefore *permissive*, not restrictive — which is
+also why mirroring the active votes into the sleep set (the previous experiment)
+could only ever make things stricter, and why it changed nothing.
+
+The regulator sleep set is a real gap in mainline, and a real hazard the day the
+RPM does collapse, but it is **not** what is holding the RPM up today.
+
+### What downstream actually does before a system power collapse
+
+Read from the vendor 4.9 source on disk, not inferred. On msm8953 the governor is
+`drivers/cpuidle/lpm-levels.c` (`CONFIG_MSM_PM=y`; `MSM_PM_LEGACY` is not set),
+and the `qcom,notify-rpm` level runs `sys_pm_ops->enter`. ☠️ Two surprises:
+
+* `sys_pm_ops` on this SoC is registered by **`drivers/irqchip/qcom/mpm.c`**, not
+  by `rpm-smd.c` and not by `soc/qcom/system_pm.c` — that last one is the RPMh
+  (SDM845-class) implementation and never binds here.
+* The whole of it is three actions: `msm_rpm_enter_sleep()` (mask the RPM's SMD
+  receive IRQ, flush the sleep set), `msm_mpm_enter_sleep()` (write the IPC
+  register, move its IRQ affinity), and `system_pm_update_wakeup()` →
+  **`msm_mpm_timer_write()`**.
+
+`smd_mask_receive_interrupt()` turned out to be a plain local `irq_mask()` plus an
+affinity change — it writes nothing to shared memory, so it is not a notification
+to the RPM at all. That leaves the timer as the only thing mainline was missing
+outright.
+
+### The one real gap: the vMPM wakeup timer was never written
+
+`msm_mpm_timer_write()` writes the architected timer's compare value into the
+**first two words** of the vMPM region. Mainline's `irq-qcom-mpm.c` documents
+those words in its own register-map comment as `TIMER0`/`TIMER1`, skips them in
+`qcom_mpm_read()`/`qcom_mpm_write()` with the `+ 2` in the offset, and then never
+writes them anywhere.
+
+Measured on the running phone, reading the vMPM region through `/dev/mem`:
+
+```
+0x1d4: 00000000 00000000 08001000 00080008     <- before, TIMER0/TIMER1 = 0
+0x1d4: 46683198 00000000 08001000 00080008     <- after
+```
+
+The enable words either side of it are non-zero, so the region and the offsets are
+right; the deadline simply was not there. Fixed on `wip/7.1.3/power` by taking
+`tick_nohz_get_next_hrtimer()` in `mpm_pd_power_off()`, converting it to counter
+ticks and capping it at one second.
+
+**And it did not move the RPM either.** APSS `Shutdown count` still 0, `vlow` and
+`vmin` still 0. Nor did timer + sleep-set mirror together.
+
+### What is now known for certain about the AP side
+
+Every AP-side precondition has been checked individually and all of them pass:
+
+| checked | command | result |
+|---|---|---|
+| the composed PSCI parameter really reaches firmware | `echo 1 > /sys/kernel/tracing/events/power/psci_domain_idle_enter/enable` | **`0x41000353` 88 times in 3 s**, alongside `0x41000053` and `0x40000003` |
+| firmware accepts it | `cat /sys/kernel/debug/pm_genpd/power-domain-system/idle_states` | 6233 entries, 130 rejected — 98 % succeed |
+| the mailbox is the right one | DT `mboxes = <&apcs 1>`, `qcom,msm8953-apcs-kpss-global` → `msm8994_apcs_data.offset = 8` | writes `BIT(1)` to `0xb011008`, byte-for-byte what downstream's `msm_mpm_send_interrupt()` writes |
+| the wakeup deadline is programmed | `/dev/mem` dump of the vMPM region | non-zero, plausible |
+| the master-stats reader is not lying | 60 s differential over every master | **MPSS +150, PRONTO +563, APSS +0** |
+
+That last row is the important one and it is the control the earlier write-up did
+not have: the instrument counts other masters going down in real time, so APSS
+reading zero is a fact about the APSS, not about the driver.
+
+☠️ Also worth recording as an instrument: `psci_domain_idle_enter` lives in the
+**`power`** trace system, not a `psci` one — `events/psci/` does not exist and
+looking for it reads as "the tracepoint is not compiled in".
+
+### One loose end found on the way
+
+`qcom_mpm interrupt-controller: failed to map pin 58 as GIC hwirq 136 is already
+mapped` — pins 49 and 58 are the two QUSB2 PHY sense lines and downstream maps
+both to the same GIC interrupt. Ours silently drops the second. Harmless today;
+it belongs in the pin-map commit's follow-up.
+
+### Where that leaves the question
+
+The AP requests a system power collapse with the correct parameter, the firmware
+reports it performed one, the RPM is told through the correct mailbox, it now has
+a wakeup deadline — and it still never records the APSS going down, while it
+records the modem and WLAN doing so hundreds of times a minute. Every remaining
+explanation is on the far side of the PSCI call, in TZ or in the RPM firmware,
+where this kernel has no instrument. The next move is therefore not another
+kernel patch but a two-sided capture of the *firmware's* view: the oracle runs the
+same TZ on the same silicon, so anything that differs has to be in what the two
+kernels leave behind in shared memory before the call.

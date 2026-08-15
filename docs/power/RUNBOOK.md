@@ -29,43 +29,45 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
-**The question is answered; what remains is building it.** Mainline's
-`drivers/regulator/qcom_smd-regulator.c` votes **only** the active set
-(`rpm_reg_write_active()`, hard-coded `QCOM_SMD_RPM_ACTIVE_STATE`), so the RPM
-holds permanent active votes and can never power-collapse — which is why
-`vlow`/`vmin` are 0 and APSS `numshutdowns` never moves while the AP collapses 47
-times a second. Downstream keeps a second per-regulator request
-(`rpm_vreg->handle_sleep`, `RPM_SET_SLEEP`). Full write-up in
-[`README.md`](README.md), "The RPM answer".
+**The regulator sleep-set theory is dead** (it pointed the wrong way — see
+[`README.md`](README.md), "The regulator sleep-set theory was wrong"), and the one
+real gap it uncovered, the **vMPM wakeup timer**, is now fixed and pushed
+(`wip/7.1.3/power` `97951baf7a85`) — and did not move the RPM either.
 
-**Build it in this order:**
+Every AP-side precondition is now individually verified: the composed PSCI
+parameter `0x41000353` really reaches firmware (traced), firmware accepts it 98 %
+of the time, the mailbox write matches downstream byte for byte, the wakeup
+deadline is programmed, and the master-stats reader is proven live by a 60 s
+differential in which MPSS gains 150 and PRONTO 563 while APSS gains nothing.
 
-1. **Cheapest possible probe first, before writing a driver.** Pick one rail that
-   is definitely idle — a camera or display regulator with no consumer — and send
-   it a sleep-set vote of 0 by hand, then watch whether `vlow`'s `Client Votes`
-   (`/sys/kernel/debug/qcom_stats/vlow`) loses a bit. There is no sysfs for this,
-   so it needs a throwaway kernel patch calling `qcom_rpm_smd_write(...,
-   QCOM_SMD_RPM_SLEEP_STATE, ...)` for that one id. **This is the measurement
-   that decides whether the whole theory is right**, and it is one boot.
-2. If the bit moves: add a real sleep-set path to `qcom_smd-regulator.c`.
-   The shape to copy is `icc-rpm.c`, which already aggregates and sends both
-   states. Upstream-bound, and it is a feature rather than a fix, so it needs a
-   maintainer conversation before a v1 — `qcom_smd-regulator.c` serves many
-   boards and a wrong sleep vote browns out a rail mid-sleep.
-3. Only then re-run the idle-current A/B. Until the RPM collapses, no AP-side
-   change is expected to move the milliamps — that is what the matched A/B
-   already measured.
+**So the next step is a two-sided capture of shared memory, not another patch.**
+The oracle runs the same TZ on the same silicon, so whatever makes the RPM record
+an APSS shutdown there has to be visible in what the kernel leaves behind before
+the PSCI call. Concretely:
 
-**Also still open:** the GPIO wakeup map is deployed and provably inert (see
-README) — it cannot be tested until the RPM actually takes over. And bump
-`_commit`/`pkgrel` to `6cbf488a28f0` once that happens; r54 deliberately pins the
-tested `162f27abc328`.
+1. Boot `slot_a`, and dump the **same vMPM region** (`/dev/mem`, `0x60000 + 0x1d4`,
+   0x48 bytes — the script is `/home/fp3/vmpm_dump.py`, copy it across) while
+   Ubuntu Touch is idle. Diff it word for word against ours. The enable/edge words
+   should differ (different wakeup sets); anything *structural* that differs is
+   the answer.
+2. If that is inconclusive, widen to the RPM MSG RAM around it and diff the two
+   dumps as a whole.
+3. Only if both are inconclusive does it become a firmware question, and at that
+   point the honest write-up is that mainline cannot reach RPM power collapse on
+   this SoC without knowing what TZ expects.
+
+**Still open, unchanged:** the GPIO wakeup map is deployed and provably inert
+until the RPM takes over; the regulator sleep set is a real hazard the day it
+does, so it must be built *before* the RPM ever collapses, not after; and
+`_commit`/`pkgrel` still pin the tested `162f27abc328` rather than the current
+`debug-int/7.1.3` tip.
 
 ## Device and tree state
 
-* Phone on `slot_b`, running a hand-deployed `Image` + DTB (not a package build).
-  Backups in `/boot`: `vmlinuz.pre-mpm`, `sdm632-fairphone-fp3.dtb.pre-mpm`,
-  `sdm632-fairphone-fp3.dtb.mpm-only`.
+* Phone on `slot_b`, running a hand-deployed `Image` from `debug-int/7.1.3`
+  `6fd035d9501a` (md5 `2f64535335ff01c395db30000c056a13`, verified on both sides),
+  not a package build. Backups in `/boot`: `vmlinuz.pre-mpmtimer`,
+  `vmlinuz.genpdfix`, `vmlinuz.base-mpm`, `vmlinuz.pre-mpm`.
 * The oracle is `slot_a` (Ubuntu Touch); `fastboot set_active a|b` switches, and
   `ut-ssh` reaches it.
 * Kernel work is the `power` category: `wip/7.1.3/power` → `integration/7.1.3` →
