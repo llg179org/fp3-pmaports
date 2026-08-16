@@ -90,8 +90,12 @@ say() { echo "suspend-slope: $*" | tee -a "$OUT" >&2; }
 # withdrawn. Carrying the count on every sample makes each leg say for itself
 # whether it was contaminated, rather than leaving that to be reconstructed
 # afterwards from a journal that may have rotated - and it costs one grep.
+# ☠️ Read the journal, not dmesg. The kernel ring buffer wraps: measured
+# 2026-08-17, two `dmesg | grep -c` reads twenty minutes apart on the same boot
+# returned 35 and then 34, so the count went *down* while failures were still
+# accumulating. pll-sweep.sh already takes a journalctl cursor for this reason.
 pll_fails() {
-	dmesg 2>/dev/null | grep -c 'failed to enable' || true
+	journalctl -k -b --no-pager 2>/dev/null | grep -c 'failed to enable' || true
 }
 
 # Live ADC only. Never capacity, never voltage_ocv, never charge_now.
