@@ -452,7 +452,26 @@ main() {
 			ssh_root "setsid sh $DEVICE_DIR/lib/run-detached.sh $_base $_outfile" || true
 			sleep 5
 			if wait_for_device 180; then
+				# ☠️ Reachable is not finished. wait_for_device returns at
+				# once while the device is still up, so a detached check
+				# that has not suspended yet gets its output file read
+				# early - and an empty file is silently a check with no
+				# verdict. It only ever worked because these checks used
+				# to suspend within the 5s above; the moment one waited on
+				# a precondition first, the runner read nothing. Wait for
+				# the marker run-detached.sh writes when the check is
+				# actually done.
+				_wait_deadline=$(( $(date +%s) + 600 ))
+				while [ "$(date +%s)" -lt "$_wait_deadline" ]; do
+					ssh_root "grep -q '^__EXIT=' $_outfile" >/dev/null 2>&1 && break
+					sleep 5
+					wait_for_device 180 >/dev/null 2>&1 || true
+				done
 				_out=$(ssh_root "cat $_outfile" 2>&1)
+				if ! printf '%s\n' "$_out" | grep -q '^__EXIT='; then
+					_out="FAIL: $_name never finished - no verdict was written
+      cmd: cat $_outfile"
+				fi
 			else
 				_out="FAIL: device did not come back after $_name"
 			fi
