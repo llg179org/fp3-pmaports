@@ -81,11 +81,25 @@ OUT=/home/fp3/suspend-slope.txt
 die() { echo "suspend-slope: $*" >&2; exit 1; }
 say() { echo "suspend-slope: $*" | tee -a "$OUT" >&2; }
 
+# How many times has the little cluster's PLL failed to lock so far this boot?
+#
+# Phase B is an awake leg, and an awake leg is exactly what the 2026-08-15 run
+# lost: a storm of `apcs-cpu0-pll failed to enable!` ran through the whole of its
+# control phase. That inflates the awake current AND steepens the slope, so the
+# ratio moved by an unknown amount in an unknown direction and 116 mA had to be
+# withdrawn. Carrying the count on every sample makes each leg say for itself
+# whether it was contaminated, rather than leaving that to be reconstructed
+# afterwards from a journal that may have rotated - and it costs one grep.
+pll_fails() {
+	dmesg 2>/dev/null | grep -c 'failed to enable' || true
+}
+
 # Live ADC only. Never capacity, never voltage_ocv, never charge_now.
 sample() {
-	printf '%s phase=%s n=%s t=%s v=%s i=%s\n' \
+	printf '%s phase=%s n=%s t=%s v=%s i=%s pll=%s\n' \
 		"$TAG" "$1" "$2" "$(cut -d. -f1 /proc/uptime)" \
 		"$(cat "$BATT/voltage_now")" "$(cat "$BATT/current_now")" \
+		"$(pll_fails)" \
 		| tee -a "$OUT" >&2
 }
 
