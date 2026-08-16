@@ -1275,6 +1275,45 @@ shows up much later than the change that caused it. The one-line check is in
 
 ## AfWindows cannot reach the camera through PipeWire
 
+> **✅ Layers 1 and 2 are done and measured (2026-08-16).** A focus window now
+> travels from `pw-cli` to the metering: `libcamera` r18 offers the control in
+> the sensor's active pixel array and aims at it, and `pipewire` r6 carries it
+> across the node. Only layer 3 is left — the application still sends nothing.
+> Both layers are held by checks proved in both directions:
+> `44-camera-af-windows` (libcamera r17 fails, r18 passes) and
+> `45-camera-af-windows-pipewire` (pipewire r5 fails, r6 passes).
+>
+> Measured end to end with a stream open, reading the IPA's own line:
+>
+> ```
+> AfMetering=Windows alone -> Metering 9 of 25 zones (0 windows) [the centre fallback]
+> [0, 0, 400, 300]         -> Metering 1 of 25 zones
+> [3600, 2700, 400, 300]   -> Metering 1 of 25 zones
+> [0, 0, 4032, 3024]       -> Metering 25 of 25 zones
+> ```
+>
+> ☠️ **The claim below that no PropInfo in 1.6.8 publishes `container` together
+> with a range is wrong.** `SPA_PROP_channelVolumes` does exactly that —
+> `spa/plugins/audioconvert/audioconvert.c:582-584`, a `CHOICE_RANGE_Float`
+> followed by `SPA_PROP_INFO_container, SPA_POD_Id(SPA_TYPE_Array)`. The pattern
+> was established; the grep that concluded otherwise was too narrow.
+>
+> ☠️ **And a fourth gate that only the device showed: `pw-cli` does not send an
+> array as a POD array — it sends a struct.** `spa_json_to_pod_part()`
+> (`spa/utils/json-pod.h:68`) has only the static type table to work from, every
+> camera control is published past `SPA_PROP_START_CUSTOM` and so appears in no
+> table, and with no type a JSON array becomes a struct of ints. The very first
+> `set-param` printed it:
+>
+> ```
+> Struct: size 64
+>   Int 0 / Int 0 / Int 100 / Int 100
+> ```
+>
+> A plugin accepting only POD arrays would have published a control that cannot
+> be set — indistinguishable, from outside, from not publishing it. Both shapes
+> are accepted.
+>
 > **☠️ Update 2026-08-16: the chain breaks in three places, not one.** The
 > PipeWire gate below is real and still has to be opened, but opening it alone
 > changes nothing. Measured with `cam -c1 --list-controls` on the device:
@@ -1298,8 +1337,11 @@ shows up much later than the change that caused it. The one-line check is in
 >    (`libcamera` r15). See the correction below: the algorithm already metered
 >    arbitrary windows, so the work was narrower and in different places than
 >    this line assumed.
-> 2. **PipeWire** — the three `isArray()` gates below.
+> 2. **PipeWire** — ✅ **done 2026-08-16**, patch `spa-libcamera-array-controls`
+>    (`pipewire` r6). The three `isArray()` gates below, plus the struct shape
+>    `pw-cli` actually sends.
 > 3. **aperture / Snapshot** — send a rectangle array rather than a scalar.
+>    **The only layer left.**
 >
 > #### ☠️ Correction, 2026-08-16: layer 1 was not what it looked like
 >
