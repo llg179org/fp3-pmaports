@@ -187,6 +187,17 @@ the audio block together, suspend last.
   `24-speaker-amp` asks the amplifier on its control bus. **When a check's
   medium is the environment, there must be a second check whose medium is not.**
 
+- **☠️ A probe you wrote five minutes ago is not evidence until it has been seen
+  succeeding.** Chasing the same amplifier on the evening of 2026-08-16, two
+  ad-hoc probes both reported the chip off the bus while the driver was reading
+  it fine in the same second: a hand-rolled raw-I²C transaction that had never
+  once returned a chip ID, and a `cache_bypass=1` dump of
+  `/sys/kernel/debug/regmap/<dev>/registers`, which walks all 256 addresses live
+  and so reads `XXXX` everywhere on a healthy chip that implements a handful of
+  them. Neither had a known positive behind it; the check in this directory did,
+  and it was the one that produced the answer. That is the argument for adding a
+  check here rather than measuring by hand.
+
 ## Why not just use hwtest?
 
 We measured it rather than assuming. It runs headless, `--verify` returns 1 on a
