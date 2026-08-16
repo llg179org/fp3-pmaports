@@ -162,6 +162,61 @@ simply is not there.
 graphical session does not come up at all, which looks like a kernel
 regression and is not one — check `df -h /` before blaming the build.
 
+### ☠️ If the phone does not boot at all
+
+Both remote channels — ssh over USB and ssh over WiFi — need userspace running,
+so a change that hangs the kernel takes away every way in. The recovery below is
+what was measured on 2026-08-16, after `fw_devlink=off` was added to the `append`
+line and the device stopped enumerating on USB entirely.
+
+**The one thing that works is a button press.** Hold **power** for ~15 s to force
+the phone off, then hold **volume up** while powering on to reach the lk2nd boot
+menu and pick `postmarketOS-fallback`. That is why the fallback label has to be
+armed *before* the experiment, and why its `append` line must never be edited in
+the same session as the default one — it is the only entry a hang cannot reach.
+`fp3-selftest --only boot-fallback` is the check that says whether the net is up.
+
+Everything else was tried and does not work on this bootloader. Recording it so
+the next hang does not spend the same three hours:
+
+* **`fastboot boot` is dead here, for every image.** It fails with
+  `FAILED (remote: 'unknown reason')` — and it fails that way for `lk2nd.img`
+  itself, the image that boots perfectly when flashed to the same slot. So the
+  message says nothing about the image you built; do not read it as a hint and
+  do not iterate on the image to chase it.
+* **A boot image flashed to `boot_b` is rejected before boot is attempted.**
+  `fastboot flash boot_b <img>` reports OKAY, the phone reboots straight back
+  into fastboot, and `getvar slot-retry-count:b` still reads **6** — the counter
+  is untouched, so the bootloader never tried. That points at image validation,
+  not at the kernel.
+* **The appended DTB is only found on an *uncompressed* kernel.** With the pmOS
+  gzip `vmlinuz` plus an appended dtb the error is `dtb not found`; with the raw
+  `Image` plus the same dtb it changes to `unknown reason`. The FP3 entry the
+  bootloader matches is `qcom,msm-id = <0x15d 0>` with
+  `qcom,board-id = <0x08 0x03>`, which is what lk2nd carries; the mainline
+  `sdm632-fairphone-fp3.dtb` has `<0x08 0x10000>` instead. A dtb carrying both
+  pairs gets past the lookup. ⚠️ None of this makes the image boot — see the
+  first bullet — it only moves the error message.
+* ☠️ **Never flash `boot_a`.** That slot holds the Ubuntu Touch kernel, which is
+  the Halium oracle every register-level comparison is measured against.
+
+**The fastboot USB link freezes if you interrupt a command** (a `timeout` that
+fires mid-transfer is enough): every later command then hangs. The cure is a
+`USBDEVFS_RESET` on the device node, after which it works immediately —
+
+```sh
+B=$(lsusb | sed -n 's/^Bus \([0-9]*\) Device \([0-9]*\): ID 18d1:d00d.*/\1\/\2/p')
+sudo usbreset "/dev/bus/usb/$B"      # 8-line ioctl(USBDEVFS_RESET) wrapper
+fastboot devices                     # answers again
+```
+
+So give fastboot commands a generous timeout and let them finish. Flashing
+lk2nd back to `boot_b` restores the normal boot chain:
+
+```sh
+fastboot flash boot_b lk2nd.img
+```
+
 ### ☠️ The kernel installed but the initramfs did not
 
 `apk add linux-fp3` can succeed at unpacking and still leave `/boot`

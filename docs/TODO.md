@@ -2363,15 +2363,40 @@ cannot be undone from the outside.
 1. Hold **power** for ~15 s to force it off.
 2. Hold **volume up** while powering on to reach the lk2nd boot menu, and pick
    the second entry (`postmarketOS-fallback`) — its `append` line was never
-   touched and still has the clean command line. If the fallback does not boot,
-   use **power + volume down** for fastboot instead and `fastboot boot` a known
-   kernel.
+   touched and still has the clean command line.
 3. Once up, undo the change; the untouched original is already saved next to it:
 
 ```sh
 sudo cp /boot/extlinux/extlinux.conf.bak-aw /boot/extlinux/extlinux.conf
 grep append /boot/extlinux/extlinux.conf	# no fw_devlink=off, no regulator_ignore_unused
 ```
+
+**What was tried from the host, 2026-08-16 23:00–00:00, and what it settled.**
+The phone reached fastboot (ABL, `version-bootloader 6.A.039`, `unlocked: yes`,
+`secure: no`), which made it worth asking whether the hang could be undone
+without a hand on the phone at all. It cannot, and the attempts are worth
+recording because each one looked promising:
+
+| attempt | result |
+|---|---|
+| `fastboot flash boot_b <our boot image>`, then reboot | flash OKAY, phone returns to fastboot, `slot-retry-count:b` still **6** — never attempted, so the image is rejected by validation |
+| same, with the boot header's `id` (SHA1) field filled in | same rejection; the empty `id` was not the difference |
+| `fastboot boot` with the gzip `vmlinuz` + appended dtb | `FAILED (remote: 'dtb not found')` |
+| `fastboot boot` with the raw `Image` + appended dtb | `FAILED (remote: 'unknown reason')` — so the appended dtb is only found on an uncompressed kernel |
+| same, with the ramdisk moved to `0x82000000` (the 28 MB kernel at `0x80008000` overlapped `0x81000000`) | unchanged: `unknown reason` |
+| **`fastboot boot lk2nd.img`** — the image that boots perfectly when flashed | `FAILED (remote: 'unknown reason')` |
+
+The last row is the one that matters: **`fastboot boot` fails identically for a
+known-good image**, so it is broken on this bootloader for every input, and the
+whole dtb / `id` / load-address investigation above was chasing a message that
+was never about the image. The lesson is now rule 22 in `fp3-kernel-test`, and
+the procedure lives in [`../deploy/README.md`](../deploy/README.md) under *If the
+phone does not boot at all*. `lk2nd.img` was flashed back to `boot_b` afterwards,
+so the normal boot chain is intact and the button press is all that is missing.
+
+☠️ The fastboot USB link freezes if a command is interrupted (an outer `timeout`
+firing mid-transfer is enough) and every later command then hangs; a
+`USBDEVFS_RESET` on the device node clears it immediately.
 
 **Also left on the device, all deliberate and all reversible from a shell:**
 
