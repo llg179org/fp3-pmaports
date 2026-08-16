@@ -1,0 +1,261 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?=
+ <lajoshazilg@gmail.com>
+Date: Sat, 16 Aug 2026 09:00:00 +0200
+Subject: [PATCH] spa: libcamera: Carry array controls through the node
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Every array-typed camera control is dropped: control_details_to_pod()
+refuses to describe one and control_value_from_pod() refuses to parse
+one, so an application talking to the camera through PipeWire cannot see
+that the control exists, let alone set it.
+
+The one that matters in practice is AfWindows. Without it a viewfinder
+can ask the camera to focus, but not where - so "tap to focus" focuses
+on the middle of the frame whatever the user tapped, on any camera
+reached through PipeWire. On a Fairphone 3 the node published exactly
+AfMode, AfMetering, AfTrigger and LensPosition, and no property carried
+the tap position.
+
+There is no POD type for a rectangle. struct spa_region in
+spa/utils/defs.h has exactly libcamera's shape, but it is not in the
+type enum and has neither a builder nor a parser, so a rectangle is
+flattened to four int32 in x, y, width, height order and an array of n
+rectangles to 4n of them. Arrays of int32 and of float go through
+unflattened.
+
+The property is described with an element range plus
+SPA_PROP_INFO_container of SPA_TYPE_Array, which is how
+SPA_PROP_channelVolumes describes itself in the audioconvert plugin.
+Flattening loses which bound belongs to which component of the
+rectangle, so the range published is the one that holds every component
+of libcamera's minimum and maximum. That is wider than the true
+constraint rather than narrower - the direction that cannot reject a
+window the camera would have accepted - and it is stated in the code
+rather than left to be discovered.
+
+Both POD shapes an array value can arrive in are accepted. A client that
+knows the property's type sends an array; one that does not sends a
+struct, because spa_json_to_pod_part() has only the static type table to
+go on, every camera control is published past SPA_PROP_START_CUSTOM and
+so appears in no table, and with no type it turns a JSON array into a
+struct of ints. That is what pw-cli produces, and refusing it would let
+the transport decide whether a control can be set at all.
+
+control_value_to_pod() still declines arrays. It is reached only for
+controls that enumerate their permitted values, and no array control
+does; leaving it alone keeps the change to the path that was measured.
+
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+---
+--- a/spa/plugins/libcamera/libcamera-source.cpp
++++ b/spa/plugins/libcamera/libcamera-source.cpp
+@@ -4,12 +4,14 @@
+ /* SPDX-FileCopyrightText: Copyright © 2021 Wim Taymans <wim.taymans@gmail.com> */
+ /* SPDX-License-Identifier: MIT */
+ 
++#include <algorithm>
+ #include <array>
+ #include <cstddef>
+ #include <limits>
+ #include <optional>
+ #include <type_traits>
+ #include <utility>
++#include <vector>
+ 
+ #include <sys/mman.h>
+ 
+@@ -34,6 +36,7 @@
+ #include <spa/control/control.h>
+ #include <spa/pod/dynamic.h>
+ #include <spa/pod/filter.h>
++#include <spa/pod/parser.h>
+ 
+ #include <libcamera/camera.h>
+ #include <libcamera/control_ids.h>
+@@ -769,11 +772,101 @@
+ 	return SPA_ID_INVALID;
+ }
+ 
++/*
++ * An array control is carried as a POD array of its elements. There is no POD
++ * type for a rectangle - struct spa_region exists in defs.h and has exactly
++ * libcamera's shape, but it is not in the type enum and has no builder or
++ * parser - so a rectangle is flattened to four int32 in x, y, width, height
++ * order, and an array of n rectangles to 4n of them.
++ */
++/*
++ * Read the elements of an array-valued property as int32.
++ *
++ * A client that knows the property's type sends a POD array. One that does
++ * not sends a struct: spa_json_to_pod_part() has only the static type table
++ * to go on, every camera control is published under an id past
++ * SPA_PROP_START_CUSTOM and so appears in no table, and with no type it turns
++ * a JSON array into a struct of ints. That is what pw-cli, and anything
++ * driving the node through it, produces - so both shapes are accepted rather
++ * than making the transport decide whether a control can be set at all.
++ */
++[[nodiscard]]
++bool control_ints_from_pod(const spa_pod *value, const void *body,
++			   std::vector<int32_t>& out)
++{
++	uint32_t n_values, val_size, val_type;
++	const void *values = spa_pod_body_get_array_values(value, body,
++			&n_values, &val_size, &val_type);
++	if (values != nullptr) {
++		if (val_type != SPA_TYPE_Int || val_size != sizeof(int32_t))
++			return false;
++
++		const auto *v = static_cast<const int32_t *>(values);
++		out.assign(v, v + n_values);
++		return true;
++	}
++
++	spa_pod_parser p;
++	spa_pod_frame f;
++	if (spa_pod_parser_init_struct_body(&p, &f, value, body) < 0)
++		return false;
++
++	int32_t v;
++	while (spa_pod_parser_get_int(&p, &v) >= 0)
++		out.push_back(v);
++
++	return !out.empty();
++}
++
++[[nodiscard]]
++ControlValue control_value_array_from_pod(const libcamera::ControlId& cid,
++					  const spa_pod *value, const void *body)
++{
++	if (cid.type() == libcamera::ControlTypeRectangle) {
++		std::vector<int32_t> v;
++		if (!control_ints_from_pod(value, body, v) ||
++		    v.empty() || v.size() % 4 != 0)
++			return {};
++
++		std::vector<libcamera::Rectangle> rectangles;
++		rectangles.reserve(v.size() / 4);
++		for (size_t i = 0; i < v.size(); i += 4)
++			rectangles.emplace_back(v[i], v[i + 1], v[i + 2], v[i + 3]);
++
++		return Span<const libcamera::Rectangle>(rectangles);
++	}
++
++	uint32_t n_values, val_size, val_type;
++	const void *values = spa_pod_body_get_array_values(value, body,
++			&n_values, &val_size, &val_type);
++	if (values == nullptr || n_values == 0)
++		return {};
++
++	switch (cid.type()) {
++	case libcamera::ControlTypeInteger32: {
++		if (val_type != SPA_TYPE_Int || val_size != sizeof(int32_t))
++			return {};
++
++		const auto *v = static_cast<const int32_t *>(values);
++		return Span<const int32_t>(v, n_values);
++	}
++	case libcamera::ControlTypeFloat: {
++		if (val_type != SPA_TYPE_Float || val_size != sizeof(float))
++			return {};
++
++		const auto *v = static_cast<const float *>(values);
++		return Span<const float>(v, n_values);
++	}
++	default:
++		return {};
++	}
++}
++
+ [[nodiscard]]
+ ControlValue control_value_from_pod(const libcamera::ControlId& cid, const spa_pod *value, const void *body)
+ {
+ 	if (cid.isArray())
+-		return {};
++		return control_value_array_from_pod(cid, value, body);
+ 
+ 	switch (cid.type()) {
+ 	case libcamera::ControlTypeBool: {
+@@ -869,13 +962,37 @@
+ 	return {{ min, max, def }};
+ }
+ 
++/*
++ * The bounds of a rectangle-typed control, as the flattened int32 the array
++ * carries. libcamera states them as two rectangles - the smallest and the
++ * largest window that may be asked for - and flattening loses which component
++ * each bound belongs to, so take the range that holds every component of both.
++ * It is wider than the true constraint rather than narrower, which is the
++ * direction that cannot reject something the camera would have accepted.
++ *
++ * The default is the low end of that range and carries no meaning of its own:
++ * a rectangle's default is four numbers and the range can only state one.
++ */
++[[nodiscard]]
++std::array<int32_t, 2> rectangle_info_to_range(const libcamera::ControlInfo& cinfo)
++{
++	const Rectangle min = cinfo.min().get<Rectangle>();
++	const Rectangle max = cinfo.max().get<Rectangle>();
++
++	const int32_t lo = std::min({ min.x, min.y,
++				      static_cast<int32_t>(min.width),
++				      static_cast<int32_t>(min.height) });
++	const int32_t hi = std::max({ max.x, max.y,
++				      static_cast<int32_t>(max.width),
++				      static_cast<int32_t>(max.height) });
++
++	return {{ lo, std::max(lo, hi) }};
++}
++
+ [[nodiscard]]
+ spa_pod *control_details_to_pod(spa_pod_builder& b,
+ 				const libcamera::ControlId& cid, const libcamera::ControlInfo& cinfo)
+ {
+-	if (cid.isArray())
+-		return nullptr;
+-
+ 	auto id = control_to_prop_id(cid.id());
+ 	spa_pod_frame f;
+ 
+@@ -922,6 +1039,18 @@
+ 					0);
+ 			break;
+ 		}
++		case ControlTypeRectangle: {
++			if (!cid.isArray())
++				return nullptr;
++
++			auto [ min, max ] = rectangle_info_to_range(cinfo);
++
++			spa_pod_builder_add(&b,
++					SPA_PROP_INFO_type, SPA_POD_CHOICE_RANGE_Int(
++							min, min, max),
++					0);
++			break;
++		}
+ 		default:
+ 			return nullptr;
+ 		}
+@@ -958,6 +1087,17 @@
+ 		}
+ 	}
+ 
++	/*
++	 * SPA_PROP_INFO_type states what one element may be; the container
++	 * says how many of them the property carries. Modelled on
++	 * SPA_PROP_channelVolumes in the audioconvert plugin, which publishes
++	 * an element range and this container together.
++	 */
++	if (cid.isArray())
++		spa_pod_builder_add(&b,
++				SPA_PROP_INFO_container, SPA_POD_Id(SPA_TYPE_Array),
++				0);
++
+ 	return reinterpret_cast<spa_pod *>(spa_pod_builder_pop(&b, &f));
+ }
+ 
+-- 
+2.51.0
+
