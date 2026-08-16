@@ -1384,3 +1384,24 @@ upstream clone that is never pushed, so the aport still cannot be rebuilt from
 this repo alone. Before copying it across, establish where it came from and
 under what licence: a binary blob with no provenance is worse in a public
 repository than a missing one, and the README has no row for it.
+
+## `apcs-cpu0-pll` fails to lock, and it took the phone down
+
+`apcs-cpu0-pll failed to enable!` — `wait_for_pll()` returning `-ETIMEDOUT`
+from `alpha_pll_huayra_set_rate()` under `sugov_work`, 266 times in one boot on
+2026-08-15/16, ending in an unclean power cut with no shutdown sequence in the
+journal. Evidence and the analysis are in
+[`docs/power/RUNBOOK.md`](power/RUNBOOK.md); the raw capture is
+[`docs/power/2026-08-16_apcs-cpu0-pll-lock-failures.txt`](power/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
+
+Two reasons this outranks the power numbers it was found under. It makes the
+device **unreliable** — an unclean cut can corrupt the rootfs and did once
+already cost a boot to fsck elsewhere in this port. And `clk-alpha-pll.c` has
+no retry on this path, so a transient lock failure is fatal to that frequency
+transition rather than merely slow.
+
+Not yet known: whether it is voltage-dependent (it started at the lowest
+battery voltage of the session, but recurred while charging at 3.89 V), whether
+it is specific to the little cluster, and whether it predates the current base.
+The first test is a fixed cpufreq sweep at high and at low battery, counting
+failures — not another power leg, which would only measure this.
