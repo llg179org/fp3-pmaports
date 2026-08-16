@@ -1873,3 +1873,60 @@ requires `rc == 0`, so it calls a working speaker broken. Open: judge it the way
 23 does, and separately find out why 1 kHz comes back with its sixth harmonic
 dominant — the amp runs at 0 dB (`RX Volume` 255) by default, so clipping is the
 first thing to rule out.
+
+### The transition reproduced on one boot, and what it costs to measure it
+
+Measured 2026-08-16, evening, with the jack plugged in. The whole day's
+uncertainty came from comparing states across boots; a before/after pair on a
+**single** boot settles it. Both halves used the same validated instrument, the
+mixer round-trip in `24-speaker-amp`:
+
+```sh
+fp3-selftest --only speaker-amp                     # before
+fp3-selftest --acoustic --only audio-acoustic,audio-headset
+fp3-selftest --only speaker-amp                     # after
+```
+
+| | `RX Volume` | |
+|---|---|---|
+| before the acoustic run | readable and writable at **255** | the amp answers |
+| after the acoustic run | reads **0**, writing it back fails | gone for the rest of the boot |
+
+So an acoustic run is what flips it, the flip is one-way, and only a reboot
+restores it. A rebind does not: unbinding warns three times at
+`_regulator_put+0x5c` and the re-probe then fails with `Chip ID check failed,
+-EIO`, so the driver cannot talk to the chip it just reset either.
+
+The `0` is a **failed read**, not a written value: `aw8898_mute()` uses
+`PWMCTRL`'s hard-mute bit, not the volume register, so nothing in the driver
+writes 0 to `HAGCCFG7`. `amixer` prints 0 because the read returned `-EIO`, and
+the kernel logs `ASoC error (-5)` from `soc_component_read_no_lock()` at the
+same moment.
+
+Still open: which operation inside the acoustic run does it. The suspect is the
+end of the stream — the only surviving `aw8898_set_power(aw8898, false)` is on
+`SND_SOC_DAPM_POST_PMD`, and a chip in power-down cannot be woken by a write
+that has to cross the bus it just stopped answering. The startup path no longer
+powers down on a clock miss (it warns `playing anyway` and returns 0), so that
+earlier one-way door is already closed and is not this one.
+
+☠️ **Two instruments lied for most of an hour, and both were unvalidated.**
+
+- A hand-rolled raw-I²C read through `/dev/i2c-N` reported the chip NAKing while
+  the driver's own `regmap_read_poll_timeout()` was succeeding in the same
+  second. It had never once been shown returning a chip ID.
+- Reading `/sys/kernel/debug/regmap/<dev>/registers` with `cache_bypass=1`
+  reported every register as `XXXX` on a chip that was answering fine. That dump
+  walks all 256 addresses live, and this chip implements a handful, so a
+  wholesale `XXXX` is the normal reading for a *healthy* part — it says nothing
+  about whether the device is on the bus.
+
+The mixer round-trip was the only path with a known positive behind it, and it
+is the one that gave the answer. Same rule as everywhere else in this file: a
+check that has never been seen succeeding cannot be read as a failure.
+
+☠️ And the i2c bus number moved again mid-investigation — `4-0034` on one boot,
+`2-0034` on the next, `4-0034` on the one after. Two scripts written that
+evening hardcoded bus 4 and spent several minutes measuring an empty address on
+a boot that had it on bus 2. Resolve it from the device `name`, the way
+`24-speaker-amp` does.
