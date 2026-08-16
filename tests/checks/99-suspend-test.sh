@@ -1,4 +1,5 @@
 #!/bin/sh
+# Category: power
 # Detached: yes
 # Description: the system suspends, wakes on an RTC alarm, and gets deep enough
 #

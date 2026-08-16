@@ -59,11 +59,11 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `35-pulse` | userspace has a real sink and the handset mic — also proves the audio checks put the sound server back |
 | `40-camera` | the sensor is not merely probed but linked into CAMSS |
 | `44-camera-af-windows` | focus windows are offered in the sensor's **active pixel array** — not in whatever V4L2 format the last user of the camera left behind — and a window at either corner actually narrows the metering instead of falling back to the centre. The check leaves the sensor in a small format first, because without that step the right answer and the wrong one coincide |
-| `45-camera-af-windows-pipewire` | the same window survives the trip **through PipeWire**, which is the path every application on this device actually uses. Needs a stream open — the IPA does not exist until somebody is capturing, and a control set against an idle node measures nothing |
+| `45-camera-af-windows-pipewire` | the same window survives the trip **through PipeWire**, which is the path every application on this device actually uses. Needs a stream open — the IPA does not exist until somebody is capturing, and a control set against an idle node measures nothing — and it has to speak to the *logged-in user's* graph, not root's (see the traps below) |
 | `50-charger` | the charger reports sane values **and current actually flows** |
 | `60/65/70` | wifi connected, bluetooth powered, modem registered |
 | `98-camera-af-rail` | a system resume leaves the focus motor's supply **off**. The defect it exists for is invisible from every other angle — `runtime_status` still reads `suspended`, `active_time` does not move, dmesg says nothing — and only the regulator witnesses it. Detached, because it suspends |
-| `99-suspend` | the sleep-state menu matches `baseline/sleep-states.txt`, suspend happens and the RTC wakes it, **and the system power domain actually collapsed while it was down** — a suspend that freezes userspace but never lets the domains go still passes every outward test and saves nothing. Runs last and detached — resuming re-enumerates USB and drops the link every time |
+| `99-suspend` (category `power`) | the sleep-state menu matches `baseline/sleep-states.txt`, suspend happens and the RTC wakes it, **and the system power domain actually collapsed while it was down** — a suspend that freezes userspace but never lets the domains go still passes every outward test and saves nothing. Runs last and detached — resuming re-enumerates USB and drops the link every time |
 
 ## Rules the suite enforces
 
@@ -128,6 +128,16 @@ the audio block together, suspend last.
   and the driver then never probed — with *no* dmesg lines to find, because
   there was nothing to bind to. `40-camera` now tells this apart from a probe
   failure by checking the live device tree first.
+- **Every check runs as root, and PipeWire is a per-user service.** Root has no
+  `XDG_RUNTIME_DIR` and no graph of its own, so `pw-cli` under the runner returns
+  **zero nodes of any kind** — measured 2026-08-16. `45-camera-af-windows-pipewire`
+  read that as "no libcamera node in the PipeWire graph" and skipped: a different
+  claim from the true one, and one that reads like a fact about the device. It had
+  been proved in both directions by hand as `fp3` and never once under the runner,
+  which is exactly how a check ends up passing on nothing. Anything touching
+  `pw-cli`, `systemctl --user`, `systemd-run --user` or `journalctl --user` has to
+  cross into the session (`loginctl list-users` names it), and must report "cannot
+  reach a graph" separately from "the graph has no camera node".
 - **The sudo prompt has no trailing newline**, so it prepends itself to the
   first line of output. Send it to `/dev/null`; filtering it with `grep` deletes
   that line *including* your own first line of output.
