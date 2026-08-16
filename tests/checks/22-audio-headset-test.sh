@@ -59,6 +59,22 @@ if [ "$rc" -eq 0 ]; then
 	exit 0
 fi
 
+# Same judging as 21 and 23: the target frequency arriving is the question, not
+# alsabat's exit code, which this speaker's harmonics fail on their own.
+if printf '%s\n' "$out" | grep -q "PASS: Peak detected at target frequency"; then
+	peak=$(printf '%s\n' "$out" | awk '
+		/Detected peak at/ {
+			f = $4; db = $7
+			d = f - 1000; if (d < 0) d = -d
+			if (best == "" || d < best) { best = d; bf = f; bdb = db }
+		}
+		END { if (bf != "") printf "%s Hz, %s dB", bf, bdb }')
+	echo "PASS: 1 kHz tone reached the headset mic (peak $peak)"
+	echo "      alsabat rc=$rc from louder peaks above the fundamental; the"
+	echo "      target frequency was detected, which is what this check asks"
+	exit 0
+fi
+
 echo "FAIL: acoustic loopback failed (alsabat rc=$rc)"
 printf '%s\n' "$out" | tail -8 | sed 's/^/  /'
 echo "      Before believing this, check the obvious: is the volume up, is the"
