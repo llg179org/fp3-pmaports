@@ -1294,10 +1294,57 @@ Only `AfMode`, `AfMetering`, `AfTrigger` and `LensPosition` come back. The
 stand-in that shipped is `AfMeteringWindows` meaning *the centre 3×3 of the
 5×5 zones*, defined in the IPA, which removes the dilution but cannot aim.
 
-Fixing it properly means teaching the SPA plugin to carry rectangle controls,
-in `spa/plugins/libcamera` in the PipeWire tree, and then giving the aperture
-control layer a way to write one — `pw-cli set-param` with a rectangle array
-rather than the single number it writes today.
+### Read in the source 2026-08-16: three gates, not one
+
+PipeWire 1.6.8, `spa/plugins/libcamera/libcamera-source.cpp`. Three functions
+each open with the same bail, so an array control is invisible as well as
+unwritable:
+
+| function | what it does | line |
+|---|---|---|
+| `control_details_to_pod` | publishes the PropInfo | `if (cid.isArray()) return nullptr;` |
+| `control_value_to_pod` | publishes the current value | `if (cv.isArray()) return false;` |
+| `control_value_from_pod` | accepts a written value | `if (cid.isArray()) return {};` |
+
+and none of the three type switches has a `ControlTypeRectangle` case either.
+`AfWindows` is `Span<const Rectangle>`, so it fails both tests. That is why the
+control does not merely reject writes - it never appears in `pw-dump` at all.
+
+**The shape of the fix is already in the tree, so do not invent one.** SPA
+already carries array-valued properties: `SPA_PROP_channelVolumes` in
+`spa/plugins/audioconvert/audioconvert.c:580` publishes a PropInfo whose `type`
+describes *one element* and adds
+
+```c
+SPA_PROP_INFO_container, SPA_POD_Id(SPA_TYPE_Array));
+```
+
+to say the value is an array of them, with the value written by
+`spa_pod_builder_array(b, sizeof(float), SPA_TYPE_Float, n, vals)`. Follow that:
+
+- **PropInfo** - element range as `SPA_POD_CHOICE_RANGE_Int`, plus
+  `SPA_PROP_INFO_container = SPA_TYPE_Array`.
+- **value** - `spa_pod_builder_array(b, sizeof(int32_t), SPA_TYPE_Int, 4 * n, …)`,
+  four ints per rectangle.
+- **write** - read an Array of Int and regroup in fours.
+
+☠️ **Do not use `SPA_TYPE_Rectangle`.** It exists, and it is the wrong type:
+`spa_rectangle` is `{width, height}` only, with no origin, while libcamera's
+`Rectangle` is `{x, y, width, height}`. A window without an origin cannot aim,
+which is the entire point. Flattening to int32 is what keeps the origin.
+
+Measured caveat, so the review is not a surprise: **no PropInfo anywhere in
+PipeWire 1.6.8 publishes `container: Array` together with a range** - grep for
+`SPA_PROP_INFO_type, SPA_POD_Array` returns nothing. `channelVolumes` is the
+precedent for the *mechanism*, and it comes from an internal node rather than
+from a device plugin's generic control loop. Expect to have to show that a
+client which ignores `container` degrades sanely rather than misreading the
+element range as the whole value.
+
+Then the aperture control layer needs a way to write one; today it writes a
+single number through `pw-cli set-param`. Note there is no local `pipewire`
+aport - Alpine's lives in `community/pipewire` (`master` carries 1.6.8, matching
+the device), so this needs a new `pmaports/temp/pipewire`.
 
 ## Does centre metering recover the focus signal?
 
