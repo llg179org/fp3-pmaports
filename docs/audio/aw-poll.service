@@ -1,0 +1,11 @@
+[Unit]
+Description=FP3 diag: poll the aw8898 chip ID on the wire
+After=sysinit.target
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/aw-poll.sh
+
+[Install]
+WantedBy=multi-user.target
