@@ -953,9 +953,18 @@ consumes the value at all (`timedatectl`, ModemManager's `NetworkTimeChanged`),
 and how long after boot the modem can first answer — if registration takes
 minutes, the bootstrap has to wait for it rather than run at a fixed point.
 
-## The notification LED blinks forever after a missed call
+## ~~The notification LED blinks forever after a missed call~~ — closed 2026-08-16, it does end
 
-**Symptom:** after a missed call the LED keeps blinking; dismissing the
+**Closed on the user's own observation:** the LED stopped when *all* notifications
+were closed. So the feedback is ended after all — just not by dismissing the one
+notification that started it, which is what "forever" was inferred from. Nobody
+had tried clearing the whole tray before calling it endless.
+
+Left below as it was measured, because the mechanism is still worth knowing and
+the item may come back in the narrower form "dismissing one notification does not
+end its own LED feedback". Item 1 stays the real question if it does.
+
+**Original symptom:** after a missed call the LED keeps blinking; dismissing the
 notification does not stop it.
 
 It is **not** the camera flash — the phone exposes no flash or torch LED at all:
@@ -1775,3 +1784,55 @@ Next, in this order: drive the node directly with `pw-cli set-param <node> Props
 `v4l2-ctl -d /dev/v4l-subdev17 --get-ctrl focus_absolute` — a lens that keeps
 moving with `AfModeAuto` set puts the fault below the app, one that settles puts
 it in Snapshot.
+
+## The whole desktop draws on the CPU, by distro policy
+
+Measured 2026-08-16, and it is the answer to "is the camera using the GPU?" —
+**no, and neither is anything else GTK4.**
+
+`soc-qcom-msm8953-gpu` ships `/etc/profile.d/adreno-a506-quirks.sh`:
+
+```sh
+# Use the 'cairo' GTK renderer, so we prepare for the removal of
+# the legacy GL renderer
+export GSK_RENDERER=cairo
+```
+
+The reason given is portability, not a broken GPU — GTK is retiring its old GL
+renderer and the distro is getting ahead of it. The cost is that every GTK4
+application on the phone renders in software, the camera viewfinder included,
+which is what a stuttering viewfinder looks like. phosh itself runs with
+`GSK_RENDERER=cairo` in its environment, and every app it launches inherits it.
+
+The GL renderer works here today: with `GSK_RENDERER=gl`, EGL gives an
+**OpenGL ES 3.1 core** context on Mesa 26.1.6 / freedreno a506 under gtk4
+4.22.4, with no fallback or error. The earlier measurement of what it is worth
+was Snapshot at **130% CPU with cairo against 32% with gl**.
+
+So `/etc/profile.d/zz-fp3-gsk-renderer.sh` now sets `GSK_RENDERER=gl`; it sorts
+after the quirk, so it wins, and deleting it goes back. ☠️ **It only reaches the
+session at the next login** — the running phosh keeps the environment it was
+started with, so nothing changes until a re-login or a reboot.
+
+☠️ The renderer name is `gl`, not `ngl`.
+
+## Does the tap move anything but the focus?
+
+Asked 2026-08-16, because the middle of the frame blows out after a tap. The
+answer from the camera's own control list is **no, and it could not**:
+
+```sh
+pw-cli enum-params <camera-node> PropInfo | grep -E 'String "(Ae|Awb|Exposure|Analogue|Colour)'
+```
+
+Everything exposure-related the node publishes is a *global* control -
+`ExposureTimeMode` (Auto/Manual), `ExposureTime`, `AnalogueGainMode`,
+`AnalogueGain`, `AwbEnable`, `ColourTemperature`. There is **no** metering-window
+or metering-mode control of any kind for exposure or white balance, so nothing
+can be aimed at the tapped rectangle even in principle. And our patches write
+none of them: the only "metering" anywhere in the series is `AfMetering`, which
+is the focus one.
+
+So the blown-out centre is not the tap following the frame — it is the
+auto-exposure algorithm's own behaviour, and a separate question from the focus
+work. Not yet measured.
