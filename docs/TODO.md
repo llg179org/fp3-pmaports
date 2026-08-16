@@ -1947,3 +1947,63 @@ output, not the capture side.
 selects all three kills the amplifier in the acoustic checks and then reports
 the I²C failure from `24` — which reads as three failures with one cause. To
 learn the amp's state *before* an acoustic run, ask for it on its own first.
+
+### Retracting the retraction: the cache was the liar, and here is why
+
+Measured 2026-08-16, later the same evening. The two probes retracted above were
+right, and the mixer round-trip that overruled them was wrong. Three probes run
+within a second of each other on a fresh boot, at 28.8 s uptime:
+
+| probe | says |
+|---|---|
+| raw chip-ID read through `/dev/i2c-N` | NAK |
+| `cache_bypass=1` regmap dump | `00: XXXX` |
+| **a real write** — `cset 'RX Volume' 254` | `-EIO`, refused |
+| a `cget` of the same control | `255`, cheerfully |
+
+The `cget` is the odd one out because it never reaches the chip. The driver's
+`regmap_config` is:
+
+```c
+static const struct regmap_config aw8898_regmap = {
+	.reg_bits = 8,
+	.val_bits = 16,
+	.max_register = AW8898_MAX_REGISTER,
+	.cache_type = REGCACHE_MAPLE,
+};
+```
+
+`cache_type` with **no `volatile_reg` callback at all**, so every register is
+cacheable. Three consequences, in rising order of seriousness:
+
+1. **A read of any register can be served from the cache**, which is why `RX
+   Volume` reads 255 on an amplifier that is not on the bus.
+2. **A write of the value already cached is skipped entirely** — regmap elides
+   it — so a "write it back to itself" probe can succeed without a single bus
+   transaction. That was the flaw in `24-speaker-amp`'s first I²C arm, now
+   fixed: it moves the control by one step (0.5 dB) and puts it back, which
+   forces the transaction.
+3. **`SYSST` (0x01) is cacheable too**, and that is the register
+   `aw8898_prepare()` polls for the PLL-lock bit. After the first read of the
+   boot, `regmap_read_poll_timeout()` is polling a cached word that cannot
+   change, so a PLL that locks late can never be observed to lock. That is a
+   candidate root cause for the entire "the PLL never locks" finding of
+   2026-07-31 - not yet confirmed by a patched kernel, and stated here as a
+   hypothesis with a source basis, not as a measurement.
+
+The fix is a `volatile_reg` marking at least the status registers volatile.
+Kernel change, `audio` category.
+
+What this does **not** explain is why a real write is refused at all. That is
+still open, and the earlier claim that "the acoustic run flips it" rests on a
+before/after pair whose "before" was a cache read - so it is withdrawn too. Two
+things survive the withdrawal, because both used a real write: an `RX Volume`
+write is refused on every boot measured tonight, whether or not a stream is
+running, and it is refused equally at 254 and at 231, so the level is not the
+variable.
+
+☠️ The lesson is one level up from "validate your probe". All three of the
+evening's probes were *validated against each other* and agreed - and the
+agreement was worthless, because two of them shared a cache. **Two instruments
+that share a layer are one instrument.** The write was the only probe that had
+to touch the wire, and it was the one worth trusting.

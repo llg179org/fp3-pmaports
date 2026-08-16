@@ -44,6 +44,28 @@ if [ "$rc" -eq 0 ]; then
 	exit 0
 fi
 
+# Judge on "did the target frequency arrive", the same way 23-audio-slimbus
+# does, rather than on alsabat's exit code. alsabat fails a run on the loudest
+# peak it can see even when it has already reported the target frequency, and on
+# this speaker the loudest peak is routinely a harmonic - measured 2026-08-16,
+# 1 kHz came back with 5.5 kHz and 6 kHz above it on both the handset DMIC and
+# the headset mic. That is a distortion question, tracked in docs/TODO.md; the
+# question this check asks is whether sound crosses the air at all.
+if printf '%s\n' "$out" | grep -q "PASS: Peak detected at target frequency"; then
+	peak=$(printf '%s\n' "$out" | awk '
+		/Detected peak at/ {
+			f = $4; db = $7
+			d = f - 1000; if (d < 0) d = -d
+			if (best == "" || d < best) { best = d; bf = f; bdb = db }
+		}
+		END { if (bf != "") printf "%s Hz, %s dB", bf, bdb }')
+	echo "PASS: 1 kHz tone reached the handset mic (peak $peak)"
+	echo "      alsabat rc=$rc from louder peaks above the fundamental - the"
+	echo "      speaker distorts, which is a separate open item; the target"
+	echo "      frequency was detected, which is what this check asks"
+	exit 0
+fi
+
 echo "FAIL: acoustic loopback failed (alsabat rc=$rc)"
 printf '%s\n' "$out" | tail -8 | sed 's/^/  /'
 echo "      cmd: fp3-selftest --only speaker-amp"

@@ -52,10 +52,20 @@ echo "PASS: aw8898 present at $(basename "$amp")"
 
 audio_grab
 
-# 1. Does it answer? "RX Volume" is the amp's own register, so a write to it is
-# a round trip over I2C to the chip. Write back the value that is already there:
-# the check must not change how loud the phone is, only find out whether the
-# chip is reachable.
+# 1. Does it answer? "RX Volume" is the amp's own register, so a write to it has
+# to cross I2C to the chip.
+#
+# ☠️ It has to be a write of a DIFFERENT value. The first version of this check
+# wrote the value back that was already there, so as not to change how loud the
+# phone is - and that write never left the kernel: regmap skips a write whose
+# value the cache already holds, and the driver's regmap_config sets
+# cache_type = REGCACHE_MAPLE with no volatile_reg, so the read that precedes it
+# is served from the cache too. Both halves of the round trip could therefore
+# succeed with the amplifier absent from the bus, and on 2026-08-16 they did:
+# this arm reported the amp answering while a raw I2C chip-ID read, a
+# cache-bypassed regmap dump and a real write all said it was not there.
+#
+# So move it by one step (0.5 dB, inaudible) and put it straight back.
 vol=$(amixer -D "$AUDIO_CARD" cget "name=RX Volume" 2>/dev/null |
 	sed -n 's/^ *: values=//p' | head -1)
 
@@ -65,13 +75,18 @@ if [ -z "$vol" ]; then
 	exit 1
 fi
 
-if amixer -D "$AUDIO_CARD" -q cset "name=RX Volume" "$vol" >/dev/null 2>&1; then
-	echo "PASS: the amp answers on I2C (RX Volume readable and writable, now $vol)"
+probe=$((vol > 0 ? vol - 1 : vol + 1))
+if amixer -D "$AUDIO_CARD" -q cset "name=RX Volume" "$probe" >/dev/null 2>&1; then
+	echo "PASS: the amp answers on I2C (RX Volume moved $vol -> $probe and back)"
+	amixer -D "$AUDIO_CARD" -q cset "name=RX Volume" "$vol" >/dev/null 2>&1
 else
-	echo "FAIL: writing 'RX Volume' back its own value ($vol) failed, so the amp"
-	echo "      is not answering on I2C - every gain and enable the driver sets"
-	echo "      is being dropped, which is why nothing comes out of the speaker"
-	echo "      cmd: amixer -D hw:0 cset name='RX Volume' $vol"
+	echo "FAIL: writing 'RX Volume' ($vol -> $probe) failed, so the amp is not"
+	echo "      answering on I2C - every gain and enable the driver sets is being"
+	echo "      dropped, which is why nothing comes out of the speaker"
+	echo "      cmd: amixer -D hw:0 cset name='RX Volume' $probe"
+	echo "      ☠️ Do not believe a cget here: with no volatile_reg in the"
+	echo "      driver's regmap_config, reads come from the cache and say 255 on"
+	echo "      a chip that is not on the bus at all."
 	fail=1
 fi
 
