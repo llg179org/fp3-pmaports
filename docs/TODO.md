@@ -1708,3 +1708,70 @@ it **fails today**, which is the honest state: the battery is 27 ok / 1 failed,
 and the one failure is a loudspeaker that does not work.
 
 Open, and not diagnosed further than the 2026-07-31 measurement.
+
+## ~~The lock screen went black~~ — settled 2026-08-16: it points at a wallpaper that is not installed
+
+phosh draws the lock screen from `org.gnome.desktop.screensaver picture-uri`,
+which is a **different key** from the desktop wallpaper
+(`org.gnome.desktop.background picture-uri`). Its value here was
+`file:///usr/share/backgrounds/gnome/adwaita-timed.xml`, and that file does not
+exist on this system — `gnome-backgrounds` is not installed — so phosh fell back
+to plain black while the desktop behind it stayed green.
+
+```sh
+gsettings set org.gnome.desktop.screensaver picture-uri \
+  file:///usr/share/wallpapers/postmarketos/contents/images/2000x2000.png
+```
+
+Verified by screenshot: locked before the change, black with the clock and the
+notification; locked after it, the pmOS wallpaper. The lock screen was never
+broken — only its background was missing.
+
+☠️ **This was not caused by enabling the autologin, but it became visible
+because of it.** With `[initial_session]` off, the first screen after a boot was
+phrog, the greeter, which draws its own green background; that is what "the
+screen used to be green" was. With autologin on, phrog never runs and the first
+screen you meet is phosh's own lock screen, which had this fault all along. A
+change in *which component you see* looks exactly like a regression in the one
+you were seeing before.
+
+## Tap focus still hunts, and the obvious explanation is not the one
+
+Reported 2026-08-16: with `focus-mode` set to `tap` the camera keeps focusing by
+itself, which is what `continuous` is for.
+
+Measured so far, and it rules more out than in:
+
+- **The camera's own default is continuous.** `AfMode`'s PropInfo carries
+  `Int 2` as its default, i.e. `AfModeContinuous`. So a mode that is never
+  written does not leave the camera idle — it leaves it hunting, which is
+  exactly the reported symptom. Anything that drops the write reproduces this.
+- **`request_autofocus()` is all-or-nothing:** one missing control, or one that
+  is not a labelled choice, and it returns without writing *any* of the pair -
+  including the `AfMode` that matters. Since 0021 added `AfMetering` to every
+  request, that looked like the answer.
+- **It is not.** Both are published properly:
+  `AfMetering` is an enum with labels `AfMeteringAuto`/`AfMeteringWindows`, and
+  `AfMode` an enum with `AfModeManual`/`AfModeAuto`/`AfModeContinuous`. Every
+  name and value `wanted()` asks for exists.
+
+  ```sh
+  pw-cli enum-params <camera-node> PropInfo   # as the session user
+  ```
+
+☠️ **The measurement that would settle it cannot be driven from a shell.**
+Launching Snapshot over SSH as the session user starts the process but never
+gets a viewfinder: no `org.freedesktop.portal.Camera` request appears in its
+log, and `aperture` then logs "Camera never offered its focus controls; giving
+up" — which is the app correctly reporting that no camera turned up, **not**
+evidence about the focus path. Two runs were made this way before that was
+noticed, and the lens sat at 872 through both because nothing was streaming.
+The `giving up` line only means something in a session where `Capture at ...`
+was logged first.
+
+Next, in this order: drive the node directly with `pw-cli set-param <node> Props
+'{ <AfMode id>: 1 }'` while the camera streams (the recipe is in
+`tests/checks/45-camera-af-windows-pipewire-test.sh`) and watch
+`v4l2-ctl -d /dev/v4l-subdev17 --get-ctrl focus_absolute` — a lens that keeps
+moving with `AfModeAuto` set puts the fault below the app, one that settles puts
+it in Snapshot.
