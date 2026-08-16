@@ -1,0 +1,28 @@
+# Expected contents of /sys/power/mem_sleep, one token per line, brackets
+# stripped, order irrelevant. Checked by 99-suspend-test.sh.
+#
+# Measured 2026-08-16 on 7.1.3-postmarketos-qcom-msm8953: s2idle and nothing
+# else. That is a firmware fact, not a kernel or userspace one, and it cannot
+# regress by accident:
+#
+#   * On arm64 the only writer of "deep" is suspend_set_ops(), and the only
+#     caller that can reach it on this SoC is psci_init_system_suspend()
+#     (drivers/firmware/psci/psci.c). Every other suspend_set_ops() caller in
+#     mainline lives under arch/arm/mach-*, arch/mips or arch/powerpc - there
+#     is no qcom arm64 platform_suspend_ops at all.
+#   * That function registers the ops if and only if
+#     psci_features(SYSTEM_SUSPEND) != PSCI_RET_NOT_SUPPORTED, i.e. if the
+#     secure firmware answers the SMC. It logs nothing either way, so its
+#     absence leaves no trace in dmesg to grep for - this file is the trace.
+#   * CONFIG_SUSPEND=y is set, so the other early return is not the reason.
+#
+# Therefore neither the switch to systemd nor a kernel version bump can have
+# taken "deep" away: userspace never touches mem_sleep, and no mainline kernel
+# version has ever had a non-PSCI route to it here. Only the TZ firmware could
+# change this answer.
+#
+# If "deep" ever does appear, the check fails on purpose. That is news worth
+# reading, not a defect: it would mean the firmware started advertising
+# SYSTEM_SUSPEND, and the depth measurement below should be re-run to see
+# whether it actually buys anything over what s2idle already reaches.
+s2idle

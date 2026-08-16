@@ -275,6 +275,70 @@ by tuning userspace is the wrong lever; the lever is a `deep` state, which means
 the RPM vote path. Before any of that, get the awake baseline honest (above) —
 a ratio against a wrong reference cannot say how much is left on the table.
 
+#### ☠️ Correction, 2026-08-16: the paragraph above is wrong, and so is its lever
+
+The *observation* stands — `mem_sleep` really is `[s2idle]` only — but the
+inference drawn from it does not. Two things were assumed and neither survived
+being measured.
+
+**1. s2idle does reach the system power collapse here.** genpd counts entries
+made from the s2idle path in a separate column, so this is directly readable
+rather than argued. Around one 20 s RTC-woken suspend:
+
+```sh
+cat /sys/kernel/debug/pm_genpd/power-domain-system/idle_states
+```
+
+| domain | state | `S2idle` before → after |
+|---|---|---|
+| `power-domain-system` | S0 | 0 → **1** |
+| `power-domain-cluster0` | S2 | 0 → **1** |
+| `power-domain-cluster1` | S2 | 0 → **1** |
+
+So the claim that "the SoC never reaches VDD_MIN or XO shutdown" is not what the
+counters say: the *system* domain collapsed, from s2idle, on the first try. The
+mechanism the paragraph reached for — every subsystem dropping its RPM votes —
+is evidently already happening, because the domain could not have gone down
+otherwise. Whatever else explains the 0.475 ratio, it is not "suspend never gets
+deep".
+
+**2. `deep` is not a lever anybody can pull from here.** On arm64 the only
+writer of `deep` is `suspend_set_ops()`, and the only caller that can reach it
+on this SoC is `psci_init_system_suspend()` in `drivers/firmware/psci/psci.c`
+(read on `7.1.3/main`, the base we run):
+
+```c
+	if (!IS_ENABLED(CONFIG_SUSPEND))
+		return;
+	ret = psci_features(PSCI_FN_NATIVE(1_0, SYSTEM_SUSPEND));
+	if (ret != PSCI_RET_NOT_SUPPORTED)
+		suspend_set_ops(&psci_suspend_ops);
+```
+
+`CONFIG_SUSPEND=y` is set, so the absent `deep` means the secure firmware
+answered `NOT_SUPPORTED` to the `SYSTEM_SUSPEND` SMC. Every other
+`suspend_set_ops()` caller in mainline lives under `arch/arm/mach-*`,
+`arch/mips` or `arch/powerpc` — there is no qcom arm64 platform suspend op to
+add one from. It is therefore a **TZ firmware fact**, not a kernel or config
+one, and it is reachable neither by patching the kernel nor by tuning userspace.
+
+☠️ **And it disposes of the "did a regression take it away?" question.**
+Userspace never touches `mem_sleep` — it is written at kernel init, before
+systemd exists — so the switch to systemd cannot have removed it, and no
+mainline kernel version ever had a non-PSCI route to it on this SoC. Note also
+that `psci_init_system_suspend()` logs **nothing** either way, so its verdict
+leaves no trace in `dmesg` to grep for; `tests/baseline/sleep-states.txt` is
+that trace, and `tests/checks/99-suspend-test.sh` is what notices it changing.
+
+The check also asserts the *depth*, because that is the property that can
+actually regress: a suspend that freezes userspace, holds one wakeup source and
+never lets the domains go still passes every outward test — screen off, phone
+unresponsive, RTC wakes it — while saving almost nothing. The `S2idle` counter
+is the only thing that separates those two cases. Proven in both directions on
+2026-08-16: PASS live on the device; FAIL with a baseline claiming a lost state;
+FAIL with `deep` injected over `mem_sleep` by bind-mount; SKIP against a fixture
+with no `S2idle` column.
+
 ### ☠️★★★ The awake baseline was not idle: the CPU0 PLL was failing to lock
 
 Found 2026-08-16 while looking for why phase B measured 245 mA. The previous

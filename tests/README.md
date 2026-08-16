@@ -60,7 +60,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `40-camera` | the sensor is not merely probed but linked into CAMSS |
 | `50-charger` | the charger reports sane values **and current actually flows** |
 | `60/65/70` | wifi connected, bluetooth powered, modem registered |
-| `99-suspend` | suspend and RTC wake. Runs last and detached — resuming re-enumerates USB and drops the link every time |
+| `99-suspend` | the sleep-state menu matches `baseline/sleep-states.txt`, suspend happens and the RTC wakes it, **and the system power domain actually collapsed while it was down** — a suspend that freezes userspace but never lets the domains go still passes every outward test and saves nothing. Runs last and detached — resuming re-enumerates USB and drops the link every time |
 
 ## Rules the suite enforces
 
