@@ -1678,7 +1678,7 @@ It is also, as of today, visible: `10-health` greps for `WARNING:` and prints
 this line with its count on every run, from `journalctl -k -b` rather than from
 a ring buffer these same warnings had been evicting.
 
-## The loudspeaker is silent, and the battery was green anyway
+## The loudspeaker amplifier dies partway through a session
 
 Measured 2026-08-16 on 7.1.3-r57. The AW8898 smart amplifier at `3-0034` is
 present and probes, and then does nothing useful:
@@ -1836,3 +1836,40 @@ is the focus one.
 So the blown-out centre is not the tap following the frame — it is the
 auto-exposure algorithm's own behaviour, and a separate question from the focus
 work. Not yet measured.
+
+
+### Corrected the same day: it is not permanently dead
+
+Everything above was measured on a boot that had been up about three hours. On a
+**fresh boot** the amplifier is healthy: `RX Volume` reads and writes at 255, the
+1 s silent playback draws no clock complaint at all, and the speaker is properly
+loud — the same 1 kHz tone that moved the handset mic's peak to 95 before the
+reboot moved it to **1466** (RMS 765.7 against 3.2 in silence) after it. The
+`24-speaker-amp` check passed in the battery on that boot: 28 ok, 0 failed.
+
+So the fault is a **transition during a session**, not a constant, and the open
+question is what causes it. The 2026-07-31 measurement said the same thing in
+other words — a cold boot heals it until the first failed playback attempt —
+and the driver's error path (`aw8898_set_power(false)` after the PLL wait times
+out) is the mechanism that would make one failure permanent for the rest of the
+boot.
+
+☠️ **What I wrote this morning — "the loudspeaker is silent", "this check has
+never been seen to PASS" — was a state of one boot stated as a property of the
+phone.** Everything measured was real; the generalisation was not, and it took
+one reboot to break it. The corrected claims are in the check headers.
+
+### And the acoustic check is now failing for a third reason
+
+On the healthy boot `21-audio-acoustic` still fails, but the numbers changed
+completely: alsabat reports **peak 6000.00 Hz at 22.21 dB, total 35.3 dB in a
+5 Hz band** — a real, strong acoustic signal, at the sixth harmonic of the 1 kHz
+it played. That is distortion, not silence.
+
+`23-audio-slimbus` passes on exactly this shape, because it judges whether the
+target frequency was detected rather than trusting alsabat's exit code (it
+records `rc=21 from sidebands above the fundamental`). `21-audio-acoustic` still
+requires `rc == 0`, so it calls a working speaker broken. Open: judge it the way
+23 does, and separately find out why 1 kHz comes back with its sixth harmonic
+dominant — the amp runs at 0 dB (`RX Volume` 255) by default, so clipping is the
+first thing to rule out.
