@@ -1294,14 +1294,55 @@ shows up much later than the change that caused it. The one-line check is in
 > layered, and the order matters because each layer is untestable until the one
 > below it carries a value:
 >
-> 1. **libcamera / the soft IPA** — give `AfWindows` a real `ControlInfo` (min a
->    usable smallest window, max the sensor's active area) and make the AF
->    algorithm honour the windows when `AfMetering` is `Windows`, instead of
->    falling back to `selectCentre()`. Note the pipeline handler here is
->    **`simple`** with the **software ISP** (`IPASoft`/`IPASoftAf`), so this is
->    `src/ipa/simple/algorithms/af.cpp`, not a vendor IPA.
+> 1. **libcamera / the soft IPA** — ✅ **done 2026-08-16**, patch `0106`
+>    (`libcamera` r15). See the correction below: the algorithm already metered
+>    arbitrary windows, so the work was narrower and in different places than
+>    this line assumed.
 > 2. **PipeWire** — the three `isArray()` gates below.
 > 3. **aperture / Snapshot** — send a rectangle array rather than a scalar.
+>
+> #### ☠️ Correction, 2026-08-16: layer 1 was not what it looked like
+>
+> "Make the AF algorithm honour the windows instead of falling back to
+> `selectCentre()`" was **wrong** — `Af::selectZones()` has metered an arbitrary
+> set of windows since the autofocus went in, and `queueRequest()` already
+> called it. Reading the source before writing any of it turned one guessed
+> defect into three measured ones:
+>
+> * **the degenerate `ControlInfo` is real**, and its cause is a comment that
+>   promised something the plumbing cannot do: *"the bounds are filled in at
+>   `configure()` time"*. They never were, and they never could have been — the
+>   `ControlInfoMap` a camera advertises is taken **once**, when `SoftwareIsp`
+>   constructs the IPA (`software_isp.cpp`, `ipa_->init(…, ipaControls, …)`),
+>   and is never read again. `context_.sensorInfo = sensorInfo` happens in
+>   `IPASoftSimple::init()` *before* `createAlgorithms()`, so `Af::init()` is
+>   where the size is both available and effective.
+> * **`AfWindows` was applied under `AfMeteringAuto` too**, contrary to the
+>   control's own documentation (*"used by the AF algorithm when AfMetering is
+>   set to AfMeteringWindows"*), and the reverse order was worse: switching to
+>   `AfMeteringWindows` **after** windows had been given did nothing at all,
+>   because the old `windowsSet_` flag made that branch a no-op and the zones
+>   stayed on the whole frame. Both controls are now kept as requested and the
+>   zones derived from the pair, so the result no longer depends on arrival
+>   order.
+> * **`selectZones()` silently metered the whole frame** when no window
+>   survived clipping — the one thing a caller asking for windowed metering did
+>   not ask for. It now reports whether it selected anything, and windowed
+>   metering with no usable window falls back to the centre.
+>
+> ☠️ **The coordinate space is a deviation, stated rather than hidden.**
+> `AfWindows` is documented as being in `ScalerCropMaximum` pixels; the simple
+> pipeline handler publishes no such property (`git grep ScalerCropMaximum` hits
+> only `rpi` and `rkisp1`), so there is nothing there for an application to
+> read. The IPA measures against the software ISP's **output frame**, and the
+> control's own maximum now states that space, which is machine-readable and is
+> what an application computes a tap position in anyway.
+>
+> Found on the way and fixed in `0102`: `toMicroseconds()` shadowed `exposure`,
+> which a host build with `-Werror -Wshadow` rejects. The device build does not
+> use those flags, so the defect had shipped. **Build a userspace patch on the
+> host before packaging it** — it is minutes, and it is a different compiler
+> invocation from the one the aport uses.
 >
 > One design point from yesterday is now confirmed rather than assumed: there is
 > **no `SPA_TYPE_Region` POD type**. `struct spa_region` exists in

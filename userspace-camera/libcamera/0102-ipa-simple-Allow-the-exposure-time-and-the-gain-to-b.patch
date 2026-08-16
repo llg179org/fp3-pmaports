@@ -1,4 +1,4 @@
-From 108c74cda23fced1b4230d968444601249c0df88 Mon Sep 17 00:00:00 2001
+From a7befd34eff55df3f3872d8453e92cf1bce1d81a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?=
  <lajoshazilg@gmail.com>
 Date: Sun, 2 Aug 2026 05:01:29 +0200
@@ -34,8 +34,8 @@ Assisted-by: Claude:claude-opus-5
  src/ipa/simple/algorithms/agc.cpp | 148 +++++++++++++++++++++++++++++-
  src/ipa/simple/algorithms/agc.h   |   6 ++
  src/ipa/simple/ipa_context.h      |  30 ++++++
- src/ipa/simple/soft_simple.cpp    |  36 ++++++++
- 4 files changed, 216 insertions(+), 4 deletions(-)
+ src/ipa/simple/soft_simple.cpp    |  37 ++++++++
+ 4 files changed, 217 insertions(+), 4 deletions(-)
 
 diff --git a/src/ipa/simple/algorithms/agc.cpp b/src/ipa/simple/algorithms/agc.cpp
 index 2f7e040..df11472 100644
@@ -317,10 +317,10 @@ index b3abc90..b818708 100644
  	IPAActiveState activeState;
  	FCQueue<IPAFrameContext> frameContexts;
 diff --git a/src/ipa/simple/soft_simple.cpp b/src/ipa/simple/soft_simple.cpp
-index f89fadf..d93b88d 100644
+index f89fadf..00f21aa 100644
 --- a/src/ipa/simple/soft_simple.cpp
 +++ b/src/ipa/simple/soft_simple.cpp
-@@ -127,6 +127,42 @@ int IPASoftSimple::init(const IPASettings &settings,
+@@ -127,6 +127,43 @@ int IPASoftSimple::init(const IPASettings &settings,
  			<< context_.lens.max << " (default " << context_.lens.def << ")";
  	}
  
@@ -335,7 +335,8 @@ index f89fadf..d93b88d 100644
 +		const utils::Duration lineDuration =
 +			sensorInfo.minLineLength * 1.0s / sensorInfo.pixelRate;
 +		const auto toMicroseconds = [&](int32_t lines) {
-+			return static_cast<int32_t>((lineDuration * lines).get<std::micro>());
++			const utils::Duration duration = lineDuration * lines;
++			return static_cast<int32_t>(duration.get<std::micro>());
 +		};
 +		const auto toGain = [&](int32_t code) {
 +			return camHelper_ ? camHelper_->gain(code)

@@ -1,0 +1,245 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Lajosh=C3=A1zi=2C=20L=C3=A1szl=C3=B3=20Gergely?=
+ <lajoshazilg@gmail.com>
+Date: Sun, 16 Aug 2026 07:40:00 +0200
+Subject: [PATCH 106/106] ipa: simple: Give AfWindows a usable range, and honour
+ AfMetering
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+AfWindows is advertised with both bounds set to the empty rectangle:
+
+  Control: [inout] libcamera::AfWindows: [(0, 0)/0x0..(0, 0)/0x0]
+
+so an application reading the control to find out what it may ask for is
+told that the only permitted window is one with no area. The algorithm
+behind it can already meter an arbitrary window - selectZones() has been
+there since the autofocus went in - but nothing says where those windows
+live, which is the one thing the application cannot work out for itself.
+
+The bounds cannot be filled in at configure() time as the comment they
+replace intended: the ControlInfoMap a camera advertises is taken once,
+when the software ISP constructs the IPA, and is never read again. The
+sensor information is passed to init() before the algorithms are created,
+so state them there, where they are both available and effective.
+
+The space is the software ISP's output frame, which is what selectZones()
+measures a window against and what an application computes a tap position
+in. Note this deviates from the control's documentation, which puts
+AfWindows in ScalerCropMaximum pixels: the simple pipeline handler
+publishes no such property, so there would be nothing for an application
+to read. The control's own maximum states the space unambiguously
+instead.
+
+While here, derive the metered zones from AfMetering and AfWindows
+together rather than from whichever arrives last. The two controls are
+independent and may be set in either order, and acting on each where it
+is read gets both orders wrong: windows were applied even under
+AfMeteringAuto, contrary to their documented meaning, and switching to
+AfMeteringWindows after windows had been given left the metering on the
+whole frame. Keeping both as requested and recomputing from the pair
+makes the result independent of the order.
+
+selectZones() now reports whether it selected anything instead of quietly
+metering the whole frame when it did not, which is the one thing a caller
+asking for windowed metering did not ask for; windowed metering with no
+usable window falls back to the centre, as it already did when no window
+had been given at all.
+
+Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+Assisted-by: Claude:claude-opus-5
+---
+--- a/src/ipa/simple/algorithms/af.cpp
++++ b/src/ipa/simple/algorithms/af.cpp
+@@ -167,11 +167,38 @@
+ 			    ControlValue(static_cast<int32_t>(controls::AfMeteringAuto)));
+ 
+ 	/*
+-	 * One window, in pixels of the sensor's output. The bounds are filled
+-	 * in at configure() time, once the output size is known.
++	 * Windows are given in pixels of the sensor's output - the frame the
++	 * software ISP produces - which is the space selectZones() measures
++	 * them against and the space an application computes a tap position
++	 * in. AfWindows is documented as being in ScalerCropMaximum pixels
++	 * instead, but the simple pipeline handler publishes no such property,
++	 * so there is nothing there for an application to read; stating the
++	 * space in the control's own maximum is what makes it usable.
++	 *
++	 * The bounds have to be stated here and not at configure() time: the
++	 * ControlInfoMap the camera advertises is taken once, when the software
++	 * ISP constructs the IPA, and is never read again. The size the IPA is
++	 * initialised with is the same one selectZones() uses, so the two agree
++	 * by construction.
++	 *
++	 * The minimum is one pixel rather than the empty rectangle, because a
++	 * window with no area selects no zone and is not something an
++	 * application can usefully ask for. The maximum, which is also the
++	 * default, is the whole frame - metering everything, as if no window
++	 * had been given.
++	 *
++	 * Without a size there is no coordinate space to name, so the control
++	 * is not offered at all rather than offered with bounds that mean
++	 * nothing.
+ 	 */
+-	context.ctrlMap[&controls::AfWindows] =
+-		ControlInfo(Rectangle(), Rectangle(), Rectangle());
++	const Size &output = context.sensorInfo.outputSize;
++	if (!output.isNull())
++		context.ctrlMap[&controls::AfWindows] =
++			ControlInfo(Rectangle(0, 0, 1, 1), Rectangle(output),
++				    Rectangle(output));
++	else
++		LOG(IPASoftAf, Warning)
++			<< "Output size unknown, focus windows unavailable";
+ 
+ 	/*
+ 	 * LensPosition is in dioptres, so it can only be offered where somebody
+@@ -239,25 +266,26 @@
+ 
+ /**
+  * \brief Choose the focus zones the score is taken over
+- * \param[in] windows The requested windows, empty for the whole frame
++ * \param[in] windows The requested windows
++ * \return True if the windows selected at least one zone, false otherwise
+  *
+  * A window is given in pixels of the sensor's output, which is what an
+  * application can compute a tap position in. Any zone the window touches is
+  * selected; a tap therefore always selects at least one zone, however small
+  * the window it is turned into.
++ *
++ * Returning false leaves the caller to decide what a request that names no
++ * usable window should mean, rather than silently turning it into metering the
++ * whole frame - which is the one thing the caller did not ask for.
+  */
+-void Af::selectZones(IPAContext &context, Span<const Rectangle> windows)
++bool Af::selectZones(IPAContext &context, Span<const Rectangle> windows)
+ {
+-	if (windows.empty()) {
+-		zones_.fill(true);
+-		return;
+-	}
++	if (windows.empty())
++		return false;
+ 
+ 	const Size &size = context.sensorInfo.outputSize;
+-	if (size.isNull()) {
+-		zones_.fill(true);
+-		return;
+-	}
++	if (size.isNull())
++		return false;
+ 
+ 	zones_.fill(false);
+ 
+@@ -279,8 +307,22 @@
+ 				zones_[y * SwIspStats::kAfZonesX + x] = true;
+ 	}
+ 
+-	if (std::none_of(zones_.begin(), zones_.end(), [](bool z) { return z; }))
++	return std::any_of(zones_.begin(), zones_.end(), [](bool z) { return z; });
++}
++
++/**
++ * \brief Recompute the metered zones from the metering mode and the windows
++ *
++ * The two controls that decide where the score is taken from arrive
++ * independently and in either order, so neither can be acted on where it is
++ * read. Both are kept, and the zones are derived from the pair.
++ */
++void Af::updateZones(IPAContext &context)
++{
++	if (metering_ == controls::AfMeteringAuto)
+ 		zones_.fill(true);
++	else if (!selectZones(context, windows_))
++		selectCentre();
+ }
+ 
+ /**
+@@ -316,6 +358,8 @@
+ 	af.position = context.lens.def;
+ 	af.updateLens = false;
+ 
++	metering_ = controls::AfMeteringAuto;
++	windows_.clear();
+ 	zones_.fill(true);
+ 
+ 	phase_ = ScanPhase::Idle;
+@@ -358,20 +402,30 @@
+ 		}
+ 	}
+ 
++	bool remeter = false;
++
+ 	const auto &metering = controls.get(controls::AfMetering);
+ 	if (metering.has_value()) {
+-		if (metering.value() == controls::AfMeteringAuto) {
+-			zones_.fill(true);
+-		} else if (!windowsSet_) {
+-			selectCentre();
++		auto value = static_cast<controls::AfMeteringEnum>(metering.value());
++		if (value != metering_) {
++			metering_ = value;
++			remeter = true;
+ 		}
+ 	}
+ 
+ 	const auto &windows = controls.get(controls::AfWindows);
+ 	if (windows.has_value()) {
++		std::vector<Rectangle> requested(windows.value().begin(),
++						 windows.value().end());
++		if (requested != windows_) {
++			windows_ = std::move(requested);
++			remeter = true;
++		}
++	}
++
++	if (remeter) {
+ 		auto previous = zones_;
+-		windowsSet_ = true;
+-		selectZones(context, windows.value());
++		updateZones(context);
+ 
+ 		/*
+ 		 * Pointing the metering somewhere else is a statement about
+--- a/src/ipa/simple/algorithms/af.h
++++ b/src/ipa/simple/algorithms/af.h
+@@ -10,6 +10,7 @@
+ #include <array>
+ #include <vector>
+ 
++#include <libcamera/control_ids.h>
+ #include <libcamera/geometry.h>
+ 
+ #include "libcamera/internal/vector.h"
+@@ -52,7 +53,8 @@
+ 	int32_t interpolatePeak() const;
+ 	bool exposureSteady(double exposure, double gain);
+ 	void detrend();
+-	void selectZones(IPAContext &context, Span<const Rectangle> windows);
++	bool selectZones(IPAContext &context, Span<const Rectangle> windows);
++	void updateZones(IPAContext &context);
+ 
+ 	void selectCentre();
+ 	void startScan(IPAContext &context);
+@@ -106,11 +108,14 @@
+ 	unsigned int steadyCount_ = 0;
+ 	unsigned int steadyWait_ = 0;
+ 	unsigned int disagreed_ = 0;
++
+ 	/*
+-	 * Whether AfWindows was ever given, which decides what windowed
+-	 * metering falls back to.
++	 * Where the score is metered from, kept as requested rather than as
++	 * applied: AfMetering and AfWindows arrive in either order, and the
++	 * zones are derived from both.
+ 	 */
+-	bool windowsSet_ = false;
++	controls::AfMeteringEnum metering_ = controls::AfMeteringAuto;
++	std::vector<Rectangle> windows_;
+ };
+ 
+ } /* namespace ipa::soft::algorithms */
+-- 
+2.51.0
+
