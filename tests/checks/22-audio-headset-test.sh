@@ -10,10 +10,19 @@
 # ☠️ Mind which end is which. The tone comes out of the phone's SPEAKER and is
 # recorded on the HEADSET's microphone, so the thing to arrange is the headset's
 # mic in front of the phone's speaker - not the earbud next to the mic, which
-# couples nothing and reads as a quiet room. Measured 2026-08-16 with the earbud
-# at the jack mic: alsabat found only 238-250Hz and "at least 10 signals", i.e.
-# noise, while 23-audio-slimbus passed on the same run because it never leaves
-# the digital path.
+# couples nothing.
+#
+# ☠️ But do not stop at the geometry, which is all this note said when it was
+# first written and was not the reason the check failed. Both acoustic checks
+# play through the loudspeaker, and on this device the loudspeaker is silent:
+# measured the same day, the amplifier does not answer on I2C and never sees its
+# I2S clock, so a 1 kHz tone at full scale moved the handset mic's peak from 38
+# to 95 out of 32768. Every acoustic run ever logged here, back to 2026-07-29,
+# failed the same way. The geometry explanation fitted the numbers and was still
+# wrong, because a dead amplifier and an uncoupled microphone produce the same
+# quiet-room reading - which is why 24-speaker-amp now measures the amplifier on
+# its control bus, where the room cannot get in. Run that first: while it fails,
+# nothing here is a statement about the microphone.
 
 . "$DEVICE_DIR/lib/audio-state.sh"
 

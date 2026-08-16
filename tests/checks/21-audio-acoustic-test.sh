@@ -46,6 +46,10 @@ fi
 
 echo "FAIL: acoustic loopback failed (alsabat rc=$rc)"
 printf '%s\n' "$out" | tail -8 | sed 's/^/  /'
-echo "      Before believing this, check the obvious: is the volume up, is the"
-echo "      phone face-down on a soft surface, is the room quiet?"
+echo "      cmd: fp3-selftest --only speaker-amp"
+echo "      ☠️ Ask 24-speaker-amp before blaming the room. An amplifier that is"
+echo "      not answering on I2C sounds exactly like a badly placed phone from"
+echo "      here, and on this device that is what it turned out to be."
+echo "      If that check passes: is the volume up, is the phone face-down on a"
+echo "      soft surface, is the room quiet?"
 exit 1
