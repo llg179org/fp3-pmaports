@@ -26,9 +26,13 @@ while [ "$i" -lt "$SAMPLES" ]; do
 	t=$(cut -d' ' -f1 /proc/uptime)
 	# One line per device that carries the flag, so a diff names the device
 	# whose callback ran between two samples.
-	for f in /sys/devices/platform/*/state_synced \
-		 /sys/devices/platform/*/*/state_synced \
-		 /sys/devices/platform/*/*/*/state_synced; do
+	#
+	# ☠️ Walk the whole tree, not a few glob levels. Measured 2026-08-17: a
+	# three-level glob under /sys/devices/platform reached 13 of the 39 files
+	# that exist, and none of the i2c devices - so it could not have seen the
+	# amplifier's own supplier sync even if that were the cause. A null result
+	# from an instrument that does not cover the question is not evidence.
+	find /sys/devices -name state_synced 2>/dev/null | while read -r f; do
 		[ -r "$f" ] || continue
 		printf '%s %s\n' "$(cat "$f" 2>/dev/null)" "${f%/state_synced}"
 	done | sort -k2 > "$OUT/$t"
