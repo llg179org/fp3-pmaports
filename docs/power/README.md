@@ -16,6 +16,17 @@ that was named wrongly — is in [`bringup/`](bringup/README.md). This page is t
 reference; that one is the reasoning, and it is not revised when the device
 changes.
 
+## ☠️ Open, and it blocks every number below: the CPU0 PLL fails to lock
+
+Measured 2026-08-16. `apcs-cpu0-pll failed to enable!` — 266 times in one boot,
+each a `-ETIMEDOUT` out of `wait_for_pll()` while schedutil changes frequency,
+and the boot ends in an abrupt cut with no shutdown sequence. It overlapped the
+awake control leg of the S4 slope run, which is exactly the leg that has to
+reproduce a known current and did not (245 mA against ~130). Until that is
+separated, treat any absolute current on this page taken after 2026-08-15 21:49
+as suspect. Detail, evidence and the order to attack it in
+[`RUNBOOK.md`](RUNBOOK.md).
+
 ## Where the numbers stand
 
 Idle here means display off, WiFi associated, one SSH session open. It is not a

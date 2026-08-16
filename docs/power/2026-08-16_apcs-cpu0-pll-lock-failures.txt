@@ -1,0 +1,327 @@
+Aug 15 21:49:55.433036 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:49:55.433217 fp3 kernel: WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll+0xf4/0x108, CPU#5: sugov:0/113
+Aug 15 21:49:55.433391 fp3 kernel: Modules linked in: cpufreq_conservative smgr_prox smgr_accel smgr_mag smgr_gyro kfifo_buf smgr sns_smgr wcn36xx mac80211 libarc4 btqcomsmd btqca bluetooth cfg80211 ecdh_generic ecc snd_soc_wcd9335 regmap_slimbus snd_soc_wcd_classh snd_soc_wcd_mbhc wcnss_ctrl q6asm_dai q6voice_dai q6afe_dai q6routing q6voice q6afe_clocks q6adm q6asm q6afe q6cvp q6cvs snd_q6dsp_common q6mvm q6voice_common q6core apr nxp_nci_i2c qrtr_smd nxp_nci nci nfc rfkill venus_enc venus_dec videobuf2_dma_contig snd_soc_aw8898 himax_hx83112b s5k4h7 imx363 ledtrig_pattern v4l2_cci ak7375 qcom_pmic_tcpm snd_soc_apq8016_sbc aux_hpd_bridge slim_qcom_ngd_ctrl pdr_interface snd_soc_msm8916_digital qcom_wcnss_pil slimbus snd_soc_qcom_common qcom_q6v5_pas qcom_smbx nvmem_qcom_spmi_sdam leds_qcom_lpg led_class_multicolor pm8xxx_vibrator qcom_spmi_vadc qcom_spmi_adc5 qcom_pbs qcom_pon qcom_spmi_temp_alarm leds_qcom_flash qcom_vadc_common qcom_camss led_class_flash reboot_mode ipa2_lite rtc_pm8xxx bam_dma videobuf2_dma_sg venus_core virt_dma
+Aug 15 21:49:55.434095 fp3 kernel:  v4l2_mem2mem videobuf2_memops qcom_q6v5_mss videobuf2_v4l2 qcom_pil_info qcom_q6v5 v4l2_fwnode videobuf2_common v4l2_async qcom_sysmon videodev qcom_common mc i2c_qcom_cci qcom_stats qrtr rmtfs_mem qcom_memshare socinfo nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nf_conntrack zram nf_defrag_ipv6 nf_defrag_ipv4 zsmalloc zstd_compress qcom_pd_mapper qcom_pdr_msg qmi_helpers uinput rpmsg_char fuse panel_himax_hx83112b msm ubwc_config drm_client_lib mdt_loader drm_gpuvm drm_exec gpu_sched drm_display_helper cec drm_kms_helper drm drm_panel_orientation_quirks [last unloaded: cpufreq_conservative]
+Aug 15 21:49:55.434516 fp3 kernel: CPU: 5 UID: 0 PID: 113 Comm: sugov:0 Tainted: G        W           7.1.3-postmarketos-qcom-msm8953 #18 PREEMPT 
+Aug 15 21:49:55.434696 fp3 kernel: Tainted: [W]=WARN
+Aug 15 21:49:55.434865 fp3 kernel: Hardware name: Fairphone 3 (DT)
+Aug 15 21:49:55.435033 fp3 kernel: pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+Aug 15 21:49:55.435205 fp3 kernel: pc : wait_for_pll+0xf4/0x108
+Aug 15 21:49:55.435376 fp3 kernel: lr : wait_for_pll+0xf0/0x108
+Aug 15 21:49:55.435547 fp3 kernel: sp : ffff800082833ac0
+Aug 15 21:49:55.435717 fp3 kernel: x29: ffff800082833ad0 x28: 0000000000000000 x27: 0000000000000000
+Aug 15 21:49:55.435892 fp3 kernel: x26: ffff800081861000 x25: 0000000000096000 x24: 0000000000000001
+Aug 15 21:49:55.436317 fp3 kernel: x23: ffff800081465048 x22: ffff00001454fb80 x21: 0000000080000000
+Aug 15 21:49:55.436527 fp3 kernel: x20: 0000000000000000 x19: ffff8000815266b8 x18: 0000000000000002
+Aug 15 21:49:55.436739 fp3 kernel: x17: 8000000000018851 x16: 0000000000000000 x15: 0000000000000003
+Aug 15 21:49:55.436918 fp3 kernel: x14: ffff8000817f4308 x13: 0000000000000d9e x12: 0000000000000003
+Aug 15 21:49:55.437093 fp3 kernel: x11: 0000000000000000 x10: 0000000000000027 x9 : 1c8f6ee2b5c52500
+Aug 15 21:49:55.437269 fp3 kernel: x8 : 1c8f6ee2b5c52500 x7 : 6166206c6c702d30 x6 : 7570632d73637061
+Aug 15 21:49:55.437441 fp3 kernel: x5 : ffff800081a6c5e0 x4 : ffff800081a605af x3 : 0000000000000000
+Aug 15 21:49:55.437617 fp3 kernel: x2 : 0000000000000000 x1 : ffff800082833890 x0 : 00000000ffffff92
+Aug 15 21:49:55.437790 fp3 kernel: Call trace:
+Aug 15 21:49:55.437961 fp3 kernel:  wait_for_pll+0xf4/0x108 (P)
+Aug 15 21:49:55.438133 fp3 kernel:  alpha_pll_huayra_set_rate+0x16c/0x1e8
+Aug 15 21:49:55.438307 fp3 kernel:  clk_change_rate+0x1cc/0x5b0
+Aug 15 21:49:55.438481 fp3 kernel:  clk_core_set_rate_nolock+0x1f0/0x2b8
+Aug 15 21:49:55.438652 fp3 kernel:  clk_set_rate+0x9c/0x148
+--
+Aug 15 21:50:26.764894 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:50:26.765032 fp3 kernel: WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll+0xf4/0x108, CPU#5: sugov:0/113
+Aug 15 21:50:26.765161 fp3 kernel: Modules linked in: cpufreq_conservative smgr_prox smgr_accel smgr_mag smgr_gyro kfifo_buf smgr sns_smgr wcn36xx mac80211 libarc4 btqcomsmd btqca bluetooth cfg80211 ecdh_generic ecc snd_soc_wcd9335 regmap_slimbus snd_soc_wcd_classh snd_soc_wcd_mbhc wcnss_ctrl q6asm_dai q6voice_dai q6afe_dai q6routing q6voice q6afe_clocks q6adm q6asm q6afe q6cvp q6cvs snd_q6dsp_common q6mvm q6voice_common q6core apr nxp_nci_i2c qrtr_smd nxp_nci nci nfc rfkill venus_enc venus_dec videobuf2_dma_contig snd_soc_aw8898 himax_hx83112b s5k4h7 imx363 ledtrig_pattern v4l2_cci ak7375 qcom_pmic_tcpm snd_soc_apq8016_sbc aux_hpd_bridge slim_qcom_ngd_ctrl pdr_interface snd_soc_msm8916_digital qcom_wcnss_pil slimbus snd_soc_qcom_common qcom_q6v5_pas qcom_smbx nvmem_qcom_spmi_sdam leds_qcom_lpg led_class_multicolor pm8xxx_vibrator qcom_spmi_vadc qcom_spmi_adc5 qcom_pbs qcom_pon qcom_spmi_temp_alarm leds_qcom_flash qcom_vadc_common qcom_camss led_class_flash reboot_mode ipa2_lite rtc_pm8xxx bam_dma videobuf2_dma_sg venus_core virt_dma
+Aug 15 21:50:26.765542 fp3 kernel:  v4l2_mem2mem videobuf2_memops qcom_q6v5_mss videobuf2_v4l2 qcom_pil_info qcom_q6v5 v4l2_fwnode videobuf2_common v4l2_async qcom_sysmon videodev qcom_common mc i2c_qcom_cci qcom_stats qrtr rmtfs_mem qcom_memshare socinfo nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nf_conntrack zram nf_defrag_ipv6 nf_defrag_ipv4 zsmalloc zstd_compress qcom_pd_mapper qcom_pdr_msg qmi_helpers uinput rpmsg_char fuse panel_himax_hx83112b msm ubwc_config drm_client_lib mdt_loader drm_gpuvm drm_exec gpu_sched drm_display_helper cec drm_kms_helper drm drm_panel_orientation_quirks [last unloaded: cpufreq_conservative]
+Aug 15 21:50:26.765898 fp3 kernel: CPU: 5 UID: 0 PID: 113 Comm: sugov:0 Tainted: G        W           7.1.3-postmarketos-qcom-msm8953 #18 PREEMPT 
+Aug 15 21:50:26.766027 fp3 kernel: Tainted: [W]=WARN
+Aug 15 21:50:26.766157 fp3 kernel: Hardware name: Fairphone 3 (DT)
+Aug 15 21:50:26.766278 fp3 kernel: pstate: 60000005 (nZCv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+Aug 15 21:50:26.766398 fp3 kernel: pc : wait_for_pll+0xf4/0x108
+Aug 15 21:50:26.766522 fp3 kernel: lr : wait_for_pll+0xf0/0x108
+Aug 15 21:50:26.766634 fp3 kernel: sp : ffff800082833ac0
+Aug 15 21:50:26.766760 fp3 kernel: x29: ffff800082833ad0 x28: 0000000000000000 x27: 0000000000000000
+Aug 15 21:50:26.766882 fp3 kernel: x26: ffff800081861000 x25: 00000000000fd200 x24: 0000000000000001
+Aug 15 21:50:26.767012 fp3 kernel: x23: ffff800081465048 x22: ffff00001454fb80 x21: 0000000080000000
+Aug 15 21:50:26.767131 fp3 kernel: x20: 0000000000000000 x19: ffff8000815266b8 x18: 0000000000000002
+Aug 15 21:50:26.767242 fp3 kernel: x17: 8000000000018877 x16: 0000000000000000 x15: 0000000000000003
+Aug 15 21:50:26.767365 fp3 kernel: x14: ffff8000817f4308 x13: 0000000000000dc4 x12: 0000000000000003
+Aug 15 21:50:26.767480 fp3 kernel: x11: 0000000000000000 x10: 0000000000000027 x9 : 1c8f6ee2b5c52500
+Aug 15 21:50:26.767581 fp3 kernel: x8 : 1c8f6ee2b5c52500 x7 : 6166206c6c702d30 x6 : 7570632d73637061
+Aug 15 21:50:26.767704 fp3 kernel: x5 : ffff800081a6c5e0 x4 : ffff800081a61427 x3 : 0000000000000000
+Aug 15 21:50:26.767816 fp3 kernel: x2 : 0000000000000000 x1 : ffff800082833890 x0 : 00000000ffffff92
+Aug 15 21:50:26.767947 fp3 kernel: Call trace:
+Aug 15 21:50:26.768134 fp3 kernel:  wait_for_pll+0xf4/0x108 (P)
+Aug 15 21:50:26.768298 fp3 kernel:  alpha_pll_huayra_set_rate+0x16c/0x1e8
+Aug 15 21:50:26.768499 fp3 kernel:  clk_change_rate+0x1cc/0x5b0
+Aug 15 21:50:26.768643 fp3 kernel:  clk_core_set_rate_nolock+0x1f0/0x2b8
+Aug 15 21:50:26.768765 fp3 kernel:  clk_set_rate+0x9c/0x148
+--
+Aug 15 21:50:30.029245 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:50:30.029357 fp3 kernel: WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll+0xf4/0x108, CPU#5: sugov:0/113
+Aug 15 21:50:30.029458 fp3 kernel: Modules linked in: cpufreq_conservative smgr_prox smgr_accel smgr_mag smgr_gyro kfifo_buf smgr sns_smgr wcn36xx mac80211 libarc4 btqcomsmd btqca bluetooth cfg80211 ecdh_generic ecc snd_soc_wcd9335 regmap_slimbus snd_soc_wcd_classh snd_soc_wcd_mbhc wcnss_ctrl q6asm_dai q6voice_dai q6afe_dai q6routing q6voice q6afe_clocks q6adm q6asm q6afe q6cvp q6cvs snd_q6dsp_common q6mvm q6voice_common q6core apr nxp_nci_i2c qrtr_smd nxp_nci nci nfc rfkill venus_enc venus_dec videobuf2_dma_contig snd_soc_aw8898 himax_hx83112b s5k4h7 imx363 ledtrig_pattern v4l2_cci ak7375 qcom_pmic_tcpm snd_soc_apq8016_sbc aux_hpd_bridge slim_qcom_ngd_ctrl pdr_interface snd_soc_msm8916_digital qcom_wcnss_pil slimbus snd_soc_qcom_common qcom_q6v5_pas qcom_smbx nvmem_qcom_spmi_sdam leds_qcom_lpg led_class_multicolor pm8xxx_vibrator qcom_spmi_vadc qcom_spmi_adc5 qcom_pbs qcom_pon qcom_spmi_temp_alarm leds_qcom_flash qcom_vadc_common qcom_camss led_class_flash reboot_mode ipa2_lite rtc_pm8xxx bam_dma videobuf2_dma_sg venus_core virt_dma
+Aug 15 21:50:30.029956 fp3 kernel:  v4l2_mem2mem videobuf2_memops qcom_q6v5_mss videobuf2_v4l2 qcom_pil_info qcom_q6v5 v4l2_fwnode videobuf2_common v4l2_async qcom_sysmon videodev qcom_common mc i2c_qcom_cci qcom_stats qrtr rmtfs_mem qcom_memshare socinfo nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct nf_conntrack zram nf_defrag_ipv6 nf_defrag_ipv4 zsmalloc zstd_compress qcom_pd_mapper qcom_pdr_msg qmi_helpers uinput rpmsg_char fuse panel_himax_hx83112b msm ubwc_config drm_client_lib mdt_loader drm_gpuvm drm_exec gpu_sched drm_display_helper cec drm_kms_helper drm drm_panel_orientation_quirks [last unloaded: cpufreq_conservative]
+=== ALL TIMESTAMPS ===
+Aug 15 21:49:55.433036 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:50:26.764894 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:50:30.029245 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:52:09.324624 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:52:16.697950 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:52:54.061362 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:53:25.761721 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:53:39.384439 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:54:04.841397 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:55:05.453487 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:55:23.965962 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:55:41.004686 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:55:57.874020 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:56:21.300982 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:56:39.301507 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:56:41.600892 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:58:00.964688 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:58:09.681037 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:58:14.952804 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:58:31.638134 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 21:59:26.184673 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:00:14.833403 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:00:42.044492 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:01:31.529414 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:02:12.461348 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:02:17.525734 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:04:59.473133 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:05:07.852807 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:05:31.385474 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:05:38.128427 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:06:17.401363 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:06:24.217187 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:06:28.896599 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:06:30.268833 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:06:46.361067 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:08:28.021274 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:09:01.693294 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:11:25.257374 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:11:27.156677 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:11:40.448953 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:12:25.533480 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:12:38.886775 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:13:51.805299 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:13:54.881291 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:14:41.137479 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:14:45.652600 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:14:50.684372 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:14:53.129080 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:15:07.861793 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:15:11.724836 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:15:14.045732 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:15:23.484868 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:15:44.453032 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:16:18.337825 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:16:33.180800 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:16:38.676718 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:18:17.989206 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:18:56.600663 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:19:22.893168 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:19:49.485277 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:20:17.819095 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:20:36.824523 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:20:52.508522 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:21:07.638475 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:21:32.269453 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:22:04.049240 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:22:15.944546 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:22:16.105161 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:22:20.978003 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:22:30.905634 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:23:41.337413 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:23:46.525074 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:24:09.590254 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:24:37.328846 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:24:43.319157 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:25:09.741327 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:25:53.730030 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:25:59.745062 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:26:05.797027 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:26:11.153188 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:26:20.485711 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:26:22.136827 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:27:15.672892 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:30:06.313728 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:30:14.132888 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:30:28.341152 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:31:01.872941 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:31:05.804838 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:31:06.821416 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:31:15.845131 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:31:54.785378 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:32:03.421631 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:32:21.261573 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:33:34.859603 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:33:37.249000 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:33:41.009751 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:33:48.468738 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:33:51.278204 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:34:01.570133 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:34:04.148674 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:34:56.772506 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:35:23.793660 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:35:35.205147 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:35:56.749359 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:36:04.921237 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:36:09.929734 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:36:13.957598 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:36:46.973037 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:24.321086 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:35.804709 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:36.393349 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:40.832971 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:48.349267 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:37:52.853466 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:38:06.773398 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:38:10.312557 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:38:26.785325 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:40:00.333916 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:40:14.116771 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:40:15.724661 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:40:22.188849 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:40:57.720666 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:41:02.592995 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:41:51.529264 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:42:43.634014 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:42:55.097278 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:43:22.606084 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:44:03.985861 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:44:30.936750 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:44:32.204828 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:45:08.741526 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:45:23.529282 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:45:43.728424 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:45:45.753272 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:45:48.756792 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:46:34.029681 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:46:34.040566 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:47:09.017687 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:47:16.148640 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:47:29.557108 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:47:52.158127 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:48:01.417463 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:48:41.285356 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:48:54.881807 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:49:04.734352 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:49:35.521925 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:49:55.784947 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:50:07.901146 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:50:32.121261 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:51:06.389969 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:51:25.961589 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:51:44.868982 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:52:26.201598 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:52:28.448464 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:52:43.616553 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:52:54.341646 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:52:56.373052 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:53:27.977410 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:53:45.632424 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:54:36.537835 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:54:56.641331 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:55:04.292494 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:55:17.000656 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:55:29.097156 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:55:37.981245 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:55:55.834923 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:56:23.988871 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:56:47.853738 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:56:51.509241 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:57:35.448914 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:57:36.340990 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 22:59:11.485659 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:00:18.021919 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:00:40.404599 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:00:51.449206 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:01:50.997753 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:02:08.068936 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:02:45.493271 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:03:21.813159 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:03:34.328603 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:04:03.132547 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:04:25.002211 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:04:28.948641 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:04:32.244633 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:05:07.316561 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:05:35.052783 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:05:46.105319 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:05:53.740506 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:06:08.868570 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:06:35.641521 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:06:39.901285 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:06:52.925695 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:07:21.721951 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:07:44.321814 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:08:20.261049 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:09:10.749358 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:09:42.908827 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:09:58.969178 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:10:09.239271 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:10:45.185831 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:10:58.521240 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:10:59.260622 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:11:11.312678 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:11:44.324676 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:12:23.633416 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:13:34.396507 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:13:39.460604 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:13:39.845713 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:14:12.476644 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:14:14.805795 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:14:34.368950 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:14:42.237014 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:14:48.560321 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:15:00.333376 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:15:19.240915 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:15:40.968600 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:15:41.016926 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:15:52.441583 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:16:03.757240 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:16:34.652604 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:17:06.020674 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:17:43.077273 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:17:46.416396 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:18:24.504448 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:18:59.293264 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:19:48.805202 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:19:49.713133 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:19:55.773331 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:20:08.368880 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:20:14.065224 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:20:19.900857 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:21:42.673957 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:21:51.337040 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:03.188697 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:03.848543 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:26.321448 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:32.356858 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:37.388502 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:22:55.284540 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:23:01.465470 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:23:02.933013 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:23:09.909698 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:23:59.229842 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:24:47.516770 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:25:36.417544 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:25:54.580900 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:25:58.396949 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:26:49.305226 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:03.897666 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:09.317662 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:19.669047 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:21.957418 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:32.636932 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:48.373567 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:27:52.477865 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:28:27.857319 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:28:28.484800 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:29:07.297691 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:29:18.813169 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:29:20.857483 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:29:51.697187 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:30:03.841135 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:30:34.225101 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:30:40.379311 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 15 23:30:55.393869 fp3 kernel: apcs-cpu0-pll failed to enable!
+Aug 16 06:22:55.419912 fp3 kernel: apcs-cpu0-pll failed to enable!

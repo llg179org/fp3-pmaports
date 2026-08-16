@@ -274,3 +274,64 @@ the ratio is close to the ceiling of what this suspend path can give. Chasing it
 by tuning userspace is the wrong lever; the lever is a `deep` state, which means
 the RPM vote path. Before any of that, get the awake baseline honest (above) —
 a ratio against a wrong reference cannot say how much is left on the table.
+
+### ☠️★★★ The awake baseline was not idle: the CPU0 PLL was failing to lock
+
+Found 2026-08-16 while looking for why phase B measured 245 mA. The previous
+boot's kernel log carries **266 copies** of
+
+```
+apcs-cpu0-pll failed to enable!
+WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll+0xf4/0x108, CPU#5: sugov:0/113
+  wait_for_pll  <- x0 = 0xffffff92 = -110 = -ETIMEDOUT
+  alpha_pll_huayra_set_rate
+  clk_change_rate / clk_core_set_rate_nolock / clk_set_rate
+  _opp_config_clk_single / _set_opp / dev_pm_opp_set_rate
+  set_target / __cpufreq_driver_target / sugov_work
+```
+
+Every one is the little cluster's PLL (`policy0`) refusing to lock while
+schedutil tries to change frequency. Full capture:
+[`2026-08-16_apcs-cpu0-pll-lock-failures.txt`](2026-08-16_apcs-cpu0-pll-lock-failures.txt).
+
+**The timing is what matters.** The first is at 21:49:55 and they run to
+06:22:55 — several a minute at the start, thinning out later. Phase A finished
+around 21:14 and phase B ran to 23:16, so:
+
+| phase | PLL storm |
+|---|---|
+| settle | no |
+| **A (asleep)** | **no — it was over before the first failure** |
+| **B (awake control)** | **yes, from ~35 min in to the end** |
+
+So the control leg — the one whose whole job is to reproduce a current we
+already know — ran on a CPU whose frequency transitions were failing. That is
+the first concrete candidate for 245 mA against an expected 130, and it is
+testable rather than a shrug.
+
+☠️ **It does not simply invalidate the ratio, and it does not simply rescue it
+either.** The method computes `mean(|i|)_B × slope_A / slope_B`, so an inflated
+phase B raises the current *and* steepens the slope, and the two partly cancel.
+"Partly" is not a number, so the 116 mA stays withdrawn — but note the error
+direction is not knowable without redoing it.
+
+**This also killed the phone.** The previous boot's journal ends mid-line at
+06:22:57 with no shutdown sequence at all — no `Reached target Shutdown`,
+nothing — after a `mpm_pd_power_off` / `genpd_sync_power_off` warning at
+06:22:27 and a PLL failure at 06:22:55. It came back by itself. An abrupt cut
+with a preceding clock failure is not a low-battery power-off; a low-battery
+power-off is orderly and logged.
+
+**What to do next, in this order:**
+
+1. Find out whether the storm is voltage-dependent. It began at ~3.82 V raw,
+   the lowest the phone had been all session, and one more occurred in the
+   fresh boot at 3.89 V while charging — so a pure sag explanation is already
+   weakened, and it needs the actual test: repeat a fixed cpufreq sweep at high
+   and low battery and count failures. `git grep -n "failed to enable"
+   drivers/clk/qcom/clk-alpha-pll.c` shows there is no retry there at all.
+2. Only then re-run a slope leg. Any leg whose phase B overlaps the storm is
+   measuring the storm.
+3. Note that this may also be the missing half of the 130-vs-245 puzzle, which
+   was previously attributed to the sampler keeping the radio associated. Both
+   remain candidates; this one has a log line and the other does not.
