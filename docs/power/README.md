@@ -1333,3 +1333,20 @@ captured in
 [`2026-08-16_apcs-cpu0-pll-lock-failures.txt`](2026-08-16_apcs-cpu0-pll-lock-failures.txt)
 were on `apcs-cpu0-pll`. Both fail; the mix depends on what is driving them,
 which is one more reason not to read a rate off a run that did not control it.
+
+### The instrument fixed, and a clean high-voltage baseline
+
+`pll-sweep.sh` now pins every other policy to its lowest frequency under the
+userspace governor, so the cluster that is not being swept is out of the
+experiment rather than in it unmeasured. Re-run the same evening on r58:
+
+| | |
+|---|---|
+| battery | 100 %, **4.358 V** |
+| policy0 transitions | 553 |
+| failures, **all on the swept cluster** | 1 × `apcs-cpu0-pll` |
+| rate | **18 per 10 000** |
+
+That is the number a voltage ramp has to be read against. It also shows how much
+the unpinned version was measuring the wrong thing: the same script before the
+fix attributed 90 failures of the *other* cluster to policy0's transition count.

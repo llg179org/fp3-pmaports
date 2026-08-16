@@ -64,6 +64,26 @@ gov_before=$(cat "$POL/scaling_governor")
 freqs=$(cat "$POL/scaling_available_frequencies")
 trans_before=$(cat "$POL/stats/total_trans")
 
+# ☠️ Pin every other policy, or the measurement is about the wrong cluster.
+# The first version of this script swept policy0 and reported its transition
+# count next to a failure count that was 90 apcs-cpu4-pll against 1
+# apcs-cpu0-pll: the big cluster was still on schedutil and was being driven by
+# the sweep's own CPU load, so numerator and denominator described different
+# hardware. Holding the others at one frequency under the userspace governor
+# takes them out of the experiment instead of leaving them in it unmeasured.
+others=""
+for p in /sys/devices/system/cpu/cpufreq/policy*; do
+	[ "$p" = "$POL" ] && continue
+	[ -w "$p/scaling_governor" ] || continue
+	others="$others $p"
+	eval "gov_$(basename "$p")=\$(cat \"\$p/scaling_governor\")"
+	echo userspace > "$p/scaling_governor" 2>/dev/null || true
+	# Its lowest frequency: least heat, and no reason to prefer any other.
+	pin=$(tr ' ' '\n' < "$p/scaling_available_frequencies" | grep . | sort -n | head -1)
+	echo "$pin" > "$p/scaling_setspeed" 2>/dev/null || true
+	echo "pinned $(basename "$p") at $pin (was $(eval echo "\$gov_$(basename "$p")"))"
+done
+
 echo "policy$POLICY  cpus=$(cat "$POL/affected_cpus")  governor=$gov_before"
 echo "frequencies: $freqs"
 echo "rounds=$ROUNDS settle=${SETTLE_MS}ms"
@@ -71,6 +91,10 @@ bat_line "before:"
 
 restore() {
 	echo "$gov_before" > "$POL/scaling_governor" 2>/dev/null || true
+	for p in $others; do
+		eval "g=\$gov_$(basename "$p")"
+		echo "$g" > "$p/scaling_governor" 2>/dev/null || true
+	done
 }
 trap restore EXIT INT TERM
 
@@ -114,6 +138,10 @@ else
 fi
 
 fails=$(printf '%s\n' "$log" | grep -c 'pll failed to enable' || true)
+# Per PLL, because "which cluster" is half the result: the same sweep can
+# produce failures on the cluster it is not driving.
+per_pll=$(printf '%s\n' "$log" | grep -o 'apcs-cpu[0-9]*-pll failed to enable' |
+	sort | uniq -c || true)
 warns=$(printf '%s\n' "$log" | grep -c 'wait_for_pll' || true)
 trans=$((trans_after - trans_before))
 
@@ -121,6 +149,7 @@ echo
 echo "transitions (kernel's own count): $trans"
 echo "PLL enable failures:              $fails"
 echo "wait_for_pll warnings:            $warns"
+[ -n "$per_pll" ] && printf 'per PLL:\n%s\n' "$per_pll"
 if [ "$trans" -gt 0 ]; then
 	echo "failure rate:                     $((fails * 10000 / trans)) per 10000"
 else
