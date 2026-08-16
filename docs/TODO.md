@@ -2338,7 +2338,96 @@ another boot-anchored timer turning off a rail the amplifier needs but our
 device tree does not describe — which would explain a chip that is powered
 according to the framework, out of reset, and electrically absent.
 
-### ☠️ The phone is stuck at a hang and needs a button press
+#### 2026-08-17: four arms, one oracle, and `sync_state()` ruled out
+
+All of this was measured with a new instrument that talks to the chip **straight
+on the i2c bus** (`/dev/i2c-N` with `I2C_SLAVE_FORCE`, bus resolved from the
+`*-0034` device name because the adapter number moves between boots). That
+matters: the driver's `regmap_config` caches and declares no `volatile_reg`, so
+anything read through the driver can report a plausible value for a chip that is
+not on the bus at all. The tool was first pointed at an already-dead chip and
+returned 21 failures out of 21 reads — a verifier that has not been shown failing
+proves nothing, so that came first.
+
+It ran from a `Type=simple` unit ordered `After=sysinit.target`, because the
+death is earlier than sshd and cannot be caught from the host. Both instruments
+are in [`docs/audio/tools/`](audio/tools/): `awpoke.py` for one-shot reads and writes,
+`awwatch.py` for the boot-window A/B (`control` / `pdn` / `vendor` / `cp` arms).
+
+**The death is invariant.** Four boots, four arms:
+
+| arm | what it wrote at ~15 s | last good read | died |
+|---|---|---|---|
+| control | nothing | 23.90 | 24.16 |
+| pdn | `SYSCTRL = 0x0007` (as found) | 24.07 | 24.32 |
+| vendor | `SYSCTRL = 0x0045` — accepted, read back | 24.12 | 24.37 |
+| control, `multi-user.target`, no session | nothing | 24.32 | 24.58 |
+
+So it is not the chip's register state, and it is not the graphical session or
+the sound server: the last row had **no `aw8898` line in dmesg at all** and died
+on schedule. ⚠️ In an earlier boot the driver's `iis clock not detected (-5)`
+messages started at 24.46 s, a fifth of a second *after* the chip had already
+stopped answering — those messages are a consequence of the session opening the
+sink into a dead chip, not the cause. The window is ±0.3 s across every boot,
+which is the signature of a kernel timer rather than of anything userspace does.
+
+**`sync_state()` is ruled out.** The `syncstate-snap.sh` sampler shows **no
+`state_synced` flag changing anywhere** — not across the death window, not across
+the whole run (14.9 s → 84.5 s). Exactly one device is still unsynced,
+`soc@0/1800000.clock-controller`, and it is still unsynced at the end, so its
+callback has not run at all.
+
+☠️ The first run of that sampler was worthless and looked clean: its three-level
+glob under `/sys/devices/platform` reached **13 of the 39** `state_synced` files
+and none of the i2c devices, so it could not have seen the amplifier's own
+supplier sync even if that had been the cause. The script now walks the tree with
+`find`; the verdict above is the run with 39/39 coverage.
+
+**The Ubuntu Touch oracle, read the same night.** On the vendor 4.9 kernel the
+amplifier sits at `6-0034` and **answers every register at 9 minutes of uptime**
+— same silicon, so the death is ours, not a property of the part. Two things came
+out of the comparison:
+
+* **The vendor device tree gives the aw8898 no supply at all.** Its probe reports
+  only `reset gpio provided ok` and `irq gpio provided ok`, and no regulator in
+  `regulator_summary` lists it as a consumer. So the mainline `l5` choice is our
+  invention, and the `l10` that drifts 2850→2800 mV is consumerless on the oracle
+  too. Both directions of the earlier plan are answered: the rail we are looking
+  for is not described on either side, which points at an always-on rail or an
+  external switch rather than at a PMIC regulator the kernel manages.
+* The vendor idles at `SYSCTRL = 0x0045` (charge pump active, I2S enabled) where
+  we idle at `0x0007` (both powered down). Writing the vendor's value changed
+  nothing — see the table — so this is a difference, not the lever.
+
+Vendor register semantics confirmed from
+`hadk22/kernel/fairphone/sdm632/sound/soc/codecs/aw/aw8898_reg.h`: `SYSCTRL`
+bit 0 is `PW_PDN` (1 = powered down), which is the polarity our driver already
+uses. The golden trace is `docs/audio/` material; the vendor blob stays out of
+the repo.
+
+What is left, in order: something un-logged in the kernel at ~24 s takes the
+chip's power or reset away. The reset line and the pinmux were excluded earlier
+with instruments that read through the driver's cache, so those exclusions are
+worth re-running with the bus-direct tool before looking further.
+
+### ☠️ The phone was stuck at a hang and needed a button press — recovered 2026-08-17 00:00
+
+**Resolved.** The way back in was not any of the host-side attempts below: it was
+the **UBports recovery**, reached with a button press, whose adb shell can mount
+the pmOS filesystems directly. `system_b` (`mmcblk0p31`) carries an embedded
+msdos table — `/boot` at offset 1048576, root at 511705088 — so
+`losetup -o <offset>` plus `mount` gives read-write access to `extlinux.conf`
+without booting pmOS at all. That is worth remembering as the general recovery:
+**anything on disk can be fixed from the recovery, no matter how badly the
+default boot entry is broken.** The clean `append` line was restored from
+`extlinux.conf.bak-aw`, `panic=10` was added to both labels (neither had it), and
+`fp3-selftest --only boot-fallback` is green. Full battery afterwards: 29 ok,
+1 failed, 3 skipped — the one failure being the open `24-speaker-amp` case.
+
+☠️ The recovery reboot leaves **slot `a`** active (the Ubuntu Touch side), so
+`fastboot set_active b` is needed before pmOS will boot again.
+
+The original state, kept because the attempts below are the useful part:
 
 **State, 2026-08-16 ~21:00.** The device does not boot and does not enumerate on
 USB at all. The last good boot was 20:54:15; the reboot at 20:57:23 never came
