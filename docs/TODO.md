@@ -1930,3 +1930,20 @@ check that has never been seen succeeding cannot be read as a failure.
 evening hardcoded bus 4 and spent several minutes measuring an empty address on
 a boot that had it on bus 2. Resolve it from the device `name`, the way
 `24-speaker-amp` does.
+
+### The headset mic hears it too, so the capture path is not the problem
+
+Measured 2026-08-16 with a headset plugged in, on a fresh boot. Both acoustic
+checks fail with the same shape rather than with silence: `21-audio-acoustic`
+(handset DMIC0) reports peaks at 5500 Hz / 15.7 dB and 6000 Hz / 22.0 dB, and
+`22-audio-headset` (analogue headset mic) reports 5500 Hz / 20.5 dB and
+6000 Hz / 21.7 dB — for a 1 kHz tone whose fundamental is not the peak in
+either. Two independent microphones on two different paths agree, so neither
+microphone is at fault and the headset ADC path is alive; what reaches them is a
+badly distorted version of what was played. The open question is the amplifier's
+output, not the capture side.
+
+☠️ Check order matters here: `21` and `22` sort before `24`, so a battery that
+selects all three kills the amplifier in the acoustic checks and then reports
+the I²C failure from `24` — which reads as three failures with one cause. To
+learn the amp's state *before* an acoustic run, ask for it on its own first.
