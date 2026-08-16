@@ -8,7 +8,6 @@
 FP3_HOST="${FP3_HOST:-172.16.42.1}"
 FP3_USER="${FP3_USER:-fp3}"
 FP3_PW="${FP3_PW:-}"
-FP3_PIN="${FP3_PIN:-}"
 
 # Key authentication is tried first and the password is the fallback - which is
 # what sshpass does on its own, since it only ever answers a prompt it is given.

@@ -24,7 +24,15 @@
 fail=0
 leds=/sys/class/leds
 regs=/sys/kernel/debug/regmap/0-03/registers	# PMI632, second SPMI USID
-usb_i=/sys/bus/iio/devices/iio:device1/in_voltage_usb_in_i_uv_input
+# ☠️ Do not name the IIO device by index. This read `iio:device1` and skipped
+# every run with "attach a cable for the electrical half" - including runs with
+# a cable attached and the charger online, which is what made the message worth
+# distrusting. Measured 2026-08-16: the channel is on iio:device0
+# (200f000.spmi:pmic@2:adc@3100) and device1 is the other PMIC's ADC, which has
+# no such channel at all. The index moves between boots, so match on the
+# channel instead of on where it happened to be.
+usb_i=$(ls /sys/bus/iio/devices/iio:device*/in_voltage_usb_in_i_uv_input \
+	2>/dev/null | head -1)
 usb_online=/sys/class/power_supply/pmi632-charger/online
 
 # Register offsets inside the flash module at 0xd300, as decimal line numbers
@@ -114,9 +122,15 @@ fi
 # The electrical half. It needs the USB input, which is the only ammeter this
 # phone has; on battery alone there is nothing to read, so say so rather than
 # inventing a verdict.
-if [ ! -r "$usb_i" ] || [ "$(cat $usb_online 2>/dev/null)" != "1" ]; then
-	echo "SKIP: no USB input current to read - attach a cable for the"
-	echo "      electrical half (pmi632-battery exposes no current_now)"
+if [ -z "$usb_i" ] || [ ! -r "$usb_i" ]; then
+	echo "SKIP: no usb_in_i_uv channel on any IIO device, so this phone has"
+	echo "      no ammeter for the electrical half"
+	echo "      cmd: ls /sys/bus/iio/devices/iio:device*/in_voltage_usb_in_i_uv_input"
+	exit $fail
+elif [ "$(cat $usb_online 2>/dev/null)" != "1" ]; then
+	echo "SKIP: the charger input is offline, so the ammeter reads nothing -"
+	echo "      attach a cable for the electrical half"
+	echo "      cmd: cat $usb_online"
 	exit $fail
 fi
 

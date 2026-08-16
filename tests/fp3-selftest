@@ -52,7 +52,6 @@ Usage: fp3-selftest [options]
 Connection:
   --host IP            device address (default 172.16.42.1, or $FP3_HOST)
   --pw PASSWORD        device password (or $FP3_PW; never stored in this repo)
-  --pin PIN            lockscreen PIN (or $FP3_PIN; needed by the cold checks)
 
 What to run:
   --cold-unlock        judge the cold-unlock trace recorded at the last boot
@@ -98,7 +97,6 @@ while [ $# -gt 0 ]; do
 	case "$1" in
 	--host) FP3_HOST=$2; shift 2 ;;
 	--pw) FP3_PW=$2; shift 2 ;;
-	--pin) FP3_PIN=$2; shift 2 ;;
 	--cold-unlock) COLD_PHASE=unlock; shift ;;
 	--arm-unlock) ARM_UNLOCK=1; shift ;;
 	--acoustic) ACOUSTIC=1; shift ;;
@@ -320,7 +318,6 @@ EOF
 write_env_file() {
 	_tmp=$(mktemp)
 	cat >"$_tmp" <<EOF
-FP3_PIN='$FP3_PIN'
 RESULT_DIR='$RESULT_DIR'
 RUN_ID='$RUN_ID'
 DEVICE_DIR='$DEVICE_DIR'
@@ -329,7 +326,7 @@ EXP_PKGVER='$(apkbuild_field "$APKBUILD" pkgver)'
 EXP_PKGREL='$(apkbuild_field "$APKBUILD" pkgrel)'
 EXP_COMMIT='$(apkbuild_field "$APKBUILD" _commit)'
 EXP_FLAVOR='$(apkbuild_field "$APKBUILD" _flavor)'
-export FP3_PIN RESULT_DIR RUN_ID DEVICE_DIR KERNEL_PKG
+export RESULT_DIR RUN_ID DEVICE_DIR KERNEL_PKG
 export EXP_PKGVER EXP_PKGREL EXP_COMMIT EXP_FLAVOR
 EOF
 	ssh_copy "$_tmp" "$DEVICE_DIR/env.sh"
