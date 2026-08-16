@@ -24,13 +24,28 @@ when the software ISP constructs the IPA, and is never read again. The
 sensor information is passed to init() before the algorithms are created,
 so state them there, where they are both available and effective.
 
-The space is the software ISP's output frame, which is what selectZones()
-measures a window against and what an application computes a tap position
-in. Note this deviates from the control's documentation, which puts
-AfWindows in ScalerCropMaximum pixels: the simple pipeline handler
-publishes no such property, so there would be nothing for an application
-to read. The control's own maximum states the space unambiguously
-instead.
+The space is the sensor's active pixel array, and not - as an earlier
+version of this patch had it - the software ISP's output frame. The
+output size is the one thing about the sensor that moves: the IPA is
+initialised with whatever V4L2 format the sensor was left in, and a V4L2
+format outlives the process that applied it, so advertising it tells an
+application to compute tap positions in the space the previous user of
+the camera happened to leave behind. Measured on a Fairphone 3, the
+control read (0, 0)/1920x1080 after a 1080p capture and (0, 0)/4032x3024
+after a full-resolution one, with nothing but the earlier session between
+them. The active area is a property of the hardware and read the same
+either way. selectZones() maps a window onto the zones proportionally and
+so follows it without needing an absolute size of its own; that mapping
+assumes the stream covers the active area, which a sensor mode that
+cropped rather than scaled would break, and correcting for that would
+need analogCrop - known only for the format the IPA was initialised with,
+and therefore no more dependable here than the output size.
+
+Note this deviates from the control's documentation, which puts AfWindows
+in ScalerCropMaximum pixels: the simple pipeline handler publishes no
+such property, so there would be nothing for an application to read. The
+control's own maximum states the space unambiguously instead, and on a
+pipeline that cannot crop the two coincide.
 
 While here, derive the metered zones from AfMetering and AfWindows
 together rather than from whichever arrives last. The two controls are
@@ -62,30 +77,44 @@ Assisted-by: Claude:claude-opus-5
 ---
 --- a/src/ipa/simple/algorithms/af.cpp
 +++ b/src/ipa/simple/algorithms/af.cpp
-@@ -167,11 +167,38 @@
+@@ -167,11 +167,52 @@
  			    ControlValue(static_cast<int32_t>(controls::AfMeteringAuto)));
  
  	/*
 -	 * One window, in pixels of the sensor's output. The bounds are filled
 -	 * in at configure() time, once the output size is known.
-+	 * Windows are given in pixels of the sensor's output - the frame the
-+	 * software ISP produces - which is the space selectZones() measures
-+	 * them against and the space an application computes a tap position
-+	 * in. AfWindows is documented as being in ScalerCropMaximum pixels
-+	 * instead, but the simple pipeline handler publishes no such property,
-+	 * so there is nothing there for an application to read; stating the
-+	 * space in the control's own maximum is what makes it usable.
++	 * Windows are given in pixels of the sensor's active pixel array,
++	 * which is the space selectZones() measures them against.
 +	 *
 +	 * The bounds have to be stated here and not at configure() time: the
 +	 * ControlInfoMap the camera advertises is taken once, when the software
-+	 * ISP constructs the IPA, and is never read again. The size the IPA is
-+	 * initialised with is the same one selectZones() uses, so the two agree
-+	 * by construction.
++	 * ISP constructs the IPA, and is never read again. That rules out the
++	 * output size, which is the one thing about the sensor that moves: the
++	 * IPA is initialised with whatever V4L2 format the sensor was left in,
++	 * and a V4L2 format outlives the process that applied it. Advertising
++	 * it would tell an application to compute tap positions in the space
++	 * the previous user of the camera happened to leave behind - measured
++	 * on a Fairphone 3, the same control read (0,0)/1920x1080 after a
++	 * 1080p capture and (0,0)/4032x3024 after a full-resolution one. The
++	 * active area is a property of the hardware and reads the same either
++	 * way.
++	 *
++	 * AfWindows is documented as being in ScalerCropMaximum pixels, which
++	 * on a pipeline that can crop is the active area seen through whatever
++	 * the scaler can reach. The simple pipeline handler publishes no such
++	 * property, so there is nothing there for an application to read;
++	 * naming the space in the control's own maximum is what makes it
++	 * usable, and on this pipeline the two spaces coincide.
++	 *
++	 * The mapping in selectZones() assumes the stream covers the active
++	 * area. A sensor mode that crops rather than scales would need
++	 * analogCrop, which is only known for the format the IPA was
++	 * initialised with and so cannot be relied on here.
 +	 *
 +	 * The minimum is one pixel rather than the empty rectangle, because a
 +	 * window with no area selects no zone and is not something an
 +	 * application can usefully ask for. The maximum, which is also the
-+	 * default, is the whole frame - metering everything, as if no window
++	 * default, is the whole area - metering everything, as if no window
 +	 * had been given.
 +	 *
 +	 * Without a size there is no coordinate space to name, so the control
@@ -94,18 +123,18 @@ Assisted-by: Claude:claude-opus-5
  	 */
 -	context.ctrlMap[&controls::AfWindows] =
 -		ControlInfo(Rectangle(), Rectangle(), Rectangle());
-+	const Size &output = context.sensorInfo.outputSize;
-+	if (!output.isNull())
++	const Size &area = context.sensorInfo.activeAreaSize;
++	if (!area.isNull())
 +		context.ctrlMap[&controls::AfWindows] =
-+			ControlInfo(Rectangle(0, 0, 1, 1), Rectangle(output),
-+				    Rectangle(output));
++			ControlInfo(Rectangle(0, 0, 1, 1), Rectangle(area),
++				    Rectangle(area));
 +	else
 +		LOG(IPASoftAf, Warning)
-+			<< "Output size unknown, focus windows unavailable";
++			<< "Active area unknown, focus windows unavailable";
  
  	/*
  	 * LensPosition is in dioptres, so it can only be offered where somebody
-@@ -239,25 +266,26 @@
+@@ -239,25 +280,28 @@
  
  /**
   * \brief Choose the focus zones the score is taken over
@@ -113,10 +142,16 @@ Assisted-by: Claude:claude-opus-5
 + * \param[in] windows The requested windows
 + * \return True if the windows selected at least one zone, false otherwise
   *
-  * A window is given in pixels of the sensor's output, which is what an
-  * application can compute a tap position in. Any zone the window touches is
-  * selected; a tap therefore always selects at least one zone, however small
-  * the window it is turned into.
+- * A window is given in pixels of the sensor's output, which is what an
+- * application can compute a tap position in. Any zone the window touches is
+- * selected; a tap therefore always selects at least one zone, however small
+- * the window it is turned into.
++ * A window is given in pixels of the sensor's active pixel array, the space
++ * init() advertises, and the zones divide the frame the software ISP produces.
++ * The two are related by the assumption that the stream covers the active area,
++ * so the mapping is proportional and needs no absolute size of its own. Any
++ * zone the window touches is selected; a tap therefore always selects at least
++ * one zone, however small the window it is turned into.
 + *
 + * Returning false leaves the caller to decide what a request that names no
 + * usable window should mean, rather than silently turning it into metering the
@@ -132,17 +167,18 @@ Assisted-by: Claude:claude-opus-5
 +	if (windows.empty())
 +		return false;
  
- 	const Size &size = context.sensorInfo.outputSize;
+-	const Size &size = context.sensorInfo.outputSize;
 -	if (size.isNull()) {
 -		zones_.fill(true);
 -		return;
 -	}
++	const Size &size = context.sensorInfo.activeAreaSize;
 +	if (size.isNull())
 +		return false;
  
  	zones_.fill(false);
  
-@@ -279,8 +307,34 @@
+@@ -279,8 +323,34 @@
  				zones_[y * SwIspStats::kAfZonesX + x] = true;
  	}
  
@@ -178,7 +214,7 @@ Assisted-by: Claude:claude-opus-5
  }
  
  /**
-@@ -316,6 +370,8 @@
+@@ -316,6 +386,8 @@
  	af.position = context.lens.def;
  	af.updateLens = false;
  
@@ -187,7 +223,7 @@ Assisted-by: Claude:claude-opus-5
  	zones_.fill(true);
  
  	phase_ = ScanPhase::Idle;
-@@ -358,20 +414,49 @@
+@@ -358,20 +430,49 @@
  		}
  	}
  
