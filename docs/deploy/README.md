@@ -162,6 +162,51 @@ simply is not there.
 graphical session does not come up at all, which looks like a kernel
 regression and is not one — check `df -h /` before blaming the build.
 
+### ☠️ The kernel installed but the initramfs did not
+
+`apk add linux-fp3` can succeed at unpacking and still leave `/boot`
+inconsistent, because its postmarketos-mkinitfs trigger runs separately and can
+fail on its own:
+
+```
+only one kernel release/flavor is supported, found:
+  ["/usr/share/kernel/fp3/kernel.release"
+   "/usr/share/kernel/postmarketos-qcom-msm8953/kernel.release"]
+ERROR: lib/apk/exec/postmarketos-mkinitfs-2.11.1-r0.trigger: exited with error 1
+```
+
+Measured 2026-08-16 installing r57: `vmlinuz` was current, while `initramfs`
+and the whole boot deployment were **five hours old**. Rebooting there would
+have started the new kernel against an initramfs built from the previous
+release's modules. Nothing said "your boot is now inconsistent" — the only
+signs were the trigger's exit status, buried in apk's output, and two stale
+mtimes in `/boot`. So after any kernel install, look:
+
+```sh
+ls -la --time-style=+%m-%d_%H:%M /boot/vmlinuz /boot/initramfs /boot/*.dtb
+```
+
+The second flavor is `linux-postmarketos-qcom-msm8953`, which
+`device-fairphone-fp3` **depends on**, so `apk del` refuses to remove it and it
+returns whenever the device package is reinstalled. The repair is to hide it
+for the length of one mkinitfs run:
+
+```sh
+mkdir -p /root/kernel-stash
+mv /usr/share/kernel/postmarketos-qcom-msm8953 /root/kernel-stash/
+mkinitfs                       # prints "Installing: /boot/initramfs" etc.
+mv /root/kernel-stash/postmarketos-qcom-msm8953 /usr/share/kernel/
+```
+
+☠️ Renaming it in place to a dotted name does **not** work — mkinitfs's glob
+finds the dotted directory too and repeats the same error with the new name in
+it. It has to leave `/usr/share/kernel` entirely.
+
+☠️ And boot-deploy rewrites `extlinux.conf` from scratch: it drops the
+hand-added `postmarketOS-fallback` label and resets `timeout` to 1. Copy the
+file aside before running mkinitfs and re-append the label afterwards, or the
+next bad kernel has nothing to fall back to.
+
 ## Things that look like build or kernel bugs and are not
 
 Every one of these cost real time at least once.
