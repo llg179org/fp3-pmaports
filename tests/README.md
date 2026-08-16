@@ -20,14 +20,9 @@ that regression so it cannot come back silently.
 
 ```sh
 export FP3_PW=…            # device password — never stored in this repo
-# (no PIN needed: the cold unlock is measured passively, you type it yourself)
 
 # the canonical run
 ./tests/fp3-selftest --no-cable --no-bt
-
-# the cold unlock is a three-step measurement, see below
-./tests/fp3-selftest --arm-unlock          # then reboot, then unlock the phone
-./tests/fp3-selftest --cold-unlock --only unlock
 
 # before flashing a build, with no device involved at all: are the required
 # modules and device-tree nodes actually in the package?
@@ -47,7 +42,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | check | proves |
 |---|---|
 | `01-identity` | the running kernel is the one you think you are testing — build stamp, package version, source commit, device model. Blocks everything else, and reports **all four** results rather than stopping at the first |
-| `03-unlock-latency` | how long phosh takes to start on a cold unlock — and, once the session is pre-warmed, that it no longer starts at all |
+| `03-autologin` | the greeter's `[initial_session]` brings up a graphical session at boot with nobody touching the phone, and phosh is alive in it |
 | `05-modules` | required modules built; module tree matches the package; no hot-swap leftovers |
 | `10-health` | no panic/oops/BUG/remoteproc crash; rootfs has room; no new failed units |
 | `15-hwtest` | display, input devices, camera presence and vibrator against a recorded reference |
@@ -79,10 +74,8 @@ must have a check, and every `wip/<base>/*` branch on the
 its category is reported uncovered and
 the run does not pass without `--allow-uncovered CAT`.
 
-**The cold unlock cannot be measured over SSH.** Logging in as the user starts
-the very `systemd --user` session whose cold start is being timed. So the probe
-runs from a boot-time unit instead: `--arm-unlock`, reboot, unlock the phone with
-nobody connected, then `--cold-unlock` judges the recorded trace.
+Every check now runs unattended. The last one that did not was the cold-unlock
+latency measurement, retired 2026-08-16 — see "The login is automatic now".
 
 ## Adding a check
 
@@ -94,7 +87,6 @@ subpackage later without rewriting. Declare metadata in header comments:
 ```sh
 # Category: voice      # counts towards topic-branch coverage
 # Requires: modem      # skipped by --no-modem
-# ColdPhase: unlock    # judges a trace recorded at the previous boot
 # Detached: yes        # will drop the link; run detached and read the result file
 ```
 
@@ -207,29 +199,51 @@ even if they are broken today — otherwise the breakage becomes the baseline an
 stops being reported. The camera is `True` in there right now for exactly that
 reason, and the check fails until the camera comes back.
 
-## What the cold unlock actually is
+## The login is automatic now
 
-Worth knowing before optimising it: on this device a cold unlock is not a
-lockscreen being dismissed. phosh is not running at all. The phone sits at the
-greetd/phrog greeter as uid 113, and authenticating starts an entire user
-session from scratch. Of the ~15s a human perceives, roughly 7s is
-authentication and session setup before phosh exists, and ~8.4s is phosh
-starting up to idle (measured 2026-07-25).
+Until 2026-08-16 this suite carried `03-unlock-latency`, which timed a **cold
+unlock**: on this device that is not a lockscreen being dismissed, because phosh
+is not running at all. The phone sat at the greetd/phrog greeter as uid 113 and
+authenticating started an entire user session from scratch — of the ~15s a human
+perceived, roughly 7s was authentication and session setup before phosh existed
+and ~8.4s was phosh starting up to idle (measured 2026-07-25, on a boot where
+`Linger` was `no`; it reads `yes` now, so those two numbers no longer split the
+same way).
 
-That was written when `loginctl show-user fp3 -p Linger` read `no`, so nothing
-of the session existed before login. It reads `yes` as of 2026-08-16, which
-changes what the split above is measuring — re-measure before treating the
-7s/8.4s figures as current. Lingering is the lever either way: pre-warm the
-session and the cold path stops paying for it, at which point
-`03-unlock-latency` passes because phosh is already running when you unlock
-rather than because it started quickly.
+That check needed a person: arm a probe, reboot, have somebody type the PIN with
+nobody connected, then judge the trace. It could not be driven over SSH at all,
+because logging in as the user starts the very `systemd --user` session whose
+cold start was being timed. It was the one thing in the battery that could not
+run unattended, and it was skipped in every run for months as a result.
 
-The greeter can also be told to skip the human entirely:
-`/etc/phrog/greetd-config.toml` carries a commented-out `[initial_session]`
-block (`command = "systemd-cat phosh-session"`, `user = "fp3"`) that logs in at
-boot. ⚠️ That does not make `03-unlock-latency` pass — it **retires** it, by
-removing the path the check exists to measure. Useful for running the rest of
-the battery unattended, not for this check.
+greetd can skip the human entirely. `/etc/phrog/greetd-config.toml` ships an
+`[initial_session]` block, commented out; enabling it logs the session in at
+boot without authenticating:
+
+```toml
+[initial_session]
+command = "systemd-cat phosh-session"
+user = "fp3"
+```
+
+Turning that on does not make the old check pass — it **retires** it, by
+removing the path it measured. So the question changed with the device:
+`03-autologin` tests that the phone reaches a working graphical session on its
+own, which is now the property that matters, and the whole battery runs with
+nobody present.
+
+**How it tells an autologin from a quick human**, since it cannot see a hand on
+the phone: by *when* the session was created. `AUTOLOGIN_MAX` in
+`baseline/autologin.txt` is the discriminator, not just a regression gate — keep
+it tight enough that a person could not have done it. For calibration, a human
+unlock measured 81.6s after boot on 2026-08-16, with phosh 7.4s behind it.
+
+☠️ **Time it monotonically.** This device's RTC reads 1970 until something sets
+the clock, so wall-clock timestamps jump mid-boot: `loginctl` printed "15min
+ago" for a session whose `TimestampMonotonic` said 81.6s after boot, on a phone
+that had been up for 16000s. The check reads `TimestampMonotonic` for the
+session and field 22 of `/proc/PID/stat` for phosh, both of which count from
+boot and neither of which the clock can move.
 
 ### Rejected end markers
 

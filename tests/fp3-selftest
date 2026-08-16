@@ -25,8 +25,6 @@ PMAPORTS="${FP3_PMAPORTS:-/mnt/1TB/pmos/pmaports}"
 KERNEL_PKG="linux-fp3"
 APKBUILD=""
 
-COLD_PHASE="none"
-ARM_UNLOCK=0
 ACOUSTIC=0
 DEVICE_DIR="/tmp/fp3-selftest"
 RESULT_DIR="/var/log/fp3-selftest"
@@ -54,11 +52,6 @@ Connection:
   --pw PASSWORD        device password (or $FP3_PW; never stored in this repo)
 
 What to run:
-  --cold-unlock        judge the cold-unlock trace recorded at the last boot
-                       (arm it first with --arm-unlock, then reboot and unlock)
-  --arm-unlock         install the boot-time unlock sampler and exit; the
-                       measurement has to run without an SSH login, because
-                       logging in starts the very user session it measures
   --acoustic           enable the speaker->mic loopback checks (off by default:
                        they are audible and sensitive to ambient noise)
   --only LIST          run only these checks (comma-separated name fragments)
@@ -97,8 +90,6 @@ while [ $# -gt 0 ]; do
 	case "$1" in
 	--host) FP3_HOST=$2; shift 2 ;;
 	--pw) FP3_PW=$2; shift 2 ;;
-	--cold-unlock) COLD_PHASE=unlock; shift ;;
-	--arm-unlock) ARM_UNLOCK=1; shift ;;
 	--acoustic) ACOUSTIC=1; shift ;;
 	--only) ONLY=$2; shift 2 ;;
 	--skip) SKIP=$2; shift 2 ;;
@@ -278,38 +269,6 @@ apkbuild_field() {
 
 # --- device preflight -----------------------------------------------------
 
-# Arm the boot-time unlock sampler.
-#
-# The measurement cannot be driven over SSH: logging in as the user starts the
-# very systemd --user session whose cold start we are timing, so the number
-# would come out flattering and wrong. Instead the sampler runs from a boot-time
-# unit, the operator unlocks the phone with nobody connected, and the trace is
-# judged afterwards.
-#
-# The unit is deliberately After=multi-user.target: a boot-armed diagnostic that
-# blocks early boot hangs the device.
-arm_unlock() {
-	ssh_root "mkdir -p $DEVICE_DIR/lib $RESULT_DIR"
-	ssh_copy "$TESTS_DIR/lib/unlock-probe.py" "/tmp/unlock-probe.py"
-	ssh_root "cp /tmp/unlock-probe.py /root/unlock-probe.py"
-	ssh_root "rm -f $RESULT_DIR/cold-unlock.tsv"
-
-	_unit=/etc/systemd/system/fp3-unlock-probe.service
-	ssh_copy "$TESTS_DIR/lib/fp3-unlock-probe.service" "/tmp/fp3-unlock-probe.service"
-	ssh_root "cp /tmp/fp3-unlock-probe.service $_unit"
-	ssh_root "systemctl daemon-reload; systemctl enable fp3-unlock-probe.service"
-
-	cat <<EOF
-
-Armed. Now:
-  1. reboot the phone            (it will record for 240s from boot)
-  2. unlock it as you normally would, WITHOUT logging in over SSH first
-  3. ./tests/fp3-selftest --cold-unlock --only unlock
-
-The unit disarms itself once the trace has been judged.
-EOF
-}
-
 # --- check execution ------------------------------------------------------
 
 # What a check needs to know about the build it is judging. Written once as a
@@ -354,17 +313,11 @@ wanted() {
 main() {
 	[ -n "$FP3_PW" ] || die "no device password: pass --pw or export FP3_PW"
 
-	if [ "$ARM_UNLOCK" -eq 1 ]; then
-		device_reachable || die "device $FP3_HOST unreachable"
-		arm_unlock
-		exit 0
-	fi
-
 	mkdir -p "$TESTS_DIR/../.selftest-runs" 2>/dev/null || true
 	RUN_LOG="${TMPDIR:-/tmp}/fp3-selftest-$RUN_ID.log"
 	: >"$RUN_LOG"
 
-	log_line "fp3-selftest run $RUN_ID  (cold-phase: $COLD_PHASE)"
+	log_line "fp3-selftest run $RUN_ID"
 	log_line ""
 
 	# Capture, then print: piping straight into `grep -q` swallows the output,
@@ -416,7 +369,6 @@ main() {
 		_name=$(basename "$_check" -test.sh)
 		_cat=$(check_meta "$_check" Category)
 		_req=$(check_meta "$_check" Requires)
-		_cold=$(check_meta "$_check" ColdPhase)
 
 		_skip_reason=""
 		wanted "$_name" || _skip_reason="not selected"
@@ -424,10 +376,6 @@ main() {
 			case " $DISABLED " in *" $_r "*) _skip_reason="--no-$_r given" ;; esac
 			[ "$_r" = acoustic ] && [ "$ACOUSTIC" -eq 0 ] && _skip_reason="needs --acoustic"
 		done
-		if [ -n "$_cold" ] && [ "$_cold" != "$COLD_PHASE" ]; then
-			_skip_reason="needs --cold-phase $_cold"
-		fi
-
 		if [ -n "$_skip_reason" ]; then
 			log_line "SKIP: $_name ($_skip_reason)"
 			_skipped=$((_skipped + 1))
@@ -518,9 +466,6 @@ summarise() {
 
 	log_line ""
 	[ -n "$_gaps" ] && log_line "UNCOVERED CATEGORIES:$_gaps (pass --allow-uncovered CAT to accept)"
-	if [ "$COLD_PHASE" = none ]; then
-		log_line "NOTE: unlock latency not judged (arm it with --arm-unlock, reboot, unlock, then --cold-unlock)"
-	fi
 	log_line "log: $RUN_LOG  (device copy: $RESULT_DIR/$RUN_ID.log)"
 
 	[ "$DRIFTED" -eq 1 ] && log_line "NOTE: the versioned recipe and the build workdir disagree - this run is not attributable"

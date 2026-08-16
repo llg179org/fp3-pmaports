@@ -1,0 +1,14 @@
+# Budget for the boot-to-session time, in seconds of MONOTONIC time since boot.
+#
+# AUTOLOGIN_MAX does two jobs, and the second is the important one. It is a
+# regression gate on how long the boot takes to reach a usable session; and it
+# is the only thing separating an autologin from a human who happened to unlock
+# the phone before the check ran. This test cannot see a hand on the device -
+# it can only see that the session existed seconds, not minutes, into the boot.
+#
+# So keep it tight enough that a person could not have done it. Measured
+# 2026-08-16 on 7.1.3: a *human* unlock produced a session at 81.6s after boot,
+# with phosh 7.4s behind it. The autologin figure is filled in from the first
+# reboot with [initial_session] enabled; until then this is the human number
+# halved, which is a placeholder and is meant to be replaced by a measurement.
+AUTOLOGIN_MAX=40.0
