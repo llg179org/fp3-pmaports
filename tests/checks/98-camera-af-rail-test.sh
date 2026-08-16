@@ -67,9 +67,45 @@ fi
 # The premise: the motor has to be idle before the suspend, or the rail is
 # legitimately on and the measurement says nothing. A camera left open is a
 # skip, not a failure.
+#
+# ☠️ It does not become idle the moment the last capture ends, and until
+# 2026-08-16 this check simply lost to that: 45-camera-af-windows-pipewire runs
+# a stream a minute earlier, so the motor was still active here and the check
+# skipped. It had only ever passed in a battery because that PipeWire check was
+# itself skipping and never opened the camera - two checks that both looked
+# fine, and between them nothing measured.
+#
+# Measured that day, and it settles the open question of who is holding it:
+# waiting 240s changed nothing, and restarting wireplumber dropped the motor to
+# suspended in under two seconds. So the holder is the session's media stack
+# keeping the subdev open, not a slow release inside the driver - which means
+# this check can close the camera itself instead of waiting on the run order.
+. "$(dirname "$0")/../lib/session.sh"
+
+settle() {
+	_waited=0
+	while [ "$_waited" -lt "$1" ]; do
+		[ "$(cat "$VCM/power/runtime_status")" = suspended ] && return 0
+		sleep 2
+		_waited=$((_waited + 2))
+	done
+	[ "$(cat "$VCM/power/runtime_status")" = suspended ]
+}
+
+if ! settle 10; then
+	# Give the session's media stack a chance to let go, then wait again.
+	# If there is no session to restart it in, the wait above was all we had.
+	if session_init; then
+		as_user "systemctl --user restart wireplumber" >/dev/null 2>&1
+		echo "      (restarted wireplumber to release the focus motor)"
+	fi
+	settle 20
+fi
+
 status=$(cat "$VCM/power/runtime_status")
 if [ "$status" != "suspended" ]; then
-	echo "SKIP: the focus motor is $status - close the camera and re-run"
+	echo "SKIP: the focus motor is still $status after waiting and restarting"
+	echo "      the media stack - something else is holding the camera"
 	echo "      cmd: cat $VCM/power/runtime_status"
 	exit 0
 fi

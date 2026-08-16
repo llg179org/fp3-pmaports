@@ -43,39 +43,18 @@ command -v gst-launch-1.0 >/dev/null 2>&1 || {
 	exit 0
 }
 
-# ☠️ The runner runs every check as root, and PipeWire is a *per-user* service.
-# Root has no XDG_RUNTIME_DIR and no graph of its own, so every pw-cli call here
-# used to come back empty - and the check then reported "no libcamera node in
-# the PipeWire graph" and skipped. Measured 2026-08-16: as root `pw-cli ls Node`
-# returns zero nodes of any kind, so that message was not a weaker version of
-# the truth, it was a different claim altogether. The check had been proved in
-# both directions by hand as the session user and never once under the runner,
-# which is exactly how a check ends up passing on nothing.
-#
-# So find the logged-in session and speak to it, and keep the two failures
-# apart below: "cannot reach a graph" is about this check, "the graph has no
-# camera node" is about the device.
-_row=$(loginctl list-users --no-legend 2>/dev/null |
-	awk '$2 != "root" { print $1, $2; exit }')
-sess_uid=${_row%% *}
-sess_user=${_row#* }
-[ -n "$_row" ] && [ -n "$sess_uid" ] && [ -n "$sess_user" ] || {
+# ☠️ This check runs as root and PipeWire is per-user; see lib/session.sh
+# for why that used to make it report "no libcamera node in the PipeWire graph"
+# when the truth was that it had reached no graph at all. Keep the two apart
+# below: "cannot reach a graph" is about this check, "the graph has no camera
+# node" is about the device.
+. "$(dirname "$0")/../lib/session.sh"
+
+session_init || {
 	echo "SKIP: no logged-in user session, so there is no PipeWire graph to"
 	echo "      drive - this check measures the path an application uses"
 	exit 0
 }
-
-# Setting XDG_RUNTIME_DIR by hand is how a dead session gets misdiagnosed as a
-# broken daemon, so it is only ever done together with the reachability gate
-# below - never as a way of assuming the session is alive.
-if [ "$(id -u)" = "$sess_uid" ]; then
-	as_user() { sh -c "$*"; }
-else
-	as_user() {
-		su "$sess_user" -c "XDG_RUNTIME_DIR=/run/user/$sess_uid \
-DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$sess_uid/bus $*"
-	}
-fi
 
 nodes=$(as_user 'pw-cli ls Node' 2>/dev/null | grep -c '^	id ')
 if [ "$nodes" -eq 0 ]; then
