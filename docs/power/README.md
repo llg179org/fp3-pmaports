@@ -521,8 +521,16 @@ survives them; an absolute figure does not.
 ## Suspend works, and is switched off on purpose
 
 Everything needed is present: `/sys/power/state` offers `freeze mem disk`,
-`mem_sleep` is `[s2idle]` (mainline qcom has no separate `deep`, which is
-normal), `rtcwake` and `/dev/rtc0` work, and cpuidle has `WFI` plus
+`mem_sleep` is `[s2idle]` — no `deep`, and measured 2026-08-16 that costs less
+than it sounds: the `S2idle` column of
+`/sys/kernel/debug/pm_genpd/power-domain-system/idle_states` increments across a
+suspend, so the **system power domain collapses from s2idle anyway**. `deep` is
+in any case not ours to add: it exists only if the secure firmware answers
+`psci_features(SYSTEM_SUSPEND)`, which this one does not. The reasoning, and why
+neither systemd nor a kernel bump can have taken it away, is in
+[`RUNBOOK.md`](RUNBOOK.md#why-suspend-only-halves-it-there-is-no-deep-state);
+`tests/checks/99-suspend-test.sh` now asserts both the state list and the
+collapse. `rtcwake` and `/dev/rtc0` work, and cpuidle has `WFI` plus
 `cpu-power-collapse`.
 
 ☠️ **A first attempt on a new base must happen with someone holding the phone.**
