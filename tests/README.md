@@ -49,6 +49,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `19-ucm-ownership` | the installed UCM verbs are ours **and** a package of ours owns the paths — the distro ships its own files there, and a hand-copied override reverts on the next upgrade |
 | `20-audio` | codec enumerated on SLIMbus, playback and capture PCMs open |
 | `21/22-audio-*` | a tone on the speaker reaches the handset/headset mic (`--acoustic`) |
+| `24-speaker-amp` | the loudspeaker amplifier answers on its control bus and sees its I2S clock. Digital on both counts, so unlike the acoustic checks it runs in the default battery — and it is what separates "the room was noisy" from "nothing is coming out". ☠️ It has never passed here: the speaker really is silent |
 | `25-sensor` | the SSC sensors enumerate and read: registry server running, all four IIO devices bound, proximity and ambient light readable, and `iio-sensor-proxy` sees both |
 | `30-voice` | the VoiceMMode1 path routes and opens — **the regression this suite was built for** |
 | `35-pulse` | userspace has a real sink and the handset mic — also proves the audio checks put the sound server back |
@@ -173,6 +174,18 @@ the audio block together, suspend last.
   Each arms its restore before the first change. The alternative is what
   `65-bluetooth` was: a permanent `--no-bt` on the command line, and a check
   nobody had watched fail in months.
+
+- **☠️ An environment-dependent check gives an environment-shaped excuse, and it
+  fits every time.** `21`/`22` measure a tone across a room, so their failure
+  invites "the phone was lying wrong" — an explanation that is always available
+  and cannot be refuted from inside the check. It was offered here on
+  2026-08-16, in writing, and was wrong: the loudspeaker amplifier answers
+  nothing on I²C and never sees its I2S clock, so a full-scale 1 kHz tone moved
+  the handset mic's peak from 38 to 95 out of 32768. Every acoustic run logged
+  on this device since 2026-07-29 had failed and each one was readable as bad
+  placement. The fix is not a better excuse but a check the room cannot reach:
+  `24-speaker-amp` asks the amplifier on its control bus. **When a check's
+  medium is the environment, there must be a second check whose medium is not.**
 
 ## Why not just use hwtest?
 

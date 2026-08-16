@@ -1668,3 +1668,43 @@ rail the PLL sees).
 It is also, as of today, visible: `10-health` greps for `WARNING:` and prints
 this line with its count on every run, from `journalctl -k -b` rather than from
 a ring buffer these same warnings had been evicting.
+
+## The loudspeaker is silent, and the battery was green anyway
+
+Measured 2026-08-16 on 7.1.3-r57. The AW8898 smart amplifier at `3-0034` is
+present and probes, and then does nothing useful:
+
+- **it does not answer on I²C.** `amixer -D hw:0 cset name='RX Volume' 0` — a
+  write of the value the control already holds — fails, and the kernel logs
+  `ASoC error (-5)` from both `soc_component_read_no_lock()` and
+  `snd_soc_component_update_bits()` on register `0x0f`. The control reads back
+  `0`, i.e. −127.5 dB, and cannot be moved off it.
+- **it never sees its bit clock.** Every playback start logs
+  `aw8898 3-0034: iis clock not detected (-110), playing anyway`.
+- **so nothing comes out.** With a 1 kHz tone at full scale on `hw:0,0` and the
+  handset DMIC0 capturing on `hw:0,1`, two seconds of capture gave peak 95 /
+  RMS 5.8 against peak 38 / RMS 2.8 in silence — about 8 dB, where a working
+  speaker a hand's width from the mic is tens of dB. The microphone is fine;
+  the baseline proves it is live.
+
+This is the same fault as the 2026-07-31 finding that the amp's PLL never
+locks: the dying I²C is the consequence, not the cause. What is new is the
+scale of what it hid.
+
+☠️ **Nothing in the default battery measured it.** `20-audio` covers the codec
+and the PCM opens, which is the entire digital path and none of the analogue
+one. The only check that would have noticed is `21-audio-acoustic`, and that
+sits behind `--acoustic` because an over-the-air measurement is too
+environment-dependent to gate on — so the phone reported *27 ok, 0 failed* with
+a loudspeaker that produces no sound. Worse, every acoustic run ever logged
+here, back to 2026-07-29, had failed, and the failure was readable each time as
+"the room was noisy" or "the phone was lying wrong". That excuse was written
+down as the explanation on the morning of 2026-08-16 and it was wrong.
+
+`tests/checks/24-speaker-amp-test.sh` now measures the amplifier where the room
+cannot reach it — a round-trip write on its control bus, and its own clock
+complaint after a one-second silent playback. It is in the default battery, and
+it **fails today**, which is the honest state: the battery is 27 ok / 1 failed,
+and the one failure is a loudspeaker that does not work.
+
+Open, and not diagnosed further than the 2026-07-31 measurement.
