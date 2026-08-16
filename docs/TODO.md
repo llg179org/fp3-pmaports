@@ -1647,3 +1647,17 @@ battery voltage of the session, but recurred while charging at 3.89 V), whether
 it is specific to the little cluster, and whether it predates the current base.
 The first test is a fixed cpufreq sweep at high and at low battery, counting
 failures — not another power leg, which would only measure this.
+
+Measured again 2026-08-16 on r56, and it narrows the question. 299 instances in
+one 85-minute boot, the first nine seconds in, arriving every 10–40s. It is
+**not load-driven**: neither 60s of idle nor a 30s eight-core burn changed the
+rate. The cluster still reaches every operating point — `policy0`'s
+`time_in_state` shows residency at all seven, up to 1804800 — so each failure is
+a rate change that is retried, not a clock left stuck, which is why nothing else
+on the phone shows it. The battery was at 99–100% throughout, which weakens the
+voltage hypothesis without disproving it (this was the terminal voltage, not the
+rail the PLL sees).
+
+It is also, as of today, visible: `10-health` greps for `WARNING:` and prints
+this line with its count on every run, from `journalctl -k -b` rather than from
+a ring buffer these same warnings had been evicting.
