@@ -70,7 +70,6 @@ wait_for_device() {
 #
 #   # Category: voice          -> counts towards integration topic coverage
 #   # Requires: modem call     -> skipped when --no-modem / --no-call is given
-#   # ColdPhase: call          -> needs a fresh boot in that cold phase
 #
 check_meta() {
 	sed -n "s/^# $2: *//p" "$1" | head -1
