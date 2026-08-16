@@ -47,6 +47,16 @@ asking for windowed metering did not ask for; windowed metering with no
 usable window falls back to the centre, as it already did when no window
 had been given at all.
 
+Where the score is metered from is otherwise invisible from outside the
+IPA, so log how many zones ended up selected: a window that reached
+nothing is indistinguishable from one that was never sent.
+
+A single window may arrive as a scalar Rectangle rather than as a
+one-element array - libcamera's own cam tool sends it that way - so read
+the raw ControlValue and accept both shapes. Reading a scalar through
+the array accessor asserts and aborts the IPA process, which nothing had
+ever hit because no window could reach this code before.
+
 Signed-off-by: Lajosházi, László Gergely <lajoshazilg@gmail.com>
 Assisted-by: Claude:claude-opus-5
 ---
@@ -132,7 +142,7 @@ Assisted-by: Claude:claude-opus-5
  
  	zones_.fill(false);
  
-@@ -279,8 +307,22 @@
+@@ -279,8 +307,34 @@
  				zones_[y * SwIspStats::kAfZonesX + x] = true;
  	}
  
@@ -153,10 +163,22 @@ Assisted-by: Claude:claude-opus-5
  		zones_.fill(true);
 +	else if (!selectZones(context, windows_))
 +		selectCentre();
++
++	/*
++	 * Where the score is taken from is otherwise invisible from outside the
++	 * IPA: the zones are internal, and a window that reached nothing looks
++	 * exactly like one that was never sent. Say how many zones ended up
++	 * metered, so that a request can be traced to an effect.
++	 */
++	LOG(IPASoftAf, Info)
++		<< "Metering " << std::count(zones_.begin(), zones_.end(), true)
++		<< " of " << zones_.size() << " zones ("
++		<< (metering_ == controls::AfMeteringAuto ? "auto" : "windows")
++		<< ", " << windows_.size() << " window(s) requested)";
  }
  
  /**
-@@ -316,6 +358,8 @@
+@@ -316,6 +370,8 @@
  	af.position = context.lens.def;
  	af.updateLens = false;
  
@@ -165,7 +187,7 @@ Assisted-by: Claude:claude-opus-5
  	zones_.fill(true);
  
  	phase_ = ScanPhase::Idle;
-@@ -358,20 +402,30 @@
+@@ -358,20 +414,49 @@
  		}
  	}
  
@@ -181,19 +203,40 @@ Assisted-by: Claude:claude-opus-5
 +		if (value != metering_) {
 +			metering_ = value;
 +			remeter = true;
- 		}
- 	}
- 
- 	const auto &windows = controls.get(controls::AfWindows);
- 	if (windows.has_value()) {
-+		std::vector<Rectangle> requested(windows.value().begin(),
-+						 windows.value().end());
-+		if (requested != windows_) {
-+			windows_ = std::move(requested);
-+			remeter = true;
 +		}
 +	}
 +
++	if (controls.contains(controls::AfWindows.id())) {
++		/*
++		 * ☠️ Read the raw value rather than get(controls::AfWindows).
++		 * AfWindows is declared as an array, but a request carrying a
++		 * single window may hold it as a scalar Rectangle - libcamera's
++		 * own cam tool sends it that way, and so will anything built on
++		 * ControlValue::set(Rectangle) - and reading a scalar through
++		 * the array accessor asserts and aborts the IPA process.
++		 * Measured 2026-08-16 the first time a window ever reached this
++		 * code: "Assertion failed: isArray_ (controls.h: get: 204)".
++		 */
++		const ControlValue &value = controls.get(controls::AfWindows.id());
++		std::vector<Rectangle> requested;
++
++		if (value.type() == ControlTypeRectangle) {
++			if (value.isArray()) {
++				const auto span = value.get<Span<const Rectangle>>();
++				requested.assign(span.begin(), span.end());
++			} else {
++				requested.push_back(value.get<Rectangle>());
++			}
++		}
++
++		if (requested != windows_) {
++			windows_ = std::move(requested);
++			remeter = true;
+ 		}
+ 	}
+ 
+-	const auto &windows = controls.get(controls::AfWindows);
+-	if (windows.has_value()) {
 +	if (remeter) {
  		auto previous = zones_;
 -		windowsSet_ = true;

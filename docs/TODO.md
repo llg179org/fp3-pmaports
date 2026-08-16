@@ -1338,6 +1338,49 @@ shows up much later than the change that caused it. The one-line check is in
 > control's own maximum now states that space, which is machine-readable and is
 > what an application computes a tap position in anyway.
 >
+> ##### ☠️☠️ A fourth defect, found only by measuring end to end (`r17`)
+>
+> Two things the source review could not have found, both caught the first time
+> a window ever reached the code:
+>
+> * **A single window aborts the IPA process.** `cam` — and anything built on
+>   `ControlValue::set(Rectangle)` — holds one window as a **scalar**, not as a
+>   one-element array, and reading a scalar through the array accessor asserts:
+>   `Assertion failed: isArray_ (controls.h: get: 204)`. Fixed by reading the
+>   raw `ControlValue` and accepting both shapes. Nothing had ever hit it
+>   because no window could reach this code before.
+> * **The coordinate space follows leftover driver state.** Measured two-sided:
+>
+>   ```
+>   after a 1920x1080 capture:  AfWindows: [(0, 0)/1x1..(0, 0)/1920x1080]
+>   after a 4032x3024 capture:  AfWindows: [(0, 0)/1x1..(0, 0)/4032x3024]
+>   ```
+>
+>   `context.sensorInfo` is taken **once**, in `IPASoftSimple::init()`, from
+>   `sensor->sensorInfo()` — which reports the sensor's *currently applied* V4L2
+>   format. That format persists in the driver between processes, so the space
+>   an application is told to compute in is decided by whoever used the camera
+>   last. `selectZones()` clips against the same member and has had this
+>   dependency since it was written; the new `ControlInfo` did not introduce it,
+>   it made it visible. The symptom that exposed it: a window at
+>   `(3000, 2200, 400, 300)` selected 9 of 25 zones — the centre fallback —
+>   because it lay wholly outside a 1920x1080 clip, while `(1900, 1050, 20, 20)`
+>   selected 1.
+>
+>   **The fix, with its premise already measured:** use the sensor's *active
+>   pixel array*, which is a fixed hardware property and does not move —
+>   `PixelArrayActiveAreas = [ (8, 24)/4032x3024 ]` read identically after a
+>   1080p capture and after a full-res one. Advertise that as the space and clip
+>   against it, so the answer no longer depends on session history. Note the
+>   mapping assumes the stream covers the active area; a cropped sensor mode
+>   would need `analogCrop`, which the IPA is not told at `configure()` time.
+>
+> The working half is measured too — windows do aim, once they land inside the
+> clip: `[0,0,4032,3024]` → 25 of 25 zones, `[0,0,100,100]` → 1,
+> `[1900,1050,20,20]` → 1. The `Metering N of M zones` line that makes any of
+> this visible is part of `0106`; without it a window that reached nothing looks
+> exactly like one that was never sent.
+>
 > Found on the way and fixed in `0102`: `toMicroseconds()` shadowed `exposure`,
 > which a host build with `-Werror -Wshadow` rejects. The device build does not
 > use those flags, so the defect had shipped. **Build a userspace patch on the
