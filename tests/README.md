@@ -59,6 +59,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `35-pulse` | userspace has a real sink and the handset mic — also proves the audio checks put the sound server back |
 | `40-camera` | the sensor is not merely probed but linked into CAMSS |
 | `44-camera-af-windows` | focus windows are offered in the sensor's **active pixel array** — not in whatever V4L2 format the last user of the camera left behind — and a window at either corner actually narrows the metering instead of falling back to the centre. The check leaves the sensor in a small format first, because without that step the right answer and the wrong one coincide |
+| `45-camera-af-windows-pipewire` | the same window survives the trip **through PipeWire**, which is the path every application on this device actually uses. Needs a stream open — the IPA does not exist until somebody is capturing, and a control set against an idle node measures nothing |
 | `50-charger` | the charger reports sane values **and current actually flows** |
 | `60/65/70` | wifi connected, bluetooth powered, modem registered |
 | `98-camera-af-rail` | a system resume leaves the focus motor's supply **off**. The defect it exists for is invisible from every other angle — `runtime_status` still reads `suspended`, `active_time` does not move, dmesg says nothing — and only the regulator witnesses it. Detached, because it suspends |
