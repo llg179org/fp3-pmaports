@@ -2186,3 +2186,89 @@ mid-session" was measured, and stays measured, but every explanation offered for
 it so far was reasoning about a chip that had never been configured. Re-measure
 the variability once the blob is in place; the boot-to-boot difference may
 simply be a race with a firmware request that can never succeed.
+
+### The blob was on the phone all along, and installing it changed nothing
+
+Both halves of item 1 above are now answered, and the answer to the second half
+made the first half cost nothing.
+
+**Where it comes from.** `aw8898_cfg.bin` is a Fairphone stock vendor file. It
+is in the extracted vendor tree at
+`hadk22/vendor/fairphone/FP3/proprietary/vendor/firmware/aw8898_cfg.bin`, from a
+`FP3-6.A.040.2-gms` stock build — and, decisively, it is **also on this phone's
+own `vendor` partition, on both slots**, byte-identical:
+
+```sh
+mount -o ro /dev/disk/by-partlabel/vendor_a /mnt/vend
+md5sum /mnt/vend/firmware/aw8898_cfg.bin	# bbcda305cedb3a26f5c29b48ae80b3ec
+```
+
+so the file never has to be redistributed to reach `/lib/firmware`: it is copied
+from the device's own stock partition to the device's own rootfs.
+
+☠️ **The licence question has a tempting wrong answer.** The AOSP build tree
+carries a `.meta_lic` next to the blob reading
+`license_kinds: "SPDX-license-identifier-Apache-2.0"`. That is soong's *default*
+for a `raw` prebuilt with no licence of its own, not a grant from Awinic or
+Fairphone — the same file names `build/soong/licenses/LICENSE` as its licence
+text, which is the build system's, not the blob's. Treat it as proprietary
+vendor content with no stated licence: fine to use on the device it shipped
+with, not something to commit to a public repository.
+
+**It is 96 bytes of register writes**, 24 entries of `(le16 addr, le16 val)`, and
+the mainline driver's parser matches the vendor's byte-for-byte — vendor
+`aw8898_container_update()` does `data[i+1]<<8 | data[i+0]` for the address and
+the same for the value, which is exactly `struct { __le16 addr; __le16 val; }`.
+The last two entries are `0x04 = 0x0044` (SYSCTRL) and `0x08 = 0x0ea0`
+(PWMCTRL), i.e. a plausible real init tail.
+
+**And with it installed, the amplifier still dies.** Measured on the boot after
+installing it: the cached register dump shows `04: 0044` and `05: 0c08`, which
+are the blob's own values, so the file loaded and the driver ran its writes;
+every live (cache-bypassed) read still returns `XXXX`.
+
+☠️ **The cached values are not evidence that the writes reached the chip.**
+`_regmap_write()` updates the cache *before* it touches the bus and returns the
+bus error afterwards, so a failed write leaves the cache looking exactly like a
+successful one. Two instruments that share a layer are one instrument.
+
+### The death window, measured to 220 ms
+
+A boot-armed poller (`/usr/local/bin/aw-poll.sh`, a `Type=simple` unit ordered
+`After=sysinit.target`) reads `AW8898_ID` through `cache_bypass` every 200 ms
+from the moment the driver's regmap appears. One boot, no playback of ours:
+
+```
+regmap appeared at 15.12
+15.23 00: 1702      <- alive
+...                    (44 consecutive samples, 9 seconds)
+24.19 00: 1702      <- last live sample
+24.41 00: XXXX      <- gone
+```
+
+and the first `iis clock not detected (-5)` follows at 24.45. Filtering the
+charger's own log spam away, **there is no other kernel event in the window** —
+no regulator change, no SSR, no pinctrl message, nothing but the first audio
+stream starting.
+
+So the chip is alive for nine uninterrupted seconds and dies within ~220 ms of
+the first stream. That also clears the poller itself of suspicion: 44 bypassed
+reads in a row did no harm.
+
+**Two hypotheses died cheaply on the way:**
+
+- *The pinmux collides.* It does not. The amplifier's I²C is `gpio22`/`gpio23`
+  (`i2c_6_default`), reset is `gpio21`, its IRQ `gpio20`, and QUIN MI2S is
+  `gpio88`/`91`/`92`/`93`. No pin is in both groups.
+- *A reset revives it.* It does not. A full unbind/rebind — which re-runs probe,
+  including the reset-GPIO pulse — fails at the very first step:
+  `Failed to read register AW8898_ID: -5`, `Chip ID check failed`,
+  `probe with driver aw8898 failed with error -5`. Once it is gone it stays gone
+  until a reboot.
+
+Next instrument, because three indirect exclusions have not separated the cases:
+a throwaway driver that does a cache-bypassed ID read at *every* step the stream
+makes — `hw_params` around each of its two `I2SCTRL` read-modify-writes,
+`.prepare` before the PLL poll, the DAPM power-up before and after
+`aw8898_set_power()`, the config write before and after, and the mute — so the
+death can be attributed to one register access instead of to "the stream".
