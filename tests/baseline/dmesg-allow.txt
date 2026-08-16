@@ -14,5 +14,7 @@
 # time_in_state shows residency at all seven, up to 1804800 - so this is a
 # failed rate change that gets retried, not a stuck clock, which is why nothing
 # else on the phone shows it. Allowlisted so it cannot mask a second fault, NOT
-# because it is understood; it is an open item in docs/TODO.md.
+# because it is benign: docs/TODO.md "apcs-cpu0-pll fails to lock, and it took
+# the phone down" has the analysis, and the entry stays only because the check
+# prints this line and its count on every run.
 WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll
