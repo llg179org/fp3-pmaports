@@ -2272,3 +2272,68 @@ makes — `hw_params` around each of its two `I2SCTRL` read-modify-writes,
 `.prepare` before the PLL poll, the DAPM power-up before and after
 `aw8898_set_power()`, the config write before and after, and the mute — so the
 death can be attributed to one register access instead of to "the stream".
+
+### The death has nothing to do with audio, and the kernel never says a word
+
+Every explanation offered above rested on the death coinciding with the first
+audio stream. **It does not.** The control that settles it: boot with no audio
+server at all (pulseaudio's autospawn off and its xdg autostart masked,
+pipewire and wireplumber masked), and with `systemctl set-default
+multi-user.target` so there is no graphical session either. On that boot there
+is not a single `aw8898` line in `dmesg` — no stream was ever prepared — and the
+amplifier still stops answering at 23.87 s.
+
+☠️ The earlier reading was a coincidence of timing: userspace comes up at about
+the same second on every boot, so "it dies when the first stream starts" and "it
+dies about 25 s in" are indistinguishable until you remove the stream.
+
+**What has been excluded, each by its own A/B boot** (all with the death still
+occurring):
+
+| suspect | how it was excluded |
+|---|---|
+| the audio stream | no audio server, no session, no `aw8898` log line — still dies |
+| WLAN (`iris` shares `pm8953_l5`) | `blacklist wcn36xx qcom_wcnss_pil wcnss_ctrl` — still dies |
+| our own `spkwatch` diagnostic | `systemctl disable --now spkwatch` — still dies |
+| our own liveness poller | poller disabled entirely; a single first read at 60 s already reads `XXXX` |
+| ModemManager bringing the modem up | `systemctl disable --now ModemManager` — still dies |
+| the i2c controller runtime-suspending | `power/control = on` pinned from boot — still dies |
+| the i2c pinmux going to its sleep state | `pin 22/23: device 7af6000.i2c function blsp_i2c6` while dead |
+| the reset line being asserted | `gpio21: out high` (`GPIO_ACTIVE_LOW`, so de-asserted) while dead |
+| the supplies dropping out | `vdd=1 vddio=1 dvdd=1` in the driver's own sample, taken *at* the transition |
+
+**The instrument that settles the layer.** A driver-side `delayed_work` samples
+`AW8898_ID` through `regcache_cache_bypass` every 250 ms and logs the moment the
+error code changes, so the death lands on the kernel's own timeline next to
+every other message:
+
+```
+[   17.047332] aw8898 4-0034: LIVE[cfg_write-exit]: err=0 id=0x1702
+[   24.993011] aw8898 4-0034: WATCH: id read 0 -> -5 (id=0xffff0000) reset=0 vdd=1 vddio=1 dvdd=1
+```
+
+and **there is nothing else in `dmesg` between 23.5 s and 26.5 s** — not one
+line, charger spam included.
+
+**It is the chip, not the bus.** Probing the same adapter through `/dev/i2c-N`:
+a nonexistent address (`0x20`, `0x35`) returns `EIO`, which is what this
+controller reports for a NAK, so `EIO` from the amplifier means the part is not
+acknowledging rather than that the bus is broken. A full `0x03`–`0x77` scan with
+the chip dead answers **nothing at all**.
+
+**The blob does load and every write succeeds.** With `aw8898_cfg.bin` in place
+the log shows `EXP: loaded aw8898_cfg.bin - size: 96` and all 24 writes
+returning `0`, ending `reg 0x0004 = 0x0044`, `reg 0x0008 = 0xa00e`. So the
+amplifier *is* initialised now — the missing blob was a real defect, and fixing
+it did not fix the silence.
+
+**Death times measured so far** (uptime seconds, various boots and
+configurations): 23.92, 24.41, 24.55, 24.99, 25.04, 25.25, 25.51 — and one
+outlier at 34.16. Tightly clustered around 25 s and anchored to boot, not to any
+event we have been able to name.
+
+Open lead being tested next: the kernel's own late regulator cleanup
+(`regulator_init_complete_work_function`, 30 s after `late_initcall_sync`) or
+another boot-anchored timer turning off a rail the amplifier needs but our
+device tree does not describe — which would explain a chip that is powered
+according to the framework, out of reset, and electrically absent.
