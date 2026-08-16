@@ -159,6 +159,28 @@ the audio block together, suspend last.
 - **The sudo prompt has no trailing newline**, so it prepends itself to the
   first line of output. Send it to `/dev/null`; filtering it with `grep` deletes
   that line *including* your own first line of output.
+- **A WARN storm evicts the boot from `dmesg`.** Each `WARNING:` on this device
+  prints a ~1.5kB module list, so a few hundred of them push the early boot out
+  of the ring buffer: measured 2026-08-16, `dmesg`'s oldest surviving line was
+  13684s into a 14351s-old boot, while `journalctl -k -b` still had all 299
+  warnings from the ninth second. A fault check reading `dmesg` was looking at
+  the last eleven minutes of an eighty-minute boot and calling it "the kernel
+  log". Read the journal, fall back to `dmesg`, and say which you read.
+- **A fault check that ignores `WARNING:` is not a fault check.** `10-health`
+  grepped only for panic/oops/BUG and reported green through 299 instances of
+  `apcs-cpu0-pll failed to enable!` plus a `ktime_get()` WARN this project had
+  introduced the day before. A WARN is a kernel developer saying a case should
+  not happen; a test has no business deciding it does not matter. Known ones go
+  in `baseline/dmesg-allow.txt` with a dated reason, and the check still prints
+  each allowlisted line with its count — an allowlist that swallows its entries
+  silently becomes the thing it was meant to prevent.
+- **Put the device in the state you need, then put it back.** Three checks now
+  do this rather than asking a human or skipping: `52-fuel-gauge` opens the
+  charger's input FET for its load step, `65-bluetooth` clears an rfkill soft
+  block, `98-camera-af-rail` restarts wireplumber to release the focus motor.
+  Each arms its restore before the first change. The alternative is what
+  `65-bluetooth` was: a permanent `--no-bt` on the command line, and a check
+  nobody had watched fail in months.
 
 ## Why not just use hwtest?
 
@@ -194,10 +216,20 @@ session from scratch. Of the ~15s a human perceives, roughly 7s is
 authentication and session setup before phosh exists, and ~8.4s is phosh
 starting up to idle (measured 2026-07-25).
 
-`loginctl show-user fp3 -p Linger` is `no`, so nothing of the session exists
-before login. That is the lever: pre-warm the session and the cold path stops
-paying for it — at which point `03-unlock-latency` passes because phosh is
-already running when you unlock, rather than because it started quickly.
+That was written when `loginctl show-user fp3 -p Linger` read `no`, so nothing
+of the session existed before login. It reads `yes` as of 2026-08-16, which
+changes what the split above is measuring — re-measure before treating the
+7s/8.4s figures as current. Lingering is the lever either way: pre-warm the
+session and the cold path stops paying for it, at which point
+`03-unlock-latency` passes because phosh is already running when you unlock
+rather than because it started quickly.
+
+The greeter can also be told to skip the human entirely:
+`/etc/phrog/greetd-config.toml` carries a commented-out `[initial_session]`
+block (`command = "systemd-cat phosh-session"`, `user = "fp3"`) that logs in at
+boot. ⚠️ That does not make `03-unlock-latency` pass — it **retires** it, by
+removing the path the check exists to measure. Useful for running the rest of
+the battery unattended, not for this check.
 
 ### Rejected end markers
 
