@@ -1649,9 +1649,16 @@ The first test is a fixed cpufreq sweep at high and at low battery, counting
 failures — not another power leg, which would only measure this.
 
 Measured again 2026-08-16 on r56, and it narrows the question. 299 instances in
-one 85-minute boot, the first nine seconds in, arriving every 10–40s. It is
-**not load-driven**: neither 60s of idle nor a 30s eight-core burn changed the
-rate. The cluster still reaches every operating point — `policy0`'s
+one 85-minute boot, the first nine seconds in, arriving every 10–40s.
+
+☠️ An earlier version of this paragraph said it was **not load-driven**, on the
+strength of a 60s-idle-vs-30s-burn comparison. Withdraw that: the counts came
+from a `dmesg` that had already wrapped — noted as unreliable at the time and
+used anyway. On the clean r57 boot the picture is different and not yet
+explained: **zero** across the whole 27-check battery, which includes a 30s
+eight-core burn, then **24 in three minutes** during the three acoustic audio
+checks. Whatever drives it, it is not simply CPU load, and the audio path is
+now the first place to look. The cluster still reaches every operating point — `policy0`'s
 `time_in_state` shows residency at all seven, up to 1804800 — so each failure is
 a rate change that is retried, not a clock left stuck, which is why nothing else
 on the phone shows it. The battery was at 99–100% throughout, which weakens the
