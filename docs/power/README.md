@@ -1292,3 +1292,44 @@ Run it with [`suspend-slope.sh`](suspend-slope.sh) and reduce it with
 first and flags a phase whose points are not a straight line. `slope-fit.py
 --selftest` checks it against a synthetic run of known slope ratio *and* against
 scatter that must fail the straight-line gate.
+
+## The `apcs-cpu*-pll` failures are not a low-battery effect
+
+*2026-08-16 evening, measured on `7.1.3-r57` with
+[`pll-sweep.sh`](pll-sweep.sh). The instruments are
+[`pll-sweep.sh`](pll-sweep.sh) and [`pll-vs-voltage.sh`](pll-vs-voltage.sh).*
+
+The RUNBOOK's next step was a fixed cpufreq sweep at high and low battery,
+because the 2026-08-15 storm began at 3.82 V — the lowest the pack had been
+that session. The high-battery leg alone answers it:
+
+| | |
+|---|---|
+| battery | **100 %, 4.345 V, `status=Full`** |
+| policy0 transitions (kernel's own `stats/total_trans`) | 3608 |
+| `apcs-cpu4-pll failed to enable!` | **90** |
+| `apcs-cpu0-pll failed to enable!` | 1 |
+
+Ninety failures at the top of the charge curve. A five-round smoke test minutes
+earlier, at **4.41 V**, had already produced one in 52 transitions. Whatever
+this is, a sagging supply is not a precondition for it — so the correlation the
+storm suggested has a simpler reading: phase B of the slope run was the *awake*
+leg, where schedutil changes frequency continuously, and phase A was asleep.
+The storm tracks **transition rate**, not volts.
+
+☠️ **The denominator in that table is wrong and the instrument needs fixing
+before the ramp is run.** `pll-sweep.sh` pins one policy to the userspace
+governor and counts *that* policy's transitions, but almost every failure came
+from `apcs-cpu4-pll` — the other cluster, still on schedutil, being driven by
+the sweep's own CPU load. The failure count and the transition count are
+therefore about different clusters. What survives unharmed is the qualitative
+result, because it needs no denominator: failures happen in quantity at 4.35 V.
+Before the voltage ramp is worth running, the script has to sweep or pin both
+policies and break the failures down per PLL.
+
+☠️ Note also which PLL fails. It is overwhelmingly the **big** cluster
+(`apcs-cpu4-pll`, 90 against 1), while the 2026-08-15 storm and the WARNING
+captured in
+[`2026-08-16_apcs-cpu0-pll-lock-failures.txt`](2026-08-16_apcs-cpu0-pll-lock-failures.txt)
+were on `apcs-cpu0-pll`. Both fail; the mix depends on what is driving them,
+which is one more reason not to read a rate off a run that did not control it.

@@ -2033,3 +2033,52 @@ evening's probes were *validated against each other* and agreed - and the
 agreement was worthless, because two of them shared a cache. **Two instruments
 that share a layer are one instrument.** The write was the only probe that had
 to touch the wire, and it was the one worth trusting.
+
+### The `volatile_reg` fix is in, and it turned -110 into -5
+
+*2026-08-16 evening, `linux-fp3-7.1.3-r58` (`#59-fp3`,
+`_commit=5db94248edcf39f7b0d1a0aabd77c09173d78813`). The kernel change is
+`ASoC: aw8898: mark SYSST volatile so the PLL poll can see it change` on
+`wip/7.1.3/audio`, cherry-picked to `integration/7.1.3` and `debug-int/7.1.3`.*
+
+The patch does what it was written to do, and the proof is in the error code.
+Before it, `.prepare` logged
+
+```
+aw8898 4-0034: iis clock not detected (-110), playing anyway
+```
+
+`-110` is `-ETIMEDOUT`: the poll ran its full second without the condition ever
+becoming true — which is exactly what a loop spinning on one cached sample
+looks like. On the first boot of r58 the same line reads
+
+```
+aw8898 4-0034: iis clock not detected (-5), playing anyway
+```
+
+`-5` is `-EIO`: `regmap_read_poll_timeout()` now performs a real bus read on
+every iteration, and that read **fails**. The timing says the same thing
+independently — the eleven lines this boot are spread over 24.81 s to 25.43 s,
+a few tens of milliseconds apart, where a one-second timeout would have put
+them a second apart.
+
+So the PLL hypothesis is settled in a way that was not on the list of expected
+answers. It was never "the PLL fails to lock"; the driver could not read the
+register that would have told it either way. **What is actually wrong is one
+layer lower: the amplifier does not answer on I²C at all.**
+
+☠️ **And this cold boot had a dead amplifier from the start**, which the
+2026-08-16 morning boot did not. `fp3-selftest --only speaker-amp` fails both
+arms minutes after boot: the `RX Volume` write (255 → 254) is refused, and the
+clock complaint is there. Yesterday's cold boot passed both. So "cold boot
+heals it" is not reliable either — the state the phone comes up in varies, and
+that variation is now the thing to chase.
+
+What that makes the next question. Not the PLL, and not the poll: **why does a
+register access to 0x34 return -EIO on a bus whose controller probed cleanly?**
+The driver's own probe succeeded on this boot — there is no `Chip ID check
+failed` line, so the very first `regmap_read` of `AW8898_ID` went through — and
+the failures start only at 24.8 s, when DAPM first powers the widget. Between
+those two points something makes the chip stop answering, and the candidates
+worth separating are its supplies, its reset GPIO, and `SND_SOC_DAPM_POST_PMD`
+having powered it down earlier in the boot than anyone assumed.
