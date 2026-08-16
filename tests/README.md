@@ -61,6 +61,7 @@ until grep -qE '^(PASS|FAIL) - ' /tmp/selftest.log; do sleep 15; done
 | `44-camera-af-windows` | focus windows are offered in the sensor's **active pixel array** — not in whatever V4L2 format the last user of the camera left behind — and a window at either corner actually narrows the metering instead of falling back to the centre. The check leaves the sensor in a small format first, because without that step the right answer and the wrong one coincide |
 | `45-camera-af-windows-pipewire` | the same window survives the trip **through PipeWire**, which is the path every application on this device actually uses. Needs a stream open — the IPA does not exist until somebody is capturing, and a control set against an idle node measures nothing — and it has to speak to the *logged-in user's* graph, not root's (see the traps below) |
 | `50-charger` | the charger reports sane values **and current actually flows** |
+| `52-fuel-gauge` | the reported capacity tracks the battery and not the CPU load. Takes the phone **off VBUS electrically** for the burn (`USBIN_SUSPEND_BIT` via the charger's writable `status`), so it measures a real load step with the cable still attached — on the charger the rail does not move at all and the check has nothing to judge |
 | `60/65/70` | wifi connected, bluetooth powered, modem registered |
 | `98-camera-af-rail` | a system resume leaves the focus motor's supply **off**. The defect it exists for is invisible from every other angle — `runtime_status` still reads `suspended`, `active_time` does not move, dmesg says nothing — and only the regulator witnesses it. Detached, because it suspends |
 | `99-suspend` (category `power`) | the sleep-state menu matches `baseline/sleep-states.txt`, suspend happens and the RTC wakes it, **and the system power domain actually collapsed while it was down** — a suspend that freezes userspace but never lets the domains go still passes every outward test and saves nothing. Runs last and detached — resuming re-enumerates USB and drops the link every time |
@@ -138,6 +139,23 @@ the audio block together, suspend last.
   `pw-cli`, `systemctl --user`, `systemd-run --user` or `journalctl --user` has to
   cross into the session (`loginctl list-users` names it), and must report "cannot
   reach a graph" separately from "the graph has no camera node".
+- **Never name an IIO device by index.** `42-camera-flash` read
+  `iio:device1` for the USB input current and skipped every single run with
+  "attach a cable" — including runs with a cable attached and the charger
+  online, which is what made the message worth distrusting. The channel is on
+  `iio:device0`; the index moves between boots. Match on the channel, and give
+  "no such channel anywhere" a different message from "the input is offline".
+- **☠️ `USBIN_SUSPEND_BIT` lives in the PMIC and survives a warm reboot.** Left
+  set through a restart it has wedged the bootloader — fastboot enumerated and
+  answered nothing, and only a held power button recovered it. Any check that
+  suspends the charger input arms its release *before* the first write, runs it
+  on every exit path, and never reboots while it is set. A phone that
+  discharges with the cable plugged in is what a forgotten bit looks like.
+- **Do not gate a charger disconnect on a negative `current_now`.** With the
+  input FET open on a battery at 100%, `online` reads 0 and `status` reads
+  `Discharging` while `current_now` reads exactly 0 — an idle full pack really
+  is drawing nothing. Ask the ADC under the load instead, where a non-negative
+  reading means something is genuinely wrong.
 - **The sudo prompt has no trailing newline**, so it prepends itself to the
   first line of output. Send it to `/dev/null`; filtering it with `grep` deletes
   that line *including* your own first line of output.
