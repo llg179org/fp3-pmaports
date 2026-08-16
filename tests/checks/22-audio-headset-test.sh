@@ -6,6 +6,14 @@
 # Same acoustic method as 21, on the analogue headset input instead of the
 # digital handset mic - so it exercises the ADC path rather than the DMIC one.
 # Needs a headset actually plugged in, hence the extra requirement.
+#
+# ☠️ Mind which end is which. The tone comes out of the phone's SPEAKER and is
+# recorded on the HEADSET's microphone, so the thing to arrange is the headset's
+# mic in front of the phone's speaker - not the earbud next to the mic, which
+# couples nothing and reads as a quiet room. Measured 2026-08-16 with the earbud
+# at the jack mic: alsabat found only 238-250Hz and "at least 10 signals", i.e.
+# noise, while 23-audio-slimbus passed on the same run because it never leaves
+# the digital path.
 
 . "$DEVICE_DIR/lib/audio-state.sh"
 
