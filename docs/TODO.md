@@ -2133,3 +2133,56 @@ before the hypothesis is believed: unbinding and re-probing re-runs
 `Chip ID check failed, -EIO`. Either PDN survives the reset pulse, or the reset
 line is not reaching the chip. Deciding between those two is what the experiment
 has to do, so it needs to be run with the reset toggled by hand as well.
+
+### The POST_PMD hypothesis is dead, and `aw8898_cfg.bin` is not on the phone
+
+*Measured on the throwaway branch `wip/7.1.3/audio-debug` (`afad60700184`),
+deployed as a module hot-swap over r58 and reverted afterwards.*
+
+The experiment answered cleanly and in the negative:
+
+```
+[   15.909845] aw8898 4-0034: component_probe: live chip id read -> 0 (0x1702)
+[   24.000970] aw8898 4-0034: iis clock not detected (-5), playing anyway
+```
+
+and `POST_PMD` was logged **zero** times on that boot. So the widget was never
+powered down, and the chip still died — the power-down write is not what takes
+it off the bus. The first line also does what it was added for: a
+**cache-bypassed** read at 15.91 s returns the real chip ID, `0x1702`, so the
+part is alive on the bus when the card binds the component, and dead eight
+seconds later.
+
+That narrows the window to what happens between card bind and the first stream,
+and there is exactly one substantial thing in it — `SND_SOC_DAPM_PRE_PMU` calls
+`aw8898_cold_start()`, which asks for the amplifier's configuration blob and,
+on the callback, writes **arbitrary register addresses out of the file**:
+
+```c
+regmap_write(aw8898->regmap, addr, val);	/* addr comes from the blob */
+```
+
+☠️ **And the blob is not installed.** `/lib/firmware/aw8898_cfg.bin` does not
+exist on this device. So `cfg_loaded` never becomes true, every widget power-up
+re-issues the request, and — much more to the point — **the amplifier has never
+been given its initialisation registers at all.** It is running on whatever the
+part powers up with, which is a perfectly good explanation for an I²S interface
+that never comes alive, and a candidate one for a chip that stops answering.
+
+Two things follow, in this order, and neither is a kernel patch:
+
+1. **Find out what the blob is and where it comes from.** The vendor tree
+   (`hadk22/kernel/fairphone/sdm632`, `sound/soc/codecs/aw/aw8898.c`) loads the
+   same file, so the vendor image should carry it — that is the thing to look
+   for, along with its licence, before anything is copied anywhere.
+2. **Only then decide what the driver should do without one.** Right now a
+   missing file is silent past a single `dev_err` and the part is left
+   uninitialised; whether that should be a probe failure, a warning, or a set of
+   built-in defaults is a real question for the upstream series, not for us
+   alone.
+
+☠️ Note what this costs the earlier write-ups: "the amplifier stops answering
+mid-session" was measured, and stays measured, but every explanation offered for
+it so far was reasoning about a chip that had never been configured. Re-measure
+the variability once the blob is in place; the boot-to-boot difference may
+simply be a race with a firmware request that can never succeed.
