@@ -1,0 +1,26 @@
+[Unit]
+Description=Set the system clock from the cellular network while it is still at the epoch
+Documentation=https://github.com/llg179org/fp3-pmaports/tree/main/userspace-system
+# ModemManager owns the only time source this phone has without a network, so
+# there is nothing to ask before it is up. The script waits for registration
+# itself rather than assuming this ordering is enough - measured on this
+# device, registration completes about 42 s after boot.
+After=ModemManager.service
+Wants=ModemManager.service
+# ☠️ And after multi-user.target, not before it. A oneshot that a target pulls
+# in is one the target waits for, so an ordinary WantedBy= would put this
+# script's wait - up to three minutes of it - between the boot and every unit
+# ordered after that target. Ordering it after the target it is wanted by is
+# the pattern that keeps a slow, non-essential job off the boot path.
+After=multi-user.target
+# Nothing to do once the clock is right, and the script says so and exits 0.
+ConditionPathExists=/usr/bin/mmcli
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fp3-nitz-clock
+# The wait is deliberate and can be long; it must not hold up the boot.
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

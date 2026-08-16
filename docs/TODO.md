@@ -948,10 +948,36 @@ enough to make TLS, `apk` and log timestamps work until NTP refines it. That way
 the ambiguity above never has to be decided, and the rule stays simple enough to
 be correct on any phone and any operator.
 
-Not yet established, and both are cheap reads: whether anything currently
-consumes the value at all (`timedatectl`, ModemManager's `NetworkTimeChanged`),
-and how long after boot the modem can first answer — if registration takes
-minutes, the bootstrap has to wait for it rather than run at a fixed point.
+~~Not yet established, and both are cheap reads: whether anything currently
+consumes the value at all, and how long after boot the modem can first
+answer.~~ **Both measured, and the bootstrap is written — 2026-08-16.** It is
+[`userspace-system/fp3-nitz-clock`](../userspace-system/README.md#fp3-nitz-clock--a-real-date-on-a-phone-with-no-writable-rtc),
+with `71-clock` in the battery to keep it from being lost again. What the two
+reads answered:
+
+* **registration takes about 42 s** from boot (`registering -> home` at
+  17:11:03 for a boot at 17:10:21), so the bootstrap waits for the modem rather
+  than running at a fixed point;
+* **nothing consumed the value, and on that boot nothing could have.** The
+  `org.freedesktop.ModemManager1.Modem.Time` interface was absent from the
+  modem's D-Bus object for the whole session — `mmcli -m 0 --time` answered
+  *"modem has no time capabilities"* — while the modem was registered on LTE at
+  75 % signal with the packet service attached. Restarting ModemManager, or
+  disabling and re-enabling the modem, brought it back immediately, with
+  `modem has time capabilities, enabling the Time interface` and QMI
+  `Get Network Time` traffic following.
+
+☠️ **That last one is still open, and it is the interesting half.** The
+capability check looks as though it is decided once, early, and comes out
+negative when it runs before the modem can answer — but that is a hypothesis
+from a single boot, not a measurement of the mechanism. If it turns out to be
+reproducible, the bootstrap will find nothing on a cold boot no matter how long
+it waits, and the fix belongs in ModemManager rather than in a script of ours.
+The cheap next read is the next reboot: does the interface come up on its own?
+
+The `allow-set-time` / RTC half of this section is untouched by any of it — the
+clock still does not survive a reboot, and the warning above about the secure
+world still stands.
 
 ## ~~The notification LED blinks forever after a missed call~~ — closed 2026-08-16, it does end
 

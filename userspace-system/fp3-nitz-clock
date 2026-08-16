@@ -1,0 +1,92 @@
+#!/bin/sh
+# Bootstrap the system clock from the cellular network, and only from the epoch.
+#
+# This phone has no writable RTC: pm8xxx offers three ways to persist the time
+# and the device tree enables none of them, so hwclock reads 1970 on every boot
+# and ioctl(RTC_SET_TIME) answers ENODEV. Everything that runs before NTP gets
+# a fictional date - which is why a service that failed eleven hours ago can be
+# dated four weeks back - and with no WiFi there may be no NTP at all.
+#
+# The cellular network supplies the time over NITZ, on the signalling channel,
+# so it needs neither mobile data nor a data subscription. That makes it the
+# one time source available on a phone with only a SIM.
+#
+# Deliberately a bootstrap and not a time source:
+#
+#   * it runs only when the clock is still near the epoch, and does nothing at
+#     all otherwise, so it can never pull a good clock backwards;
+#   * NTP is left to refine the result whenever a network turns up.
+#
+# ☠️ The value ModemManager reports is UTC and the string labels it local.
+# Measured twice on this device (2026-08-14 and 2026-08-16, Vodafone HU): the
+# modem answered "2026-08-16T16:11:26+02" when real local time was 18:11:26
+# CEST, i.e. 16:11:26 UTC. So the digits are UTC and the "+02" is wrong;
+# anything that parses that string whole sets the clock two hours slow. The
+# timezone is reported correctly and separately, as 120 minutes.
+#
+# This script therefore reads the digits and treats them as UTC. Being wrong
+# about that would cost two hours; being without it costs 56 years. That is the
+# entire reason the epoch guard exists - it keeps the ambiguity from ever
+# mattering, so it does not have to be resolved before the script is useful.
+
+set -eu
+
+# Anything before this is not a clock, it is the absence of one. Well after any
+# plausible build date of this image and well before any real use of it.
+SANE_AFTER=1735689600			# 2025-01-01T00:00:00Z
+SANE_BEFORE=4102444800			# 2100-01-01T00:00:00Z
+
+# The modem needs to register before it can be asked. Measured on this device:
+# 42 s from boot to "registration state changed (registering -> home)". Waiting
+# is therefore the normal case, not the exceptional one.
+WAIT_SECONDS=${WAIT_SECONDS:-180}
+POLL_SECONDS=5
+
+log() { echo "$*"; }
+
+now=$(date -u +%s)
+if [ "$now" -ge "$SANE_AFTER" ]; then
+	log "clock is already set ($(date -u '+%Y-%m-%dT%H:%M:%SZ')), nothing to do"
+	exit 0
+fi
+
+if ! command -v mmcli >/dev/null 2>&1; then
+	log "no mmcli, so no network time source; leaving the clock at the epoch"
+	exit 0
+fi
+
+stamp=""
+waited=0
+while [ "$waited" -lt "$WAIT_SECONDS" ]; do
+	# ☠️ Read only the digits. The trailing offset is wrong, see above.
+	stamp=$(mmcli -m 0 --time 2>/dev/null |
+		sed -n 's/.*current: *\([0-9][0-9-]*T[0-9][0-9:]*\).*/\1/p' |
+		head -1)
+	[ -n "$stamp" ] && break
+	sleep "$POLL_SECONDS"
+	waited=$((waited + POLL_SECONDS))
+done
+
+if [ -z "$stamp" ]; then
+	# Not a failure: a phone with no SIM, out of coverage, or one whose
+	# Time interface ModemManager decided not to export this boot, all end
+	# up here. Say which so the journal is worth reading.
+	if mmcli -m 0 --time 2>&1 | grep -q 'no time capabilities'; then
+		log "ModemManager exports no Time interface for this modem, so"
+		log "there is no network time to read; the clock stays at the epoch"
+	else
+		log "no network time after ${WAIT_SECONDS}s; the clock stays at the epoch"
+	fi
+	exit 0
+fi
+
+epoch=$(date -u -D '%Y-%m-%dT%H:%M:%S' -d "$stamp" +%s 2>/dev/null || true)
+if [ -z "$epoch" ] || [ "$epoch" -lt "$SANE_AFTER" ] || [ "$epoch" -ge "$SANE_BEFORE" ]; then
+	log "network time '$stamp' is not a plausible date, ignoring it"
+	exit 0
+fi
+
+set_to=$(date -u -D '%Y-%m-%dT%H:%M:%S' -d "$stamp" '+%Y-%m-%d %H:%M:%S')
+date -u -s "$set_to" >/dev/null
+log "clock set from the cellular network: ${set_to} UTC (waited ${waited}s)"
+log "NTP will refine this as soon as a network is reachable"
