@@ -2337,3 +2337,54 @@ Open lead being tested next: the kernel's own late regulator cleanup
 another boot-anchored timer turning off a rail the amplifier needs but our
 device tree does not describe — which would explain a chip that is powered
 according to the framework, out of reset, and electrically absent.
+
+### ☠️ The phone is stuck at a hang and needs a button press
+
+**State, 2026-08-16 ~21:00.** The device does not boot and does not enumerate on
+USB at all. The last good boot was 20:54:15; the reboot at 20:57:23 never came
+back, and 25 minutes of polling saw nothing on `lsusb`.
+
+**What did it.** I added `fw_devlink=off` to the kernel command line, in
+`/boot/extlinux/extlinux.conf`, to test whether a `sync_state()` callback was
+turning off a rail the amplifier needs. It hangs before the USB gadget comes up,
+so there is no console, no ssh and no fastboot — and the parameter is on disk, so
+every reboot repeats it. The watchdog does not save it either, which places the
+hang before the watchdog driver probes.
+
+☠️ **The rule this broke is already written down**: *a kernel experiment must
+never block boot*. A command-line change is exactly that class of change, and I
+made it with no armed fallback — on a device whose only two channels (ssh over
+USB and ssh over WiFi) both need userspace to be running. The cost is not the
+experiment, which was a fair one, but that it was staged in the one place that
+cannot be undone from the outside.
+
+**Recovery, needs a hand on the phone:**
+
+1. Hold **power** for ~15 s to force it off.
+2. Hold **volume up** while powering on to reach the lk2nd boot menu, and pick
+   the second entry (`postmarketOS-fallback`) — its `append` line was never
+   touched and still has the clean command line. If the fallback does not boot,
+   use **power + volume down** for fastboot instead and `fastboot boot` a known
+   kernel.
+3. Once up, undo the change; the untouched original is already saved next to it:
+
+```sh
+sudo cp /boot/extlinux/extlinux.conf.bak-aw /boot/extlinux/extlinux.conf
+grep append /boot/extlinux/extlinux.conf	# no fw_devlink=off, no regulator_ignore_unused
+```
+
+**Also left on the device, all deliberate and all reversible from a shell:**
+
+| change | undo |
+|---|---|
+| `graphical.target` → `multi-user.target` | `systemctl set-default graphical.target` |
+| pulseaudio autospawn off, xdg autostart masked | `sed -i 's/^autospawn = no/; autospawn = yes/' /etc/pulse/client.conf`; `rm ~/.config/systemd/user/app-pulseaudio@autostart.service` |
+| pipewire/wireplumber masked | `systemctl --user unmask pipewire.service pipewire.socket wireplumber.service` |
+| WLAN blacklisted | `rm /etc/modprobe.d/zz-fp3-wlan-off.conf` |
+| `spkwatch`, `ModemManager`, `aw-poll` disabled | `systemctl enable --now spkwatch ModemManager` |
+| `regsnap.service` (per-second regulator snapshots) | `systemctl disable --now regsnap` |
+| the instrumented `snd-soc-aw8898.ko` | `cp /root/aw8898.ko.r58 /lib/modules/$(uname -r)/kernel/sound/soc/codecs/snd-soc-aw8898.ko && depmod -a` |
+| `/lib/firmware/aw8898_cfg.bin` | **keep it** — it is stock content from the phone's own vendor partition and it is what the driver has always been asking for |
+
+The experiment kernel is preserved on the fork as `wip/7.1.3/audio-debug`, tagged
+`archive/wip-7.1.3-audio-debug-watch`; nothing on any shipping branch changed.
