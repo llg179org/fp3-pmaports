@@ -314,7 +314,18 @@ install, never before. Check the file, do not assume:
 
 ```sh
 ssh $D cat /boot/extlinux/extlinux.conf
+fp3-selftest --only boot-fallback     # the same question, as a check
 ```
+
+☠️ **Reading that file is not the same as checking it**, and the difference cost
+a physical recovery on 2026-08-16: the net had been gone for an unknown number
+of installs, the file was opened — to *edit* it — and the missing `timeout`,
+`default` and `panic=10` went unread, because nothing was looking for them. A
+kernel command line experiment then hung the boot with no way back in. That is
+why the question is now a check (`tests/checks/02-boot-fallback-test.sh`): it
+also asks whether the fallback's kernel and dtb actually exist, and whether the
+watchdog — the only thing that recovers a *hang* rather than a panic — is
+running.
 
 **Watch the device's free space.** Each kernel apk is ~30 MB and they accumulate
 in `/home/fp3` and `/var/cache/apk`; on a 2.4 GB rootfs a day of iteration
