@@ -2082,3 +2082,54 @@ the failures start only at 24.8 s, when DAPM first powers the widget. Between
 those two points something makes the chip stop answering, and the candidates
 worth separating are its supplies, its reset GPIO, and `SND_SOC_DAPM_POST_PMD`
 having powered it down earlier in the boot than anyone assumed.
+
+### Narrowed the same evening: it is dead before anything plays
+
+Two more boots of r58, and they move the fault well away from the stream:
+
+| boot | first `iis clock` line | amp answers? |
+|---|---|---|
+| 18:43 | 24.81 s (eleven of them) | no — both arms of `24-speaker-amp` fail |
+| 18:52 | **none at all** until the check's own `aplay` | no — the `RX Volume` write fails **before** that `aplay` |
+
+The second boot is the informative one. Nothing had played, the kernel had said
+nothing about the amplifier, and the very first thing anyone asked of it — a
+one-step `RX Volume` write — was refused. A raw I²C transaction to `0x34`,
+independent of the driver and its cache, **NAKs**. So this is not the stream, not
+DAPM's teardown of a stream, and not a regmap artefact: by the time userspace can
+ask, the chip is not on the bus.
+
+Yet the driver's own probe succeeded. There is no `Chip ID check failed` line on
+either boot, which means the first `regmap_read` of `AW8898_ID` — issued straight
+after `aw8898_reset()` toggles the reset GPIO — went through. The chip therefore
+answers at probe and stops answering somewhere between probe and userspace, with
+no audio anywhere in that window.
+
+Checked and cleared as causes:
+
+* **the supplies.** All three consumers are enabled: `4-0034-vdd` off `vph_pwr`,
+  `4-0034-dvdd` and `4-0034-vddio` off `pm8953_l5` at 1.8 V.
+* **the reset polarity**, which looked like a promising discrepancy and is not.
+  The vendor tree declares `reset-gpio = <&tlmm 21 0>` — flags `0`, active-high —
+  where ours declares `GPIO_ACTIVE_LOW`. But the vendor driver uses the legacy
+  API and ignores the flag: `aw8898_hw_reset()` drives the line **raw low, then
+  raw high**. Ours asks for logical 1 then 0 through `gpiod_`, and with
+  `GPIO_ACTIVE_LOW` that is raw low then raw high — the same waveform. The two
+  descriptions disagree and the two behaviours agree, which is the only thing
+  that matters here.
+
+**The hypothesis worth testing next**, and the one experiment that decides it:
+`SND_SOC_DAPM_POST_PMD` calls `aw8898_set_power(aw8898, false)`, which writes
+`SYSCTRL.PW = PDN`. DAPM powers widgets down when the card's widgets are first
+brought up, not only at the end of a stream — so that write plausibly lands
+during card registration, long before anything plays. If the chip stops
+acknowledging its address in PDN, then the first power-down is permanent: every
+later access fails, `aw8898_set_power(true)` included, because it is itself an
+I²C write. That fits every observation on both boots.
+
+☠️ The one thing it does not fit is the rebind, and that has to be explained
+before the hypothesis is believed: unbinding and re-probing re-runs
+`aw8898_reset()`, and a reset should bring any chip back — but it fails at
+`Chip ID check failed, -EIO`. Either PDN survives the reset pulse, or the reset
+line is not reaching the chip. Deciding between those two is what the experiment
+has to do, so it needs to be run with the reset toggled by hand as well.
