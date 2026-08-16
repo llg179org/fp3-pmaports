@@ -1334,9 +1334,10 @@ shows up much later than the change that caused it. The one-line check is in
 > `AfWindows` is documented as being in `ScalerCropMaximum` pixels; the simple
 > pipeline handler publishes no such property (`git grep ScalerCropMaximum` hits
 > only `rpi` and `rkisp1`), so there is nothing there for an application to
-> read. The IPA measures against the software ISP's **output frame**, and the
-> control's own maximum now states that space, which is machine-readable and is
-> what an application computes a tap position in anyway.
+> read. The IPA measures against the sensor's **active pixel array**, and the
+> control's own maximum states that space, which is machine-readable and — on a
+> pipeline that cannot crop — is the same rectangle `ScalerCropMaximum` would
+> name.
 >
 > ##### ☠️☠️ A fourth defect, found only by measuring end to end (`r17`)
 >
@@ -1367,13 +1368,46 @@ shows up much later than the change that caused it. The one-line check is in
 >   because it lay wholly outside a 1920x1080 clip, while `(1900, 1050, 20, 20)`
 >   selected 1.
 >
->   **The fix, with its premise already measured:** use the sensor's *active
->   pixel array*, which is a fixed hardware property and does not move —
->   `PixelArrayActiveAreas = [ (8, 24)/4032x3024 ]` read identically after a
->   1080p capture and after a full-res one. Advertise that as the space and clip
->   against it, so the answer no longer depends on session history. Note the
->   mapping assumes the stream covers the active area; a cropped sensor mode
->   would need `analogCrop`, which the IPA is not told at `configure()` time.
+>   **Fixed in `r18`** by using the sensor's *active pixel array*, which is a
+>   fixed hardware property and does not move — `PixelArrayActiveAreas =
+>   [ (8, 24)/4032x3024 ]` read identically after a 1080p capture and after a
+>   full-res one. `IPACameraSensorInfo::activeAreaSize` carries it, so the
+>   stale init-time snapshot is no longer a problem: the one field that moves is
+>   the one that is no longer read. `selectZones()` maps a window onto the zones
+>   proportionally and needs no absolute size of its own.
+>
+>   Measured after the fix — the space no longer follows what the last user of
+>   the camera left in the driver:
+>
+>   ```
+>   after a 1920x1080 capture:  AfWindows: [(0, 0)/1x1..(0, 0)/4032x3024]
+>   after a 4032x3024 capture:  AfWindows: [(0, 0)/1x1..(0, 0)/4032x3024]
+>   after a  640x480  capture:  AfWindows: [(0, 0)/1x1..(0, 0)/4032x3024]
+>   ```
+>
+>   and the two windows that used to fall back to the centre now aim:
+>
+>   ```
+>   [0, 0, 4032, 3024]     -> Metering 25 of 25 zones      (was 25)
+>   [2000, 1500, 400, 300] -> Metering  1 of 25 zones      (was 9 — centre fallback)
+>   [3900, 2900, 100, 100] -> Metering  1 of 25 zones      (was 9 — centre fallback)
+>   [0, 0, 100, 100]       -> Metering  1 of 25 zones      (was 1)
+>   ```
+>
+>   ☠️ The mapping assumes the stream covers the active area. A sensor mode that
+>   cropped rather than scaled would need `analogCrop` — which is known only for
+>   the format the IPA was initialised with, and is therefore no more dependable
+>   here than the output size was. Stated in the code and the commit rather than
+>   silently assumed.
+>
+>   ☠️ `cam` cannot set a control from the command line — `-s` is stream
+>   configuration. Controls go through `--script`, and that is how the scalar
+>   shape above arrives:
+>
+>   ```sh
+>   printf 'frames:\n  - 0:\n      AfMetering: 1\n      AfWindows: [ 0, 0, 100, 100 ]\n' > /tmp/af.yaml
+>   LIBCAMERA_LOG_LEVELS=IPASoftAf:INFO cam -c1 -C4 --script /tmp/af.yaml
+>   ```
 >
 > The working half is measured too — windows do aim, once they land inside the
 > clip: `[0,0,4032,3024]` → 25 of 25 zones, `[0,0,100,100]` → 1,
