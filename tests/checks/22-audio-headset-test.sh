@@ -14,15 +14,17 @@
 #
 # ☠️ But do not stop at the geometry, which is all this note said when it was
 # first written and was not the reason the check failed. Both acoustic checks
-# play through the loudspeaker, and on this device the loudspeaker is silent:
-# measured the same day, the amplifier does not answer on I2C and never sees its
-# I2S clock, so a 1 kHz tone at full scale moved the handset mic's peak from 38
-# to 95 out of 32768. Every acoustic run ever logged here, back to 2026-07-29,
-# failed the same way. The geometry explanation fitted the numbers and was still
-# wrong, because a dead amplifier and an uncoupled microphone produce the same
-# quiet-room reading - which is why 24-speaker-amp now measures the amplifier on
-# its control bus, where the room cannot get in. Run that first: while it fails,
-# nothing here is a statement about the microphone.
+# play through the loudspeaker, and the loudspeaker amplifier on this device
+# stops answering partway through a session: measured the same day, after three
+# hours up it took no I2C write and never saw its I2S clock, and a 1 kHz tone at
+# full scale moved the handset mic's peak only from 38 to 95 out of 32768. After
+# a reboot the same tone reached 1466. Every acoustic run logged here since
+# 2026-07-29 had failed, and every one of them was readable as bad placement.
+# The geometry explanation fitted the numbers and was still wrong, because a
+# dead amplifier and an uncoupled microphone produce the same quiet-room
+# reading - which is why 24-speaker-amp measures the amplifier on its control
+# bus, where the room cannot get in. Run that first: while it fails, nothing
+# here is a statement about the microphone.
 
 . "$DEVICE_DIR/lib/audio-state.sh"
 

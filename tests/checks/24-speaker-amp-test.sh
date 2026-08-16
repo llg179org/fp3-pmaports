@@ -22,10 +22,15 @@
 # control bus, and in its own log lines. Both are digital and neither depends on
 # where the phone is lying.
 #
-# ☠️ This check has never been seen to PASS on this device - the fault it
-# reports is real and open (docs/TODO.md, "the loudspeaker is silent"). It is in
-# the default battery on purpose: a check that only runs once somebody suspects
-# the fault is a check that would not have caught it.
+# ☠️ The fault it reports is not permanent, which is the whole reason it belongs
+# in the default battery. Measured 2026-08-16: after a cold boot the amp answers
+# normally (RX Volume readable and writable at 255, no clock complaint) and the
+# speaker is loud - a 1 kHz tone put the handset mic's peak at 1466 against 58
+# in silence. After three hours of use and audio testing on the same boot, the
+# same checks fail and the same tone reaches 95. So this check measures a
+# transition, not a constant, and its value is being run on every boot rather
+# than once somebody suspects something. What kills the amp mid-session is open
+# (docs/TODO.md).
 
 . "$DEVICE_DIR/lib/audio-state.sh"
 
