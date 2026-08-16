@@ -1275,6 +1275,41 @@ shows up much later than the change that caused it. The one-line check is in
 
 ## AfWindows cannot reach the camera through PipeWire
 
+> **☠️ Update 2026-08-16: the chain breaks in three places, not one.** The
+> PipeWire gate below is real and still has to be opened, but opening it alone
+> changes nothing. Measured with `cam -c1 --list-controls` on the device:
+>
+> ```
+> Control: [inout] libcamera::AfWindows: [(0, 0)/0x0..(0, 0)/0x0]
+>    Size: n
+> Control: [inout] libcamera::AfMetering:
+>   - AfMeteringAuto (0) [default]
+>   - AfMeteringWindows (1)
+> ```
+>
+> `AfWindows` **is** advertised, and so is `AfMeteringWindows` — but the
+> control's own bounds are **both the empty rectangle**. That is the same shape
+> as the `LensPosition` defect that took two rounds to find: a control offered
+> with a degenerate range, where every request clamps to nothing. So the work is
+> layered, and the order matters because each layer is untestable until the one
+> below it carries a value:
+>
+> 1. **libcamera / the soft IPA** — give `AfWindows` a real `ControlInfo` (min a
+>    usable smallest window, max the sensor's active area) and make the AF
+>    algorithm honour the windows when `AfMetering` is `Windows`, instead of
+>    falling back to `selectCentre()`. Note the pipeline handler here is
+>    **`simple`** with the **software ISP** (`IPASoft`/`IPASoftAf`), so this is
+>    `src/ipa/simple/algorithms/af.cpp`, not a vendor IPA.
+> 2. **PipeWire** — the three `isArray()` gates below.
+> 3. **aperture / Snapshot** — send a rectangle array rather than a scalar.
+>
+> One design point from yesterday is now confirmed rather than assumed: there is
+> **no `SPA_TYPE_Region` POD type**. `struct spa_region` exists in
+> `spa/include/spa/utils/defs.h` and is exactly libcamera's `{x, y, w, h}`, but
+> it is a plain C struct with no entry in the `enum` in `spa/utils/type.h` and no
+> builder or parser helper, so it cannot be put in a pod. Flattening to four
+> `int32`s stands.
+
 Tap-to-focus points at nothing. The tapped position never reaches libcamera,
 because PipeWire's libcamera plugin maps only `bool`, `int32` and `float`
 controls to node properties and returns early for arrays — and `AfWindows` is
