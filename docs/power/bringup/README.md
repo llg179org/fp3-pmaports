@@ -459,6 +459,73 @@ a resume transient at the other, both pushing the same way — and calibrate tha
 slope against a directly measured current in a second phase, so the OCV table
 never enters at all.
 
+## Step 16 — the number arrives, and it is the ratio that matters
+
+2026-08-17. The instrument built in step 15 finally ran a complete leg
+(`post-pll-20260817`: 8 suspends of 900 s, every one `slept=901s`, then an awake
+control of the same length). Phase A −15.92 mV/h against phase B's −41.18 mV/h
+at a directly measured 155.3 mA gives **I_sleep = 60 mA**, ±10 or so — phase A's
+fit is the weak one at r² = 0.80 over 23.6 mV of travel.
+
+☠️ **On its own that number is barely an advance, and it is worth saying so.**
+What this page already knew was an *upper bound* — 160 mV over three hours, from
+which "suspend is not in the 10 mA regime" follows — plus one number, 116 mA,
+that had to be withdrawn. Going from a bound and a retraction to 60 mA is an
+increment, not a discovery. Four things make the leg worth its day, and none of
+them is the digit.
+
+**1. The ratio, not the absolute.** 130 mA awake against 60 mA asleep says that
+**roughly half the draw survives freezing the kernel.** That is a fork in the
+road, and until now this page could not say which branch it was on: whether
+suspend saved 10 % or 90 % decided whether the remaining work was in userspace
+or under it. It is under it. Wakeups, timers and daemons are all stopped in
+phase A and the phone still draws 60 mA, so nothing is left to win by trimming
+them — what remains is *supply*: regulators still enabled, the modem, and RPM
+votes that never drop. Step 12's two-sided RPM diff is where that continues, and
+it now has a number to be measured against instead of a bound.
+
+**2. The PLL question is closed, and it was the actual blocker.** While it was
+open that the `apcs-cpu0-pll` storm might be gated by pack voltage, **no power
+measurement on this device could be trusted** — that is precisely why 116 mA was
+withdrawn in step 15's wake. A ramp of 26 points from 4.318 down to 3.931 V put
+255 failures in 351 325 transitions (7.3 per 10 000) with a fitted change of 3.9
+against an uncertainty of 2.9, and what slope there is runs the *wrong* way for
+the sag hypothesis. So: not voltage-gated. Two consequences, both practical — a
+leg cannot be protected by scheduling it at a full pack, and every leg must
+therefore carry its own failure count, which `suspend-slope.sh` now does on
+every sample. This leg proved the point immediately: phase B took **137**
+failures to phase A's **8**. The contamination that silently ruined the previous
+run is now visible in the log while the run is happening. It also does not
+invalidate the result, because `I_awake` and `slope_B` both come out of phase B
+and a storm that inflates the draw inflates the slope with it — the quotient is
+immune to first order. That immunity is the reason the calibration is against a
+measured current rather than the OCV table, and it is the thing to protect if
+anyone ever proposes to "simplify" the method by dropping phase B.
+⚠️ The ramp covers 4.32 → 3.93 V only. The original sighting was at 3.82 V,
+just under that edge, and nothing below 3.93 V has been measured.
+
+**3. Three more instruments were caught lying**, none of them needed for this
+number and all of them needed for the next. `journalctl -k -b` drops records of
+the *running* boot: the `pll=` field went **down** across the phase boundary, 320
+to 288, so it lies in the same direction `dmesg` did and every count on this page
+is a lower bound. `syncstate-snap.sh` reached 13 of the 39 `state_synced` files
+that exist and not one i2c device, so its clean result could not have seen the
+thing it was aimed at. And the tarball-reachability check that guards published
+commits answered 302 for *every* hash, including a bogus one, because it was
+written without `curl -L`.
+
+**4. The front of the day was not a choice.** The phone did not boot — an
+`fw_devlink=off` left in `extlinux.conf` hung it before the USB gadget came up,
+so nothing host-side could reach it. That time bought a general escape route
+rather than a power result: the UBports recovery's root adb, plus `losetup -o`
+on the embedded msdos table in `system_b`, makes anything on disk fixable
+without booting pmOS at all. See [`../../deploy/README.md`](../../deploy/README.md).
+
+What the day did **not** buy: the amplifier case moved from open to narrower,
+not to solved, and an hour went into a `fastboot boot` dead end that the
+known-good control — booting the image that is known to work, by the same path —
+would have closed in five minutes.
+
 ## Every claim on this page that had to be retracted
 
 | the claim | what disproved it |
@@ -481,6 +548,12 @@ never enters at all.
 | "capacity did not move over 3 h asleep, so the phone drew under 10 mA" | the poll worker that maintains it does not run while userspace is frozen. It never had a chance to move |
 | "`voltage_ocv` is instantaneous — it matches `v - i·R` to the microvolt" | it is an 8-deep 30 s ring average. Matching the formula says the formula is right, not that it was evaluated now |
 | "after hours asleep the pack is relaxed, so both endpoints are comparable" | the snapshot happens *after* resume, not while asleep. The second endpoint was read 90 s after a 725 mA resume transient |
+
+| "s2idle only halves the draw because the SoC never reaches VDD_MIN / XO shutdown" | the system power domain *does* collapse under s2idle — genpd counts those entries in their own column, and it goes 0 → 1 around a suspend. The halving needs another explanation |
+| "count PLL failures with `dmesg \| grep -c`" | the ring wraps: two reads twenty minutes apart on one boot returned 35 then 34. A loud enough storm evicts its own evidence |
+| "then count them from `journalctl -k -b`, which is durable" | it is not. The count fell from 320 to 288 across a phase boundary of the same boot. Take a cursor at the start of the leg and read forward from it |
+| "`syncstate-snap.sh` came back clean, so `sync_state()` is not the amplifier's problem" | the conclusion happens to have held, but that run saw 13 of 39 files and no i2c device at all. A null result from an instrument that does not cover the question is not evidence |
+| "the tarball check passes, so the pinned commit is still reachable" | without `-L`, GitHub answers 302 for every hash including `deadbeef…`. The check had never once been shown failing |
 
 ## What is still open here
 
