@@ -1,0 +1,172 @@
+=== RPM master sleep statistics across a real s2idle ===
+kernel 7.1.3-postmarketos-qcom-msm8953, rpm_master_stats loaded by hand
+uptime=2379
+mem_sleep: [s2idle]
+########## BEFORE (success=2) ##########
+APSS:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x1
+LPASS:
+	Last shutdown @ 513181830
+	Last bringup req @ 513183711
+	Last bringup ack @ 513189011
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 512864876
+	Last XO shutdown exit @ 513074165
+	XO total duration: 1987344
+	Last sleep transition duration: 5479
+	Last wake transition duration: 1925
+	XO shutdown count: 4
+	Wakeup reason: 0x0
+	Shutdown count: 5
+	Active cores bitmask: 0x1
+MPSS:
+	Last shutdown @ 45952847775
+	Last bringup req @ 45954905049
+	Last bringup ack @ 45954905161
+	Last wakeup idx: 45954904097
+	Last XO shutdown enter @ 45952861691
+	Last XO shutdown exit @ 45954889622
+	XO total duration: 23055445030
+	Last sleep transition duration: 19413
+	Last wake transition duration: 19591
+	XO shutdown count: 5980
+	Wakeup reason: 0x1
+	Shutdown count: 6054
+	Active cores bitmask: 0x1
+PRONTO:
+	Last shutdown @ 45954366934
+	Last bringup req @ 45954670444
+	Last bringup ack @ 45954687072
+	Last wakeup idx: 45934060727
+	Last XO shutdown enter @ 45954378171
+	Last XO shutdown exit @ 45954678689
+	XO total duration: 34147023544
+	Last sleep transition duration: 12308
+	Last wake transition duration: 14202
+	XO shutdown count: 17417
+	Wakeup reason: 0x0
+	Shutdown count: 17423
+	Active cores bitmask: 0x1
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+[vlow]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x15111517
+[vmin]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+########## suspend 300 s on the RTC alarm ##########
+slept 301s of 300s; success now 3
+########## AFTER ##########
+APSS:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x1
+LPASS:
+	Last shutdown @ 513181830
+	Last bringup req @ 513183711
+	Last bringup ack @ 513189011
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 512864876
+	Last XO shutdown exit @ 513074165
+	XO total duration: 1987344
+	Last sleep transition duration: 5479
+	Last wake transition duration: 1925
+	XO shutdown count: 4
+	Wakeup reason: 0x0
+	Shutdown count: 5
+	Active cores bitmask: 0x1
+MPSS:
+	Last shutdown @ 51726632381
+	Last bringup req @ 51730460019
+	Last bringup ack @ 51730460131
+	Last wakeup idx: 51730458958
+	Last XO shutdown enter @ 51726646714
+	Last XO shutdown exit @ 51730445255
+	XO total duration: 25951500675
+	Last sleep transition duration: 19630
+	Last wake transition duration: 22325
+	XO shutdown count: 6738
+	Wakeup reason: 0x1
+	Shutdown count: 6823
+	Active cores bitmask: 0x1
+PRONTO:
+	Last shutdown @ 51730409571
+	Last bringup req @ 51730634924
+	Last bringup ack @ 51730651128
+	Last wakeup idx: 45934060727
+	Last XO shutdown enter @ 51730419371
+	Last XO shutdown exit @ 51730642384
+	XO total duration: 39912581227
+	Last sleep transition duration: 10308
+	Last wake transition duration: 14145
+	XO shutdown count: 17423
+	Wakeup reason: 0x0
+	Shutdown count: 17429
+	Active cores bitmask: 0x1
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+[vlow]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x15111317
+[vmin]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
