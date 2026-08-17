@@ -29,6 +29,55 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
 
 ## Next step
 
+★★★★ **2026-08-17: the RPM handshake is fixed. One hex digit.**
+
+`system_pc` asked the firmware for **affinity level 1** — the same level the
+cluster states use — so TZ aggregated up to a cluster and never performed the
+APSS handshake with the RPM. Downstream composes the parameter rather than
+spelling it out, and the recursion bumps the affinity level once per cluster
+level that leaves its default: once for the system cluster (mode 3 at shift 8)
+and once for the L2 cluster (mode 5 at shift 4) — **`0x42000353`**, not
+`0x41000353`. Our four lower rungs already matched that composition bit for bit,
+which is what makes the top one's mismatch believable rather than a guess.
+
+Measured on the device, one 91 s suspend each side:
+
+| | before (`0x41000353`) | after (`0x42000353`) |
+|---|---|---|
+| APSS `Shutdown count` | **0**, all boot | 633 → **724** (+91) |
+| APSS transition timings | all zero | `sleep 12232` / `wake 12386` |
+| `power-domain-system` S2idle | 3 (kernel-side only) | 0 → **92** |
+| `vlow` / `vmin` Count | 0 | **0** |
+| `XO shutdown count` | 0 | **0** |
+
+So the application processor now tells the RPM it is down, and the RPM believes
+it. That is the gap this page has been chasing since 2026-08-14, and it was one
+nibble in one property. Landed as `0314fee3ce35` on `wip/7.1.3/power`, cherry-
+picked to `integration/7.1.3` and `debug-int/7.1.3`, all three pushed.
+
+**Two things are immediately visible in that table, and both are the next work:**
+
+1. **91 shutdowns in 91 s — it wakes every second.** That is our own
+   `MPM_MAX_SLEEP_NS = NSEC_PER_SEC` clamp in `mpm_write_wakeup()`: the RPM is
+   never asked to keep the AP down for longer than a second, so it does not.
+   Downstream applies **no clamp at all** — it writes the broadcast timer's CVAL
+   verbatim, and deliberately writes all-ones when no timer is armed, meaning
+   "no scheduled wake, rude wakeup only". So a far-future deadline is the
+   vendor's own encoding and demonstrably not refused. ⚠️ Note also that
+   downstream reads the **memory-mapped** timer frame's CVAL while we compute
+   from `arch_timer_read_counter()`; if `CNTVOFF` is non-zero those are different
+   counter domains, which would be a silent, total failure. Check that before
+   trusting a longer deadline.
+2. **`vlow`, `vmin` and XO shutdown are still 0.** The AP going down is
+   necessary, not sufficient: the RPM aggregates across all masters *and* all
+   resource votes. The next suspect is sleep-set vote coverage — which rails are
+   still voting active-set — not this path.
+
+⚠️ **No current number yet.** The RPM counters moving is not the same as the
+draw falling, and this page has been wrong in exactly that way before. Until a
+leg is run, the honest statement is that the handshake works, not that the phone
+saves anything.
+
 ★★★ **Answered: with the display genuinely off, the genpd fix is worth ~9 %.**
 Two legs per arm, fresh boot each, 200 samples after a 300 s settle, display gate
 enforced: **−119.0 mA with the fix, −130.5 mA without**, arms non-overlapping.
