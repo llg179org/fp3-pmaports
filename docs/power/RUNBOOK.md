@@ -465,9 +465,45 @@ runs the *wrong* way for the sag hypothesis.
 and the 3.82 V sighting sits just under that edge. If the storm ever needs a
 sharper answer, that is the gap to close.
 
-The slope leg (`post-pll-20260817`, phase A 8×900 s asleep, then phase B awake)
-started at 06:33 and is expected to finish around 11:10. Read it with
-`slope-fit.py`, and read the `pll=` column first: the settle window put 44
-failures on the counter in 15 awake minutes while phase A added 7 in 77 mostly
-asleep ones, so phase B is expected to be heavily contaminated and the point of
-the column is to say by how much rather than to leave it to be guessed.
+## Step 2 answered: what the phone draws asleep
+
+The slope leg `post-pll-20260817` ran 06:33 → 10:53 and completed clean: **8
+suspends of 8**, every one `slept=901s of 900s`, so nothing woke it early and
+phase A really is measuring suspend. Log and fit:
+`2026-08-17_pmos_post-pll-slope-leg.txt`.
+
+| phase | compensated V | slope | r² | `current_now` mean |
+|---|---|---|---|---|
+| settle | 3.9815 → 3.9424 | −156.6 mV/h | 0.63 | 142.1 mA |
+| A (asleep, 8×900 s) | 3.9232 → 3.8996 | −15.92 mV/h | 0.80 | 121.5 mA |
+| B (awake control) | 3.8677 → 3.7864 | −41.18 mV/h | 0.93 | 155.3 mA |
+
+**I_sleep = 155.3 mA × (15.92 / 41.18) = 60 mA.**
+
+That is the first number for suspend on this device that came off a live
+instrument. Read it against the two regimes it sits between: clean awake idle is
+~130 mA, and the ~10 mA that the platform ought to reach is still an order of
+magnitude below this. **s2idle roughly halves the draw and no more** — so
+whatever keeps the phone at 130 mA awake is mostly still running with the
+kernel frozen, and that, not the awake figure, is the next thing to chase.
+
+⚠️ Phase A's fit is the weak one (r² = 0.80 over 23.6 mV of travel). The
+direction is safe; treat the 60 mA as ±10 rather than as three digits.
+
+**The `pll=` column paid for itself, twice.** Phase A took **8** failures in its
+1.79 h; phase B took **137** in the same 1.79 h — a storm ~17× denser in the
+awake leg, exactly the contamination that cost the 2026-08-15 run its 116 mA.
+This time it is measured rather than reconstructed. And it does *not* invalidate
+the result: `I_awake` and `slope_B` both come out of phase B, so a storm that
+inflates the draw inflates the slope with it and the quotient is immune to first
+order. That immunity is the reason the calibration is against a measured current
+instead of against the OCV table — worth keeping in mind before anyone
+"improves" the method by dropping phase B.
+
+☠️ **The journal counter is a floor, not a total.** The `pll=` field went
+**down** across the phase boundary — 320 at the end of A, 288 at the start of B
+— so `journalctl -k -b` had already dropped records of this boot. It lies in the
+same direction as `dmesg` did, just later: a loud enough storm evicts its own
+evidence. Every count in this document is therefore a lower bound. If an exact
+count ever matters, take a cursor at the start of the leg and read forward from
+it rather than counting the whole boot.
