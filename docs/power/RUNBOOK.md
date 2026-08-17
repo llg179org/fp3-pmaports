@@ -725,3 +725,38 @@ and uses the **median** — the mean would still chase the bimodality. That is
 treatment because it comes off the same ADC in the same call and carries the
 same beat. Samples now carry an `nread=` field so a log says for itself which
 regime it was taken in.
+
+### The tracepoint answers it: only the LDOs never vote for sleep
+
+Armed the new `qcom_rpm_smd_write` tracepoint across a real 30 s suspend.
+2159 events. Trace kept as
+[`2026-08-17_pmos_rpm-votes.trace`](2026-08-17_pmos_rpm-votes.trace).
+
+| resource type | active | sleep |
+|---|---|---|
+| `clk2` | 894 | 17 |
+| `bslv` (bus slave) | 262 | 106 |
+| `bmas` (bus master) | 232 | 102 |
+| `smpa` (SMPS corners) | 216 | **208** |
+| `clk1` | 60 | 48 |
+| **`ldoa` (LDO rails)** | **14** | **0** |
+
+So the source-level guess was too broad and the truth is sharper: `rpmpd` votes
+sleep for the SMPS corners, `icc-rpm` for both bus directions, `clk-smd-rpm` for
+the clocks. The only hole is the **LDOs**, which is exactly
+`qcom_smd-regulator.c` — the one file with a single active-only write path.
+
+The 14 `ldoa` events are seven rails — `l3, l6, l7, l8, l11, l12, l13` — each
+enabled once and disabled once during the window, all with key `swen` (`73 77
+65 6e`), the RPM's enable key.
+
+☠️ **Read that count as a floor, not a total.** The tracepoint fires on
+*changes*. A rail enabled during boot and never touched since has had a standing
+active-set vote ever since and emits nothing at all now. Seven rails moved
+during a 30 s window; every enabled rail on the phone is holding a vote.
+
+**The fix is therefore narrow and upstreamable**: give `qcom_smd-regulator.c` a
+sleep-set write path, sending the sleep request when it differs from the active
+one, as `rpm_vreg_aggregate_requests()` does downstream. It is a correctness gap
+on every RPM-SMD SoC, not an FP3 quirk — and note this is now backed by a
+runtime measurement, not only by reading two trees.
