@@ -1,0 +1,11 @@
+columns: State Time(ms) Usage Rejected Above Below S2idle
+== before (success=3) ==
+interrupt-controller     S0     1554021        51289      0          0          0          0
+power-domain-system      S0     1555036        50665      624        15536      0          3
+power-domain-cluster0    S0     11068          9968       619        6391       1948       0
+APSS                     	Shutdown count: 0 	Active cores bitmask: 0x1 
+== slept 91s of 90s; success=4 ==
+interrupt-controller     S0     1554021        51290      0          0          0          0
+power-domain-system      S0     1555036        50666      624        15536      0          4
+power-domain-cluster0    S0     11078          9977       628        6405       1950       0
+APSS                     	Shutdown count: 0 	Active cores bitmask: 0x1 
