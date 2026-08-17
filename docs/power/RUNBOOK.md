@@ -598,3 +598,48 @@ nibbles from {1,3,5,7}, never stable. Either it is a live racy read or mainline'
 `qcom_stats.c` decodes the field differently from the vendor's reader. An
 instrument that changes its answer between two reads of an unchanged system is
 not yet an instrument.
+
+### Why `vlow`/`vmin` stay at zero: the regulators never vote for sleep
+
+Found in the vendor source and confirmed against our own tree. The RPM keeps two
+vote sets, and the vendor driver documents what happens when only one is used —
+`drivers/regulator/rpm-smd-regulator.c:225-235`:
+
+> *"For any given regulator, if an active set request is present, but not a
+> sleep set request, then the active set request is used at all times, **even
+> when the Apps processor is power collapsed**."*
+
+So an active-only vote is not neutral. It is a vote to hold the rail at its
+awake value through the collapse. Downstream declares **all 23** pm8953 rails
+`qcom,set = <3>` — active *and* sleep — and the `_ao` / `_so` suffixed corner
+regulators in `msm8953-regulator.dtsi` exist precisely so CX and MX can drop to
+retention while asleep and still be held high while awake.
+
+Our `drivers/regulator/qcom_smd-regulator.c` has exactly one write path and it
+is `QCOM_SMD_RPM_ACTIVE_STATE` (line 72). `grep -c SLEEP` on that file returns
+**0**. Every rail therefore holds its enable, voltage and load votes while the
+application processor is collapsed, and the RPM cannot minimise Vdd against two
+dozen standing votes.
+
+★ **This gap only became reachable today.** Until the affinity level was fixed
+the AP never collapsed at all, so a sleep-set vote would have had nothing to
+take effect at. The bug was there the whole time and could not have been
+measured — which is worth remembering before treating "we checked that" as
+covering a layer that was unreachable at the time.
+
+☠️ **Do not start by writing sleep votes.** Telling the RPM to drop a rail the
+system still needs while collapsed is a hang, not a failed experiment. Two free
+checks come first, both from debugfs on a live phone:
+
+| check | what it would mean |
+|---|---|
+| `pm_genpd/pm_genpd_summary` | `rpmpd.c:1005-1007` clamps CX/MX to `max_state` = TURBO in **both** sets until `sync_state` fires. If that is pinned, it masks any regulator fix |
+| `interconnect/interconnect_summary` | five msm8953 paths are `RPM_ALWAYS_TAG`, so their bandwidth is voted into the sleep set; a consumer that forgets to zero its request holds BIMC up |
+| `clk/clk_summary` | the mainline stand-in for downstream's `clock_debug_print_enabled(true)`, which Qualcomm calls at suspend for exactly this reason |
+| `/sys/class/regulator/*/state` | bounds the problem: which of the 23 rails are even enabled |
+
+And there is no way to read the RPM's *aggregated* state — neither tree has one,
+and the vendor's `rpm_send_msg` debugfs is write-only. What is observable is what
+the AP sends, which is the answerable question. The cheapest instrument is a
+tracepoint in `qcom_rpm_smd_write()` (`drivers/soc/qcom/smd-rpm.c:94`), whose
+arguments already carry the state, type, id and payload.
