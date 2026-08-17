@@ -98,12 +98,51 @@ pll_fails() {
 	journalctl -k -b --no-pager 2>/dev/null | grep -c 'failed to enable' || true
 }
 
+# ☠️ ONE READ OF current_now IS NOT A MEASUREMENT. Characterised 2026-08-17:
+# 90 reads two seconds apart on an idle phone gave mean 170 mA with a standard
+# deviation of 70 and a range of 93 to 450, and the distribution is not
+# Gaussian - it is bimodal, periodic activity beating against the sampler. A
+# single read therefore carries about +/-138 mA at 95%, which through the
+# 120 mOhm IR compensation below is +/-17 mV of injected noise. Phase A of the
+# reference leg travels 23.6 mV in total. The correction was noisier than the
+# signal it corrects, which is why that fit came back at r2 = 0.80.
+#
+# So average. Twenty reads over ten seconds cuts it to about +/-31 mA and
+# +/-4 mV, and the median rather than the mean because of the bimodality. Both
+# attributes get the same treatment: they are read from the same ADC in the
+# same call, so voltage carries the same beat.
+#
+# ☠️ The same measurement also killed the tidier hypothesis it was run to test.
+# There is no decaying resume transient to wait out: 0-20 s after a 900 s deep
+# suspend reads 159 mA and 100-180 s after reads 170 mA. Lengthening the settle
+# buys nothing; only averaging does.
+NREAD=20
+RGAP=0.5
+
+median() {
+	sort -n | awk '{v[NR]=$1} END {print (NR%2) ? v[(NR+1)/2] : int((v[NR/2]+v[NR/2+1])/2)}'
+}
+
 # Live ADC only. Never capacity, never voltage_ocv, never charge_now.
 sample() {
-	printf '%s phase=%s n=%s t=%s v=%s i=%s pll=%s\n' \
+	# Interleave rather than reading all the voltages and then all the
+	# currents: the pair has to describe the same instant for the IR
+	# compensation to mean anything.
+	i=0
+	vs=""
+	is=""
+	while [ "$i" -lt "$NREAD" ]; do
+		vs="$vs$(cat "$BATT/voltage_now")
+"
+		is="$is$(cat "$BATT/current_now")
+"
+		sleep "$RGAP"
+		i=$((i + 1))
+	done
+	printf '%s phase=%s n=%s t=%s v=%s i=%s pll=%s nread=%s\n' \
 		"$TAG" "$1" "$2" "$(cut -d. -f1 /proc/uptime)" \
-		"$(cat "$BATT/voltage_now")" "$(cat "$BATT/current_now")" \
-		"$(pll_fails)" \
+		"$(printf '%s' "$vs" | median)" "$(printf '%s' "$is" | median)" \
+		"$(pll_fails)" "$NREAD" \
 		| tee -a "$OUT" >&2
 }
 

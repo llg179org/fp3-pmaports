@@ -683,3 +683,45 @@ regression.
 transient directly (wake from a 900 s sleep, sample `current_now` every 2 s for
 180 s) so `SETTLE_WAKE` is set from data rather than from a number that used to
 work; then re-run with both phases below ~4.0 V so they share the flat region.
+
+### ☠️ One read of `current_now` is not a measurement
+
+Run to find how long the resume transient lasts, so `SETTLE_WAKE` could be set
+from data. It answered a different and more useful question, and it disproved
+the hypothesis it was built for. Data:
+[`2026-08-17_pmos_resume-shape.txt`](2026-08-17_pmos_resume-shape.txt).
+
+**There is no decaying transient.** 90 reads two seconds apart after a 901 s
+deep suspend:
+
+| window | mean | median |
+|---|---|---|
+| 0–20 s | 159.5 mA | 143.3 mA |
+| 20–60 s | 175.0 mA | 141.5 mA |
+| 60–100 s | 169.0 mA | 157.3 mA |
+| 100–180 s | 170.1 mA | 151.3 mA |
+
+Flat. Waiting longer after a wake buys nothing, so the withdrawn leg's second
+explanation — that a deeper sleep means a bigger transient the 20 s settle no
+longer covers — is **wrong**, and is retracted here.
+
+**What is true instead: the attribute is enormously noisy.** Those 90 reads have
+a standard deviation of **70.5 mA** on a ~150 mA signal, a range of 93 to 450,
+and a visibly bimodal distribution — periodic activity beating against the
+sampler, the same trap this page already recorded once at a 60 s interval. A
+single read therefore carries **±138 mA at 95 %**.
+
+☠️ **And `suspend-slope.sh` took exactly one read per sample, then multiplied it
+by 120 mΩ to compensate the voltage.** ±138 mA of current error is **±17 mV** of
+injected error, and phase A of the reference leg travels **23.6 mV in total**.
+The correction meant to clean the measurement was noisier than the thing it
+corrects. That is the real explanation for both the r² = 0.80 on that fit and
+the withdrawn leg's phase A reading 256 mA where a 10-sample awake reference
+taken the same evening read 129: eight draws from a heavy-tailed distribution.
+
+**Fixed**: every sample now takes 20 interleaved voltage/current reads over 10 s
+and uses the **median** — the mean would still chase the bimodality. That is
+±31 mA and ±4 mV, which is small against the signal. Voltage gets the same
+treatment because it comes off the same ADC in the same call and carries the
+same beat. Samples now carry an `nread=` field so a log says for itself which
+regime it was taken in.
