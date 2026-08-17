@@ -556,3 +556,40 @@ same direction as `dmesg` did, just later: a loud enough storm evicts its own
 evidence. Every count in this document is therefore a lower bound. If an exact
 count ever matters, take a cursor at the start of the leg and read forward from
 it rather than counting the whole boot.
+
+## 2026-08-17 evening: the AP now sleeps through, and the next layer is named
+
+Removing the one-second cap did exactly what the arithmetic said it would. Same
+instrument, same 91 s suspend, one boot apart:
+
+| | with the 1 s cap | cap removed |
+|---|---|---|
+| APSS `Shutdown count` | +91 | **+1** |
+| `power-domain-system` S2idle | +92 | **+1** |
+| woke on time | yes | yes (91 s of 90 s) |
+
+So the application processor goes down once and stays down for the whole
+suspend, instead of being brought back up every second to pay a 12 ms sleep
+transition and a 12 ms wake transition each time. Landed as `ff064e2b608c` on
+`wip/7.1.3/power`, cherry-picked and pushed to all three branches; the device
+runs it as build `#2` from a hand-installed `/boot/vmlinuz`.
+
+☠️ **A symptom I listed wrongly, corrected from the oracle.** I had counted
+APSS `XO shutdown count: 0` among the things still broken. The Ubuntu Touch
+capture shows `xo_count: 0x0` and `xo_accumulated_duration: 0x0` for APSS as
+well — on the stack that works. Only MPSS, PRONTO and LPASS do XO shutdowns of
+their own; the application processor never does. So that field being zero is
+normal and proves nothing either way.
+
+**What is genuinely still zero: `vlow` and `vmin`.** Both `Count` and
+`Accumulated Duration`, after the AP has begun shutting down properly. The AP
+going down is necessary and not sufficient — the RPM aggregates across every
+master *and* every resource vote, so the next question is which rails are still
+voted active-set while we sleep.
+
+⚠️ **Do not read the `Client Votes` field yet.** Four consecutive reads on an
+idle system gave `0x11151715`, `0x13171317`, `0x11131715`, `0x17151715` — always
+nibbles from {1,3,5,7}, never stable. Either it is a live racy read or mainline's
+`qcom_stats.c` decodes the field differently from the vendor's reader. An
+instrument that changes its answer between two reads of an unchanged system is
+not yet an instrument.
