@@ -643,3 +643,43 @@ and the vendor's `rpm_send_msg` debugfs is write-only. What is observable is wha
 the AP sends, which is the answerable question. The cheapest instrument is a
 tracepoint in `qcom_rpm_smd_write()` (`drivers/soc/qcom/smd-rpm.c:94`), whose
 arguments already carry the state, type, id and payload.
+
+### The first leg after the fixes is WITHDRAWN, and the control is why
+
+`nocap-20260817` completed cleanly — 8 suspends of 8, every one `slept=901s of
+900s` — and `slope-fit.py` reports **120 mA asleep** against the pre-fix leg's
+60 mA. That number is not reported as a result, because two things about the
+leg make it incomparable and both are visible in its own output.
+
+| | `post-pll` (pre-fix) | `nocap` (post-fix) |
+|---|---|---|
+| phase A voltage span | 3.923 → 3.900 V | **4.268 → 4.178 V** |
+| phase B voltage span | 3.868 → 3.786 V | 4.148 → 4.015 V |
+| phase A raw slope | −15.92 mV/h | −54.26 mV/h |
+| phase A `current_now` mean | 121.5 mA | **256.2 mA** (max 402) |
+| phase B `current_now` mean | 155.3 mA | 156.5 mA |
+
+**1. It ran on the wrong part of the discharge curve.** The method assumes
+`dV/dQ` is roughly constant between the two phases; the reference leg sat in the
+flat region around 3.9 V, this one started at 4.33 V where the curve falls much
+faster, and its two phases sit in visibly different parts of it. A steeper mV/h
+at a high state of charge is expected for the same current, and the A/B ratio
+only cancels that if both phases share a slope.
+
+**2. The wake-window current doubled**, which corrupts the IR compensation the
+fit applies: 0.12 Ω × 256 mA is a 31 mV correction where the reference leg
+applied 15 mV. There is a plausible mechanism — with the deadline cap gone the
+AP now stays down for the full 900 s instead of being resurrected every second,
+so the resume transient it wakes into is a different and larger thing, and the
+20 s `SETTLE_WAKE` was chosen when no deep sleep was happening.
+
+☠️ **The control is what makes this readable rather than a mystery.** Phase B
+came back at 156.5 mA against the reference leg's 155.3 — the method is intact
+and the awake regime is unchanged. It is phase A's sampling that moved. A leg
+without its awake control would have published 120 mA and called the day a
+regression.
+
+**Next, in order, and measure before re-running:** characterise the resume
+transient directly (wake from a 900 s sleep, sample `current_now` every 2 s for
+180 s) so `SETTLE_WAKE` is set from data rather than from a number that used to
+work; then re-run with both phases below ~4.0 V so they share the flat region.

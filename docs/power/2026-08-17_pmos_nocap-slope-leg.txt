@@ -1,0 +1,64 @@
+suspend-slope: nocap-20260817 === settle 900s off VBUS ===
+nocap-20260817 phase=settle n=0 t=211 v=4321720 i=-98724 pll=0
+nocap-20260817 phase=settle n=1 t=271 v=4323082 i=-54931 pll=0
+nocap-20260817 phase=settle n=2 t=331 v=4310236 i=-62255 pll=0
+nocap-20260817 phase=settle n=3 t=391 v=4300894 i=-176239 pll=0
+nocap-20260817 phase=settle n=4 t=451 v=4270920 i=-218353 pll=3
+nocap-20260817 phase=settle n=5 t=511 v=4302062 i=-68359 pll=4
+nocap-20260817 phase=settle n=6 t=571 v=4281041 i=-243225 pll=6
+nocap-20260817 phase=settle n=7 t=632 v=4294665 i=-98266 pll=8
+nocap-20260817 phase=settle n=8 t=692 v=4262745 i=-198669 pll=13
+nocap-20260817 phase=settle n=9 t=752 v=4271309 i=-145416 pll=14
+nocap-20260817 phase=settle n=10 t=812 v=4287075 i=-56762 pll=17
+nocap-20260817 phase=settle n=11 t=872 v=4283182 i=-61492 pll=21
+nocap-20260817 phase=settle n=12 t=932 v=4277732 i=-108642 pll=21
+nocap-20260817 phase=settle n=13 t=992 v=4281041 i=-59509 pll=27
+nocap-20260817 phase=settle n=14 t=1052 v=4287075 i=-59814 pll=29
+suspend-slope: nocap-20260817 === phase A: 8 sleeps of 900s ===
+nocap-20260817 phase=A n=0 t=2034 v=4245617 i=-182800 pll=33
+suspend-slope: nocap-20260817 A0 slept=902s of 900s
+nocap-20260817 phase=A n=1 t=2955 v=4203575 i=-402221 pll=36
+suspend-slope: nocap-20260817 A1 slept=901s of 900s
+nocap-20260817 phase=A n=2 t=3876 v=4232771 i=-88806 pll=39
+suspend-slope: nocap-20260817 A2 slept=901s of 900s
+nocap-20260817 phase=A n=3 t=4797 v=4200072 i=-191040 pll=39
+suspend-slope: nocap-20260817 A3 slept=901s of 900s
+nocap-20260817 phase=A n=4 t=5718 v=4180219 i=-207672 pll=41
+suspend-slope: nocap-20260817 A4 slept=901s of 900s
+nocap-20260817 phase=A n=5 t=6639 v=4154916 i=-373840 pll=41
+suspend-slope: nocap-20260817 A5 slept=901s of 900s
+nocap-20260817 phase=A n=6 t=7560 v=4145184 i=-235748 pll=42
+suspend-slope: nocap-20260817 A6 slept=901s of 900s
+nocap-20260817 phase=A n=7 t=8481 v=4134090 i=-367737 pll=43
+suspend-slope: nocap-20260817 A7 slept=901s of 900s
+suspend-slope: nocap-20260817 phase A done suspends=8 of 8
+suspend-slope: nocap-20260817 === phase B: awake control, 8 x 900s ===
+nocap-20260817 phase=B n=0 t=9401 v=4130586 i=-140838 pll=73
+nocap-20260817 phase=B n=1 t=10321 v=4077061 i=-252685 pll=111
+nocap-20260817 phase=B n=2 t=11241 v=4072195 i=-192260 pll=172
+nocap-20260817 phase=B n=3 t=12162 v=4067524 i=-154876 pll=215
+nocap-20260817 phase=B n=4 t=13082 v=4047282 i=-111236 pll=246
+nocap-20260817 phase=B n=5 t=14002 v=4024509 i=-181121 pll=283
+nocap-20260817 phase=B n=6 t=14923 v=4010106 i=-117187 pll=315
+nocap-20260817 phase=B n=7 t=15843 v=4002321 i=-101928 pll=354
+suspend-slope: nocap-20260817 done - restoring charger and greetd
+phase settle: 15 samples over 0.23 h
+  compensated V: 4.3336 -> 4.2943
+  slope -184.24 mV/h   r2=0.7532   ☠️ not a straight line
+  current_now over these samples: mean 114.0 mA, min 54.9, max 243.2
+
+phase A: 8 samples over 1.79 h
+  compensated V: 4.2676 -> 4.1782
+  slope -54.26 mV/h   r2=0.9709
+  current_now over these samples: mean 256.2 mA, min 88.8, max 402.2
+
+phase B: 8 samples over 1.79 h
+  compensated V: 4.1475 -> 4.0146
+  slope -70.74 mV/h   r2=0.9765
+  current_now over these samples: mean 156.5 mA, min 101.9, max 252.7
+
+============================================================
+CONTROL   phase B awake: 156.5 mA measured directly, slope -70.74 mV/h
+          ☠️ if that current is not the awake figure you already know, stop here.
+RESULT    phase A asleep: 120.0 mA   (= 156.5 x 0.767)
+============================================================
