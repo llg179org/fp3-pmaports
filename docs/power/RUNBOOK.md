@@ -452,3 +452,22 @@ baseline was 18 per 10 000 at 4.358 V.
 that is supported *now* is narrower than the question: **the storm runs at a
 full pack too, and does not vary with voltage while the pack is full.** It
 already means the storm cannot be explained by sag alone.
+
+**In flight at the time of writing (2026-08-17 morning).** The ramp was cut by
+hand at 06:32 after 26 points, because the pack was falling ~0.9 mV/min by then
+and reaching 3.80 V would have pushed the leg that follows into the afternoon.
+Final ramp numbers: **26 points, 4.318 → 3.931 V (386 mV), 255 failures in
+351 325 transitions = 7.3 per 10 000**, fitted change 3.9 against an uncertainty
+of 2.9 and `r = +0.47` — no voltage dependence, and what little slope there is
+runs the *wrong* way for the sag hypothesis.
+
+⚠️ So step 1 is answered for 4.32 → 3.93 V only. Below 3.93 V is still untested,
+and the 3.82 V sighting sits just under that edge. If the storm ever needs a
+sharper answer, that is the gap to close.
+
+The slope leg (`post-pll-20260817`, phase A 8×900 s asleep, then phase B awake)
+started at 06:33 and is expected to finish around 11:10. Read it with
+`slope-fit.py`, and read the `pll=` column first: the settle window put 44
+failures on the counter in 15 awake minutes while phase A added 7 in 77 mostly
+asleep ones, so phase B is expected to be heavily contaminated and the point of
+the column is to say by how much rather than to leave it to be guessed.
