@@ -399,3 +399,56 @@ power-off is orderly and logged.
 3. Note that this may also be the missing half of the 130-vs-245 puzzle, which
    was previously attributed to the sampler keeping the radio associated. Both
    remain candidates; this one has a log line and the other does not.
+
+### 2026-08-17: running step 1 — the PLL rate against a falling pack
+
+**Method.** `pll-vs-voltage.sh` drives `pll-sweep.sh` repeatedly while USBIN is
+suspended, so every point is the same sweep on the same boot, minutes apart,
+with only the voltage moving. The rate is failures per **transition**, read from
+the kernel's own `total_trans` delta, because a `scaling_setspeed` write the
+governor coalesces away exercises nothing and would otherwise be counted as a
+transition that survived. `pll-ramp-fit.py` reads the log and fits rate against
+voltage.
+
+**How it is run unattended.** Three things that each cost a run before they were
+fixed:
+
+* Start it as a **transient systemd unit**, not with `nohup`. A `nohup`-ed job
+  under `sudo` over ssh is killed with `Terminated` when the ssh session's scope
+  goes away — measured, thirteen minutes lost — and the only reason it did no
+  harm is that the script's EXIT trap restored charging on the way out.
+* Give the unit `ExecStopPost=` that restores charging, as well as the script's
+  own trap. ☠️ `USBIN_SUSPEND_BIT` lives in the PMIC and survives a warm reboot;
+  it must never outlive the measurement that set it.
+* Cut the ramp on **voltage, not on a clock**. A supervisor watching for the
+  threshold ends the run where the science ends, and leaves enough charge for
+  whatever runs next.
+
+**Sizing.** Rounds per point is a resolution knob, not a quality knob: the total
+number of transitions a night can buy is fixed by wall-clock, so slicing finer
+costs nothing in total statistical power and gains voltage resolution. The first
+attempt used 5000 rounds and took ~98 minutes per point, which would have
+produced two points and no ramp at all; 1500 rounds gives ~12.5 minutes per
+point and ~13 500 transitions in it.
+
+☠️ **Count failures from the journal, never from `dmesg`.** The ring buffer
+wraps: two `dmesg | grep -c` reads twenty minutes apart on one boot returned 35
+and then 34, so the count went *down* while failures were still accumulating. A
+leg could report itself clean precisely because the storm had been loud enough
+to push its own evidence out of the buffer. `pll-sweep.sh` takes a `journalctl`
+cursor; `suspend-slope.sh` now carries a `pll=` field on every sample from the
+same source, so each leg says for itself whether it was contaminated instead of
+that being reconstructed afterwards.
+
+**Result so far — the top of the pack, and it is flat.** Seven points over
+4.318 → 4.137 V, ~13 500 transitions each: 12.6, 7.4, 5.2, 5.9, 8.9, 12.6, 4.4
+per 10 000, pooled **8.1 per 10 000** (77 failures in 94 586 transitions). The
+fitted change across that span is 7.4 per 10 000 against an uncertainty of 7.8,
+so there is no voltage dependence to see here. For comparison the 2026-08-16
+baseline was 18 per 10 000 at 4.358 V.
+
+⚠️ That covers only the top 181 mV. The sighting this was run to explain was at
+3.82 V, and the ramp had not reached it when this was written — so the claim
+that is supported *now* is narrower than the question: **the storm runs at a
+full pack too, and does not vary with voltage while the pack is full.** It
+already means the storm cannot be explained by sag alone.
