@@ -22,10 +22,15 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    downwards, can never reach index 2 again. Six years old, not msm8953-specific.
    Fixed; `cluster-pc` 0 → 14516 per minute, `system-pc` 0 → 3531. Written up in
    [`README.md`](README.md) under "The real cause".
-4. **Current: the RPM still records nothing.** `qcom_stats` `vlow`/`vmin` are 0
-   and the APSS master record is all zeros, while the AP now completes a
-   system-level power collapse ~47 times a second. The question is now the RPM
-   handshake alone.
+4. *Why does the RPM record nothing?* — **answered 2026-08-17**: `system_pc`
+   named affinity level 1 in its PSCI parameter, so TZ never performed the APSS
+   handshake. `0x42000353` fixes it and the RPM now counts APSS shutdowns; a
+   second change stops the AP being woken once a second by our own vMPM
+   deadline cap. Both landed. Detail under "Next step".
+5. **Current: the RPM records the AP going down, but still never enters `vlow`
+   or `vmin`.** A master being down is necessary and not sufficient — the RPM
+   aggregates over resource votes as well. The question is now which rails are
+   still voted active-set while the phone sleeps.
 
 ## Next step
 
