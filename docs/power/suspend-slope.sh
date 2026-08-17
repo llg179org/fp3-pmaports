@@ -126,6 +126,11 @@ done
 [ "$dpms" = Off ] || die "DSI-1 dpms is still '$dpms' after 30 s of blanking"
 
 # --- take the phone off VBUS -------------------------------------------------
+# ☠️ `systemctl start greetd` brings the greeter back, NOT the session. greetd's
+# [initial_session] autologin only runs at boot, so after this script the phone
+# sits at the greeter and `fp3-selftest --only 03-autologin` fails - measured
+# 2026-08-17, and it is a leftover of the leg, not a regression. Reboot before
+# reading the battery, or expect that one check to be a false alarm.
 restore() {
 	echo 0 > "$RTC" 2>/dev/null || true
 	echo Charging > "$CHG/status" 2>/dev/null || true
