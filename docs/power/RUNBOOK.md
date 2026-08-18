@@ -760,3 +760,53 @@ sleep-set write path, sending the sleep request when it differs from the active
 one, as `rpm_vreg_aggregate_requests()` does downstream. It is a correctness gap
 on every RPM-SMD SoC, not an FP3 quirk — and note this is now backed by a
 runtime measurement, not only by reading two trees.
+
+## ☠️☠️ 2026-08-18: the eMMC fell off the bus overnight — READ THIS FIRST
+
+The night of the 17th produced no measurement and one serious finding.
+
+**The leg was truncated by a shell bug of mine** (`sample()` used `i`, which is
+also every caller's loop counter), so it ran 32 minutes instead of 4.25 hours.
+Fixed and committed; verify with a short dry run —
+`suspend-slope.sh dryrun 60 2 120` — and check that the settle rows run
+`n=0..14`, phase A `n=0,1`, phase B `n=0,1` before trusting a long one.
+
+**And then the eMMC stopped answering.** At 01:16, hours after the leg ended,
+with the phone idle on the charger:
+
+```
+mmc0: cache flush error -110
+mmc0: mmc_hs400_to_hs200 failed, error -110
+mmcblk0: recovery failed!
+```
+
+`-110` is ETIMEDOUT. The card did not respond, the controller could not fall
+back from HS400, root went `emergency_ro`, and from then until morning the
+journal contained nothing but its own failure to write. A reboot cleared it
+completely: `Filesystem state: clean`, the card re-enumerated at HS400, and
+`fp3-selftest` is back to 27 ok / 3 failed with all three explained (two are the
+hand-built kernel and DTB not matching the package, one is the known amplifier
+case).
+
+⚠️ **Treat this as caused by our own change until shown otherwise.** It is the
+first occurrence in months of work, and it happened on the first night after the
+application processor began actually collapsing. One occurrence is not proof of
+causation, but the mechanism is plausible and specific: if CX collapses while
+the controller is merely runtime-suspended, its registers are lost and it comes
+back in exactly this state. Downstream has a `qcom,restore-after-cx-collapse`
+property (set for sdm845, not msm8953) and mainline has a `restore_dll_config`
+path in `sdhci_msm_runtime_resume()` — both are places to look, neither has been
+checked yet.
+
+**What this costs, and what it does not.** It can lose data, so no long
+unattended run until it is understood. It does not threaten the port: nothing on
+the phone is irreplaceable, every artefact is rebuildable from the repositories,
+and the failure recovered on a plain reboot.
+
+**Order of work from here:**
+
+1. Dry-run the fixed instrument (~8 min) and confirm the loop counts.
+2. Understand the eMMC failure — is it reproducible, and does it need CX
+   collapse or only the AP shutdown? The two changes can be separated: revert
+   the deadline cap alone and the AP still collapses, just once a second.
+3. Only then the next slope leg, and only then the regulator sleep-set work.
