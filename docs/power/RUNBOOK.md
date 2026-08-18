@@ -900,6 +900,38 @@ oracle that was not deliberate.
 system suspend. Trying to answer it by stopping the modem is what turned up the
 `smgr_accel` oops below, so the measurement is still owed.
 
+### ☠️ Three wait-loops that could not fail, 2026-08-18
+
+All three were mine, all three cost only wall-clock, and all three are the same
+mistake: **a condition the pre-change state already satisfies**. Written down
+because the next one will look just as reasonable.
+
+```sh
+until ! pgrep -f 'pmbootstrap.py build linux-fp3'; do sleep 60; done
+```
+The loop's own command line contains that string, so `pgrep` matched itself. It
+was still "waiting for the build" forty minutes after the build finished.
+
+```sh
+until ! ssh $DEV 'systemctl is-active slope-dryrun' | grep -q active; do ...
+```
+`is-active` prints **`inactive`** when the unit is gone, and `inactive` contains
+`active`. The loop outlived its unit by an hour.
+
+```sh
+ssh $DEV 'sudo sh -c "(sleep 2; reboot) &"'
+until ssh $DEV 'uname -r' | grep -q msm8953; do sleep 10; done
+```
+Two faults at once. The backgrounded `reboot` died with the ssh session, so no
+reboot happened at all; and the wait would not have noticed either way, because
+the *old* kernel answers `uname -r` exactly like the new one. It reported
+"VISSZAJÖTT" against a machine with an uptime of 1 h 49 m.
+
+The rule that fixes all three: **wait on something that changes**, and prove it
+changed. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
+and compared after; and schedule the reboot with `systemd-run --on-active=2` so
+it survives the session that asked for it.
+
 **Order of work from here:**
 
 1. ~~Dry-run the fixed instrument~~ — **done 2026-08-18, passed.**
