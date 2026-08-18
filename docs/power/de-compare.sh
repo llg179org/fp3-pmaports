@@ -44,7 +44,12 @@ say "# de-compare label=$LABEL screen=$SCREEN uptime=$(cut -d. -f1 /proc/uptime)
 # What is actually running - the label is a promise, this is the fact.
 sess=$(ps -eo comm | grep -cE '^(phosh|sway)$' 2>/dev/null || true)
 say "# phosh=$(pgrep -c phosh 2>/dev/null || echo 0) sway=$(pgrep -c sway 2>/dev/null || echo 0) procs_matched=$sess"
-say "# greetd_session=$(sed -n 's/^command *= *//p' /etc/greetd/config.toml 2>/dev/null | tr -d '\"' | head -2 | tr '\n' ' ')"
+# ☠️ The live greetd config on this device is NOT /etc/greetd/config.toml -
+# that path does not exist here. greetd is configured from the phrog package's
+# file, and an earlier version of this line silently recorded nothing.
+GREETD_CONF=/etc/phrog/greetd-config.toml
+say "# greetd_conf=$GREETD_CONF exists=$([ -f "$GREETD_CONF" ] && echo yes || echo NO)"
+say "# greetd_session=$(sed -n 's/^command *= *//p' "$GREETD_CONF" 2>/dev/null | tr -d '"' | tr '\n' ' ')"
 
 bl=$(ls -d /sys/class/backlight/* 2>/dev/null | head -1)
 if [ -n "$bl" ]; then
