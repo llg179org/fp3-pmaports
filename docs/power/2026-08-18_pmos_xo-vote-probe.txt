@@ -1,0 +1,10 @@
+xo-20260818 baseline up=130 bi_tcxo=6 apss_shut=3246 apss_xo=0 vlow=0 vmin=0 susp_ok=0
+xo-20260818 after-control-suspend up=201 bi_tcxo=9 apss_shut=3650 apss_xo=0 vlow=0 vmin=0 susp_ok=1
+xo-20260818 after-stopping-remoteprocs up=212 bi_tcxo=9 apss_shut=4013 apss_xo=0 vlow=0 vmin=0 susp_ok=1
+xo-20260818 after-quiet-suspend up=283 bi_tcxo=9 apss_shut=4412 apss_xo=0 vlow=0 vmin=0 susp_ok=2
+xo-20260818 restored up=294 bi_tcxo=10 apss_shut=4851 apss_xo=0 vlow=0 vmin=0 susp_ok=2
+xo-20260818 done
+===
+xo-unbind-20260818 baseline bi_tcxo=9
+xo-unbind-20260818 after-unbind-4080000.remoteproc bi_tcxo=9
+xo-unbind-20260818 after-unbind-c200000.remoteproc bi_tcxo=9
