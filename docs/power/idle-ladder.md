@@ -13,6 +13,24 @@ it was a mechanically plausible story, it moved the APSS XO shutdown count from
 
 The ladder is not a fix. It is the list of terms.
 
+## ☠️ It decomposes AWAKE idle, and that is on purpose
+
+Every stage runs with the kernel running. The number this investigation is
+chasing - ~60 mA - is a *suspended* figure, so it is worth saying why an awake
+ladder is the right instrument for it rather than a detour.
+
+The two regimes are close. The suspend leg of 2026-08-17 put the sleeping phone
+at about 60 mA; this ladder's first S0 sample read 85 mA with the session
+stopped and the panel dark. **s2idle roughly halves the draw and no more**,
+which means most of what the phone burns awake is still burning with the kernel
+frozen. A term that is large awake is therefore a candidate for being large
+asleep - the ladder narrows the search cheaply, in twenty-minute stages that
+never touch suspend and never touch the eMMC.
+
+What it cannot do is *prove* a term survives suspend. That is what step 4 of the
+night is for: one full slope leg with whatever the ladder names largest actually
+cut, measured asleep. **The ladder proposes; the slope leg decides.**
+
 ## Why one boot, not four reboot-matched legs
 
 The original plan was four separate legs, each from its own boot. The XO A/B
