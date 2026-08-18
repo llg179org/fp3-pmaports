@@ -24,10 +24,33 @@ from collections import OrderedDict
 LINE = re.compile(
     r'(?P<state>active|sleep)\s+(?P<type>\S{1,4})/(?P<id>\d+)\s+len=(?P<len>\d+)\s+(?P<hex>[0-9a-fA-F ]+)')
 
-# The FP3 declares 3 SMPS and 16 LDOs; sdm632-fairphone-fp3.dts is the source.
+# The FP3 declares 3 SMPS and 16 LDOs, and every consumer below was parsed out
+# of sdm632-fairphone-fp3.dts. A census line reading "ldoa/8" is a number; the
+# same line reading "sdhc_1:vmmc - THE eMMC" is a decision.
+#
+# ☠️ NOSLEEP marks rails that must not be dropped in suspend whatever the census
+# says: l5/l8 are the eMMC's vqmmc and vmmc, l11/l12 are the SD slot's. This
+# device's eMMC has already fallen off the bus once, with -110 and emergency_ro.
 FP3_RAILS = {
-    'smpa': {3, 4, 5},
-    'ldoa': {1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 17, 19, 22, 23},
+    ('smpa', 3): 'camss:vdda, mdss_dsi0:vdda, parent of l1/l2/l3',
+    ('smpa', 4): 'parent of l4 l5 l6 l7 l16 l19',
+    ('smpa', 5): 'NO CONSUMER IN DT',
+    ('ldoa', 1): 'NO CONSUMER IN DT',
+    ('ldoa', 2): 'camera@1a:vdig',
+    ('ldoa', 3): 'hsusb_phy:vdd, mdss_dsi0_phy:vcca',
+    ('ldoa', 5): 'NOSLEEP sdhc_1:vqmmc (eMMC), wcnss:vddpx, wcnss_iris:vdddig, aw8898:dvdd/vddio',
+    ('ldoa', 6): 'panel@0:iovcc',
+    ('ldoa', 7): 'hsusb_phy:vdda-pll, mpss:pll (modem PLL), wcnss_iris:vddxo',
+    ('ldoa', 8): 'NOSLEEP sdhc_1:vmmc (eMMC)',
+    ('ldoa', 9): 'wcnss_iris:vddpa',
+    ('ldoa', 11): 'NOSLEEP sdhc_2:vmmc (SD slot)',
+    ('ldoa', 12): 'NOSLEEP sdhc_2:vqmmc (SD slot)',
+    ('ldoa', 13): 'hsusb_phy:vdda-phy-dpdm',
+    ('ldoa', 16): 'NO CONSUMER IN DT',
+    ('ldoa', 17): 'NO CONSUMER IN DT',
+    ('ldoa', 19): 'wcnss_iris:vddrfa',
+    ('ldoa', 22): 'camera@10:vdda, camera@1a:vana',
+    ('ldoa', 23): 'NO CONSUMER IN DT',
 }
 
 
@@ -79,18 +102,25 @@ def main(path):
 
     print(f'\n{len(votes)} resources voted, {len(no_sleep)} of them with NO '
           f'SLEEP VOTE:\n')
+    held = 0
     for typ, rid, a in no_sleep:
-        name = ''
-        if typ in FP3_RAILS and rid in FP3_RAILS[typ]:
-            name = f'  = pm8953_{"s" if typ == "smpa" else "l"}{rid} in the FP3 DT'
+        who = FP3_RAILS.get((typ, rid), 'not a rail this DT declares')
+        rail = f'pm8953_{"s" if typ == "smpa" else "l"}{rid}'
         en = a.get('swen')
         state = 'ENABLED' if en else ('disabled' if en == 0 else '?')
-        print(f'  {typ}/{rid:<4} {state:9} {fmt(a)}{name}')
+        if en:
+            held += 1
+        print(f'  {typ}/{rid:<4} {rail:11} {state:9} {fmt(a)}')
+        print(f'  {"":17} {who}')
 
-    print('\n☠️  Every line above with swen=1 is a rail held up through suspend '
-          'by the absence of a sleep vote, not by anyone asking for it.')
-    print('☠️  A rail appearing here is not thereby droppable - some must '
-          'survive suspend. The next question is who its consumer is.')
+    print(f'\n{held} of them are ENABLED - held up through suspend by the '
+          'absence of a sleep vote, not because anyone asked for it.')
+    print('☠️  A rail appearing here is not thereby droppable. Anything marked '
+          'NOSLEEP above is the eMMC or the SD slot and is off the table; '
+          'ldoa/7 feeds the modem PLL.')
+    print('☠️  NO CONSUMER IN DT with swen=1 means no Linux driver is holding '
+          'it, so no consumer-intent work in the regulator layer can drop it - '
+          'that is the RPM boot state or another master, a different question.')
     return 0
 
 
