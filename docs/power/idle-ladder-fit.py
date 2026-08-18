@@ -34,7 +34,14 @@ def load(path):
     return stages, order
 
 
-def median_se(xs, rounds=2000, seed=11):
+def pct(xs, q):
+    xs = sorted(xs)
+    i = (len(xs) - 1) * q
+    lo, hi = int(i), min(int(i) + 1, len(xs) - 1)
+    return xs[lo] + (xs[hi] - xs[lo]) * (i - lo)
+
+
+def stat_se(xs, fn, rounds=2000, seed=11):
     """Bootstrap standard error of the median.
 
     ☠️ The drift control (R - S0) bounds systematic error but says nothing
@@ -47,12 +54,20 @@ def median_se(xs, rounds=2000, seed=11):
     n = len(xs)
     if n < 4:
         return float('nan')
-    meds = []
+    vals = []
     for _ in range(rounds):
-        meds.append(median([xs[rnd.randrange(n)] for _ in range(n)]))
-    mu = sum(meds) / len(meds)
-    var = sum((m - mu) ** 2 for m in meds) / (len(meds) - 1)
+        vals.append(fn([xs[rnd.randrange(n)] for _ in range(n)]))
+    mu = sum(vals) / len(vals)
+    var = sum((v - mu) ** 2 for v in vals) / (len(vals) - 1)
     return var ** 0.5
+
+
+def median_se(xs, **kw):
+    return stat_se(xs, median, **kw)
+
+
+def floor_se(xs, **kw):
+    return stat_se(xs, lambda v: pct(v, 0.10), **kw)
 
 
 def quart(xs, q):
@@ -81,17 +96,26 @@ def main(path):
 
     med, se = {}, {}
     print(f'{path}\n')
-    print(f'{"stage":5} {"n":>3} {"median mA":>10} {"+-SE":>6} {"IQR":>13} '
-          f'{"min-max":>15}  {"V":>6}')
-    print('-' * 86)
+    print(f'{"stage":5} {"n":>3} {"FLOOR p10":>10} {"+-SE":>6} {"median":>8} '
+          f'{"+-SE":>6} {"IQR":>13} {"max":>7}  {"V":>6}')
+    print('-' * 92)
     for tag in order:
         cur = [c for c, _ in stages[tag]]
         volt = [v for _, v in stages[tag]]
-        med[tag] = median(cur)
-        se[tag] = median_se(cur)
+        med[tag] = pct(cur, 0.10)
+        se[tag] = floor_se(cur)
         print(f'{tag:5} {len(cur):3d} {med[tag]:10.1f} {se[tag]:6.1f} '
+              f'{median(cur):8.1f} {median_se(cur):6.1f} '
               f'{quart(cur, .25):6.1f}-{quart(cur, .75):<6.1f} '
-              f'{min(cur):6.1f}-{max(cur):<7.1f}  {median(volt):6.3f}')
+              f'{max(cur):7.1f}  {median(volt):6.3f}')
+
+    # ☠️ The marginals below are computed on the FLOOR (p10), not the median.
+    # Measured on the 2026-08-18 ladder: the floor was stable to a few mA
+    # across five stages (84.8, 83.9, 85.9, 85.3, then 88.5 on the restored
+    # control) while the median wandered over 137-151 with a 10-18 mA standard
+    # error. The distribution here is a quiet floor plus bursts, and the burst
+    # rate is not what any of these stages was changing - so the floor is the
+    # signal and everything above it is weather.
 
     print('\nmarginal cost of each step (previous stage - this stage):')
     prev = None
