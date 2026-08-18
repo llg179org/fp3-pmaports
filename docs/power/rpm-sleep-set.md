@@ -107,6 +107,53 @@ enabled across suspend, which is a genuine design question and not a one-liner.
   current cost; the RPM refusing to enter a low-power mode is a *vote* problem,
   and those are different failures that happen to live in the same driver.
 
+## Who holds what: the FP3 rail map
+
+Parsed out of `sdm632-fairphone-fp3.dts` - every `*-supply = <&pm8953_*>` with
+the node that asks for it. This is what turns a census line like `ldoa/8` into
+a decision.
+
+| rail | consumers in the FP3 DT |
+|---|---|
+| `s3` | `&camss:vdda`, `&mdss_dsi0:vdda`, and the parent of `l1`, `l2`, `l3` |
+| `s4` | the parent of `l4 l5 l6 l7 l16 l19` |
+| `s5` | **none** |
+| `l1` | **none** |
+| `l2` | `camera@1a:vdig` |
+| `l3` | `&hsusb_phy:vdd`, `&mdss_dsi0_phy:vcca` |
+| `l5` | `&sdhc_1:vqmmc`, `&wcnss:vddpx`, `&wcnss_iris:vdddig`, `aw8898:dvdd`, `aw8898:vddio` |
+| `l6` | `panel@0:iovcc` |
+| `l7` | `&hsusb_phy:vdda-pll`, `&mpss:pll`, `&wcnss_iris:vddxo` |
+| `l8` | `&sdhc_1:vmmc` |
+| `l9` | `&wcnss_iris:vddpa` |
+| `l11` | `&sdhc_2:vmmc` |
+| `l12` | `&sdhc_2:vqmmc` |
+| `l13` | `&hsusb_phy:vdda-phy-dpdm` |
+| `l16` | **none** |
+| `l17` | **none** |
+| `l19` | `&wcnss_iris:vddrfa` |
+| `l22` | `camera@10:vdda`, `camera@1a:vana` |
+| `l23` | **none** |
+
+Two things fall out of it.
+
+**☠️ Five of the nineteen declared rails have no consumer at all** - `s5`, `l1`,
+`l16`, `l17`, `l23`. If any of those turns up in the census with `swen=1`, it is
+not being held by a Linux driver, and no amount of consumer-intent work in the
+regulator layer will drop it. That would point at the RPM's own boot state or at
+another master, and it is a different investigation.
+
+**☠️ Four rails must not be dropped in sleep under any circumstances.** `l8`
+(`sdhc_1:vmmc`) and `l5` (`sdhc_1:vqmmc`) are **the eMMC**, and `l11`/`l12` are
+the SD slot. The eMMC on this device has already fallen off the bus once, on the
+night of 2026-08-18, with `-110` and `emergency_ro`. Any future sleep-vote work
+treats those four as untouchable until someone has a reason better than "it
+saves current", and that reason has to survive the question of what happens to a
+filesystem when its rail comes back.
+
+`l7` is the next most dangerous: it feeds `&mpss:pll`, the modem's PLL, and the
+modem is one of the masters whose sleep vote the RPM is waiting for.
+
 ## The next measurement, not the next patch
 
 1. Trace `qcom_rpm_smd_write` across a suspend and print the **resource ids**,
