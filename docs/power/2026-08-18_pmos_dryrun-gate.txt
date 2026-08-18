@@ -1,0 +1,14 @@
+suspend-slope: dryrun-20260818 === settle 120s off VBUS ===
+dryrun-20260818 phase=settle n=0 t=2066 v=4318216 i=-93612 pll=118 nread=20
+dryrun-20260818 phase=settle n=1 t=2137 v=4308192 i=-91170 pll=120 nread=20
+suspend-slope: dryrun-20260818 === phase A: 2 sleeps of 60s ===
+dryrun-20260818 phase=A n=0 t=2288 v=4282598 i=-125045 pll=123 nread=20
+suspend-slope: dryrun-20260818 A0 slept=61s of 60s
+dryrun-20260818 phase=A n=1 t=2380 v=4260896 i=-176391 pll=124 nread=20
+suspend-slope: dryrun-20260818 A1 slept=61s of 60s
+suspend-slope: dryrun-20260818 phase A done suspends=2 of 2
+suspend-slope: dryrun-20260818 === phase B: awake control, 2 x 60s ===
+dryrun-20260818 phase=B n=0 t=2471 v=4258560 i=-153427 pll=124 nread=20
+dryrun-20260818 phase=B n=1 t=2561 v=4244449 i=-157852 pll=129 nread=20
+suspend-slope: dryrun-20260818 done - restoring charger and greetd
+
