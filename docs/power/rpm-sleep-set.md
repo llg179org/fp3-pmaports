@@ -1,0 +1,116 @@
+> ⚠️ **AI-generated.** Maintained by Claude (Opus 5) under the direction of
+> Lajosházi, László Gergely.
+
+# The RPM sleep set, and the nine-year hole in the mainline regulator driver
+
+## The claim
+
+**Mainline never sends a sleep-set request for any PM8953 rail.** The vendor
+sends one for every rail whose sleep aggregate differs from its active
+aggregate. On the RPM, a resource with an active request and no sleep request
+uses the active request *at all times, including while the Apps processor is
+power-collapsed*. So on mainline, every rail a consumer turned on stays on
+through suspend, by construction.
+
+This is read out of both drivers, not inferred. It is **not yet measured to be
+worth any particular number of milliamps** - see "What this does not say".
+
+## The vendor side, from the source on disk
+
+`drivers/regulator/rpm-smd-regulator.c` in
+`hadk22/kernel/fairphone/sdm632/`. Its own comment states the RPM rule:
+
+> Regulator requests sent in the active set take effect immediately. Requests
+> sent in the sleep set take effect when the Apps processor transitions into
+> RPM assisted power collapse. For any given regulator, if an active set
+> request is present, but not a sleep set request, then the active set request
+> is used at all times, even when the Apps processor is power collapsed.
+>
+> The rpm-regulator-smd takes advantage of this default usage of the active set
+> request by only sending a sleep set request if it differs from the
+> corresponding active set request.
+
+Each regulator device carries two RPM handles, `handle_active` and
+`handle_sleep`, and each *consumer* node carries `qcom,set`, a mandatory
+bitmask - `BIT(0)` active, `BIT(1)` sleep - that decides which aggregates it
+contributes to:
+
+```c
+list_for_each_entry(reg, &rpm_vreg->reg_list, list) {
+        if (reg->set_active) { rpm_vreg_aggregate_params(param_active, reg->req.param); ... }
+        if (reg->set_sleep)  { rpm_vreg_aggregate_params(param_sleep,  reg->req.param); ... }
+}
+```
+
+The two aggregates then differ exactly when some consumer is in one set and not
+the other, and only then is a sleep request sent.
+
+**On this SoC's own DT the mechanism is in use.** Of the 30 `qcom,set`
+properties across `pm8953-rpm-regulator.dtsi` and `msm8953-regulator.dtsi`:
+
+| value | count | meaning | which nodes |
+|---|---|---|---|
+| 3 | 26 | both sets | everything ordinary |
+| 1 | 3 | **active only** | `pm8953_s2_level_ao`, `pm8953_s7_level_ao`, `pm8953_l7_ao` |
+| 2 | 1 | **sleep only** | `pm8953_s7_level_so` |
+
+The `_ao` nodes are how a consumer says *hold this up while I am awake and let
+it drop when I am not*; `pm8953_s7_level_so` is the vendor voting a **lower
+corner in sleep** than it holds awake. Neither has any expression in mainline.
+
+## The mainline side
+
+`drivers/regulator/qcom_smd-regulator.c` contains **exactly one**
+`qcom_rpm_smd_write()` call, in `rpm_reg_write_active()`, and it is hard-coded:
+
+```c
+qcom_rpm_smd_write(vreg->rpm, QCOM_SMD_RPM_ACTIVE_STATE, ...)
+```
+
+There is no sleep path at all - no second handle, no `qcom,set` equivalent, no
+aggregate. Every rail therefore has an active vote and no sleep vote, and the
+RPM rule above turns that into "stays as it is through power collapse".
+
+This matches the tracepoint measurement already taken on this device: at
+suspend entry, `rpmpd`, `icc-rpm` and `clk-smd-rpm` all vote in the sleep set;
+**the LDOs vote 14 active and 0 sleep.**
+
+## Why the obvious patch is wrong
+
+☠️ **Mirroring the active vote into the sleep set is a no-op by construction.**
+That is precisely the state the RPM already assumes when no sleep request
+exists. Writing it explicitly changes nothing except the number of messages.
+The only thing that saves current is a sleep vote that is *lower* than the
+active one.
+
+☠️ **A blanket "disable everything in sleep" is unsafe.** Some of these rails
+feed things that must survive suspend - the RPM's own island, the modem's
+retention, the eMMC's I/O rail on a device whose eMMC has already fallen off
+the bus once. The vendor does not do this either: it drops specific rails
+because specific consumers declared themselves active-only.
+
+So the correct shape is the vendor's shape: **the sleep vote must come from
+consumer intent**, not from a global policy in the provider driver. In mainline
+terms that means a rail's sleep state follows from which consumers keep it
+enabled across suspend, which is a genuine design question and not a one-liner.
+
+## What this does not say
+
+- It does **not** say the LDOs are worth the ~60 mA gap. Sixteen LDOs left
+  standing is a plausible tens-of-milliamps story and nothing more until it is
+  measured. The XO branch was also a plausible mechanical story, moved the APSS
+  XO shutdown count from 0 to 1952, and changed the discharge slope by nothing.
+- It does **not** identify which of the 14 are droppable. That needs the census:
+  the resource ids from the `qcom_rpm_smd_write` tracepoint at suspend entry,
+  matched against the rail table in the FP3 DT.
+- It does **not** explain `vlow`/`vmin` staying at 0. A rail left up is a
+  current cost; the RPM refusing to enter a low-power mode is a *vote* problem,
+  and those are different failures that happen to live in the same driver.
+
+## The next measurement, not the next patch
+
+1. Trace `qcom_rpm_smd_write` across a suspend and print the **resource ids**,
+   not just the counts, so the 14 rails have names.
+2. Cross the names against the FP3 DT's 19 declared rails (3 SMPS + 16 LDOs,
+   `sdm632-fairphone-fp3.dts`) and against what each one supplies.
+3. Only then decide whether any of them can be dropped, and by whose intent.
