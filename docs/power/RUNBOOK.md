@@ -924,7 +924,7 @@ the script died with the session - leaving the modem and the ADSP unbound with
 nothing left running to rebind them. `emmc-watch` survived the same moment
 because it was a transient unit.
 
-### ☠️ Five loops that could not fail, 2026-08-18
+### ☠️ Six loops that could not fail, 2026-08-18
 
 All three were mine, all three cost only wall-clock, and all three are the same
 mistake: **a condition the pre-change state already satisfies**. Written down
@@ -977,7 +977,21 @@ sixty seconds, and handed a leg to the slope instrument at 4.238 V - deep in the
 steep region the target exists to avoid. Shed the load and let it recover before
 every comparison.
 
-The rule that fixes all five: **wait on something that changes**, and prove it
+**6. Waiting for a file nothing would ever write.**
+
+```sh
+until [ -s .../bfki8zinb.output ]; do sleep 15; done
+```
+
+The output belonged to the xo-unbind probe, which had already died with its ssh
+session. The file was 0 bytes at 08:05 and still 0 bytes when the loop was
+killed at 10:05 - two hours of polling for a writer that no longer existed. A
+wait needs a liveness check on the *producer*, not only on its product: if the
+job is a transient unit, poll `systemctl is-active`, and if it is not a unit,
+give the loop a bounded iteration count so it reports failure instead of
+waiting forever.
+
+The rule that fixes all six: **wait on something that changes**, and prove it
 changed - and make sure the thing you compare against was measured under the
 same conditions as the threshold. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
 and compared after; and schedule the reboot with `systemd-run --on-active=2` so
