@@ -1119,39 +1119,75 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
-### ★ RESUME POINT, 2026-08-18 20:30
+### ★ RESUME POINT, 2026-08-18 20:50
 
-Device state: nothing running except `emmc-watch` (0 failures). Charger restored
-to `Charging` and verified. Boot label plain `postmarketOS`, `xo_sleep_off=N`.
+**Running on the device**, as a transient unit, nothing on the host but a
+poller: `idle-ladder.service`. Started 20:34, guards passed (charger off,
+`Discharging`, gauge live). First S0 sample `-84838 uA at 4.196 V`. It ends
+about **23:20**.
 
-**The plan for the night, in order:**
+☠️ **Poll it over USB (`172.16.42.1`), not wifi.** Stage S5 turns the radio off;
+a wifi poller would go blind at ~23:00 and never see the unit stop.
 
-1. ~~Fit the control leg, state the A/B difference.~~ Done - see the verdict
-   above.
-2. **The idle ladder** - `docs/power/idle-ladder.sh`, written up in
-   `idle-ladder.md`. This replaced the four reboot-matched `idleleg.sh` legs
-   for two measured reasons: `idleleg.sh` never took the charger off and both
-   its 2026-08-15 captures read `current_now = 0` for all fifty samples, and
-   the XO A/B showed 7 % of boot-to-boot spread in the awake reference, against
-   terms we want at 10 mA. One boot, cumulative subtraction, seven stages
-   (desktop services, sensor stack, our own audio watchers, modem stack, wifi
-   radio, then everything restored as a drift control), ~2 h 35 min. This is
-   what produces the missing **budget**. Awake legs, so no eMMC exposure.
+☠️ Do not run anything CPU-heavy on the phone while it samples. Reads are fine;
+an `apk` is not.
 
-   ☠️ There is no `pd-mapper` running on this device; the stage list follows
-   what `systemctl list-units --state=running` actually shows.
+Everything the night needs is already installed on the device:
 
-   ☠️ From stage S5 the phone is on USB only (`172.16.42.1`).
-3. **The desktop-environment comparison** - see `de-compare.md`, scripts
-   `de-compare.sh` and `de-compare-fit.py`, already written. Install
-   `postmarketos-ui-sxmo-de-sway` alongside phosh, switch via greetd's
-   `[initial_session]`, four legs (phosh/sxmo x screen on/off).
-4. Last, and the only deep-sleep item: one full slope leg with whatever step 2
-   names as the largest term switched off.
+| `/root/…` | what it does |
+|---|---|
+| `idle-ladder.sh` | running now - the decomposition, `idle-ladder.md` |
+| `slope-leg.sh` | generalised slope leg: `slope-leg.sh <tag> [units to cut …]` |
+| `de-compare.sh` | one DE leg: `de-compare.sh <phosh\|sxmo> <on\|off>` |
+| `de-switch.sh` | flips greetd `[initial_session]`; `de-switch.sh show` first |
+| `rail-census.sh` | traces `qcom_rpm_smd_write` across a suspend |
 
-☠️ Step 4 is the only one that touches the eMMC risk. It is last on purpose:
-if the card drops overnight, the substantive results of the day are already
-committed.
+**Sequence from here, in order:**
+
+```sh
+# 1. when idle-ladder goes inactive (~23:20)
+scp fp3@172.16.42.1:/home/fp3/idle-ladder.txt docs/power/2026-08-18_idle-ladder.txt
+python3 docs/power/idle-ladder-fit.py docs/power/2026-08-18_idle-ladder.txt
+```
+
+☠️ Read `R - S0` before reading a single marginal. The fitter also prints a
+bootstrap standard error per stage and marks any step under 2 sigma as inside
+the noise - on synthetic data at this device's scatter a 10 mA step is **not**
+resolvable with 60 samples, so expect some stages to come back honest-but-null.
+
+```sh
+# 2. the Sxmo install - only after the ladder is inactive
+ssh fp3@192.168.100.17 'sudo apk add --simulate postmarketos-ui-sxmo-de-sway'
+```
+
+☠️ Read that output for `Purging` before running it for real; apk-tools 3
+re-resolves the whole world on one install and has already executed a days-old
+half-finished upgrade as a side effect here. Then, after installing:
+
+```sh
+FP3_PW=147147 ./tests/fp3-selftest --only boot-fallback --host 192.168.100.17
+ssh fp3@192.168.100.17 'sudo /root/de-switch.sh show'      # read Sxmo's Exec=
+```
+
+The install regenerates `extlinux.conf` and drops the fallback label, the
+`panic=10` and the menu timeout - and there is no console on this phone.
+
+```sh
+# 3. four DE legs, each from its own boot
+sudo systemd-run --unit=de-leg --collect /root/de-compare.sh phosh off
+python3 docs/power/de-compare-fit.py docs/power/de-compare-*.txt
+
+# 4. LAST - the only deep-sleep item, and the only eMMC exposure
+sudo systemd-run --unit=slope --collect /root/slope-leg.sh nomodem-20260819 \
+        ModemManager rmtfs tqftpserv     # whichever the ladder names largest
+```
+
+☠️ Step 4 is last on purpose: if the card drops overnight, the substantive
+results are already committed.
+
+**Also ready, not scheduled tonight:** `rail-census.sh` + `rail-census-parse.py`
+give names to the 14 LDO rails that vote active and never vote sleep - the
+measurement that `rpm-sleep-set.md` says has to come before any regulator patch.
 
 ### Superseded - the A leg, started 2026-08-18 08:5x
 
