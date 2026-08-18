@@ -1236,3 +1236,38 @@ suspend must keep their vote. So the next step is data, not code: **the list of
 the 14 rails still holding an active vote at suspend entry**, which the
 `qcom_rpm_smd_write` tracepoint already collects. Take it after the A/B legs;
 the device is committed until then.
+
+### The A leg landed: 74.4 mA with the sleep-set XO vote zeroed
+
+`docs/power/2026-08-18_pmos_xo-on-leg.txt`, r61 booted from the
+`postmarketOS-xo` label (`clk_smd_rpm.xo_sleep_off=1`), `leg3.sh` from
+4.266 V down to 4.018 V under load, 1800 s settle, then six 900 s sleeps and
+six awake windows. All six suspends completed (`slept=901s of 900s`), the
+script exited rc=0 and restored the charger.
+
+```
+phase A  4.0739 -> 4.0279 V   slope -35.29 mV/h   r2=0.9938   I mean 137.6 mA
+phase B  3.9937 -> 3.9025 V   slope -71.20 mV/h   r2=0.9922   I mean 150.1 mA
+RESULT   asleep 74.4 mA   (= 150.1 x 0.496)
+```
+
+**The control passes.** Phase B's directly-measured awake current is 150.1 mA
+against the 155.3 mA this instrument has returned before, so the method is
+intact and the awake regime is unchanged. Two early phase-B windows read 101
+and 126 mA and briefly looked like the awake baseline had moved; they were
+settling, and the six-window mean is what counts. A partial phase is not a
+phase.
+
+☠️ **Do not compare this to the reference leg's 60.1 mA.** That was a different
+day, a lower state of charge and an earlier kernel. And within this leg the two
+phases do not share a region: phase A sits at 4.03-4.07 V, above the plateau,
+while phase B is at 3.90-3.99 V inside it. That is the same systematic that
+withdrew 2026-08-17, much milder here but pointing the same way - it inflates
+phase A's mV/h and therefore the computed sleep current, so 74.4 mA is an upper
+bound rather than a figure.
+
+**Which is exactly why the number that matters is the difference.**
+`leg3-control.sh` rides down to the same 4.030 V target from the same 99%
+start, so its two phases land in the same two regions and the systematic
+cancels in the A-vs-control comparison even though it does not cancel inside
+either leg.

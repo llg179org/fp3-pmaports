@@ -30,6 +30,7 @@ PARAM=/sys/module/clk_smd_rpm/parameters/xo_sleep_off
 TARGET=4030000
 FLOOR=3800000
 START_MIN=4200000
+START_CAP=99
 SLOPE=/home/fp3/suspend-slope.txt
 TAG=xo-off-20260818
 
@@ -46,6 +47,15 @@ if [ "$p" != N ] && [ "$p" != 0 ]; then
 fi
 if [ "$v0" -lt "$START_MIN" ]; then
 	say "ABORT: starting at $v0, below START_MIN=$START_MIN - charge first"
+	exit 1
+fi
+# ☠️ voltage_now is inflated while the charger is pushing, so it alone cannot
+# say the pack is full. The A leg started at cap=99%; match it, or the two
+# descents cover different amounts of charge and the phases land in different
+# parts of the curve - which is the whole failure this pair exists to avoid.
+c0=$(cat "$BATT/capacity")
+if [ "$c0" -lt "$START_CAP" ]; then
+	say "ABORT: capacity $c0%% below START_CAP=$START_CAP%% - charge first"
 	exit 1
 fi
 
