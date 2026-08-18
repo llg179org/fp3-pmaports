@@ -11,6 +11,7 @@ being resolved.
 the difference is the ladder's error bar and every marginal below it that is
 smaller than that gap is noise, not a finding.
 """
+import random
 import sys
 from statistics import median
 
@@ -31,6 +32,27 @@ def load(path):
         # current_now is negative while discharging; report magnitude in mA
         stages[tag].append((abs(int(cur)) / 1000.0, int(volt) / 1e6))
     return stages, order
+
+
+def median_se(xs, rounds=2000, seed=11):
+    """Bootstrap standard error of the median.
+
+    ☠️ The drift control (R - S0) bounds systematic error but says nothing
+    about the sampling error of any one stage. Measured on synthetic data with
+    this device's scatter, 60 samples give a median SE around 6 mA, so a
+    marginal - a difference of two medians - carries about 9 mA. Marginals
+    below that are not findings no matter how clean the drift control looks.
+    """
+    rnd = random.Random(seed)
+    n = len(xs)
+    if n < 4:
+        return float('nan')
+    meds = []
+    for _ in range(rounds):
+        meds.append(median([xs[rnd.randrange(n)] for _ in range(n)]))
+    mu = sum(meds) / len(meds)
+    var = sum((m - mu) ** 2 for m in meds) / (len(meds) - 1)
+    return var ** 0.5
 
 
 def quart(xs, q):
@@ -57,16 +79,17 @@ def main(path):
         print('no samples - the capture is empty')
         return 1
 
-    med = {}
+    med, se = {}, {}
     print(f'{path}\n')
-    print(f'{"stage":5} {"n":>3} {"median mA":>10} {"IQR":>13} {"min-max":>15}  {"V":>6}')
-    print('-' * 78)
+    print(f'{"stage":5} {"n":>3} {"median mA":>10} {"+-SE":>6} {"IQR":>13} '
+          f'{"min-max":>15}  {"V":>6}')
+    print('-' * 86)
     for tag in order:
         cur = [c for c, _ in stages[tag]]
         volt = [v for _, v in stages[tag]]
-        m = median(cur)
-        med[tag] = m
-        print(f'{tag:5} {len(cur):3d} {m:10.1f} '
+        med[tag] = median(cur)
+        se[tag] = median_se(cur)
+        print(f'{tag:5} {len(cur):3d} {med[tag]:10.1f} {se[tag]:6.1f} '
               f'{quart(cur, .25):6.1f}-{quart(cur, .75):<6.1f} '
               f'{min(cur):6.1f}-{max(cur):<7.1f}  {median(volt):6.3f}')
 
@@ -77,12 +100,16 @@ def main(path):
             continue
         if prev is not None:
             d = med[prev] - med[tag]
-            print(f'  {prev} -> {tag}  {d:+7.1f} mA   {LABEL.get(tag, "")}')
+            u = (se[prev] ** 2 + se[tag] ** 2) ** 0.5
+            mark = '' if abs(d) > 2 * u else '   <- inside the noise'
+            print(f'  {prev} -> {tag}  {d:+7.1f} +-{u:4.1f} mA   '
+                  f'{LABEL.get(tag, "")}{mark}')
         prev = tag
 
     if 'R' in med and 'S0' in med:
         drift = med['R'] - med['S0']
-        print(f'\nDRIFT CONTROL  R - S0 = {drift:+.1f} mA '
+        du = (se['R'] ** 2 + se['S0'] ** 2) ** 0.5
+        print(f'\nDRIFT CONTROL  R - S0 = {drift:+.1f} +-{du:.1f} mA '
               f'(R {med["R"]:.1f}, S0 {med["S0"]:.1f})')
         print(f'☠️  Any marginal above smaller than {abs(drift):.1f} mA is inside '
               f'the drift and is not a finding.')
