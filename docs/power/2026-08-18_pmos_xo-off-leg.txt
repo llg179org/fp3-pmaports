@@ -1,0 +1,53 @@
+suspend-slope: xo-off-20260818 === settle 1800s off VBUS ===
+xo-off-20260818 phase=settle n=0 t=7439 v=4049715 i=-137023 pll=154 nread=20
+xo-off-20260818 phase=settle n=1 t=7510 v=4065967 i=-120773 pll=157 nread=20
+xo-off-20260818 phase=settle n=2 t=7581 v=4078229 i=-132675 pll=159 nread=20
+xo-off-20260818 phase=settle n=3 t=7652 v=4072487 i=-166549 pll=161 nread=20
+xo-off-20260818 phase=settle n=4 t=7723 v=4090588 i=-102309 pll=164 nread=20
+xo-off-20260818 phase=settle n=5 t=7793 v=4081830 i=-115814 pll=170 nread=20
+xo-off-20260818 phase=settle n=6 t=7864 v=4092729 i=-98495 pll=171 nread=20
+xo-off-20260818 phase=settle n=7 t=7935 v=4078229 i=-139999 pll=172 nread=20
+xo-off-20260818 phase=settle n=8 t=8006 v=4076477 i=-144729 pll=176 nread=20
+xo-off-20260818 phase=settle n=9 t=8077 v=4082803 i=-138091 pll=177 nread=20
+xo-off-20260818 phase=settle n=10 t=8148 v=4076477 i=-136337 pll=183 nread=20
+xo-off-20260818 phase=settle n=11 t=8218 v=4071514 i=-128402 pll=184 nread=20
+xo-off-20260818 phase=settle n=12 t=8289 v=4077450 i=-106048 pll=190 nread=20
+xo-off-20260818 phase=settle n=13 t=8360 v=4074726 i=-114517 pll=193 nread=20
+xo-off-20260818 phase=settle n=14 t=8431 v=4068497 i=-138473 pll=195 nread=20
+xo-off-20260818 phase=settle n=15 t=8502 v=4066453 i=-129089 pll=197 nread=20
+xo-off-20260818 phase=settle n=16 t=8573 v=4078716 i=-89873 pll=202 nread=20
+xo-off-20260818 phase=settle n=17 t=8644 v=4072098 i=-112838 pll=207 nread=20
+xo-off-20260818 phase=settle n=18 t=8715 v=4065869 i=-115356 pll=210 nread=20
+xo-off-20260818 phase=settle n=19 t=8785 v=4067329 i=-106582 pll=213 nread=20
+xo-off-20260818 phase=settle n=20 t=8856 v=4055359 i=-149917 pll=218 nread=20
+xo-off-20260818 phase=settle n=21 t=8927 v=4058084 i=-124511 pll=220 nread=20
+xo-off-20260818 phase=settle n=22 t=8998 v=4062171 i=-103759 pll=223 nread=20
+xo-off-20260818 phase=settle n=23 t=9069 v=4062658 i=-107345 pll=228 nread=20
+xo-off-20260818 phase=settle n=24 t=9140 v=4061101 i=-119781 pll=231 nread=20
+xo-off-20260818 phase=settle n=25 t=9211 v=4062658 i=-105895 pll=233 nread=20
+xo-off-20260818 phase=settle n=26 t=9282 v=4059544 i=-120468 pll=235 nread=20
+xo-off-20260818 phase=settle n=27 t=9352 v=4052439 i=-122756 pll=237 nread=20
+xo-off-20260818 phase=settle n=28 t=9423 v=4054678 i=-121231 pll=238 nread=20
+xo-off-20260818 phase=settle n=29 t=9494 v=4053899 i=-112991 pll=245 nread=20
+suspend-slope: xo-off-20260818 === phase A: 6 sleeps of 900s ===
+xo-off-20260818 phase=A n=0 t=10487 v=4040956 i=-125503 pll=211 nread=20
+suspend-slope: xo-off-20260818 A0 slept=901s of 900s
+xo-off-20260818 phase=A n=1 t=11419 v=4015945 i=-174712 pll=212 nread=20
+suspend-slope: xo-off-20260818 A1 slept=901s of 900s
+xo-off-20260818 phase=A n=2 t=12351 v=4022465 i=-112991 pll=214 nread=20
+suspend-slope: xo-off-20260818 A2 slept=901s of 900s
+xo-off-20260818 phase=A n=3 t=13283 v=4006602 i=-160141 pll=220 nread=20
+suspend-slope: xo-off-20260818 A3 slept=901s of 900s
+xo-off-20260818 phase=A n=4 t=14215 v=4000861 i=-116042 pll=223 nread=20
+suspend-slope: xo-off-20260818 A4 slept=901s of 900s
+xo-off-20260818 phase=A n=5 t=15147 v=3991518 i=-129928 pll=224 nread=20
+suspend-slope: xo-off-20260818 A5 slept=901s of 900s
+suspend-slope: xo-off-20260818 phase A done suspends=6 of 6
+suspend-slope: xo-off-20260818 === phase B: awake control, 6 x 900s ===
+xo-off-20260818 phase=B n=0 t=16077 v=3955705 i=-157699 pll=256 nread=20
+xo-off-20260818 phase=B n=1 t=17008 v=3933322 i=-159682 pll=284 nread=20
+xo-off-20260818 phase=B n=2 t=17939 v=3916972 i=-132522 pll=321 nread=20
+xo-off-20260818 phase=B n=3 t=18870 v=3897314 i=-162811 pll=345 nread=20
+xo-off-20260818 phase=B n=4 t=19801 v=3886317 i=-165252 pll=393 nread=20
+xo-off-20260818 phase=B n=5 t=20731 v=3863349 i=-187988 pll=435 nread=20
+suspend-slope: xo-off-20260818 done - restoring charger and greetd
