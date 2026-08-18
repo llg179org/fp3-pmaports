@@ -924,7 +924,7 @@ the script died with the session - leaving the modem and the ADSP unbound with
 nothing left running to rebind them. `emmc-watch` survived the same moment
 because it was a transient unit.
 
-### ☠️ Three wait-loops that could not fail, 2026-08-18
+### ☠️ Four wait-loops that could not fail, 2026-08-18
 
 All three were mine, all three cost only wall-clock, and all three are the same
 mistake: **a condition the pre-change state already satisfies**. Written down
@@ -951,7 +951,18 @@ reboot happened at all; and the wait would not have noticed either way, because
 the *old* kernel answers `uname -r` exactly like the new one. It reported
 "VISSZAJÖTT" against a machine with an uptime of 1 h 49 m.
 
-The rule that fixes all three: **wait on something that changes**, and prove it
+A fourth, an hour later and the same shape:
+
+```sh
+nohup pmbootstrap build ... > build.log &
+until grep -q 'Finished building packages' build.log; do sleep 30; done
+```
+The file still held the *previous* build's log, so the wait was satisfied
+before the new build had written a byte, and it reported a finished build
+against a package that did not exist. Truncate the log first, and check the
+artefact - not the narration.
+
+The rule that fixes all four: **wait on something that changes**, and prove it
 changed. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
 and compared after; and schedule the reboot with `systemd-run --on-active=2` so
 it survives the session that asked for it.
