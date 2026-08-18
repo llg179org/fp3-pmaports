@@ -924,7 +924,7 @@ the script died with the session - leaving the modem and the ADSP unbound with
 nothing left running to rebind them. `emmc-watch` survived the same moment
 because it was a transient unit.
 
-### ☠️ Four wait-loops that could not fail, 2026-08-18
+### ☠️ Five loops that could not fail, 2026-08-18
 
 All three were mine, all three cost only wall-clock, and all three are the same
 mistake: **a condition the pre-change state already satisfies**. Written down
@@ -962,8 +962,24 @@ before the new build had written a byte, and it reported a finished build
 against a package that did not exist. Truncate the log first, and check the
 artefact - not the narration.
 
-The rule that fixes all four: **wait on something that changes**, and prove it
-changed. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
+A fifth, and this one corrupted a measurement rather than just wasting time:
+
+```sh
+load_start                      # eight busy cores, to reach the flat region faster
+while :; do
+	v=$(cat "$BATT/voltage_now")
+	[ "$v" -le "$TARGET" ] && break
+```
+The threshold was chosen for a **resting** pack and tested against a **loaded**
+one. Eight cores pull the terminal voltage down by about 360 mV, so the first
+check read 3.954 V against a 4.030 V target, declared the descent finished after
+sixty seconds, and handed a leg to the slope instrument at 4.238 V - deep in the
+steep region the target exists to avoid. Shed the load and let it recover before
+every comparison.
+
+The rule that fixes all five: **wait on something that changes**, and prove it
+changed - and make sure the thing you compare against was measured under the
+same conditions as the threshold. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
 and compared after; and schedule the reboot with `systemd-run --on-active=2` so
 it survives the session that asked for it.
 
