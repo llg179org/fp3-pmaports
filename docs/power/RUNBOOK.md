@@ -1011,6 +1011,27 @@ the application processor's XO vote.
    is not a reachable state on this SoC and it has been the wrong instrument
    since 2026-08-14 - a possibility that has never been tested.
 
+### Running now, started 2026-08-18 09:00
+
+`leg3.sh` on the device, as a transient unit: ride the pack from 4.379 V down to
+4.030 V - the flat part of the curve, which is what withdrew the leg of
+2026-08-17 - then hand over to `suspend-slope.sh xo-on-20260818 900 6`. Six
+15-minute sleeps and six awake controls, roughly five hours end to end with the
+discharge.
+
+☠️ It refuses to start unless `/sys/module/clk_smd_rpm/parameters/xo_sleep_off`
+reads `Y`. A leg that cannot say which side of an A/B it measured is worth
+nothing, and the tag in the sample lines is a promise while the parameter is the
+fact.
+
+The control leg is the same script from the plain `postmarketOS` boot label,
+which has to be run before the two can be compared. Neither number means
+anything alone.
+
+After this leg the phone sits at the greeter, because `suspend-slope.sh` stops
+`greetd` and restarting it does not restart the session - reboot before reading
+`03-autologin`.
+
 **Order of work from here:**
 
 1. ~~Dry-run the fixed instrument~~ — **done 2026-08-18, passed.**
