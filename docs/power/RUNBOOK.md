@@ -1070,7 +1070,53 @@ improvement is the current.
 Worth reporting either way once there is a number; worth nothing as an argument
 without one.
 
-### Running now, started 2026-08-18 08:5x - HOW TO PICK IT UP
+### ★ RESUME POINT, 2026-08-18 17:35 - READ THIS FIRST
+
+**Running on the device right now**, both as transient units, nothing on the
+host:
+
+| unit | what it actually is | state |
+|---|---|---|
+| `await-charge.service` | it `exec`'d `/root/leg3-control.sh`, so the unit name is stale - this **is** the control leg | phase A done 6/6, phase B started 17:24 |
+| `emmc-watch.service` | eMMC watchdog, logs to tmpfs | 0 failures, `susp_ok=6 susp_fail=0` |
+
+The control leg ends about **18:55**. Then:
+
+```sh
+scp fp3@192.168.100.17:/home/fp3/suspend-slope.txt \
+    docs/power/2026-08-18_pmos_xo-off-leg.txt
+python3 docs/power/slope-fit.py docs/power/2026-08-18_pmos_xo-off-leg.txt
+```
+
+☠️ Read phase B first (expect ~150 mA; the A leg gave 150.1), then the settle
+rows, then compare against the A leg's 74.4 mA. **Only the difference means
+anything** - each leg's phase A sits above the plateau and its phase B inside
+it, and that systematic cancels between the legs but not within either.
+
+Boot state: plain `postmarketOS` label, `xo_sleep_off=N` (confirmed in
+`/proc/cmdline` and the `rested` lines, which read `xo=0` against the A leg's
+1952). The experiment is no longer the default; that cleanup is done.
+
+**The plan for the night, in order:**
+
+1. Fit the control leg, commit, state the A/B difference.
+2. **Four decomposition legs** with `/usr/local/bin/idleleg.sh` - baseline,
+   WiFi down, modem stopped, `pd-mapper` disabled. 35 min each (600 s settle,
+   50 samples at 30 s), reboot-matched. This is what produces the missing
+   **budget**: no mechanism yet accounts for even 20 mA of the ~60 mA gap, so
+   every patch before this is a guess. Awake legs, so no eMMC exposure.
+3. **The desktop-environment comparison** - see `de-compare.md`, scripts
+   `de-compare.sh` and `de-compare-fit.py`, already installed-ready. Install
+   `postmarketos-ui-sxmo-de-sway` alongside phosh, switch via greetd's
+   `[initial_session]`, four legs (phosh/sxmo x screen on/off).
+4. Last, and the only deep-sleep item: one full slope leg with whatever step 2
+   names as the largest term switched off.
+
+☠️ Step 4 is the only one that touches the eMMC risk. It is last on purpose:
+if the card drops overnight, the substantive results of the day are already
+committed.
+
+### Superseded - the A leg, started 2026-08-18 08:5x
 
 `leg3` is a transient systemd unit on the device. To see where it is:
 
