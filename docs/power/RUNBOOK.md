@@ -846,6 +846,60 @@ present and the platform device is created, but with no driver bound
 does not `modprobe` first gets nothing and can easily read that as "the
 processor never collapsed".
 
+### 2026-08-18: why the RPM never turns the crystal off
+
+`vlow` is the RPM's XO-off record, and APSS `XO shutdown count` has been 0 for
+every boot of this investigation while MPSS (6116), PRONTO (21278) and LPASS all
+shut XO down routinely. So the question "why is `vlow` zero" is the same question
+as "what does the application processor hold XO for".
+
+The answer is a standing sleep-set vote, and it is structural rather than
+accidental. In `clk-smd-rpm.c` every RPM clock exists twice - a plain one and an
+`_a` peer marked `active_only` - and `to_active_sleep()` is the whole difference:
+
+```c
+	if (r->active_only)
+		*sleep = 0;
+	else
+		*sleep = *active;
+```
+
+`clk_smd_rpm_prepare()` then writes **both** sets. So preparing the plain
+`bi_tcxo` asks the RPM to keep the crystal running *while the processor is
+asleep*, and the RPM obliges - exactly as the vendor comment quoted earlier in
+this page says it will.
+
+Read off the device (`clk_summary`, awake and idle):
+
+| consumer | connection |
+|---|---|
+| `c200000.remoteproc` | `xo` |
+| `4080000.remoteproc` | `xo` |
+| `7864900.mmc` | `xo` |
+| `7824900.mmc` | `xo` |
+| `deviceless` | `bi_tcxo_a`, `CLK_IS_CRITICAL` |
+
+The two `mmc` votes drop on their own when the controllers runtime-suspend -
+watched live, `bi_tcxo` goes 8 → 6 - so they are not the blocker, and the
+`_a` peer is active-only by construction. That leaves the two remoteprocs.
+
+☠️ **The tracepoint cannot answer this one.** `bi_tcxo` is `clk0/0`, and no
+`clk0` write appears anywhere in the captured trace: the vote was cast once at
+boot and never changed, and a tracepoint on the write path only sees changes.
+This is the standing-vote blind spot noted when the trace was taken, and here it
+is costing a whole resource. `clk_summary` is the instrument for this question,
+not the trace.
+
+☠️ **And mainline gave the eMMC controller an XO vote the vendor never took.**
+Vendor `sdhc_1` has `iface_clk`, `core_clk`, `ice_core_clk` and nothing else;
+mainline's node adds `<&rpmcc RPM_SMD_XO_CLK_SRC>` as `"xo"`. It happens not to
+matter here because runtime PM releases it, but it is a difference from the
+oracle that was not deliberate.
+
+**Not yet measured:** whether the remoteproc votes actually persist across a
+system suspend. Trying to answer it by stopping the modem is what turned up the
+`smgr_accel` oops below, so the measurement is still owed.
+
 **Order of work from here:**
 
 1. ~~Dry-run the fixed instrument~~ — **done 2026-08-18, passed.**
@@ -853,7 +907,10 @@ processor never collapsed".
    whether a *long* collapse does it. If it recurs, the separation is cheap:
    restore the vMPM deadline cap alone and the AP still collapses, just never
    for long.
-3. The next slope leg, and the regulator sleep-set work.
+3. The next slope leg.
+4. The XO vote above, which now looks like a bigger lever than the LDOs: the
+   RPM cannot enter `vlow` at all while any sleep-set XO vote stands, and no
+   amount of regulator work changes that.
 
 ☠️ **Do not mirror the active vote into the sleep set and expect anything.**
 The RPM already treats a missing sleep-set request as "use the active one at all
