@@ -1011,6 +1011,35 @@ the application processor's XO vote.
    is not a reachable state on this SoC and it has been the wrong instrument
    since 2026-08-14 - a possibility that has never been tested.
 
+### Where the sleep-set vote comes from, and why it is not simply a bug
+
+`clk_smd_rpm_handoff()` writes the value into **both** the active and the sleep
+set, for **every** clock in the platform's table, at probe - before any consumer
+exists. The table contains both peers of each clock, so this includes the `_a`
+active-only ones, whose entire reason to exist is that
+`to_active_sleep()` gives them `*sleep = 0`.
+
+That has been there since the driver's first commit, `00f64b58874e` (Georgi
+Djakov, 2016), whose message says it is based on the codeaurora driver. **The
+codeaurora driver does not do it.** Vendor `clk_rpmrs_handoff_smd()` sends no
+RPM message at all - it sets the software rate and returns - and then defers to
+`rpm_clk_prepare()`, which is otherwise line-for-line what mainline's
+`clk_smd_rpm_prepare()` still is, active-only distinction included. So the
+unconditional sleep-set write is a divergence introduced in the port, nine years
+old, and it is on every SMD-RPM platform: msm8916, msm8974, apq8084, msm8953,
+sdm660, sm6115, qcs404 and the rest.
+
+☠️ **That does not make it a bug, and the oracle is why.** The vendor's APSS
+never shuts XO down either - `xo_count: 0x0`, zero accumulated duration - so
+whatever route it takes, downstream ends up holding an XO sleep vote too.
+Mainline reaches the vendor's *outcome* by a mechanism the vendor does not use.
+Removing the vote makes us diverge from the outcome, which is the opposite of
+the usual direction of a fix, and the only thing that can say whether it is an
+improvement is the current.
+
+Worth reporting either way once there is a number; worth nothing as an argument
+without one.
+
 ### Running now, started 2026-08-18 09:00
 
 `leg3.sh` on the device, as a transient unit: ride the pack from 4.379 V down to
