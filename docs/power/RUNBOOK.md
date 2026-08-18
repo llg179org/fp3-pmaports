@@ -1056,7 +1056,53 @@ improvement is the current.
 Worth reporting either way once there is a number; worth nothing as an argument
 without one.
 
-### Running now, started 2026-08-18 09:00
+### Running now, started 2026-08-18 08:5x - HOW TO PICK IT UP
+
+`leg3` is a transient systemd unit on the device. To see where it is:
+
+```sh
+ssh fp3@172.16.42.1 'sudo systemctl is-active leg3'
+ssh fp3@172.16.42.1 'sudo tail -20 /var/log/leg3-20260818.txt'   # descent
+ssh fp3@172.16.42.1 'cat /home/fp3/suspend-slope.txt'            # the leg itself
+```
+
+When it finishes, fit it and compare against the reference:
+
+```sh
+scp fp3@172.16.42.1:/home/fp3/suspend-slope.txt docs/power/2026-08-18_pmos_xo-on-leg.txt
+python3 docs/power/slope-fit.py docs/power/2026-08-18_pmos_xo-on-leg.txt
+python3 docs/power/slope-fit.py docs/power/2026-08-17_pmos_post-pll-slope-leg.txt   # 60.1 mA
+```
+
+☠️ **Read phase B first.** If its directly-measured awake current is not the
+figure already known (~155 mA), the ratio means nothing and the leg is void -
+that check is what withdrew the leg of 2026-08-17.
+
+☠️ **Read the settle rows before trusting phase A.** The descent runs eight busy
+cores, which took the pack from 29.4 °C to about 38 °C, and a cooling pack reads
+a falling voltage that has nothing to do with charge leaving it. `SETTLE_OFF` is
+1800 s for this leg specifically to burn that off; the settle rows are what say
+whether it was enough.
+
+**Then the control leg**, which is the whole point: reboot into the plain
+`postmarketOS` label (`sudo sed -i 's/^default .*/default postmarketOS/'
+/boot/extlinux/extlinux.conf`, then reboot and confirm
+`/sys/module/clk_smd_rpm/parameters/xo_sleep_off` reads `N`), and run the same
+`leg3.sh` with its guard inverted, or simply `suspend-slope.sh xo-off-20260818
+900 6 1800` after the same descent. Neither number means anything alone.
+
+☠️ `/home/fp3/suspend-slope.txt` is append-only across runs and the aborted
+first attempt wrote settle rows under the same tag. It was moved to
+`suspend-slope.pre-xo-leg.txt` before this leg started; do the same before the
+control.
+
+**Boot state right now:** `default postmarketOS-xo`, which is r61 plus
+`clk_smd_rpm.xo_sleep_off=1`. The plain `postmarketOS` label is the same kernel
+without it, and `postmarketOS-fallback` is r60. Put the default back to
+`postmarketOS` when the A/B is done - the experiment must not become the
+resting state.
+
+### What the leg is, started 2026-08-18 09:00
 
 `leg3.sh` on the device, as a transient unit: ride the pack from 4.379 V down to
 4.030 V - the flat part of the curve, which is what withdrew the leg of
