@@ -869,19 +869,11 @@ accidental. In `clk-smd-rpm.c` every RPM clock exists twice - a plain one and an
 asleep*, and the RPM obliges - exactly as the vendor comment quoted earlier in
 this page says it will.
 
-Read off the device (`clk_summary`, awake and idle):
-
-| consumer | connection |
-|---|---|
-| `c200000.remoteproc` | `xo` |
-| `4080000.remoteproc` | `xo` |
-| `7864900.mmc` | `xo` |
-| `7824900.mmc` | `xo` |
-| `deviceless` | `bi_tcxo_a`, `CLK_IS_CRITICAL` |
-
-The two `mmc` votes drop on their own when the controllers runtime-suspend -
-watched live, `bi_tcxo` goes 8 → 6 - so they are not the blocker, and the
-`_a` peer is active-only by construction. That leaves the two remoteprocs.
+☠️ **The table that used to be here named the wrong thing, and it was measured
+wrong the same morning it was written - see "who actually holds it" below.**
+`clk_summary` lists the devices that hold a clk *handle*, not the devices that
+enabled the clock. The proof is in the same output: `gpu@1c00000` appears under
+`gcc_oxili_gfx3d_clk`, whose enable count is zero.
 
 ☠️ **The tracepoint cannot answer this one.** `bi_tcxo` is `clk0/0`, and no
 `clk0` write appears anywhere in the captured trace: the vote was cast once at
@@ -896,9 +888,41 @@ mainline's node adds `<&rpmcc RPM_SMD_XO_CLK_SRC>` as `"xo"`. It happens not to
 matter here because runtime PM releases it, but it is a difference from the
 oracle that was not deliberate.
 
-**Not yet measured:** whether the remoteproc votes actually persist across a
-system suspend. Trying to answer it by stopping the modem is what turned up the
-`smgr_accel` oops below, so the measurement is still owed.
+### Who actually holds it - measured 2026-08-18, and it is neither remoteproc
+
+Two probes on the r60 package kernel
+([`2026-08-18_pmos_xo-vote-probe.txt`](2026-08-18_pmos_xo-vote-probe.txt)):
+
+| step | `bi_tcxo` | `apss_xo` | `vlow` | `vmin` |
+|---|---|---|---|---|
+| baseline | 6 | 0 | 0 | 0 |
+| after a 60 s control suspend | 9 | 0 | 0 | 0 |
+| after **stopping** modem + ADSP | **9** | 0 | 0 | 0 |
+| after a second 60 s suspend | 9 | 0 | 0 | 0 |
+| after **unbinding** `qcom-q6v5-mss` | **9** | – | – | – |
+| after **unbinding** `qcom_q6v5_pas` | **9** | – | – | – |
+
+Neither stopping the firmware nor unbinding the driver moves the count by one.
+So the experiment never changed its own input, and **the suspends in it prove
+nothing about the hypothesis** - they were run against an unchanged vote.
+
+The source says the same thing, and would have said it first. On msm8953 `"xo"`
+is a **proxy** clock for the modem (`msm8953_mss.proxy_clk_names`), and
+`qcom_msa_handover()` drops the proxy clocks as soon as the firmware takes over.
+A running modem was never holding it.
+
+What is left is the floor of 6 with everything idle, moving between 6 and 10 with
+eMMC activity, and nothing in this instrument can attribute it further. The
+question "does the sleep-set XO vote block `vlow`" is therefore still open, and
+attribution by elimination has run out of levers: the way to answer it is to
+make `bi_tcxo`'s sleep vote zero in the kernel and read `vlow`, not to keep
+guessing at who enabled it.
+
+☠️ **Run device probes under `systemd-run`, never in the foreground over ssh.**
+The unbind probe was run directly, the ssh call hit its timeout mid-script, and
+the script died with the session - leaving the modem and the ADSP unbound with
+nothing left running to rebind them. `emmc-watch` survived the same moment
+because it was a transient unit.
 
 ### ☠️ Three wait-loops that could not fail, 2026-08-18
 
