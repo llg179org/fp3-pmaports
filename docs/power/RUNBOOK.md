@@ -1119,75 +1119,55 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
-### ★ RESUME POINT, 2026-08-18 20:50
+### ★ RESUME POINT, 2026-08-18 23:50
 
-**Running on the device**, as a transient unit, nothing on the host but a
-poller: `idle-ladder.service`. Started 20:34, guards passed (charger off,
-`Discharging`, gauge live). First S0 sample `-84838 uA at 4.196 V`. It ends
-about **23:20**.
+**Running on the device:** `freq-probe.service`, started 23:32, ends about
+**00:26**. Three phases in one boot - P0 baseline, P1 modem stack stopped, P2
+restored - sampling the full `time_in_state` residency table alongside current.
 
-☠️ **Poll it over USB (`172.16.42.1`), not wifi.** Stage S5 turns the radio off;
-a wifi poller would go blind at ~23:00 and never see the unit stop.
+**Why it is running.** The idle ladder finished at 23:31 and produced two
+things. Read [`idle-ladder.md`](idle-ladder.md) "The result, 2026-08-18" for
+both; the short form:
 
-☠️ Do not run anything CPU-heavy on the phone while it samples. Reads are fine;
-an `apk` is not.
+1. **Three classes of userspace cost nothing.** Desktop services +0.6 ± 2.3 mA,
+   the sensor stack −1.3 ± 2.1 mA, our own audio watchers +0.3 ± 1.8 mA, on a
+   ladder whose drift control closed at +3.4 ± 2.3 mA. The ~60 mA is not being
+   spent by a service running on top of this kernel.
+2. **Stopping the modem stack COSTS 84 mA.** The floor doubled, 85.6 → 169.7 mA,
+   the variance collapsed, and the `apcs-cpu0-pll` storm went to exactly zero
+   for 40 minutes. Restoring the services reverted all three. Zero PLL warnings
+   with a doubled steady draw reads as the little cluster having stopped
+   changing frequency at all, at a high one - the warning is per *failed
+   transition*. `freq-probe.sh` is the instrument that can tell.
 
-Everything the night needs is already installed on the device:
+☠️ **The median nearly ate the whole ladder.** Every marginal is inside its own
+error bar by median and resolved to a milliamp by floor (p10). The distribution
+is a quiet floor plus bursts and no stage changed the burst rate. Before
+choosing the statistic, ask whether the intervention acts on the *level* or the
+*rate*.
 
-| `/root/…` | what it does |
-|---|---|
-| `idle-ladder.sh` | running now - the decomposition, `idle-ladder.md` |
-| `slope-leg.sh` | generalised slope leg: `slope-leg.sh <tag> [units to cut …]` |
-| `de-compare.sh` | one DE leg: `de-compare.sh <phosh\|sxmo> <on\|off>` |
-| `de-switch.sh` | flips greetd `[initial_session]`; `de-switch.sh show` first |
-| `rail-census.sh` | traces `qcom_rpm_smd_write` across a suspend |
-
-**Sequence from here, in order:**
-
-```sh
-# 1. when idle-ladder goes inactive (~23:20)
-scp fp3@172.16.42.1:/home/fp3/idle-ladder.txt docs/power/2026-08-18_idle-ladder.txt
-python3 docs/power/idle-ladder-fit.py docs/power/2026-08-18_idle-ladder.txt
-```
-
-☠️ Read `R - S0` before reading a single marginal. The fitter also prints a
-bootstrap standard error per stage and marks any step under 2 sigma as inside
-the noise - on synthetic data at this device's scatter a 10 mA step is **not**
-resolvable with 60 samples, so expect some stages to come back honest-but-null.
+**When freq-probe finishes:**
 
 ```sh
-# 2. the Sxmo install - only after the ladder is inactive
-ssh fp3@192.168.100.17 'sudo apk add --simulate postmarketos-ui-sxmo-de-sway'
+scp fp3@172.16.42.1:/home/fp3/freq-probe-20260818.txt docs/power/
 ```
 
-☠️ Read that output for `Purging` before running it for real; apk-tools 3
-re-resolves the whole world on one install and has already executed a days-old
-half-finished upgrade as a side effect here. Then, after installing:
+Read P1 against P0 **and** P2. If P1's `p0tis` residency shows the little
+cluster parked at a high OPP with `p0trans` flat, the anomaly is a cpufreq
+lock-up and not a modem cost, and it is a bug worth more than the DE comparison.
 
-```sh
-FP3_PW=147147 ./tests/fp3-selftest --only boot-fallback --host 192.168.100.17
-ssh fp3@192.168.100.17 'sudo /root/de-switch.sh show'      # read Sxmo's Exec=
-```
+**Then, in order:**
 
-The install regenerates `extlinux.conf` and drops the fallback label, the
-`panic=10` and the menu timeout - and there is no console on this phone.
+1. The Sxmo install and the four `de-compare.sh` legs - `de-compare.md`, and
+   `de-switch.sh show` on the device first.
+2. Last, the single deep-sleep `slope-leg.sh` - the only eMMC exposure.
+3. ☠️ Stage S5 of the ladder has to be redone: "the wifi radio costs 0.6 mA"
+   was measured entirely inside the anomalous pinned state and means nothing.
 
-```sh
-# 3. four DE legs, each from its own boot
-sudo systemd-run --unit=de-leg --collect /root/de-compare.sh phosh off
-python3 docs/power/de-compare-fit.py docs/power/de-compare-*.txt
-
-# 4. LAST - the only deep-sleep item, and the only eMMC exposure
-sudo systemd-run --unit=slope --collect /root/slope-leg.sh nomodem-20260819 \
-        ModemManager rmtfs tqftpserv     # whichever the ladder names largest
-```
-
-☠️ Step 4 is last on purpose: if the card drops overnight, the substantive
-results are already committed.
-
-**Also ready, not scheduled tonight:** `rail-census.sh` + `rail-census-parse.py`
-give names to the 14 LDO rails that vote active and never vote sleep - the
-measurement that `rpm-sleep-set.md` says has to come before any regulator patch.
+**Ready, not scheduled:** `rail-census.sh` + `rail-census-parse.py` name the 14
+LDO rails that vote active and never vote sleep - see
+[`rpm-sleep-set.md`](rpm-sleep-set.md), which also carries the rail-to-consumer
+map and the four rails (eMMC and SD) that are off the table.
 
 ### Superseded - the A leg, started 2026-08-18 08:5x
 
