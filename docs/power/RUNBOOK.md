@@ -1175,3 +1175,50 @@ times", so writing the same numbers into both sets is a no-op by construction.
 What is needed is a sleep vote that is *lower* than the active one, which in
 mainline terms means `regulator-state-mem` subnodes and `set_suspend_*` ops in
 `qcom_smd-regulator.c` - a design, not a one-liner.
+
+### The LDO layer, read against the vendor source - 2026-08-18, offline
+
+The tracepoint run said the LDOs are the only RPM clients that never vote for
+sleep (14 active / 0 sleep). The source says why, and the vendor tree on disk
+says what the missing mechanism looks like.
+
+**Mainline sends no sleep-set request for any regulator, ever.**
+`drivers/regulator/qcom_smd-regulator.c` contains exactly one
+`qcom_rpm_smd_write()`, in `rpm_reg_write_active()`, and it is hard-coded to
+`QCOM_SMD_RPM_ACTIVE_STATE`. There is no sleep path to be missing a case in;
+the concept is absent from the driver.
+
+**The vendor expresses it in the binding.** In
+`hadk22/kernel/fairphone/sdm632/drivers/regulator/rpm-smd-regulator.c`,
+`qcom,set` is a *mandatory* per-node bitmask - `BIT(0)` active, `BIT(1)` sleep -
+and probe fails without it. The driver creates two RPM handles
+(`handle_active`, `handle_sleep`) and aggregates the two sets separately.
+
+**And the FP3's own DT uses all three values.** From
+`arch/arm64/boot/dts/qcom/msm8953-regulator.dtsi`:
+
+| node | `qcom,set` | meaning |
+|---|---|---|
+| `pm8953_s2_level`, `pm8953_s7_level` | 3 | both sets |
+| `pm8953_s2_level_ao`, `pm8953_s7_level_ao`, `pm8953_l7_ao` | 1 | active only |
+| `pm8953_s7_level_so` | 2 | **sleep only** |
+
+That is the same shape `clk-smd-rpm` uses for clocks, where every RPM clock has
+a plain node and an `_a` `active_only` peer. One physical rail, up to three
+regulator nodes, and the consumer picks its set by picking the node. Mainline
+collapses that to one node per rail which is, in write terms, permanently
+active-only.
+
+☠️ **Do not build the obvious change.** Mirroring the active request into the
+sleep set is a no-op by construction: a resource with no sleep-set request has
+its active request used at all times, so an explicit mirror produces the same
+aggregate. That is the same reasoning that made the XO experiment worth
+building only because it wrote a *lower* sleep value, not an equal one.
+
+The informative change is an explicit sleep-set request with `swen=0` for rails
+nothing needs in suspend - and it is not blanket-safe, because
+`regulator-always-on` rails and anything the modem or memory needs across
+suspend must keep their vote. So the next step is data, not code: **the list of
+the 14 rails still holding an active vote at suspend entry**, which the
+`qcom_rpm_smd_write` tracepoint already collects. Take it after the A/B legs;
+the device is committed until then.
