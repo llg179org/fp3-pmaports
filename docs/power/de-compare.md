@@ -65,10 +65,39 @@ boot config that repeats a mistake every boot is the expensive kind of mistake.
 fp3-selftest --only boot-fallback --host 192.168.100.17   # from the host
 ```
 
-Then switch the session by editing `command` under `[initial_session]` in
-`/etc/greetd/config.toml` and rebooting. Record what it says in the leg output -
-`de-compare.sh` reads it back, because the label passed on the command line is a
-promise and the config is the fact.
+Then switch the session by editing `command` under `[initial_session]`, and
+reboot.
+
+☠️ **The file is `/etc/phrog/greetd-config.toml`, not `/etc/greetd/config.toml`.**
+The latter does not exist on this device - `/etc/greetd/` is not even a
+directory - and `greetd.service` passes no `-c`, so the path is easy to get
+wrong twice. `apk info -L greetd` lists only the binary and its PAM file; the
+config belongs to `greetd-phrog`. The first version of `de-compare.sh` read the
+wrong path and would have recorded an empty session line without complaining,
+which is why it now prints whether the file exists at all.
+
+Today it reads:
+
+```toml
+[initial_session]
+command = "systemd-cat phosh-session"
+user = "fp3"
+```
+
+☠️ **Do not guess Sxmo's replacement for `phosh-session`.** Read it out of the
+session file the package installs, after installing it:
+
+```sh
+cat /usr/share/wayland-sessions/swmo.desktop      # the Exec= line is the answer
+```
+
+The package's own `post-install` calls `tinydm-set-session` on that file, which
+is a no-op here because this device uses greetd, not tinydm - expect that script
+to fail and do not read the failure as a broken install.
+
+Record what the config says in the leg output - `de-compare.sh` reads it back,
+because the label passed on the command line is a promise and the config is the
+fact.
 
 ## Running one leg
 
