@@ -1,0 +1,141 @@
+suspend-slope: S4 === settle 900s off VBUS ===
+S4 phase=settle n=0 t=37167 v=4011469 i=-126037
+S4 phase=settle n=1 t=37227 v=4018086 i=-84686
+S4 phase=settle n=2 t=37287 v=3984219 i=-196228
+S4 phase=settle n=3 t=37347 v=4001347 i=-130157
+S4 phase=settle n=4 t=37407 v=3990642 i=-187683
+S4 phase=settle n=5 t=37467 v=4006213 i=-105438
+S4 phase=settle n=6 t=37527 v=4013026 i=-56457
+S4 phase=settle n=7 t=37587 v=3992978 i=-226745
+S4 phase=settle n=8 t=37647 v=4016140 i=-57678
+S4 phase=settle n=9 t=37707 v=4013999 i=-60272
+S4 phase=settle n=10 t=37767 v=3964561 i=-319061
+S4 phase=settle n=11 t=37827 v=4001737 i=-146484
+S4 phase=settle n=12 t=37887 v=3971373 i=-246887
+S4 phase=settle n=13 t=37947 v=3984025 i=-169067
+S4 phase=settle n=14 t=38007 v=4004851 i=-73700
+suspend-slope: S4 === phase A: 8 sleeps of 900s ===
+S4 phase=A n=0 t=38988 v=3968454 i=-186615
+suspend-slope: S4 A0 slept=901s of 900s
+S4 phase=A n=1 t=39909 v=3925828 i=-302887
+suspend-slope: S4 A1 slept=901s of 900s
+S4 phase=A n=2 t=40830 v=3941594 i=-165863
+suspend-slope: S4 A2 slept=901s of 900s
+S4 phase=A n=3 t=41751 v=3927580 i=-186920
+suspend-slope: S4 A3 slept=901s of 900s
+S4 phase=A n=4 t=42672 v=3915123 i=-217437
+suspend-slope: S4 A4 slept=901s of 900s
+S4 phase=A n=5 t=43593 v=3912204 i=-179748
+suspend-slope: S4 A5 slept=901s of 900s
+S4 phase=A n=6 t=44514 v=3868410 i=-314178
+suspend-slope: S4 A6 slept=901s of 900s
+S4 phase=A n=7 t=45435 v=3876780 i=-311126
+suspend-slope: S4 A7 slept=901s of 900s
+suspend-slope: S4 phase A done suspends=8 of 8
+suspend-slope: S4 === phase B: awake control, 8 x 900s ===
+S4 phase=B n=0 t=46355 v=3844859 i=-162506
+S4 phase=B n=1 t=47275 v=3819751 i=-193939
+S4 phase=B n=2 t=48195 v=3776347 i=-240173
+S4 phase=B n=3 t=49115 v=3776542 i=-177002
+S4 phase=B n=4 t=50035 v=3749293 i=-212402
+S4 phase=B n=5 t=50955 v=3694405 i=-355224
+S4 phase=B n=6 t=51875 v=3665793 i=-381012
+S4 phase=B n=7 t=52795 v=3697714 i=-164642
+suspend-slope: S4 done - restoring charger and greetd
+suspend-slope: post-pll-20260817 === settle 900s off VBUS ===
+post-pll-20260817 phase=settle n=0 t=22297 v=3963199 i=-152893 pll=268
+post-pll-20260817 phase=settle n=1 t=22357 v=3963588 i=-120086 pll=268
+post-pll-20260817 phase=settle n=2 t=22418 v=3953856 i=-110473 pll=270
+post-pll-20260817 phase=settle n=3 t=22478 v=3957165 i=-60272 pll=270
+post-pll-20260817 phase=settle n=4 t=22538 v=3948601 i=-164489 pll=272
+post-pll-20260817 phase=settle n=5 t=22599 v=3912982 i=-221862 pll=276
+post-pll-20260817 phase=settle n=6 t=22659 v=3941594 i=-59814 pll=277
+post-pll-20260817 phase=settle n=7 t=22720 v=3949963 i=-70037 pll=280
+post-pll-20260817 phase=settle n=8 t=22780 v=3912788 i=-221100 pll=286
+post-pll-20260817 phase=settle n=9 t=22840 v=3946460 i=-82092 pll=288
+post-pll-20260817 phase=settle n=10 t=22901 v=3922714 i=-140075 pll=292
+post-pll-20260817 phase=settle n=11 t=22961 v=3944124 i=-60424 pll=297
+post-pll-20260817 phase=settle n=12 t=23022 v=3931083 i=-169525 pll=300
+post-pll-20260817 phase=settle n=13 t=23082 v=3901304 i=-265808 pll=303
+post-pll-20260817 phase=settle n=14 t=23143 v=3914539 i=-232391 pll=307
+suspend-slope: post-pll-20260817 === phase A: 8 sleeps of 900s ===
+post-pll-20260817 phase=A n=0 t=24124 v=3898190 i=-208130 pll=312
+suspend-slope: post-pll-20260817 A0 slept=901s of 900s
+post-pll-20260817 phase=A n=1 t=25046 v=3914734 i=-106659 pll=314
+suspend-slope: post-pll-20260817 A1 slept=901s of 900s
+post-pll-20260817 phase=A n=2 t=25968 v=3906170 i=-96893 pll=314
+suspend-slope: post-pll-20260817 A2 slept=901s of 900s
+post-pll-20260817 phase=A n=3 t=26890 v=3898384 i=-102081 pll=314
+suspend-slope: post-pll-20260817 A3 slept=901s of 900s
+post-pll-20260817 phase=A n=4 t=27812 v=3890210 i=-104675 pll=318
+suspend-slope: post-pll-20260817 A4 slept=901s of 900s
+post-pll-20260817 phase=A n=5 t=28734 v=3882424 i=-126953 pll=319
+suspend-slope: post-pll-20260817 A5 slept=901s of 900s
+post-pll-20260817 phase=A n=6 t=29656 v=3890599 i=-125885 pll=319
+suspend-slope: post-pll-20260817 A6 slept=901s of 900s
+post-pll-20260817 phase=A n=7 t=30578 v=3887485 i=-100708 pll=320
+suspend-slope: post-pll-20260817 A7 slept=901s of 900s
+suspend-slope: post-pll-20260817 phase A done suspends=8 of 8
+suspend-slope: post-pll-20260817 === phase B: awake control, 8 x 900s ===
+post-pll-20260817 phase=B n=0 t=31499 v=3841550 i=-217743 pll=288
+post-pll-20260817 phase=B n=1 t=32419 v=3823449 i=-177917 pll=323
+post-pll-20260817 phase=B n=2 t=33340 v=3839409 i=-108337 pll=354
+post-pll-20260817 phase=B n=3 t=34260 v=3826953 i=-103302 pll=382
+post-pll-20260817 phase=B n=4 t=35181 v=3812939 i=-134430 pll=333
+post-pll-20260817 phase=B n=5 t=36101 v=3803791 i=-155792 pll=366
+post-pll-20260817 phase=B n=6 t=37022 v=3784716 i=-141143 pll=395
+post-pll-20260817 phase=B n=7 t=37942 v=3761944 i=-204010 pll=425
+suspend-slope: post-pll-20260817 done - restoring charger and greetd
+suspend-slope: nocap-20260817 === settle 900s off VBUS ===
+nocap-20260817 phase=settle n=0 t=211 v=4321720 i=-98724 pll=0
+nocap-20260817 phase=settle n=1 t=271 v=4323082 i=-54931 pll=0
+nocap-20260817 phase=settle n=2 t=331 v=4310236 i=-62255 pll=0
+nocap-20260817 phase=settle n=3 t=391 v=4300894 i=-176239 pll=0
+nocap-20260817 phase=settle n=4 t=451 v=4270920 i=-218353 pll=3
+nocap-20260817 phase=settle n=5 t=511 v=4302062 i=-68359 pll=4
+nocap-20260817 phase=settle n=6 t=571 v=4281041 i=-243225 pll=6
+nocap-20260817 phase=settle n=7 t=632 v=4294665 i=-98266 pll=8
+nocap-20260817 phase=settle n=8 t=692 v=4262745 i=-198669 pll=13
+nocap-20260817 phase=settle n=9 t=752 v=4271309 i=-145416 pll=14
+nocap-20260817 phase=settle n=10 t=812 v=4287075 i=-56762 pll=17
+nocap-20260817 phase=settle n=11 t=872 v=4283182 i=-61492 pll=21
+nocap-20260817 phase=settle n=12 t=932 v=4277732 i=-108642 pll=21
+nocap-20260817 phase=settle n=13 t=992 v=4281041 i=-59509 pll=27
+nocap-20260817 phase=settle n=14 t=1052 v=4287075 i=-59814 pll=29
+suspend-slope: nocap-20260817 === phase A: 8 sleeps of 900s ===
+nocap-20260817 phase=A n=0 t=2034 v=4245617 i=-182800 pll=33
+suspend-slope: nocap-20260817 A0 slept=902s of 900s
+nocap-20260817 phase=A n=1 t=2955 v=4203575 i=-402221 pll=36
+suspend-slope: nocap-20260817 A1 slept=901s of 900s
+nocap-20260817 phase=A n=2 t=3876 v=4232771 i=-88806 pll=39
+suspend-slope: nocap-20260817 A2 slept=901s of 900s
+nocap-20260817 phase=A n=3 t=4797 v=4200072 i=-191040 pll=39
+suspend-slope: nocap-20260817 A3 slept=901s of 900s
+nocap-20260817 phase=A n=4 t=5718 v=4180219 i=-207672 pll=41
+suspend-slope: nocap-20260817 A4 slept=901s of 900s
+nocap-20260817 phase=A n=5 t=6639 v=4154916 i=-373840 pll=41
+suspend-slope: nocap-20260817 A5 slept=901s of 900s
+nocap-20260817 phase=A n=6 t=7560 v=4145184 i=-235748 pll=42
+suspend-slope: nocap-20260817 A6 slept=901s of 900s
+nocap-20260817 phase=A n=7 t=8481 v=4134090 i=-367737 pll=43
+suspend-slope: nocap-20260817 A7 slept=901s of 900s
+suspend-slope: nocap-20260817 phase A done suspends=8 of 8
+suspend-slope: nocap-20260817 === phase B: awake control, 8 x 900s ===
+nocap-20260817 phase=B n=0 t=9401 v=4130586 i=-140838 pll=73
+nocap-20260817 phase=B n=1 t=10321 v=4077061 i=-252685 pll=111
+nocap-20260817 phase=B n=2 t=11241 v=4072195 i=-192260 pll=172
+nocap-20260817 phase=B n=3 t=12162 v=4067524 i=-154876 pll=215
+nocap-20260817 phase=B n=4 t=13082 v=4047282 i=-111236 pll=246
+nocap-20260817 phase=B n=5 t=14002 v=4024509 i=-181121 pll=283
+nocap-20260817 phase=B n=6 t=14923 v=4010106 i=-117187 pll=315
+nocap-20260817 phase=B n=7 t=15843 v=4002321 i=-101928 pll=354
+suspend-slope: nocap-20260817 done - restoring charger and greetd
+suspend-slope: flat-20260817 === settle 900s off VBUS ===
+flat-20260817 phase=settle n=0 t=822 v=4033754 i=-66985 pll=32 nread=20
+suspend-slope: flat-20260817 === phase A: 8 sleeps of 900s ===
+flat-20260817 phase=A n=0 t=1814 v=3998720 i=-141906 pll=35 nread=20
+suspend-slope: flat-20260817 A20 slept=900s of 900s
+suspend-slope: flat-20260817 phase A done suspends=1 of 8
+suspend-slope: flat-20260817 === phase B: awake control, 8 x 900s ===
+flat-20260817 phase=B n=0 t=2744 v=3969914 i=-116576 pll=77 nread=20
+suspend-slope: flat-20260817 done - restoring charger and greetd

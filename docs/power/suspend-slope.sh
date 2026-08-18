@@ -61,17 +61,17 @@
 # wedged the bootloader into a fastboot that answered no command. The EXIT trap
 # clears it on every path.
 #
-#   suspend-slope.sh <tag> [sleep_s] [cycles]
+#   suspend-slope.sh <tag> [sleep_s] [cycles] [settle_off_s]
 #
 # Appends to /home/fp3/suspend-slope.txt; one machine-readable sample per line.
 
 set -eu
 
-TAG=${1:?usage: suspend-slope.sh <tag> [sleep_s] [cycles]}
+TAG=${1:?usage: suspend-slope.sh <tag> [sleep_s] [cycles] [settle_off_s]}
 T=${2:-900}
 N=${3:-8}
 SETTLE_WAKE=20		# quiet awake seconds before each sample
-SETTLE_OFF=900		# shed surface charge after leaving the charger
+SETTLE_OFF=${4:-900}	# shed surface charge after leaving the charger; 4th arg for dry runs
 
 BATT=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
@@ -128,20 +128,26 @@ sample() {
 	# Interleave rather than reading all the voltages and then all the
 	# currents: the pair has to describe the same instant for the IR
 	# compensation to mean anything.
-	i=0
-	vs=""
-	is=""
-	while [ "$i" -lt "$NREAD" ]; do
-		vs="$vs$(cat "$BATT/voltage_now")
+	# ☠️ Never use $i here. The callers are `while [ "$i" -lt "$N" ]` loops
+	# and sh has no function scope, so a counter named i inside sample()
+	# ends every one of them after a single pass. Measured 2026-08-17: a
+	# 4.25 h leg finished in 32 minutes with one settle sample, one sleep
+	# and one control window, and said so in its own log line - "A20", where
+	# the cycle number should have been 0.
+	_sn=0
+	_sv=""
+	_si=""
+	while [ "$_sn" -lt "$NREAD" ]; do
+		_sv="$_sv$(cat "$BATT/voltage_now")
 "
-		is="$is$(cat "$BATT/current_now")
+		_si="$_si$(cat "$BATT/current_now")
 "
 		sleep "$RGAP"
-		i=$((i + 1))
+		_sn=$((_sn + 1))
 	done
 	printf '%s phase=%s n=%s t=%s v=%s i=%s pll=%s nread=%s\n' \
 		"$TAG" "$1" "$2" "$(cut -d. -f1 /proc/uptime)" \
-		"$(printf '%s' "$vs" | median)" "$(printf '%s' "$is" | median)" \
+		"$(printf '%s' "$_sv" | median)" "$(printf '%s' "$_si" | median)" \
 		"$(pll_fails)" "$NREAD" \
 		| tee -a "$OUT" >&2
 }
