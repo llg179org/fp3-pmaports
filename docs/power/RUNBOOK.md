@@ -1070,43 +1070,70 @@ improvement is the current.
 Worth reporting either way once there is a number; worth nothing as an argument
 without one.
 
-### ★ RESUME POINT, 2026-08-18 17:35 - READ THIS FIRST
+### ★ VERDICT: the XO sleep-vote A/B is a clean NEGATIVE, 2026-08-18 20:30
 
-**Running on the device right now**, both as transient units, nothing on the
-host:
+Both legs are in, both fitted with the same `slope-fit.py`, both run on r61 from
+the same rootfs, 8 h apart, phase A and phase B in the same voltage windows.
 
-| unit | what it actually is | state |
+| | experiment `xo_sleep_off=1` | control `xo_sleep_off=N` |
 |---|---|---|
-| `await-charge.service` | it `exec`'d `/root/leg3-control.sh`, so the unit name is stale - this **is** the control leg | phase A done 6/6, phase B started 17:24 |
-| `emmc-watch.service` | eMMC watchdog, logs to tmpfs | 0 failures, `susp_ok=6 susp_fail=0` |
+| raw file | `2026-08-18_pmos_xo-on-leg.txt` | `2026-08-18_pmos_xo-off-leg.txt` |
+| APSS `XO shutdown count` during the leg | **1952** | **0** |
+| phase A window | 4.0739 -> 4.0279 V | 4.0560 -> 4.0071 V |
+| **phase A slope (asleep)** | **-35.29 mV/h** (r2 0.994) | **-35.44 mV/h** (r2 0.962) |
+| phase B window | 3.9937 -> 3.9025 V | 3.9746 -> 3.8859 V |
+| phase B slope (awake control) | -71.20 mV/h (r2 0.992) | -66.15 mV/h (r2 0.990) |
+| phase B current, measured | 150.1 mA | 161.0 mA |
+| derived asleep | 74.4 mA | 86.3 mA |
 
-The control leg ends about **18:55**. Then:
+☠️ **Do not read that last row as a 12 mA win.** Read the row above it instead.
+The two *sleep* slopes are **-35.29 and -35.44 mV/h - the same number to 0.4 %**,
+measured over near-identical voltage windows, while the XO shutdown count went
+from 0 to 1952 between them. The entire 74.4-vs-86.3 gap comes from the
+**awake** reference disagreeing between the legs (150.1 vs 161.0 mA, -71.20 vs
+-66.15 mV/h), not from anything the sleeping phone did.
 
-```sh
-scp fp3@192.168.100.17:/home/fp3/suspend-slope.txt \
-    docs/power/2026-08-18_pmos_xo-off-leg.txt
-python3 docs/power/slope-fit.py docs/power/2026-08-18_pmos_xo-off-leg.txt
-```
+So the honest statement is: **making the RPM shut the XO down 1952 times over a
+90-minute suspend leg changed the measured discharge rate by nothing at all.**
 
-☠️ Read phase B first (expect ~150 mA; the A leg gave 150.1), then the settle
-rows, then compare against the A leg's 74.4 mA. **Only the difference means
-anything** - each leg's phase A sits above the plateau and its phase B inside
-it, and that systematic cancels between the legs but not within either.
+That is consistent with the structural gate rather than surprising: `vlow` and
+`vmin` have read 0 in every capture ever taken here, *including* the leg with
+1952 XO shutdowns. The APSS master can drop its XO vote all it likes; the RPM
+still never enters a low-power mode, because some other master or some rail keeps
+voting. The UT oracle points the same way - the vendor's APSS does not shut the
+XO down either, and the vendor phone still idles far below this.
 
-Boot state: plain `postmarketOS` label, `xo_sleep_off=N` (confirmed in
-`/proc/cmdline` and the `rested` lines, which read `xo=0` against the A leg's
-1952). The experiment is no longer the default; that cleanup is done.
+**What this closes:** the XO branch. Do not spend more on `xo_sleep_off`, and do
+not carry it as a default (it is not one - the boot label is plain
+`postmarketOS`).
+
+**What this opens:** nothing, which is exactly why the decomposition is next. No
+mechanism yet accounts for even 20 mA of the ~60 mA, and this leg has just
+removed one of the two candidates that looked mechanical. Every patch written
+before the budget exists is a guess.
+
+**Method note worth keeping.** The ratio method's weak point showed itself here:
+the derived figure moved 16 % between two legs whose sleep behaviour was
+identical, purely because phase B differed. When comparing two legs, **compare
+the phase-A slopes directly** - same instrument, same window, no division - and
+use the derived mA only to give the reader a scale. A ratio hides which half
+moved.
+
+### ★ RESUME POINT, 2026-08-18 20:30
+
+Device state: nothing running except `emmc-watch` (0 failures). Charger restored
+to `Charging` and verified. Boot label plain `postmarketOS`, `xo_sleep_off=N`.
 
 **The plan for the night, in order:**
 
-1. Fit the control leg, commit, state the A/B difference.
+1. ~~Fit the control leg, state the A/B difference.~~ Done - see the verdict
+   above.
 2. **Four decomposition legs** with `/usr/local/bin/idleleg.sh` - baseline,
    WiFi down, modem stopped, `pd-mapper` disabled. 35 min each (600 s settle,
    50 samples at 30 s), reboot-matched. This is what produces the missing
-   **budget**: no mechanism yet accounts for even 20 mA of the ~60 mA gap, so
-   every patch before this is a guess. Awake legs, so no eMMC exposure.
+   **budget**. Awake legs, so no eMMC exposure.
 3. **The desktop-environment comparison** - see `de-compare.md`, scripts
-   `de-compare.sh` and `de-compare-fit.py`, already installed-ready. Install
+   `de-compare.sh` and `de-compare-fit.py`, already written. Install
    `postmarketos-ui-sxmo-de-sway` alongside phosh, switch via greetd's
    `[initial_session]`, four legs (phosh/sxmo x screen on/off).
 4. Last, and the only deep-sleep item: one full slope leg with whatever step 2
