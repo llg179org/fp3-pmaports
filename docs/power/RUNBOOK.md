@@ -803,10 +803,61 @@ unattended run until it is understood. It does not threaten the port: nothing on
 the phone is irreplaceable, every artefact is rebuildable from the repositories,
 and the failure recovered on a plain reboot.
 
+### 2026-08-18 morning: the gate passed, and the suspect narrowed
+
+**The instrument is fixed and verified.** `suspend-slope.sh dryrun-20260818 60 2
+120` ran the loops it was told to
+([`2026-08-18_pmos_dryrun-gate.txt`](2026-08-18_pmos_dryrun-gate.txt)): settle
+`n=0,1`, phase A `n=0,1` with `slept=61s of 60s` both times and `suspends=2 of
+2`, phase B `n=0,1`, charger restored. Long legs can be trusted again. Run this
+gate after any edit to the script - it costs eight minutes and it is the only
+thing standing between a shell slip and another wasted night.
+
+**The eMMC suspicion moved from *occurrence* to *duration*.** Four readings,
+none of which needed a build:
+
+1. Vendor msm8953 does not set `qcom,restore-after-cx-collapse`. The property
+   exists in the vendor tree and is applied to **sdm845 only**, on a platform
+   that performs system power collapse constantly. Mainline agrees by a
+   different route: `restore_dll_config` is true for the sdm845/sdm670/sc7180
+   variant info and false for `qcom,sdhci-msm-v4`, which is what our node is.
+2. So "CX collapsed and ate the DLL" is not the mechanism the silicon vendor
+   thinks applies to this SoC. It is not disproved, but it is no longer the
+   leading candidate, and no patch should be written on it yet.
+3. **AP collapse alone does not do it.** Measured this morning on the running
+   kernel: APSS `Shutdown count` reached 46 357 in about 43 minutes - roughly
+   eighteen collapses a second - with root read-write and `mmc0` at HS400
+   throughout. The card survives the event happening; whatever hurt it is not
+   the event.
+4. What that leaves is the other half of the change: with the vMPM deadline cap
+   removed, the processor can now stay down for a **long uninterrupted stretch**
+   instead of being poked awake once a second. The failure appeared at 01:16
+   with the phone idle on the charger, hours after the leg ended - which is
+   exactly the condition that produces the longest collapses of the night.
+
+So the experiment is a soak, not a build: leave the phone idle on the charger
+with [`emmc-watch.sh`](emmc-watch.sh) running and see whether it recurs, with the
+record on tmpfs this time so that it survives the filesystem it is watching.
+Started 2026-08-18 at uptime 2620, `apss_shut=48262`.
+
+☠️ **`rpm_master_stats` is a module and nothing autoloads it.** The DT node is
+present and the platform device is created, but with no driver bound
+`/sys/kernel/debug/qcom_rpm_master_stats/` does not exist at all. A reader that
+does not `modprobe` first gets nothing and can easily read that as "the
+processor never collapsed".
+
 **Order of work from here:**
 
-1. Dry-run the fixed instrument (~8 min) and confirm the loop counts.
-2. Understand the eMMC failure — is it reproducible, and does it need CX
-   collapse or only the AP shutdown? The two changes can be separated: revert
-   the deadline cap alone and the AP still collapses, just once a second.
-3. Only then the next slope leg, and only then the regulator sleep-set work.
+1. ~~Dry-run the fixed instrument~~ — **done 2026-08-18, passed.**
+2. eMMC soak running. AP collapse alone is excluded; the open question is
+   whether a *long* collapse does it. If it recurs, the separation is cheap:
+   restore the vMPM deadline cap alone and the AP still collapses, just never
+   for long.
+3. The next slope leg, and the regulator sleep-set work.
+
+☠️ **Do not mirror the active vote into the sleep set and expect anything.**
+The RPM already treats a missing sleep-set request as "use the active one at all
+times", so writing the same numbers into both sets is a no-op by construction.
+What is needed is a sleep vote that is *lower* than the active one, which in
+mainline terms means `regulator-state-mem` subnodes and `set_suspend_*` ops in
+`qcom_smd-regulator.c` - a design, not a one-liner.
