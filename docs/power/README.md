@@ -16,16 +16,40 @@ that was named wrongly — is in [`bringup/`](bringup/README.md). This page is t
 reference; that one is the reasoning, and it is not revised when the device
 changes.
 
-## ☠️ Open, and it blocks every number below: the CPU0 PLL fails to lock
+## ☠️ Open, but no longer a blanket gate: the CPU0 PLL storm
 
 Measured 2026-08-16. `apcs-cpu0-pll failed to enable!` — 266 times in one boot,
-each a `-ETIMEDOUT` out of `wait_for_pll()` while schedutil changes frequency,
-and the boot ends in an abrupt cut with no shutdown sequence. It overlapped the
-awake control leg of the S4 slope run, which is exactly the leg that has to
-reproduce a known current and did not (245 mA against ~130). Until that is
-separated, treat any absolute current on this page taken after 2026-08-15 21:49
-as suspect. Detail, evidence and the order to attack it in
-[`RUNBOOK.md`](RUNBOOK.md).
+each a `-ETIMEDOUT` out of `wait_for_pll()` while schedutil changes frequency.
+It overlapped the awake control leg of the S4 slope run — the leg that has to
+reproduce a known current and did not (245 mA against ~130).
+
+**It is still happening.** Every slope leg since carries a `pll=` column and
+every one of them counts failures; the leg of 2026-08-18 ended at `pll=435`.
+
+**What has changed is that it has been characterised**, and the blanket warning
+this section used to carry — treat every number after 2026-08-15 21:49 as
+suspect — is now too strong in one direction and not specific enough in the
+other:
+
+- **Rate:** 255 failures in 351 325 transitions = **7.3 per 10 000**, over 26
+  points from 4.318 V down to 3.931 V. **No voltage dependence** (fitted change
+  3.9 ± 2.9, and the sign runs the wrong way for the sag hypothesis). Below
+  3.93 V is untested and the original 3.82 V sighting sits just under that edge.
+- **What it still spoils: absolute awake currents.** A storm inflates the draw
+  while it runs, which is exactly how the 2026-08-15 leg came back at 245 mA.
+- **What it does not spoil: slope ratios.** `I_awake` and `slope_B` both come
+  out of phase B, so a storm that inflates the current inflates the slope with
+  it and the quotient is immune to first order. This is why the calibration is
+  against a measured current and not against the OCV table — worth knowing
+  before anyone "improves" the method by dropping phase B.
+
+☠️ **The `pll=` counter is a floor, not a total.** It is read from
+`journalctl -k -b`, and it has been observed going *down* across a phase
+boundary (320 → 288) because the journal had already dropped records of that
+boot. A loud enough storm evicts its own evidence — the same failure mode
+`dmesg` had, just later.
+
+Full working in [`RUNBOOK.md`](RUNBOOK.md).
 
 ## Where the numbers stand
 
