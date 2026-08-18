@@ -967,6 +967,50 @@ changed. For a reboot that is `/proc/sys/kernel/random/boot_id`, captured before
 and compared after; and schedule the reboot with `systemd-run --on-active=2` so
 it survives the session that asked for it.
 
+### ★★★ 2026-08-18: the sleep-set XO vote WAS blocking the processor - and the oracle does not do this
+
+`clk_smd_rpm.xo_sleep_off=1`, r61, one boot, two 60 s suspends
+([`2026-08-18_pmos_xo-sleep-off.txt`](2026-08-18_pmos_xo-sleep-off.txt)):
+
+| | before | with `xo_sleep_off=1` |
+|---|---|---|
+| APSS `XO shutdown count` | **0**, every boot since 2026-08-14 | 100 at 31 s, **1952** at 3.5 min |
+| APSS `XO total duration` | 0 | 2 747 593 309 ticks ≈ **143 s** |
+| suspends / failures | – | 2 / 0, resume intact |
+| `vlow` / `vmin` `Count` | 0 | **0** |
+
+So the mechanism was real: the sleep-set vote written by
+`clk_smd_rpm_handoff()` at probe - before any consumer exists, which is why the
+write tracepoint never saw it and why unbinding drivers did nothing - was what
+kept the application processor from ever shutting the crystal down. Zero that
+vote and it shuts it down constantly, and nothing breaks.
+
+☠️ **And that is not the good news it looks like.** The Ubuntu Touch oracle,
+running the vendor stack on the same hardware, reports APSS `xo_count: 0x0` and
+`xo_accumulated_duration: 0x0` while its MPSS, PRONTO and LPASS all shut XO down
+thousands of times
+([`2026-08-15_ut_oracle_rpm-master-stats.txt`](2026-08-15_ut_oracle_rpm-master-stats.txt)).
+**The vendor's application processor never does this either.** Our pre-change
+behaviour matched the oracle exactly; the change makes us diverge from it. So
+this is either a saving the vendor leaves on the table, or a vote the processor
+is supposed to hold - and nothing measured so far distinguishes those.
+
+`vlow` and `vmin` did not move, which means whatever they record needs more than
+the application processor's XO vote.
+
+**What this costs to find out, in order:**
+
+1. **The current.** That is the question this whole page exists for, and there is
+   now a fixed instrument and a change worth A/B-ing. A slope leg with
+   `xo_sleep_off=1` against one without it answers "does it save anything"
+   without needing to know what `vlow` means.
+2. **Whether the vendor's RPM ever reaches `vlow` at all.** Not in any capture
+   we hold: the UT files carry the master stats and the downstream cpuidle LPM
+   histogram, but not the RPM system sleep record, which downstream exposes at
+   `/sys/kernel/debug/rpm_stats`. If the vendor also sits at zero, then `vlow`
+   is not a reachable state on this SoC and it has been the wrong instrument
+   since 2026-08-14 - a possibility that has never been tested.
+
 **Order of work from here:**
 
 1. ~~Dry-run the fixed instrument~~ — **done 2026-08-18, passed.**

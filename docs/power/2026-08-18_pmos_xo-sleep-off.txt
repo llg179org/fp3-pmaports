@@ -1,0 +1,94 @@
+vlow-xo-20260818 param xo_sleep_off=Y cmdline=clk_smd_rpm.xo_sleep_off=1
+vlow-xo-20260818 baseline up=31 bi_tcxo=8 apss_shut=203 apss_xo=100 vlow=0 vmin=0 susp_ok=0 susp_fail=0
+vlow-xo-20260818 after-suspend-1 up=107 bi_tcxo=9 apss_shut=234 apss_xo=128 vlow=0 vmin=0 susp_ok=1 susp_fail=0
+vlow-xo-20260818 after-suspend-2 up=183 bi_tcxo=9 apss_shut=657 apss_xo=489 vlow=0 vmin=0 susp_ok=2 susp_fail=0
+vlow-xo-20260818 done
+===masters===
+[APSS]
+APSS:
+	Last shutdown @ 5605614660
+	Last bringup req @ 5605888592
+	Last bringup ack @ 5605913766
+	Last wakeup idx: 5570360457
+	Last XO shutdown enter @ 5605633141
+	Last XO shutdown exit @ 5605903538
+	XO total duration: 3316181792
+	Last sleep transition duration: 21849
+	Last wake transition duration: 22832
+	XO shutdown count: 4358
+	Wakeup reason: 0x0
+	Shutdown count: 4840
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 5608150547
+	Last bringup req @ 5607151451
+	Last bringup ack @ 5607151563
+	Last wakeup idx: 5607151177
+	Last XO shutdown enter @ 5608164973
+	Last XO shutdown exit @ 5607136934
+	XO total duration: 3975955504
+	Last sleep transition duration: 19664
+	Last wake transition duration: 19680
+	XO shutdown count: 571
+	Wakeup reason: 0x0
+	Shutdown count: 579
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 503702184
+	Last bringup req @ 503704077
+	Last bringup ack @ 503709393
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 502117444
+	Last XO shutdown exit @ 503578699
+	XO total duration: 3048760
+	Last sleep transition duration: 5353
+	Last wake transition duration: 1929
+	XO shutdown count: 4
+	Wakeup reason: 0x0
+	Shutdown count: 6
+	Active cores bitmask: 0x1
+[PRONTO]
+PRONTO:
+	Last shutdown @ 5610134688
+	Last bringup req @ 5611710729
+	Last bringup ack @ 5611710840
+	Last wakeup idx: 5611710445
+	Last XO shutdown enter @ 5610147171
+	Last XO shutdown exit @ 5611703233
+	XO total duration: 4112834577
+	Last sleep transition duration: 12398
+	Last wake transition duration: 13419
+	XO shutdown count: 1144
+	Wakeup reason: 0x1
+	Shutdown count: 1144
+	Active cores bitmask: 0x1
+[TZ]
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+===stats===
+[vlow]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x15111511
+[vmin]
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
