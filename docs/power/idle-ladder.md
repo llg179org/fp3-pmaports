@@ -119,3 +119,94 @@ The fitter prints the **median** per stage - never the mean, because one
 `current_now` read here scatters by about 138 mA - with the interquartile range
 and the extremes beside it, then the marginals, then `R - S0` and the sentence
 that says which marginals that gap disqualifies.
+
+## The result, 2026-08-18
+
+Capture: [`2026-08-18_idle-ladder.txt`](2026-08-18_idle-ladder.txt). One boot,
+seven stages, 60 samples each, drift control at the end.
+
+| stage | floor (p10) | ±SE | median | what was cut |
+|---|---|---|---|---|
+| S0 | **85.3** | 1.5 | 151.0 | baseline |
+| S1 | **84.6** | 1.7 | 137.0 | cups avahi bluetooth udisks2 tuned tuned-ppd |
+| S2 | **85.9** | 1.2 | 145.6 | snsregd iio-sensor-proxy |
+| S3 | **85.6** | 1.4 | 137.6 | spkwatch ringwatch fp3-voiced |
+| S4 | **169.7** | 0.3 | 178.5 | ModemManager rmtfs tqftpserv |
+| S5 | **170.3** | 0.4 | 175.8 | wifi radio |
+| R | **88.6** | 1.7 | 137.9 | *everything restored* |
+
+**Drift control: R − S0 = +3.4 ± 2.3 mA** over two and a half hours. The ladder
+holds.
+
+### ☠️ The median was the wrong statistic, and the ladder nearly said nothing
+
+Read the same seven stages by median and every marginal lands inside its own
+error bar: −40.8 ± 16.8 for the modem step, and ±15-21 mA of noise on
+everything else. Read them by the **floor**, and the standard errors are 0.3 to
+1.7 mA and four of the five steps are resolved to a milliamp.
+
+The reason is what the distribution is. It is not a noisy measurement of one
+current; it is a quiet floor with bursts on top - p10 at 85 mA, p75 at 200, max
+at 495. **None of these stages was changing the burst rate**, so the bursts are
+weather and the floor is the signal. A median sits halfway up the weather and
+inherits all of its variance.
+
+☠️ This generalises past this instrument: before picking median-versus-floor,
+look at whether the thing being changed acts on the level or on the rate. Here
+the synthetic test that validated the fitter *hid* this, because it generated
+Gaussian noise around a level - exactly the distribution the median is right
+for, and not the one the device produces.
+
+### Three classes of userspace eliminated
+
+- desktop services (`cups avahi-daemon bluetooth udisks2 tuned tuned-ppd`):
+  **+0.6 ± 2.3 mA**
+- the sensor stack (`snsregd iio-sensor-proxy`): **−1.3 ± 2.1 mA**
+- our own watchers (`spkwatch ringwatch fp3-voiced`): **+0.3 ± 1.8 mA**
+
+All three are zero. The sensor stack in particular was a prime suspect - it
+talks QMI to the ADSP continuously and was the plausible reason LPASS never
+idles - and it costs nothing measurable. Neither do our own additions, which is
+worth knowing before anyone spends a night optimising them.
+
+**What that adds up to is a negative with teeth:** the ~60 mA is not being spent
+by anything running as a service on top of this kernel.
+
+### ☠️ And one thing nobody was looking for: stopping the modem stack COSTS 84 mA
+
+`S3 → S4` is **−84.1 ± 1.4 mA**. The floor did not fall when
+`ModemManager`/`rmtfs`/`tqftpserv` stopped, it **doubled**, 85.6 → 169.7 mA, and
+stayed there through S5. Restoring them at stage R brought it back to 88.6.
+
+Two things go with it, both from the same capture:
+
+| stage | floor | `wait_for_pll` warnings in the window |
+|---|---|---|
+| S0 | 85.3 | 14 |
+| S1 | 84.6 | 21 |
+| S2 | 85.9 | 66 |
+| S3 | 85.6 | 23 |
+| S4 | 169.7 | **0** |
+| S5 | 170.3 | **0** |
+| R | 88.6 | **0** |
+
+- The sample-to-sample **variance collapsed**: S4's interquartile range is
+  172-225 mA against S0's 90-202, and S5's SE is 0.4 mA.
+- The `apcs-cpu0-pll` warning storm went to **exactly zero** for the 40 minutes
+  S4 and S5 lasted, having run at 14-66 per 20-minute window before it.
+
+☠️ Zero PLL warnings is not good news here. That warning is emitted per *failed
+frequency transition*, so zero warnings alongside a doubled, rock-steady draw
+reads as **the little cluster stopped changing frequency at all, at a high
+one** - not as the storm having been cured. Stage R had zero warnings too and a
+low floor, so the correlation is not simply "storm ⇒ current"; something about
+S4 changed the governor's behaviour and something about R changed it back.
+
+**The ladder cannot settle this** because it carried no cpufreq instrumentation
+- a real gap in the script, and the reason `freq-probe.sh` exists. Three phases
+in one boot, baseline / modem-stopped / restored, sampling the whole
+`time_in_state` residency table rather than a single `scaling_cur_freq` read.
+
+☠️ Do not read S5 as "the wifi radio is free". It measured −0.6 mA, but S5 ran
+entirely inside the anomalous pinned state, where a 10 mA term would be
+invisible against a floor that had already doubled. That stage has to be redone.
