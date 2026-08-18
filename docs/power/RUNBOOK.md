@@ -1128,10 +1128,20 @@ to `Charging` and verified. Boot label plain `postmarketOS`, `xo_sleep_off=N`.
 
 1. ~~Fit the control leg, state the A/B difference.~~ Done - see the verdict
    above.
-2. **Four decomposition legs** with `/usr/local/bin/idleleg.sh` - baseline,
-   WiFi down, modem stopped, `pd-mapper` disabled. 35 min each (600 s settle,
-   50 samples at 30 s), reboot-matched. This is what produces the missing
-   **budget**. Awake legs, so no eMMC exposure.
+2. **The idle ladder** - `docs/power/idle-ladder.sh`, written up in
+   `idle-ladder.md`. This replaced the four reboot-matched `idleleg.sh` legs
+   for two measured reasons: `idleleg.sh` never took the charger off and both
+   its 2026-08-15 captures read `current_now = 0` for all fifty samples, and
+   the XO A/B showed 7 % of boot-to-boot spread in the awake reference, against
+   terms we want at 10 mA. One boot, cumulative subtraction, seven stages
+   (desktop services, sensor stack, our own audio watchers, modem stack, wifi
+   radio, then everything restored as a drift control), ~2 h 35 min. This is
+   what produces the missing **budget**. Awake legs, so no eMMC exposure.
+
+   ☠️ There is no `pd-mapper` running on this device; the stage list follows
+   what `systemctl list-units --state=running` actually shows.
+
+   ☠️ From stage S5 the phone is on USB only (`172.16.42.1`).
 3. **The desktop-environment comparison** - see `de-compare.md`, scripts
    `de-compare.sh` and `de-compare-fit.py`, already written. Install
    `postmarketos-ui-sxmo-de-sway` alongside phosh, switch via greetd's
