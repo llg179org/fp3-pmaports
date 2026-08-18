@@ -1084,17 +1084,51 @@ a falling voltage that has nothing to do with charge leaving it. `SETTLE_OFF` is
 1800 s for this leg specifically to burn that off; the settle rows are what say
 whether it was enough.
 
-**Then the control leg**, which is the whole point: reboot into the plain
-`postmarketOS` label (`sudo sed -i 's/^default .*/default postmarketOS/'
-/boot/extlinux/extlinux.conf`, then reboot and confirm
-`/sys/module/clk_smd_rpm/parameters/xo_sleep_off` reads `N`), and run the same
-`leg3.sh` with its guard inverted, or simply `suspend-slope.sh xo-off-20260818
-900 6 1800` after the same descent. Neither number means anything alone.
+**Then the control leg**, which is the whole point. The script for it exists:
+`docs/power/leg3-control.sh`, installed as `/root/leg3-control.sh` - `leg3.sh`
+with the guard inverted, the tag `xo-off-20260818`, the log
+`/var/log/leg3c-20260818.txt`, and two guards the A leg did not need (see
+below). Neither number means anything alone.
+
+Full sequence, in order, and none of the steps is optional:
+
+```sh
+# 1. Charge back up. The A leg started its descent at 4.266 V and ended the
+#    run near 3.9 V; leg3-control.sh refuses to start below START_MIN=4.200 V
+#    because a control that begins on a half-empty pack sits on a different
+#    part of the discharge curve, which is exactly what withdrew 2026-08-17.
+ssh fp3@192.168.100.17 'cat /sys/class/power_supply/pmi632-battery/voltage_now'
+
+# 2. ☠️ Check the charger is actually taking. suspend-slope.sh suspends USBIN
+#    and the bit lives in the PMIC across a warm reboot.
+ssh fp3@192.168.100.17 'cat /sys/class/power_supply/pmi632-charger/online'
+# if 0:  echo Charging > /sys/class/power_supply/pmi632-charger/status
+
+# 3. Switch the boot label back and reboot. This is also the step that undoes
+#    the experiment-as-resting-state, so it has to happen anyway.
+sudo sed -i 's/^default .*/default postmarketOS/' /boot/extlinux/extlinux.conf
+sudo reboot                       # allow ~5 min; r60/r61 have both been slow
+
+# 4. Confirm the fact, not the label.
+cat /sys/module/clk_smd_rpm/parameters/xo_sleep_off        # must read N
+cat /proc/cmdline                                          # no xo_sleep_off=1
+sudo modprobe rpm_master_stats     # nothing autoloads it
+
+# 5. Run it as a transient unit. ☠️ A foreground ssh command dies with the
+#    session; that is how the xo-unbind probe left the modem unbound.
+sudo systemd-run --unit=leg3c --collect /root/leg3-control.sh
+sudo systemd-run --unit=emmc-watch --collect /root/emmc-watch.sh
+```
+
+The script moves `/home/fp3/suspend-slope.txt` aside by itself this time
+(`.pre-xo-off-20260818`), because that file is append-only across runs and
+still holds the A leg's samples. Read phase B first, then the settle rows,
+then compare - the same order as for the A leg.
 
 ☠️ `/home/fp3/suspend-slope.txt` is append-only across runs and the aborted
 first attempt wrote settle rows under the same tag. It was moved to
-`suspend-slope.pre-xo-leg.txt` before this leg started; do the same before the
-control.
+`suspend-slope.pre-xo-leg.txt` before this leg started; `leg3-control.sh` now
+does that move itself rather than trusting anyone to remember it.
 
 **Boot state right now:** `default postmarketOS-xo`, which is r61 plus
 `clk_smd_rpm.xo_sleep_off=1`. The plain `postmarketOS` label is the same kernel
