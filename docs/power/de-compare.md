@@ -3,6 +3,30 @@
 
 # Comparing what the desktop environment costs: phosh vs Sxmo
 
+> ☠️ **DROPPED 2026-08-19, by decision, before Sxmo was ever installed.** Two
+> reasons, and the first is the one that matters.
+>
+> **Disk.** `apk add --simulate postmarketos-ui-sxmo-de-sway` came back clean -
+> no `Purging`, no deletions, 127 packages - but it also came back with the
+> numbers: 1875 MiB installed now, 2140 MiB after, against **347 MiB free on a
+> 2.4 G root**. That is a net 264 MiB plus a download cache, i.e. a real chance
+> of filling `/` on a phone with no console whose eMMC has already dropped to
+> `emergency_ro` once. Freeing it would have meant deleting 157 MiB of staged
+> kernel images from earlier experiments - somebody else's data, for a
+> nice-to-have.
+>
+> **And it was not worth that.** By the time the question came up, the awake
+> budget had already been closed as a negative from the other direction: five
+> userspace candidates measured, all zero, floor unmoved at ~85-87 mA. A second
+> desktop environment would have measured a layer that has already been shown
+> not to hold the missing current.
+>
+> What survives is the **phosh half**, which needs no install and no space: one
+> leg with the screen off, read against the ladder's no-session floor. That
+> answers "what does the session cost" without answering "which session is
+> cheaper". The plan below is kept intact for whenever there is room on the
+> root filesystem.
+
 ## Why this is worth a night
 
 The power investigation has a hole in it: nothing has ever separated *the
