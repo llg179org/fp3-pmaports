@@ -1119,6 +1119,68 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
+### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
+
+Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,
+started from a full pack. **6 of 6 suspends, every one `slept=902s of 900s`** -
+nothing woke it early. Raw: [`2026-08-19_pmos_nomodem-leg.txt`](2026-08-19_pmos_nomodem-leg.txt).
+
+| phase | window | slope | r² | `current_now` mean |
+|---|---|---|---|---|
+| A (asleep) | 4.0879 → 4.0592 V | **−22.62 mV/h** | 0.9938 | 94.0 mA |
+| B (awake control) | 4.0308 → 3.9634 V | −50.86 mV/h | 0.9973 | 97.3 mA |
+
+Both fits are the best this instrument has produced.
+
+**Compare phase-A slopes directly, per the rule the XO A/B paid for:**
+
+| leg | cut | phase-A slope | window |
+|---|---|---|---|
+| `xo-on-20260818` | — | −35.29 mV/h | 4.074 → 4.028 V |
+| `xo-off-20260818` | — | −35.44 mV/h | 4.056 → 4.007 V |
+| **`nomodem-20260819`** | **modem stack** | **−22.62 mV/h** | 4.088 → 4.059 V |
+
+**The sleeping discharge rate fell by 36 %.** And the direction is conservative:
+today's window sits 30-50 mV *higher*, where the OCV curve is steeper and the
+same current would produce a *faster* voltage fall. The effect is real or
+understated, not inflated by the window.
+
+Converted to current it is 43-55 mA asleep against 68-86 mA for the two legs of
+2026-08-18, depending on which leg's awake control is used to calibrate - call
+it **25-30 mA saved asleep**, and do not quote a third digit.
+
+☠️ **The awake control is 97.3 mA and the figure this instrument has always
+reproduced is ~155 mA.** By the rule written on the fitter itself, that is where
+you stop and ask why. The answer is consistent rather than alarming: `freq-probe`
+measured the modem cut as worth ~2 mA at the *floor* but ~23 mA at the *median*,
+i.e. the modem stack's cost is bursts, not baseline - and a discharge slope
+integrates bursts. The awake slope fell 23 % (−66.15 → −50.86 mV/h) in the same
+leg, which is the same story from the other instrument. It still means **this
+leg's derived mA cannot be compared with yesterday's derived mA**; only the
+slopes can.
+
+☠️ **This needs a same-day control before it is a result.** Every comparison
+above is against legs from a different day. The one experiment that settles it
+is `slope-leg.sh` with no cut, run next, on this pack and this boot sequence.
+Until then the honest claim is: *a leg with the modem stack cut discharged 36 %
+more slowly asleep than two legs without it, taken the day before.*
+
+### ☠️ The vlow vote mask is live, and a before/after reading of it proves nothing
+
+`qcom_stats/vlow` carries a `Client Votes` field. Read before the leg it was
+`0x17131715`; read after, with the modem stopped, `0x15111511` - which looked
+like the modem's bits clearing, and would have been a genuine instrument on the
+structural gate.
+
+It is not. Re-read three times over thirty seconds with every service running
+again, it gave `0x15111511`, then `0x13171511`, then `0x17131713`. **The mask is
+an instantaneous sample and it fluctuates on its own.** A single before/after
+pair of it means nothing; using it at all would need repeated sampling at
+suspend entry.
+
+`Count` remains **0** in both, as in every capture ever taken on this device.
+The gate did not open, even in the leg that saved 25-30 mA.
+
 ### ★ RESUME POINT, 2026-08-19 04:15
 
 **Running on the device:** `slope.service` -
