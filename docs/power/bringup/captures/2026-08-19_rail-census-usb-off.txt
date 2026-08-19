@@ -1,0 +1,101 @@
+# rail-census with the USB controller and QUSB2 PHY UNBOUND, 2026-08-19 19:03.
+# Run over the WiFi link by tools/usb-off-census.sh; the raw ftrace (1555
+# events) is not committed, this is the header plus the decoded summary.
+
+# usb-off-census uptime=35215 census=30s
+# before: usb=yes phy=yes
+# usb unbound: 1 -> bound=no
+# phy unbound: 1 -> bound=no
+# ---- regulator_summary, USB down ----
+    s3                            0    0      0  normal  1224mV     0mA     0mV     0mV 
+    l3                            0    0      0  normal   925mV     0mA     0mV     0mV 
+    l7                            0    0      0    idle  1800mV     0mA     0mV     0mV 
+    l13                           0    0      0  normal  3125mV     0mA     0mV     0mV 
+    s3                            0    7      0 unknown   984mV     0mA   984mV  1240mV 
+       l3                         0    1      0 unknown   925mV     0mA   925mV   925mV 
+       l7                         0    2      0 unknown  1800mV     0mA  1800mV  1900mV 
+    l13                           0    0      0 unknown  3125mV     0mA  3125mV  3125mV 
+# ---- census ----
+# census done
+# restoring USB
+#   phy bound: yes
+#   usb bound: yes
+# done rc=0 uptime=35285
+
+=== decoded ===
+resource     active vote                        sleep vote                        
+------------------------------------------------------------------------------------
+bmas/21      bw=50000000                        -                                 
+bmas/29      bw=0                               bw=0                              
+bmas/33      bw=0                               bw=0                              
+bmas/35      bw=0                               bw=0                              
+bmas/76      bw=0                               bw=0                              
+bmas/77      bw=50000000                        -                                 
+bmas/86      bw=0                               bw=0                              
+bmas/94      bw=0                               -                                 
+bmas/100     bw=50000000                        -                                 
+bmas/124     bw=50000000                        -                                 
+bslv/0       bw=512000000                       bw=0                              
+bslv/2       bw=50000000                        -                                 
+bslv/28      bw=50000000                        -                                 
+bslv/31      bw=0                               -                                 
+bslv/33      bw=0                               -                                 
+bslv/45      bw=0                               bw=0                              
+bslv/104     bw=0                               bw=0                              
+bslv/115     bw=0                               bw=0                              
+bslv/123     bw=0                               -                                 
+bslv/131     bw=50000000                        -                                 
+bslv/184     bw=50000000                        -                                 
+clk1/0       KHz=62500                          KHz=0                             
+clk1/1       KHz=62500                          KHz=0                             
+clk1/2       KHz=0                              KHz=0                             
+clk2/0       KHz=211200                         -                                 
+ldoa/8       swen=1                             -                                 
+ldoa/11      swen=0                             -                                 
+ldoa/12      swen=0                             -                                 
+smpa/1       swen=0                             -                                 
+smpa/2       vlvl=0                             vlvl=0                            
+smpa/7       swen=0                             -                                 
+
+31 resources voted, 18 of them with NO SLEEP VOTE:
+
+  bmas/21   icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/77   icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/94   icc-mas     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bmas/100  icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/124  icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/2    icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/28   icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/31   icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/33   icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/123  icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/131  icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/184  icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  clk2/0    clk2        ?         KHz=211200
+                    not a PMIC rail - interconnect/clock resource
+  ldoa/8    pm8953_l8   ENABLED   swen=1
+                    NOSLEEP sdhc_1:vmmc (eMMC)
+  ldoa/11   pm8953_l11  disabled  swen=0
+                    NOSLEEP sdhc_2:vmmc (SD slot)
+  ldoa/12   pm8953_l12  disabled  swen=0
+                    NOSLEEP sdhc_2:vqmmc (SD slot)
+  smpa/1    pm8953_s1   disabled  swen=0
+                    not a rail this DT declares
+  smpa/7    pm8953_s7   disabled  swen=0
+                    not a rail this DT declares
+
+1 of them are ENABLED - held up through suspend by the absence of a sleep vote, not because anyone asked for it.
+☠️  A rail appearing here is not thereby droppable. Anything marked NOSLEEP above is the eMMC or the SD slot and is off the table; ldoa/7 feeds the modem PLL.
+☠️  NO CONSUMER IN DT with swen=1 means no Linux driver is holding it, so no consumer-intent work in the regulator layer can drop it - that is the RPM boot state or another master, a different question.
