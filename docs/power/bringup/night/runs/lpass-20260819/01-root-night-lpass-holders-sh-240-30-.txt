@@ -1,3 +1,30 @@
 # lpass-holders start uptime=33198 dwell=240s live=30s stages="S0 S1 S2 S3 S4 S5"
 # LPASS at start: shutdowns=2 xo=2 xo_dur=2314203
 
+STAGE S0 baseline (nothing removed) window=240s uptime=33438
+  APSS +4322  MPSS +753  PRONTO +2107
+  LPASS shutdowns +0  (total 2)   XO +0  (total 2)
+  LPASS XO total duration (19.2 MHz ticks) +0
+  vlow 0 -> 0   vmin 0 -> 0
+  counter-live: OK (3 of 3 other masters moved)
+
+# S1: stopping the sensor userspace
+# stopped: snsregd iio-sensor-proxy
+STAGE S1 sensor userspace stopped window=240s uptime=33678
+  APSS +4275  MPSS +753  PRONTO +2064
+  LPASS shutdowns +0  (total 2)   XO +0  (total 2)
+  LPASS XO total duration (19.2 MHz ticks) +0
+  vlow 0 -> 0   vmin 0 -> 0
+  counter-live: OK (3 of 3 other masters moved)
+
+# S2: removing the SMGR client drivers
+# all removed after 3 pass(es)
+STAGE S2 SMGR drivers removed window=240s uptime=33919
+  APSS +4301  MPSS +758  PRONTO +2100
+  LPASS shutdowns +0  (total 2)   XO +0  (total 2)
+  LPASS XO total duration (19.2 MHz ticks) +0
+  vlow 0 -> 0   vmin 0 -> 0
+  counter-live: OK (3 of 3 other masters moved)
+
+# S3: stopping the audio userspace
+# stopped: snsregd iio-sensor-proxy fp3-voiced spkwatch ringwatch

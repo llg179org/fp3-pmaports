@@ -38,6 +38,7 @@ LIVE=${2:-30}
 RPM=/sys/kernel/debug/qcom_rpm_master_stats
 STATS=/sys/kernel/debug/qcom_stats
 ADSP=/sys/class/remoteproc/remoteproc2      # name=adsp; verified below, not assumed
+CARD_DRV=/sys/bus/platform/drivers/qcom-apq8016-sbc
 
 say() { echo "$*"; }
 up() { cut -d. -f1 /proc/uptime; }
@@ -61,6 +62,8 @@ fi
 STOPPED_SVC=''
 REMOVED_MOD=''
 ADSP_STOPPED=0
+CARD_DEV=''
+CARD_UNBOUND=0
 
 restore() {
 	rc=$?
@@ -74,6 +77,12 @@ restore() {
 	for m in $REMOVED_MOD; do
 		modprobe "$m" 2>/dev/null && say "#   modprobe $m ok" || say "#   modprobe $m FAILED"
 	done
+	# If the modules came back, modprobe re-probed and re-bound the card by
+	# itself; this only matters when the unbind succeeded and the rmmod did not.
+	if [ "$CARD_UNBOUND" = 1 ] && [ -n "$CARD_DEV" ] && [ ! -e "$CARD_DRV/$CARD_DEV" ]; then
+		echo "$CARD_DEV" > "$CARD_DRV/bind" 2>/dev/null \
+			&& say "#   rebound $CARD_DEV" || say "#   rebind $CARD_DEV FAILED"
+	fi
 	for s in $STOPPED_SVC; do
 		systemctl start "$s" 2>/dev/null && say "#   started $s" || say "#   start $s FAILED"
 	done
@@ -189,7 +198,23 @@ fi
 
 # S4: the q6 stack itself, machine driver first (it holds the DAI links).
 if want S4; then
-	say "# S4: removing the q6 stack"
+	# ☠️ rmmod alone cannot cut this stack. Measured 2026-08-19: every module
+	# stayed loaded, snd_soc_apq8016_sbc at refcount 3 with no module users -
+	# the references are the BOUND CARD, not other modules. So the device has
+	# to be unbound from its driver first, or the stage silently measures
+	# nothing while looking like it measured something.
+	say "# S4: unbinding the sound card, then removing the q6 stack"
+	CARD_DEV=$(ls "$CARD_DRV" 2>/dev/null | grep sound-card | head -1)
+	if [ -n "$CARD_DEV" ]; then
+		if echo "$CARD_DEV" > "$CARD_DRV/unbind" 2>/dev/null; then
+			CARD_UNBOUND=1
+			say "# unbound $CARD_DEV"
+		else
+			say "# ☠️ could not unbind $CARD_DEV - S4 will not be a cut"
+		fi
+	else
+		say "# ☠️ no sound-card device under $CARD_DRV - S4 will not be a cut"
+	fi
 	rmmod_deep snd_soc_apq8016_sbc q6voice_dai q6voice q6mvm q6cvp q6cvs q6voice_common \
 		q6asm_dai q6afe_dai q6routing q6afe_clocks q6adm q6asm q6afe q6core apr
 	stage "S4 q6 stack removed" "$DWELL"
