@@ -83,12 +83,22 @@ outright - not idle, not unloaded, *offline* - the RPM still recorded no LPASS
 shutdown and `vlow` still read 0. Whatever holds that gate shut, removing the
 ADSP from the picture does not open it.
 
-☠️ **What that does and does not establish.** It establishes that no client of
-ours holds LPASS awake in any way that removing the client fixes. It does **not**
-establish that the RPM regards a *stopped* subsystem as down: a subsystem that is
-halted may simply leave its last vote standing, in which case S5 removed the
-processor and not the vote. That distinction is now the question, and it is the
-same question the [rail census](rpm-sleep-set.md) asks about the LDOs.
+☠️ **S5 could not have succeeded, and that is a criticism of the stage rather
+than a result about LPASS.** The counter it reads is a count of *handshakes*: a
+subsystem increments it by telling the RPM it is going down. A subsystem that has
+been halted does not perform that handshake at all - it is absent, not asleep -
+and its last vote plausibly still stands. So "the ADSP was offline and LPASS did
+not shut down" is what the instrument would print either way, and the stage
+carries no information about who holds LPASS.
+
+What S5 *does* say is narrower and still worth having: with the audio DSP
+entirely out of the picture, `vlow` did not move. Whatever else is true, removing
+that processor is not by itself enough to open the gate.
+
+☠️ **The stages that could have succeeded - S1 through S4 - never suspended.**
+They sampled a phone that was awake, and an awake application processor is a
+reason for the DSP to stay up regardless of who else wants it down. That is the
+flaw the next section walks into by accident and out of by luck.
 
 ☠️ **S4 was not a cut and the instrument said so.** Every q6 module stayed
 loaded, `snd_soc_apq8016_sbc` at refcount 3 with **no module users listed** - the
@@ -98,7 +108,43 @@ It is only not a false finding because the script printed `still loaded`
 immediately above the delta. Fixed: S4 now unbinds `c051000.sound-card` from
 `qcom-apq8016-sbc` first, and says plainly when it cannot.
 
-**So the lead is weakened, not dead.** LPASS remains the only master that never
+## ★★★ And then it collapsed - once, in the one suspend taken without USB
+
+Not planned, and not visible to the stage table at all. It was caught because
+[`../night/guardian.sh`](../night/guardian.sh) samples every 30 seconds through
+everything else that runs, and the transition landed between two of its lines:
+
+```
+up=35219 ... lpass_shut=2 vlow=0 susp_ok=7      <- USB bound
+up=35280 ... lpass_shut=3 vlow=0 susp_ok=8      <- USB unbound
+```
+
+`XO total duration` went 2 314 203 -> **593 000 251** ticks in the same window:
+at 19.2 MHz that is 0.12 s -> **30.9 s**, i.e. the audio DSP kept the crystal off
+for the *entire* 30-second suspend.
+
+The eighth suspend of the boot was the one run by
+[`../tools/usb-off-census.sh`](../tools/usb-off-census.sh), with `7000000.usb`
+unbound from `dwc3-qcom` and `79000.phy` from `qcom-qusb2-phy`. The seventh, ten
+minutes earlier, was a 30 s suspend with the same freshly-restarted ADSP and USB
+attached, and LPASS did not collapse once.
+
+**Two suspends, one difference.** ☠️ **n=1 on each side** - that is a lead, not a
+result, and the A/B that alternates the two conditions is
+[`../tools/lpass-usb-ab.sh`](../tools/lpass-usb-ab.sh).
+
+If it holds, it reframes the whole page: LPASS does not "never sleep", it does
+not sleep *while a USB cable is enumerated* - which has been true of every
+measurement this investigation has ever taken, including every asleep current in
+[`../../README.md`](../../README.md).
+
+☠️ And it is the second time in one hour that USB turned out to be the difference
+- the first was the [rail census](rpm-sleep-set.md), where four of five suspect
+rails were the PHY's. The instrument that carries the data off the phone is
+inside every measurement of the phone.
+
+**So the lead is weakened where it was strongest and strengthened where it was
+not.** LPASS remains the only master that never
 shuts down, and that remains a sufficient explanation for `vlow`. What has been
 removed is the easy version of it - "one of our clients is holding it" - which
 was the version a patch would have come from.
