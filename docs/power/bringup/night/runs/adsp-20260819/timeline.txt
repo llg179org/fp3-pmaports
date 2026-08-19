@@ -1,2 +1,4 @@
 19:37:12 # supervisor adsp-20260819 start poll=300s max=10h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/adsp-20260819
 19:37:13 192.168.100.17 up=1149 q=active g=active cap=97 v=4345855 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
+19:42:15 192.168.100.17 up=1451 q=active g=active cap=97 v=4344103 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
+19:47:17 192.168.100.17 up=1753 q=active g=active cap=97 v=4342935 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
