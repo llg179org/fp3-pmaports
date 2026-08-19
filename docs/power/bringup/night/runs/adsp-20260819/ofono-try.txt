@@ -1,0 +1,73 @@
+# ofono-try uptime=546 watch=120s
+== apk add --simulate ofono ==
+Downloading 3 packages...
+(1/3) Downloading ell-0.83-r0
+(2/3) Downloading ofono-2.19-r1
+(3/3) Downloading ofono-udev-2.19-r1
+Proceeding with upgrade...
+(1/3) Installing ell (0.83-r0)
+(2/3) Installing ofono (2.19-r1)
+(3/3) Installing ofono-udev (2.19-r1)
+2 errors; 1878.1 MiB in 1216 packages
+== installing ==
+Executing postmarketos-mkinitfs-2.11.1-r0.trigger
+* 00:11:23.277614 only one kernel release/flavor is supported, found: ["/usr/share/kernel/fp3/kernel.release" "/usr/share/kernel/postmarketos-qcom-msm8953/kernel.release"]
+* 00:11:23.280796 mkinitfs completed in: 0.01s
+ERROR: lib/apk/exec/postmarketos-mkinitfs-2.11.1-r0.trigger: exited with error 1
+3 errors; 1878.2 MiB in 1217 packages
+# ofonod: 2.19
+
+== data path ==
+  main interface: rmnet_ipa0
+  premux candidates: none
+  ifindex: 3
+
+== stopping ModemManager (was: active) ==
+  now: inactive
+
+== /etc/ofono/modem.conf ==
+  [qrtrqmi]
+  Driver=qrtrqmi
+  NetworkInterface=rmnet_ipa0
+  NetworkInterfaceIndex=3
+  NumPremuxInterfaces=0
+  [qrtrqmi]
+  Driver=qrtrqmi
+  NetworkInterface=rmnet_ipa0
+  NetworkInterfaceIndex=3
+  NumPremuxInterfaces=0
+
+== starting ofonod -n -d ==
+  running, pid 8104
+
+  t=15s  modems=0  ofonod=alive
+  t=30s  modems=0  ofonod=alive
+  t=45s  modems=0  ofonod=alive
+  t=60s  modems=0  ofonod=alive
+  t=75s  modems=0  ofonod=alive
+  t=90s  modems=0  ofonod=alive
+  t=105s  modems=0  ofonod=alive
+  t=120s  modems=0  ofonod=alive
+
+== ofono manager ==
+  method return time=1787177619.031280 sender=:1.196 -> destination=:1.237 serial=34 reply_serial=2
+     array [
+     ]
+
+== ofonod log, the interesting lines ==
+  ofonod[8104]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/platform/soc@0/7900000.ipa/net/rmnet_ipa0
+  ofonod[8104]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_ipa0 [(null)] ==> (null) (null)
+  ofonod[8104]: plugins/udevng.c:create_modem() /embedded/qrtr/3
+  ofonod[8104]: plugins/udevng.c:create_modem() driver=qrtrsoc
+  ofonod[8104]: src/modem.c:ofono_modem_create() name: (null), type: qrtrsoc
+  ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() /embedded/qrtr/3
+  ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() Not enough rmnet_data interfaces found
+  ofonod[8104]: plugins/udevng.c:destroy_modem() /embedded/qrtr/3
+  ofonod[8104]: src/modem.c:ofono_modem_remove() 0xffff89859cc0
+  ofonod[8104]: plugins/udevng.c:destroy_modem() (null)
+
+# ofono-try done - full daemon log in /run/night/ofonod.log
+
+# restoring
+#   ModemManager: active, modems: No modems were found
+# restore done rc=0

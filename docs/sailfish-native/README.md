@@ -101,6 +101,80 @@ exist on FP3 pmOS today, and what does ModemManager - the working oracle on the
 same phone, on the same transport - bind to? `ipa2_lite` is in the module list, so
 the netdevs should be there.
 
+## ★★★ Question 1, answered on the device: ofono works over QRTR, with one missing piece
+
+Measured 2026-08-20 00:11–00:20 on `linux-fp3` 7.1.3, ofono 2.19 from Alpine
+community. Raw, with the SIM identifiers redacted:
+[`2026-08-20_ofono-qrtr.txt`](2026-08-20_ofono-qrtr.txt).
+
+**First run — ofono found the modem by itself.** The hand-written `modem.conf`
+turned out to be unnecessary: `plugins/udevng.c` has a `qrtrsoc` path that
+enumerates the QRTR bus and matched immediately.
+
+```
+udevng.c:add_device()    modem:/embedded/qrtr/3  device:/sys/.../7900000.ipa/net/rmnet_ipa0
+udevng.c:create_modem()  driver=qrtrsoc
+udevng.c:setup_qrtrsoc() Not enough rmnet_data interfaces found      <- the whole blocker
+udevng.c:destroy_modem()
+```
+
+Reading `setup_qrtrsoc()` rather than guessing: it wants one `rmnet_ipa*` device —
+we have `rmnet_ipa0` — and **at least three** interfaces named `rmnet_dataN`, from
+which it derives `mux_id = N + 1`. A downstream SoC kernel's IPA driver creates
+those; mainline's `ipa2_lite` does not.
+
+**They can be created by hand.** `CONFIG_RMNET=m` is in this kernel:
+
+```sh
+modprobe rmnet
+ip link add link rmnet_ipa0 name rmnet_data0 type rmnet mux_id 1   # and data1/2, mux 2/3
+```
+
+☠️ **The first attempt at that failed, and the failure was the instrument.** The
+device's `ip` is **busybox**, which does not implement `type rmnet mux_id`: it
+sends the netlink message without `IFLA_RMNET_MUX_ID`, the kernel's
+`rmnet_rtnl_validate()` answers `-EINVAL` ("MUX ID not specified"), and `ip`
+prints a bare `RTNETLINK answers: Invalid argument` — which reads exactly like the
+kernel refusing the operation. `apk add iproute2` and it worked first time. The
+script now refuses to run under busybox rather than producing that false negative.
+
+**Second run — the whole telephony stack came up.**
+
+| | |
+|---|---|
+| modem | `/qrtrsoc_0`, `SystemPath /embedded/qrtr/3`, `Type hardware`, `Capabilities: lte` |
+| SIM | `Present: true`, ICCID and IMSI read, MCC **216** / MNC **70** |
+| network | **`Status: registered`**, `Mode: auto`, LAC and CellId present |
+| interfaces exposed | `NetworkRegistration`, `ConnectionManager`, `MessageManager`, `LongTermEvolution`, `RadioSettings`, `CallForwarding`, `CallBarring`, `CallSettings`, `SupplementaryServices`, `NetworkMonitor`, `MessageWaiting`, `SmartMessaging`, `PushNotification` |
+
+`drivers/qmimodem/sim.c` is visibly reading SIM elementary files (0x6F49, 0x6F46,
+0x4F20) and `qmimodem/lte.c` sets the default attach profile. This is not "ofono
+starts"; it is ofono **operating** the modem over QRTR.
+
+**So the telephony answer for a native Sailfish port is: yes, with one small
+kernel-side gap** — the three `rmnet_data` interfaces. Two ways to close it, and
+neither is research:
+
+1. **Userspace**: create them at boot (a udev rule or a systemd unit doing the
+   three `ip link add`s). Zero kernel work; that is what this experiment did.
+2. **Kernel**: have `ipa2_lite` create its own `rmnet_data` children the way the
+   downstream IPA driver does. Cleaner, and it would make ofono work out of the
+   box on every msm8953 mainline device.
+
+☠️ **Restore verified, not assumed.** The links were deleted, `rmnet` unloaded,
+and ModemManager started again: `state: registered`, `packet service state:
+attached`, interface list back to `ipa_lan0 lo rmnet_ipa0 usb0 wlan0`.
+
+### What was not measured
+
+- **SMS.** `org.ofono.MessageManager` is present, but sending one needs a
+  destination number, and the SIM's own `SubscriberNumbers` array is empty — so
+  the phone does not know its own number. That is a fact only the user has.
+- **A data context.** `org.ofono.ConnectionManager` is present and the LTE attach
+  profile was written; activating a context needs an APN and would take the data
+  path away from ModemManager for longer than a probe. Next session.
+- **A call.** Deliberately not attempted at night.
+
 ## Question 2, second answer: the open graphics set is small, and it is Mesa + eglfs
 
 From the PinePhone adaptation, which is the reference native (non-hybris) port:

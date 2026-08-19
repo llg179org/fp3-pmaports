@@ -1,0 +1,354 @@
+# ofono-try uptime=546 watch=120s
+== apk add --simulate ofono ==
+Downloading 3 packages...
+(1/3) Downloading ell-0.83-r0
+(2/3) Downloading ofono-2.19-r1
+(3/3) Downloading ofono-udev-2.19-r1
+Proceeding with upgrade...
+(1/3) Installing ell (0.83-r0)
+(2/3) Installing ofono (2.19-r1)
+(3/3) Installing ofono-udev (2.19-r1)
+2 errors; 1878.1 MiB in 1216 packages
+== installing ==
+Executing postmarketos-mkinitfs-2.11.1-r0.trigger
+* 00:11:23.277614 only one kernel release/flavor is supported, found: ["/usr/share/kernel/fp3/kernel.release" "/usr/share/kernel/postmarketos-qcom-msm8953/kernel.release"]
+* 00:11:23.280796 mkinitfs completed in: 0.01s
+ERROR: lib/apk/exec/postmarketos-mkinitfs-2.11.1-r0.trigger: exited with error 1
+3 errors; 1878.2 MiB in 1217 packages
+# ofonod: 2.19
+
+== data path ==
+  main interface: rmnet_ipa0
+  premux candidates: none
+  ifindex: 3
+
+== stopping ModemManager (was: active) ==
+  now: inactive
+
+== /etc/ofono/modem.conf ==
+  [qrtrqmi]
+  Driver=qrtrqmi
+  NetworkInterface=rmnet_ipa0
+  NetworkInterfaceIndex=3
+  NumPremuxInterfaces=0
+  [qrtrqmi]
+  Driver=qrtrqmi
+  NetworkInterface=rmnet_ipa0
+  NetworkInterfaceIndex=3
+  NumPremuxInterfaces=0
+
+== starting ofonod -n -d ==
+  running, pid 8104
+
+  t=15s  modems=0  ofonod=alive
+  t=30s  modems=0  ofonod=alive
+  t=45s  modems=0  ofonod=alive
+  t=60s  modems=0  ofonod=alive
+  t=75s  modems=0  ofonod=alive
+  t=90s  modems=0  ofonod=alive
+  t=105s  modems=0  ofonod=alive
+  t=120s  modems=0  ofonod=alive
+
+== ofono manager ==
+  method return time=1787177619.031280 sender=:1.196 -> destination=:1.237 serial=34 reply_serial=2
+     array [
+     ]
+
+== ofonod log, the interesting lines ==
+  ofonod[8104]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/platform/soc@0/7900000.ipa/net/rmnet_ipa0
+  ofonod[8104]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_ipa0 [(null)] ==> (null) (null)
+  ofonod[8104]: plugins/udevng.c:create_modem() /embedded/qrtr/3
+  ofonod[8104]: plugins/udevng.c:create_modem() driver=qrtrsoc
+  ofonod[8104]: src/modem.c:ofono_modem_create() name: (null), type: qrtrsoc
+  ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() /embedded/qrtr/3
+  ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() Not enough rmnet_data interfaces found
+  ofonod[8104]: plugins/udevng.c:destroy_modem() /embedded/qrtr/3
+  ofonod[8104]: src/modem.c:ofono_modem_remove() 0xffff89859cc0
+  ofonod[8104]: plugins/udevng.c:destroy_modem() (null)
+
+# ofono-try done - full daemon log in /run/night/ofonod.log
+
+# restoring
+#   ModemManager: active, modems: No modems were found
+# restore done rc=0
+
+########## second run, with rmnet_data interfaces ##########
+
+# ofono-rmnet-try uptime=882 watch=150s
+# before: ipa_lan0 lo rmnet_ipa0 usb0 wlan0 
+# using ip: /sbin/ip (ip utility, iproute2-7.1.0)
+# loaded rmnet
+# created rmnet_data0 mux_id=1
+# created rmnet_data1 mux_id=2
+# created rmnet_data2 mux_id=3
+# after: ipa_lan0 lo rmnet_data0 rmnet_data1 rmnet_data2 rmnet_ipa0 usb0 wlan0 
+
+== stopping ModemManager (was: active) ==
+== starting ofonod -n -d ==
+  t=15s modems=1
+
+== ofono modems ==
+method return time=1787177840.975159 sender=:1.301 -> destination=:1.309 serial=30 reply_serial=2
+   array [
+      struct {
+         object path "/qrtrsoc_0"
+         array [
+            dict entry(
+               string "Online"
+               variant                   boolean false
+            )
+            dict entry(
+               string "Powered"
+               variant                   boolean false
+            )
+            dict entry(
+               string "Lockdown"
+               variant                   boolean false
+            )
+            dict entry(
+               string "Emergency"
+               variant                   boolean false
+            )
+            dict entry(
+               string "SystemPath"
+               variant                   string "/embedded/qrtr/3"
+            )
+            dict entry(
+               string "Interfaces"
+               variant                   array [
+                  ]
+            )
+            dict entry(
+               string "Features"
+               variant                   array [
+                  ]
+            )
+            dict entry(
+               string "Type"
+               variant                   string "hardware"
+            )
+            dict entry(
+               string "Capabilities"
+               variant                   array [
+                     string "lte"
+                  ]
+            )
+         ]
+      }
+   ]
+
+== bringing the modem online ==
+  modem path: /qrtrsoc_0
+method return time=1787177841.011634 sender=:1.301 -> destination=:1.311 serial=33 reply_serial=2
+method return time=1787177851.033255 sender=:1.301 -> destination=:1.315 serial=68 reply_serial=2
+== modem properties ==
+method return time=1787177871.049369 sender=:1.301 -> destination=:1.321 serial=92 reply_serial=2
+   array [
+      dict entry(
+         string "Online"
+         variant             boolean true
+      )
+      dict entry(
+         string "Powered"
+         variant             boolean true
+      )
+      dict entry(
+         string "Lockdown"
+         variant             boolean false
+      )
+      dict entry(
+         string "Emergency"
+         variant             boolean false
+      )
+      dict entry(
+         string "Manufacturer"
+         variant             string "QUALCOMM INCORPORATED"
+      )
+      dict entry(
+         string "Model"
+         variant             string "0"
+      )
+      dict entry(
+         string "Revision"
+         variant             string "MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.356774.1.425464.1  1  [Aug 04 2021 08:00:00]"
+      )
+      dict entry(
+         string "Serial"
+         variant             string "<imei>"
+      )
+      dict entry(
+         string "SystemPath"
+         variant             string "/embedded/qrtr/3"
+      )
+      dict entry(
+         string "Interfaces"
+         variant             array [
+               string "org.ofono.NetworkRegistration"
+               string "org.ofono.CallForwarding"
+               string "org.ofono.CallBarring"
+               string "org.ofono.CallSettings"
+               string "org.ofono.SupplementaryServices"
+               string "org.ofono.NetworkMonitor"
+               string "org.ofono.LongTermEvolution"
+               string "org.ofono.ConnectionManager"
+               string "org.ofono.SmartMessaging"
+               string "org.ofono.PushNotification"
+               string "org.ofono.MessageManager"
+               string "org.ofono.RadioSettings"
+               string "org.ofono.MessageWaiting"
+               string "org.ofono.AllowedAccessPoints"
+               string "org.ofono.SimManager"
+               string "org.ofono.VoiceCallManager"
+            ]
+      )
+      dict entry(
+== sim ==
+method return time=1787177871.063851 sender=:1.301 -> destination=:1.322 serial=93 reply_serial=2
+   array [
+      dict entry(
+         string "Present"
+         variant             boolean true
+      )
+      dict entry(
+         string "CardIdentifier"
+         variant             string "<ICCID redacted>"
+      )
+      dict entry(
+         string "SubscriberIdentity"
+         variant             string "<IMSI redacted>"
+      )
+      dict entry(
+         string "FixedDialing"
+         variant             boolean false
+      )
+      dict entry(
+         string "BarredDialing"
+         variant             boolean false
+      )
+      dict entry(
+         string "MobileCountryCode"
+         variant             string "216"
+      )
+      dict entry(
+         string "MobileNetworkCode"
+         variant             string "70"
+      )
+      dict entry(
+         string "SubscriberNumbers"
+         variant             array [
+            ]
+      )
+      dict entry(
+         string "LockedPins"
+         variant             array [
+            ]
+      )
+== netreg ==
+method return time=1787177871.077321 sender=:1.301 -> destination=:1.323 serial=94 reply_serial=2
+   array [
+      dict entry(
+         string "Status"
+         variant             string "registered"
+      )
+      dict entry(
+         string "Mode"
+         variant             string "auto"
+      )
+      dict entry(
+         string "LocationAreaCode"
+         variant             uint16 65534
+      )
+      dict entry(
+         string "CellId"
+         variant             uint32 1470722
+      )
+      dict entry(
+         string "Technology"
+         variant             string "lte"
+      )
+      dict entry(
+         string "MobileCountryCode"
+         variant             string "216"
+      )
+      dict entry(
+         string "MobileNetworkCode"
+         variant             string "070"
+      )
+      dict entry(
+         string "Name"
+         variant             string "216070"
+      )
+      dict entry(
+         string "Strength"
+         variant             byte 60
+      )
+   ]
+
+== ofonod log, qrtr/qmi lines ==
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x45 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x0004
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() rat 8 band 145 channel 6200
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 8
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status registered (1)
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: src/network.c:ofono_netreg_time_notify() net time 2026-08-19 22:17:31 utcoff 7200 dst 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 8
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: lte
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech 7
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 1 tech 7 lac 65534 ci 1470722
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_current_operator() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_signal_strength() 
+ofonod[12173]: src/gprs.c:netreg_status_changed() 1 (registered)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 1, driver_attached: 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() signal with -67 dBm on 8
+ofonod[12173]: src/network.c:ofono_netreg_strength_notify() strength 60
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() signal with -67 dBm on 8
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:get_lte_attach_params() 
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x20 len 0x0004
+ofonod[12173]: drivers/qmimodem/gprs.c:get_lte_attach_param_cb() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_read_settings() cid 5
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_lte_attach_param_cb() error: 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:start_network_common_cb() family: 4, error: 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() conn status 2 ip family 4
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() IP addr: 10.112.77.125
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway: 10.112.77.126
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway netmask: 255.255.255.252
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Primary DNS: 80.244.99.37
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Secondary DNS: 80.244.99.36
+ofonod[12173]: drivers/qmimodem/network-registration.c:system_info_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x12 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x13 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x14 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x19 len 0x001d
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x1e len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x21 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x27 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x28 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2a len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2b len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x30 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x32 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x35 len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x39 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3a len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3f len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x45 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x0004
+# done
+
+# restoring
+#   unloaded rmnet
+#   ModemManager: active, No modems were found
+#   interfaces now: ipa_lan0 lo rmnet_ipa0 usb0 wlan0 
+# restore done rc=0
