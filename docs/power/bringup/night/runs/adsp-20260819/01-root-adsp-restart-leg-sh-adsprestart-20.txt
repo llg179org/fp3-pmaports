@@ -18,3 +18,16 @@ adsprestart-20260819 phase=settle n=10 t=4267 v=4083679 i=-122298 pll=123 nread=
 adsprestart-20260819 phase=settle n=11 t=4337 v=4085528 i=-119094 pll=127 nread=20
 adsprestart-20260819 phase=settle n=12 t=4408 v=4074531 i=-150680 pll=131 nread=20
 adsprestart-20260819 phase=settle n=13 t=4478 v=4090978 i=-62636 pll=132 nread=20
+adsprestart-20260819 phase=settle n=14 t=4549 v=4088836 i=-77514 pll=134 nread=20
+adsprestart-20260819 phase=settle n=15 t=4619 v=4088058 i=-66604 pll=141 nread=20
+adsprestart-20260819 phase=settle n=16 t=4690 v=4081927 i=-90560 pll=145 nread=20
+adsprestart-20260819 phase=settle n=17 t=4761 v=4076088 i=-122833 pll=149 nread=20
+adsprestart-20260819 phase=settle n=18 t=4831 v=4069373 i=-146102 pll=155 nread=20
+adsprestart-20260819 phase=settle n=19 t=4902 v=4073557 i=-98495 pll=158 nread=20
+adsprestart-20260819 phase=settle n=20 t=4972 v=4071806 i=-125198 pll=161 nread=20
+adsprestart-20260819 phase=settle n=21 t=5043 v=4079202 i=-70648 pll=164 nread=20
+adsprestart-20260819 phase=settle n=22 t=5114 v=4069178 i=-128707 pll=168 nread=20
+adsprestart-20260819 phase=settle n=23 t=5184 v=4073071 i=-95825 pll=169 nread=20
+adsprestart-20260819 phase=settle n=24 t=5255 v=4060030 i=-138168 pll=175 nread=20
+adsprestart-20260819 phase=settle n=25 t=5325 v=4066064 i=-116195 pll=180 nread=20
+adsprestart-20260819 phase=settle n=26 t=5396 v=4057306 i=-152206 pll=185 nread=20

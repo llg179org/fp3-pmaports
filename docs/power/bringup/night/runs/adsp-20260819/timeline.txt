@@ -11,3 +11,10 @@
 20:22:36 192.168.100.17 up=3873 q=active g=active cap=86 v=4064994 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 20:27:43 192.168.100.17 up=4180 q=active g=active cap=85 v=4074920 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 20:32:45 192.168.100.17 up=4482 q=active g=active cap=85 v=4063242 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:37:51 192.168.100.17 up=4788 q=active g=active cap=85 v=4061685 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:42:55 192.168.100.17 up=5091 q=active g=active cap=84 v=4055846 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:48:00 192.168.100.17 up=5397 q=active g=active cap=84 v=4041637 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:53:19 !! device unreachable on both links (miss 1)
+20:58:30 !! device unreachable on both links (miss 2)
+21:03:41 !! device unreachable on both links (miss 3)
+21:03:41 !! ALERT: silent for 3 polls (~15 min)

@@ -70,6 +70,21 @@ if ! systemctl is-active --quiet night-guardian 2>/dev/null; then
 	fi
 fi
 
+# ☠️ Nothing may make a sound at night. This is checked rather than trusted:
+# someone is asleep next to the phone, and a job file is written by whoever is
+# in a hurry. The audible things on this device are the acoustic audio check
+# (which plays a tone and listens for it), the vibrator check, and any direct
+# player. The silent audio coverage - the codec/PCM check and the amplifier's
+# control-bus check - is deliberately NOT in this list and may run all night.
+refuse_if_audible() {
+	case "$1" in
+	*--acoustic*|*aplay*|*paplay*|*speaker-test*|*pw-play*|*pactl\ play*|*21-audio-acoustic*|*--only\ vibrator*|*16-vibrator*)
+		say "# ABORT: job would make a sound and it is a night queue: $1"
+		return 1 ;;
+	esac
+	return 0
+}
+
 TIMEOUT=14400
 STOP_ON_FAIL=0
 n=0
@@ -141,6 +156,8 @@ while IFS= read -r line; do
 		systemd-run --unit=night-guardian --collect "$HERE/guardian.sh" 30 2>/dev/null \
 			|| say "# WARNING: could not restart the guardian"
 	fi
+
+	refuse_if_audible "$line" || exit 1
 
 	n=$((n + 1))
 	if [ "$n" -lt "$START_AT" ]; then

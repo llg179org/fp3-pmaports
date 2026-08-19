@@ -148,18 +148,29 @@ sudo install -m 644 /root/night/night-resume.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable night-resume.service
 ```
 
-## ☠️ What does not go in a night queue
+## ☠️ Nothing may make a sound at night
 
-**Anything whose verification needs a human sense.** Audio is the standing
-example and it is a project rule, not a preference: a probe that changes the
-card's routing is only honestly verified by someone hearing that audio still
-works, so it waits for daylight and a person in the room - however cheap the
-measurement itself is. [`../tools/audio-hold-probe.sh`](../tools/audio-hold-probe.sh)
-is armed and deliberately unscheduled; it lives in
-[`../../../TODO.md`](../../../TODO.md) under a daytime heading.
+A project rule, and a narrower one than "audio is daytime work" - which is how
+this section first read, and it was wrong. The audio coverage **is** automated
+and most of it is silent: [`20-audio`](../../../../tests/checks/20-audio-test.sh)
+proves the codec enumerated and the PCMs open,
+[`24-speaker-amp`](../../../../tests/checks/24-speaker-amp-test.sh) measures the
+amplifier on its **control bus** precisely so it cannot be confused with the room.
+Both run by default and neither is audible.
 
-The same test applies to anything else that ends in "and then check it still
-works" where the check is a person: the display, the vibrator, the flash, a call.
+What is audible is
+[`21-audio-acoustic`](../../../../tests/checks/21-audio-acoustic-test.sh), which
+plays a tone and listens for it. It is already opt-in behind `--acoustic` because
+the medium is the air in the room - and it is the one thing that must never be in
+a night queue, because someone is asleep next to the phone.
+
+So an audio change **can** be measured and verified overnight, as long as the
+verification is the silent half. The end-to-end acoustic proof waits for
+daylight. The same split applies to the vibrator (`16-vibrator`) and to anything
+else whose confirmation is a noise.
+
+☠️ `queue.sh` enforces this rather than trusting the job file: it refuses to
+start if any job line would play something.
 
 ## The job file
 
