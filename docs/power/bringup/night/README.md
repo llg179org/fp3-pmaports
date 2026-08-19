@@ -18,7 +18,8 @@ alive at 08:00.
 |---|---|---|
 | [`preflight.sh`](preflight.sh) | device | the gate. Fourteen checks; a failure means do not arm |
 | [`guardian.sh`](guardian.sh) | device | the net. Watches the eMMC, the pack and the RPM counters, and acts |
-| [`queue.sh`](queue.sh) | device | the runner. Works through a job file, charging between jobs |
+| [`queue.sh`](queue.sh) | device | the runner. Works through a job file, charging between jobs, leaving a cursor so a reboot does not end the night |
+| [`night-resume.sh`](night-resume.sh) | device | picks a night back up after a reboot, under four conditions that must all hold |
 | [`night-supervisor.sh`](night-supervisor.sh) | **host** | pulls the record off the phone every poll and notices silence |
 
 ## Why there is a gate at all
@@ -99,6 +100,34 @@ the ADSP unbound with nothing running to rebind them.
 ☠️ **The queue refuses to start without the guardian.** That is deliberate: the
 reason long unattended runs were barred is that the one failure this device has
 shown destroys its own record.
+
+## Surviving a reboot
+
+A night that ends at the first reboot is not autonomous, and the guardian's own
+answer to a dead card **is** a reboot — so without this piece the net and the
+runner work against each other: the net saves the phone and kills the night.
+
+[`queue.sh`](queue.sh) writes a cursor to `/root/night/cursor` before each job.
+☠️ **That is the one file in this harness deliberately kept off tmpfs**:
+everything else is on `/run` so it survives a read-only root, but the cursor has
+to survive a *reboot*, which is the opposite requirement. It is written before
+the job rather than after, so an interrupted job is repeated rather than skipped.
+
+[`night-resume.sh`](night-resume.sh), started by
+[`night-resume.service`](night-resume.service), acts only when **all four** hold:
+a cursor exists, it is younger than 12 hours, the job file it names still exists,
+and `preflight.sh` passes on whatever state the reboot left behind. Anything else
+and it logs why and leaves the phone idle.
+
+☠️ **It refuses far more often than it acts, and that is the point.** An enabled
+unit that starts a measurement at every boot would fire on a boot taken for any
+other reason — a flash, a hand reboot, a morning power-on — and would do it with
+nobody watching.
+
+```sh
+sudo install -m 644 /root/night/night-resume.service /etc/systemd/system/
+sudo systemctl daemon-reload && sudo systemctl enable night-resume.service
+```
 
 ## The job file
 

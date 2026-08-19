@@ -1,3 +1,3 @@
-# lpass-holders start uptime=33064 dwell=240s live=30s stages="S0 S1 S2 S3 S4 S5"
-# LPASS at start: shutdowns=2 xo=2 sleep=
+# lpass-holders start uptime=33198 dwell=240s live=30s stages="S0 S1 S2 S3 S4 S5"
+# LPASS at start: shutdowns=2 xo=2 xo_dur=2314203
 
