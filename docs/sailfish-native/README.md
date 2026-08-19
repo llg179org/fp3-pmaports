@@ -141,6 +141,59 @@ external USB modem; the org's `ofono` fork is described as *"Ofono fork with QMI
 modem support for the PinePhone"*, i.e. USB QMI. The FP3's modem is integrated and
 reached over QRTR, so the relevant code is upstream `qrtrqmi`, not that fork.
 
+## Question 2, third answer: most of the middleware is already an `apk add` away
+
+Read from the **authoritative** Alpine indexes (`APKINDEX.tar.gz` for edge
+main/community/testing, aarch64, fetched 2026-08-19), not from the package search
+page — ☠️ a first pass at this scraped the HTML and reported "NOT FOUND" for
+things that are plainly there, which is a failed query masquerading as a negative.
+
+Already packaged in Alpine edge, **straight from `github.com/sailfishos/*`**:
+
+| package | version | upstream |
+|---|---|---|
+| `mce` | 1.117.1 | sailfishos/mce |
+| `dsme` | 0.84.9 | sailfishos/dsme |
+| `sensorfw` | 0.15.2 | sailfishos/sensorfw |
+| `mlite` | 0.5.5 | sailfishos/mlite |
+| `libngf` | 0.28 | sailfishos/libngf |
+| `nemo-keepalive` | 1.8.13 | sailfishos/nemo-keepalive |
+| `nemo-qml-plugin-{devicelock,connectivity,dbus,models,time,alarms,configuration}` | | sailfishos/* |
+| `libsailfishkeyprovider`, `sailfish-access-control` | | sailfishos/* |
+
+Plus everything the graphics set needs: `mesa-egl`/`gles`/`gbm`/`dri-gallium`
+26.1.6, `wayland-libs-egl`, `qt5-qtbase`/`qtdeclarative`/`qtwayland`/`qtsensors`
+5.15.18, `connman` 2.0, `maliit-keyboard`, `pulseaudio` 17.
+
+**Absent, and this is the actual work:** `lipstick` itself is not packaged
+anywhere — not in Alpine, not in pmaports (checked both; `device-wd-glacier` is a
+phone, not the UI). Neither is `ngfd`, nor a home UI.
+
+### What building Lipstick would take
+
+From `sailfishos/lipstick`'s own spec (`lipstick-qt5.spec`, version 0.36.29), the
+`BuildRequires` split against what Alpine already has:
+
+**Present:** Qt5 Core/DBus/Quick/Sql/Test/Sensors, `mlite5`, `mce`, `keepalive`,
+`wayland-server`, `wayland-protocols`, `glib-2.0`, `nemodevicelock`,
+`nemoconnectivity`.
+
+**Missing — roughly ten packages, all open, all in the `sailfishos` org:**
+
+```
+contentaction5   mce-qt5      thermalmanager   usb_moded + usb-moded-qt5
+libresourceqt5   ngf-qt5      systemsettings   sailfishusermanager (user-managerd)
+```
+
+plus the runtime `Requires`: `pulseaudio-modules-nemo-mainvolume` and
+`sailjail-daemon`. `dsme_dbus_if` most likely comes from the `dsme-dev`
+subpackage that is already there.
+
+**So the honest size of it is: ten to twelve small packages, then lipstick, then a
+home UI** — and the home UI is where it stops being mechanical. Jolla's Silica and
+`jolla-*` homescreen are **closed**; the open alternative is Glacier
+(nemomobile), which is not packaged in Alpine or pmaports either.
+
 ## What is still unmeasured
 
 - Everything on the device. Both answers above are from source and packaging.
@@ -162,3 +215,6 @@ series of 900 s suspends. Host-side work only until it finished.
 - ofono `qrtrqmi` confirmed present upstream and built by default; Alpine ships
   ofono 2.19. The driver's own configuration requirements read out of its source.
 - The PinePhone adaptation pattern and `eglfs-config.json` read from GitHub.
+- Alpine's real package inventory read from the APKINDEX files, after the search
+  page produced a false negative.
+- Lipstick's BuildRequires split against that inventory.
