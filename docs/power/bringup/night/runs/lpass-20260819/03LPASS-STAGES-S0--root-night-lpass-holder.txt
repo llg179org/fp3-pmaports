@@ -1,0 +1,14 @@
+# lpass-holders start uptime=34747 dwell=240s live=30s stages="S0"
+# LPASS at start: shutdowns=2 xo=2 xo_dur=2314203
+
+STAGE S0 baseline (nothing removed) window=240s uptime=34987
+  APSS +4121  MPSS +751  PRONTO +2128
+  LPASS shutdowns +0  (total 2)   XO +0  (total 2)
+  LPASS XO total duration (19.2 MHz ticks) +0
+  vlow 0 -> 0   vmin 0 -> 0
+  counter-live: OK (3 of 3 other masters moved)
+
+# lpass-holders done uptime=34987
+
+# restoring
+# restore done rc=0 uptime=34987

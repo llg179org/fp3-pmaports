@@ -1162,74 +1162,69 @@ MPSS out of its own low-power state or waking the application processor
 repeatedly, and those two have different fixes. **The next measurement is
 wakeup accounting across a suspend**, not a patch.
 
-### ★ RESUME POINT, 2026-08-19 18:25 - READ THIS FIRST
+### ★ RESUME POINT, 2026-08-19 19:00 - READ THIS FIRST
 
-**Running on the device right now:** `night-guardian` (the eMMC net, 30 s) and
-`night-queue` working through
-[`night/jobs-lpass.txt`](night/jobs-lpass.txt) - LPASS holder hunt, rail census,
-then a late control. Started 18:25, about an hour of work. A host supervisor
-(`night-supervisor.sh lpass-20260819 300 6`) pulls `/run/night/` to
-[`night/runs/lpass-20260819/`](night/runs/) every five minutes and exits when the
-queue reports itself finished.
+**Nothing is running on the device.** The first unattended night finished
+cleanly: three jobs, zero failures, charger restored, everything modprobed back.
+Artefacts in [`night/runs/lpass-20260819/`](night/runs/).
 
-☠️ **Nothing else may touch the device until the queue ends.** Read
-`night/runs/lpass-20260819/queue.log` to see where it is.
+**The harness works.** [`night/`](night/README.md) - preflight, guardian, queue,
+host supervisor, reboot-resume. Both gates were shown failing before being
+trusted, and the first armed attempt aborted in twenty seconds on a gate that
+listed the unit running it. Arming instructions are in that README.
 
-**Two things changed tonight, before any of that ran.**
+**★★ The night's result is a negative, and it is the important kind.**
 
-**1. The page layout.** `docs/power/` is now the current state and nothing else;
-everything dated lives under `bringup/`. The chronological half of the old front
-page is [`findings-log.md`](findings-log.md), unedited. This file did not change
-except in where it sits.
+Step 1 asked which ADSP client holds LPASS awake. Six stages, 240 s each, the
+counter re-verified live in all six (3 of 3 other masters moving every time):
 
-**2. There is a night harness**, in [`night/`](night/README.md): `preflight.sh`
-(the gate), `guardian.sh` (the net), `queue.sh` (the runner), and a host-side
-`night-supervisor.sh` that pulls the record every poll. It exists because the
-standing bar on long unattended runs - the eMMC dropout of 2026-08-18 - is not
-answered by a mechanism and is not going to be: it has not recurred across four
-long runs since, and "it has not recurred" is not an explanation. What can be
-engineered is the consequence. The guardian writes to root every cycle (the
-write **is** the detector), logs to tmpfs, and on two consecutive failures dumps
-the evidence, ☠️ **restores the charger** and reboots, so the morning finds a
-live phone with a timestamped record.
+| stage | removed | LPASS shutdowns | vlow |
+|---|---|---|---|
+| S0 | nothing | +0 | 0 |
+| S1 | sensor userspace | +0 | 0 |
+| S2 | all six SMGR drivers | +0 | 0 |
+| S3 | audio userspace | +0 | 0 |
+| S4 | ☠️ nothing - the rmmod could not work | +0 | 0 |
+| S5 | **the ADSP itself, `state=offline`** | **+0** | **0** |
 
-Both gates were shown failing before being trusted: `preflight.sh 101` fails the
-battery gate, and `queue.sh` refuses to start with no guardian running. A gate
-never seen to fail has proved nothing.
+A late control with everything restored read the same, so the zeros are not an
+artefact of the removals. Raw:
+[`captures/2026-08-19_lpass-holders.txt`](captures/2026-08-19_lpass-holders.txt).
 
-**Where the numbers stand tonight:**
+**With the DSP stopped outright the gate did not open.** No client of ours holds
+LPASS in a way that removing the client fixes. ☠️ It does **not** follow that
+LPASS is innocent: a halted subsystem may leave its last vote standing, in which
+case S5 removed the processor and not the vote. That is now the question.
 
-| | draw |
-|---|---|
-| awake idle, panel off, session running | ~58-63 mA |
-| the panel, powered at zero brightness | +24.5 ± 6.4 mA |
-| asleep, no cuts (`baseline-20260819`) | 79.1 mA |
-| asleep, modem stack cut (`nomodem-20260819`) | 43.3 mA |
-| every userspace service tested, five of five | zero |
+☠️ **S4 was not a cut** - every q6 module stayed loaded, `snd_soc_apq8016_sbc` at
+refcount 3 with no module users, because the references were the bound sound
+card. It printed `still loaded` above its own delta, which is the only reason it
+did not become a finding. Fixed: S4 unbinds `c051000.sound-card` first.
 
-☠️ `mem_sleep` offers **only `[s2idle]`** - there is no `deep` on this platform.
-s2idle itself works: 6/6 suspends, full duration, `suspend_stats` 6 success /
-0 fail, and the cores reach `cpu-power-collapse`. **"Deep sleep" on this device
-means getting the RPM into `vlow`/`vmin`**, and the named mechanism for why it
-never does is [`leads/lpass-never-sleeps.md`](leads/lpass-never-sleeps.md).
+**★ And the rail census landed**, across a real 30 s suspend: 35 resources voted,
+**22 cast no sleep vote**, five of those are enabled PMIC rails.
+[`leads/rpm-sleep-set.md`](leads/rpm-sleep-set.md) has the table. ☠️ Three of the
+five are USB PHY rails and the census was taken with USB attached - that is our
+own confound, not a finding.
 
-**Next, in order** (all of it is measurement; do not write a patch yet):
+**Next, in order:**
 
-1. *(running)* **Who holds LPASS.** Six stages, four minutes each, the counter
-   re-verified live in every one. Read the stage table: a stage whose
-   `counter-live` line says fewer than two other masters moved proves nothing,
-   whatever its LPASS delta says.
-2. **Whether it can.** If no stage moves it - including S5, which stops the DSP
-   outright - the question becomes whether the ADSP is ever *told* it may
-   collapse. The vendor sends explicit power-collapse requests over APR that
-   mainline may simply not send.
-3. **What it is worth.** Only once it moves: a slope leg against
-   `baseline-20260819`, queued behind an `@charge 99`.
-4. Still open and unrelated: wakeup accounting across a suspend, to separate
-   "the MPSS never idles" from "the MPSS keeps waking the AP" for the 36 mA.
+1. **Repeat the census without USB.** Unbind the USB controller over the WiFi
+   link (`192.168.100.17`), then re-run `rail-census.sh`. What survives is the
+   real list. Until then `ldoa/3` and `ldoa/13` mean nothing.
+2. **Does a stopped LPASS still vote?** Stop the ADSP and re-run the census: if
+   its rails are still voted active with the processor offline, the vote outlives
+   the master and S5's negative has an explanation that does not clear LPASS.
+3. **Whether the ADSP is ever told it may collapse** - the vendor sends explicit
+   power-collapse requests over APR that mainline may not send at all. This is
+   source work, not a measurement.
+4. **Re-run S4 as a real cut** now that it unbinds the card.
+5. Still open and unrelated: wakeup accounting across a suspend, for the modem's
+   36 mA.
 
-☠️ Do not write a patch before step 1. The XO branch was mechanically plausible,
-moved its counter from 0 to 1952, and changed the discharge slope by nothing.
+☠️ Do not write a patch yet. Two mechanically plausible branches have now closed
+with the counter moving and the current not (XO), or the counter not moving at
+all (LPASS).
 ### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
 
 Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,

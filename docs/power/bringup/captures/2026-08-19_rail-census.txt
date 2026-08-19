@@ -1,0 +1,106 @@
+# rail-census.sh across a 30 s rtcwake suspend, 2026-08-19 18:53, on the
+# first unattended night (queue 'lpass', job 2). The raw ftrace is 2783
+# lines / 355 kB and is NOT committed; this is the header it wrote plus
+# the decoded summary from tools/rail-census-parse.py.
+#
+# ☠️ Taken with USB attached and the phone on the charger, which is why
+# three of the five enabled rails are USB PHY rails. Repeat it on WiFi
+# only before reading anything into those three.
+
+# rail-census kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=f995bc37-4956-4743-a0c8-19beeaadbe4e
+# tracing on, arming suspend
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Tue Jan  6 12:44:26 1970
+# rtcwake returned rc=0
+# tracing off
+# ---- trace begins ----
+
+=== decoded ===
+resource     active vote                        sleep vote                        
+------------------------------------------------------------------------------------
+bmas/21      bw=50000000                        -                                 
+bmas/29      bw=240000000                       bw=240000000                      
+bmas/33      bw=0                               bw=0                              
+bmas/35      bw=0                               bw=0                              
+bmas/76      bw=240000000                       bw=240000000                      
+bmas/77      bw=50000000                        -                                 
+bmas/86      bw=240000000                       bw=240000000                      
+bmas/94      bw=0                               -                                 
+bmas/100     bw=50000000                        -                                 
+bmas/124     bw=50000000                        -                                 
+bslv/0       bw=752000000                       bw=240000000                      
+bslv/2       bw=50000000                        -                                 
+bslv/28      bw=50000000                        -                                 
+bslv/31      bw=0                               -                                 
+bslv/33      bw=0                               -                                 
+bslv/45      bw=240000000                       bw=240000000                      
+bslv/104     bw=240000000                       bw=240000000                      
+bslv/115     bw=240000000                       bw=240000000                      
+bslv/123     bw=0                               -                                 
+bslv/131     bw=50000000                        -                                 
+bslv/184     bw=50000000                        -                                 
+clk1/0       KHz=87500                          KHz=87500                         
+clk1/1       KHz=87500                          KHz=87500                         
+clk1/2       KHz=0                              KHz=0                             
+clk2/0       KHz=211200                         -                                 
+ldoa/3       swen=1                             -                                 
+ldoa/7       swen=1                             -                                 
+ldoa/8       swen=1                             -                                 
+ldoa/11      swen=0                             -                                 
+ldoa/12      swen=0                             -                                 
+ldoa/13      swen=1                             -                                 
+smpa/1       swen=0                             -                                 
+smpa/2       vlvl=0                             vlvl=0                            
+smpa/3       swen=1                             -                                 
+smpa/7       swen=0                             -                                 
+
+35 resources voted, 22 of them with NO SLEEP VOTE:
+
+  bmas/21   icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/77   icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/94   icc-mas     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bmas/100  icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bmas/124  icc-mas     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/2    icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/28   icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/31   icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/33   icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/123  icc-slv     ?         bw=0
+                    not a PMIC rail - interconnect/clock resource
+  bslv/131  icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  bslv/184  icc-slv     ?         bw=50000000
+                    not a PMIC rail - interconnect/clock resource
+  clk2/0    clk2        ?         KHz=211200
+                    not a PMIC rail - interconnect/clock resource
+  ldoa/3    pm8953_l3   ENABLED   swen=1
+                    hsusb_phy:vdd, mdss_dsi0_phy:vcca
+  ldoa/7    pm8953_l7   ENABLED   swen=1
+                    hsusb_phy:vdda-pll, mpss:pll (modem PLL), wcnss_iris:vddxo
+  ldoa/8    pm8953_l8   ENABLED   swen=1
+                    NOSLEEP sdhc_1:vmmc (eMMC)
+  ldoa/11   pm8953_l11  disabled  swen=0
+                    NOSLEEP sdhc_2:vmmc (SD slot)
+  ldoa/12   pm8953_l12  disabled  swen=0
+                    NOSLEEP sdhc_2:vqmmc (SD slot)
+  ldoa/13   pm8953_l13  ENABLED   swen=1
+                    hsusb_phy:vdda-phy-dpdm
+  smpa/1    pm8953_s1   disabled  swen=0
+                    not a rail this DT declares
+  smpa/3    pm8953_s3   ENABLED   swen=1
+                    camss:vdda, mdss_dsi0:vdda, parent of l1/l2/l3
+  smpa/7    pm8953_s7   disabled  swen=0
+                    not a rail this DT declares
+
+5 of them are ENABLED - held up through suspend by the absence of a sleep vote, not because anyone asked for it.
+☠️  A rail appearing here is not thereby droppable. Anything marked NOSLEEP above is the eMMC or the SD slot and is off the table; ldoa/7 feeds the modem PLL.
+☠️  NO CONSUMER IN DT with swen=1 means no Linux driver is holding it, so no consumer-intent work in the regulator layer can drop it - that is the RPM boot state or another master, a different question.

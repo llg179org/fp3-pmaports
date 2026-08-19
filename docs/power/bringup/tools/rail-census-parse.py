@@ -104,8 +104,22 @@ def main(path):
           f'SLEEP VOTE:\n')
     held = 0
     for typ, rid, a in no_sleep:
-        who = FP3_RAILS.get((typ, rid), 'not a rail this DT declares')
-        rail = f'pm8953_{"s" if typ == "smpa" else "l"}{rid}'
+        if typ in ('ldoa', 'smpa'):
+            who = FP3_RAILS.get((typ, rid), 'not a rail this DT declares')
+        else:
+            who = 'not a PMIC rail - interconnect/clock resource'
+        # Only ldoa/smpa are PMIC rails. bmas/bslv are interconnect masters and
+        # slaves and clk* are RPM clocks; naming those pm8953_lNN invents a rail
+        # that does not exist - measured 2026-08-19, when bmas/21 was printed as
+        # 'pm8953_l21, not a rail this DT declares'. It is not a rail at all.
+        if typ == 'ldoa':
+            rail = f'pm8953_l{rid}'
+        elif typ == 'smpa':
+            rail = f'pm8953_s{rid}'
+        elif typ in ('bmas', 'bslv'):
+            rail = f'icc-{typ[1:]}'
+        else:
+            rail = typ
         en = a.get('swen')
         state = 'ENABLED' if en else ('disabled' if en == 0 else '?')
         if en:
