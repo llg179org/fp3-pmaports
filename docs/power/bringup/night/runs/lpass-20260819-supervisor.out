@@ -5,3 +5,6 @@
 18:32:30 192.168.100.17 up=33405 q=active g=active cap=100 v=4412032 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
 18:37:34 192.168.100.17 up=33709 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
 18:42:36 192.168.100.17 up=34011 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:47:38 192.168.100.17 up=34313 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:52:39 192.168.100.17 up=34614 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:57:41 192.168.100.17 up=34916 q=active g=active cap=100 v=4412226 chg=Charging root=rw [34747] # job 3 START (timeout 1800s): LPASS_STAGES=S0 /root/night/lpass-holders.sh 240 30 

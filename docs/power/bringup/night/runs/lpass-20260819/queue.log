@@ -4,3 +4,15 @@
 [33198] # note: step 1: who holds LPASS - six stages, four minutes each, counter re-verified per stage
 [33198] # timeout is now 7200s
 [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30
+[34655] # job 1 END rc=0 after 1457s -> /run/night/01-root-night-lpass-holders-sh-240-30-.txt
+[34655] # note: rail census across a suspend
+[34655] # timeout is now 3600s
+[34655] # job 2 START (timeout 3600s): /root/rail-census.sh
+[34747] # job 2 END rc=0 after 92s -> /run/night/02-root-rail-census-sh-.txt
+[34747] # note: late control - LPASS with everything running again
+[34747] # timeout is now 1800s
+[34747] # job 3 START (timeout 1800s): LPASS_STAGES=S0 /root/night/lpass-holders.sh 240 30
+[34987] # job 3 END rc=0 after 240s -> /run/night/03LPASS-STAGES-S0--root-night-lpass-holder.txt
+[34987] # queue lpass done, 0 job(s) failed
+[34987] # queue lpass ends rc=0 charger=Charging online=1 cap=100%
+QUEUE FINISHED rc=0

@@ -60,9 +60,52 @@ sensor clients leave a path to it.
 ☠️ **That fixing it recovers a specific number.** No current has been attributed
 to LPASS yet. This is a named mechanism for a gate, not a measured term.
 
+## ★★ Measured 2026-08-19 night: no client holds it, and killing the DSP does not open the gate
+
+Step 1 ran as the first job of the first unattended night
+([`../night/lpass-holders.sh`](../night/lpass-holders.sh), six stages, 240 s
+each, the counter re-verified live in every one). Raw:
+[`../captures/2026-08-19_lpass-holders.txt`](../captures/2026-08-19_lpass-holders.txt).
+
+| stage | what was removed | APSS | MPSS | PRONTO | **LPASS** | vlow |
+|---|---|---|---|---|---|---|
+| S0 | nothing (control) | +4322 | +753 | +2107 | **+0** | 0 |
+| S1 | `snsregd`, `iio-sensor-proxy` | +4275 | +753 | +2064 | **+0** | 0 |
+| S2 | the SMGR drivers, all six | +4301 | +758 | +2100 | **+0** | 0 |
+| S3 | `fp3-voiced`, `spkwatch`, `ringwatch` | +4640 | +755 | +2098 | **+0** | 0 |
+| S4 | ☠️ **nothing — see below** | +4696 | +753 | +2102 | **+0** | 0 |
+| S5 | **the ADSP itself** (`state=offline`) | +4267 | +752 | +2114 | **+0** | 0 |
+
+Every stage passed its own counter-live check, 3 of 3 other masters moving.
+
+**S5 is the one that matters, and it is a negative.** With the audio DSP stopped
+outright - not idle, not unloaded, *offline* - the RPM still recorded no LPASS
+shutdown and `vlow` still read 0. Whatever holds that gate shut, removing the
+ADSP from the picture does not open it.
+
+☠️ **What that does and does not establish.** It establishes that no client of
+ours holds LPASS awake in any way that removing the client fixes. It does **not**
+establish that the RPM regards a *stopped* subsystem as down: a subsystem that is
+halted may simply leave its last vote standing, in which case S5 removed the
+processor and not the vote. That distinction is now the question, and it is the
+same question the [rail census](rpm-sleep-set.md) asks about the LDOs.
+
+☠️ **S4 was not a cut and the instrument said so.** Every q6 module stayed
+loaded, `snd_soc_apq8016_sbc` at refcount 3 with **no module users listed** - the
+references were the bound sound card, so `rmmod` could never have removed them.
+The stage ran its full dwell and printed an LPASS delta having changed nothing.
+It is only not a false finding because the script printed `still loaded`
+immediately above the delta. Fixed: S4 now unbinds `c051000.sound-card` from
+`qcom-apq8016-sbc` first, and says plainly when it cannot.
+
+**So the lead is weakened, not dead.** LPASS remains the only master that never
+shuts down, and that remains a sufficient explanation for `vlow`. What has been
+removed is the easy version of it - "one of our clients is holding it" - which
+was the version a patch would have come from.
+
 ## The next measurements, in order
 
-1. **Who holds it.** The ADSP has clients on this kernel: the q6 audio stack
+1. ~~**Who holds it.**~~ **Done 2026-08-19, negative - see above.** The ADSP has clients on this kernel: the q6 audio stack
    (`q6afe`, `q6adm`, `q6asm`, `q6core`, `apr`) and the SMGR sensor drivers
    (`smgr`, `sns_smgr`, `smgr_accel/gyro/prox/mag`). Remove them in groups and
    watch the counter, longest-idle first.

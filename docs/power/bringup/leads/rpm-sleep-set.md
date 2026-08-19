@@ -154,6 +154,37 @@ filesystem when its rail comes back.
 `l7` is the next most dangerous: it feeds `&mpss:pll`, the modem's PLL, and the
 modem is one of the masters whose sleep vote the RPM is waiting for.
 
+## ★ Measured 2026-08-19: the census, taken across a real suspend
+
+Run as job 2 of the first unattended night. `qcom_rpm_smd_write` traced across a
+30 s `rtcwake` suspend, decoded by
+[`../tools/rail-census-parse.py`](../tools/rail-census-parse.py). Raw and decoded:
+[`../captures/2026-08-19_rail-census.txt`](../captures/2026-08-19_rail-census.txt).
+
+**35 resources voted; 22 of them cast no sleep vote at all.** Of those, five are
+PMIC rails that are *enabled* — held up through the suspend by the absence of a
+sleep vote rather than because anything asked for them:
+
+| rail | consumers | verdict |
+|---|---|---|
+| `ldoa/3` | `hsusb_phy:vdd`, `mdss_dsi0_phy:vcca` | USB PHY — see the confound below |
+| `ldoa/7` | `hsusb_phy:vdda-pll`, **`mpss:pll`**, `wcnss_iris:vddxo` | ☠️ feeds the modem PLL; off the table |
+| `ldoa/8` | `sdhc_1:vmmc` (eMMC) | ☠️ **NOSLEEP** — off the table |
+| `ldoa/13` | `hsusb_phy:vdda-phy-dpdm` | USB PHY — see the confound below |
+| `smpa/3` | `camss:vdda`, `mdss_dsi0:vdda`, parent of l1/l2/l3 | the interesting one |
+
+☠️ **The confound, and it is ours.** This census was taken with USB attached and
+the phone on the charger — which is how every measurement here is taken, because
+that is how the data leaves the phone. Three of the five enabled rails are USB
+PHY rails, and a USB PHY held up while a USB cable is plugged in is not a finding.
+**Repeat it on the WiFi link with USB detached before reading anything into those
+three.** What survives that repeat is `smpa/3`, and `ldoa/8` which is not
+droppable anyway.
+
+The remaining 17 no-sleep-vote resources are interconnect masters and slaves and
+one RPM clock, not PMIC rails. ☠️ The parser used to print those as `pm8953_lNN`,
+inventing rails that do not exist; fixed the same day.
+
 ## The next measurement, not the next patch
 
 1. Trace `qcom_rpm_smd_write` across a suspend and print the **resource ids**,
