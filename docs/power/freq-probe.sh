@@ -19,10 +19,16 @@
 #   P1  modem stack stopped
 #   P2  restored - the control, because a one-way change proves nothing
 #
-# Usage: freq-probe.sh [label]
+# Usage: freq-probe.sh <label> [cut ...]
+#   cut   a systemd unit to stop, or the literal token "wifi" for the radio
+#
+# ☠️ With no cuts it degenerates into three identical phases, which is not
+# useless - it measures this instrument's own repeatability - but it is not
+# what you usually want.
 set -u
 
-LABEL=${1:-freq-probe}
+LABEL=${1:?usage: freq-probe.sh <label> [cut ...]}
+shift
 B=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
 CPU=/sys/devices/system/cpu/cpufreq
@@ -30,13 +36,35 @@ OUT=/run/$LABEL.txt
 SETTLE=120
 N=36
 STEP=20
-CUTS="ModemManager rmtfs tqftpserv"
+CUTS="$*"
+
+# ☠️ "wifi" is not a unit. Stopping NetworkManager would take usb0 with it -
+# the last way in once the radio is down - so the radio goes down with nmcli
+# and NM stays up.
+cut_off() {
+	for s in $CUTS; do
+		if [ "$s" = wifi ]; then nmcli radio wifi off 2>/dev/null
+		else systemctl stop "$s" 2>/dev/null; fi
+	done
+}
+cut_on() {
+	for s in $CUTS; do
+		if [ "$s" = wifi ]; then nmcli radio wifi on 2>/dev/null
+		else systemctl start "$s" 2>/dev/null; fi
+	done
+}
+cut_state() {
+	for s in $CUTS; do
+		if [ "$s" = wifi ]; then say "#   wifi radio -> $(nmcli radio wifi 2>/dev/null)"
+		else say "#   $s -> $(systemctl is-active "$s" 2>/dev/null)"; fi
+	done
+}
 
 say() { echo "$*" >> "$OUT"; }
 
 restore() {
 	echo Charging > $CHG/status 2>/dev/null
-	for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
+	cut_on
 }
 trap restore EXIT INT TERM
 
@@ -88,15 +116,15 @@ phase() {
 say "# === P0 baseline ==="
 phase P0
 
-say "# === P1 modem stack stopped ==="
-for s in $CUTS; do systemctl stop "$s" 2>/dev/null; done
-for s in $CUTS; do say "#   $s -> $(systemctl is-active "$s" 2>/dev/null)"; done
+say "# === P1 cut: $CUTS ==="
+cut_off
+cut_state
 phase P1
 
 say "# === P2 restored - the control ==="
-for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
+cut_on
 sleep 20
-for s in $CUTS; do say "#   $s -> $(systemctl is-active "$s" 2>/dev/null)"; done
+cut_state
 phase P2
 
 echo Charging > $CHG/status
