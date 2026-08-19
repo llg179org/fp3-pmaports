@@ -452,7 +452,7 @@ whose answer was already known**. Attempt 1's awake window read 209 mA where
 instrument aimed solely at the regime nothing can cross-check is unfalsifiable by
 construction.
 
-The constructive half, now in [`../suspend-slope.sh`](../suspend-slope.sh):
+The constructive half, now in [`../suspend-slope.sh`](tools/suspend-slope.sh):
 prefer a **slope** to a difference whenever the endpoints are conditioned
 differently — a pack still shedding surface charge at one end, polarisation after
 a resume transient at the other, both pushing the same way — and calibrate that

@@ -6,8 +6,8 @@
 **This file is the resume point.** It is rewritten whenever the state changes, so
 that a context compaction — or a new session — costs nothing. Read it first, do
 what "Next step" says, then update it. Everything else on this page ages out;
-the reasoning lives in [`bringup/`](bringup/README.md) and the findings in
-[`README.md`](README.md).
+the reasoning lives in [`bringup/`](README.md) and the findings in
+[`README.md`](../README.md).
 
 ## Where the question stands
 
@@ -21,7 +21,7 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    cached state index of 2 comes back as 1 and the search, which only walks
    downwards, can never reach index 2 again. Six years old, not msm8953-specific.
    Fixed; `cluster-pc` 0 → 14516 per minute, `system-pc` 0 → 3531. Written up in
-   [`README.md`](README.md) under "The real cause".
+   [`README.md`](../README.md) under "The real cause".
 4. *Why does the RPM record nothing?* — **answered 2026-08-17**: `system_pc`
    named affinity level 1 in its PSCI parameter, so TZ never performed the APSS
    handshake. `0x42000353` fixes it and the RPM now counts APSS shutdowns; a
@@ -87,8 +87,8 @@ saves anything.
 Two legs per arm, fresh boot each, 200 samples after a 300 s settle, display gate
 enforced: **−119.0 mA with the fix, −130.5 mA without**, arms non-overlapping.
 The earlier panel-on set had the opposite sign and was also correct - it was a
-different regime, not noise. Full write-up in [`README.md`](README.md), data in
-[`2026-08-15_ab-current-legs.txt`](2026-08-15_ab-current-legs.txt).
+different regime, not noise. Full write-up in [`README.md`](../README.md), data in
+[`2026-08-15_ab-current-legs.txt`](captures/2026-08-15_ab-current-legs.txt).
 
 ★★ **But the 130 mA is the wrong regime, found 2026-08-15.** The phone had
 **never suspended**: `/sys/power/suspend_stats/success` read 0 after 50 minutes
@@ -126,7 +126,7 @@ What the S2 leg still supports, from the live pair alone: compensated
 `voltage_now` fell 4.222 V → 4.062 V over 3 h. Both ends are biased the same way
 (surface charge at the start, resume polarisation at the end), so 160 mV is an
 **upper bound**. But a 10 mA leg would move only ~11 mV, so **suspend is not in
-the 10 mA regime** - that much is solid. Full reasoning in [`README.md`](README.md).
+the 10 mA regime** - that much is solid. Full reasoning in [`README.md`](../README.md).
 
 ### S4 ran, 2026-08-15 18:55 → 23:16 — the ratio holds, the calibration does not
 
@@ -134,8 +134,8 @@ The leg completed unattended: settle 900 s, `phase A done suspends=8 of 8`,
 every cycle `slept=901s of 900s`, phase B's eight windows, charger and greetd
 restored by the trap. 90 % → 72 %, which is the worst case predicted before it
 started (564 mAh if nothing ever slept). Logs:
-[`2026-08-15_S4-slope.txt`](2026-08-15_S4-slope.txt) and
-[`2026-08-15_S4-curlog.txt`](2026-08-15_S4-curlog.txt).
+[`2026-08-15_S4-slope.txt`](captures/2026-08-15_S4-slope.txt) and
+[`2026-08-15_S4-curlog.txt`](captures/2026-08-15_S4-curlog.txt).
 
 **Suspend is not in question this time.** The dense logger took 213 samples
 during phase B and only 55 during phase A, over the same 1.79 h — it was frozen
@@ -192,7 +192,7 @@ anything else** - schedule it when the device is free for the night.
 
 Aborted cleanly: `slope1` and `curlog` stopped, USBIN restored (`online=1`,
 battery `Charging` at +129 mA), no wakealarm armed, `greetd` back. Partial data
-in [`2026-08-15_S3-slope-aborted.txt`](2026-08-15_S3-slope-aborted.txt) - only
+in [`2026-08-15_S3-slope-aborted.txt`](captures/2026-08-15_S3-slope-aborted.txt) - only
 the settle phase, but it does show the relaxation shape: current settling to
 ~140 mA and the compensated fall slowing from 22 to ~3.7 mV/min over 900 s, i.e.
 surface charge still shedding at the end of the settle. That biases a phase-A
@@ -304,7 +304,7 @@ returns before the compositor releases DRM master, so a single write to
 | the same on the oracle | `ut-ssh 'cat /sys/kernel/debug/rpm_master_stats'` and `.../lpm_stats/stats` |
 | what is waking the CPUs | two `/proc/interrupts` snapshots differenced — ☠️ stop the compositor first, or `msm_mdss` at 65/s makes the run meaningless |
 | has the phone ever suspended | `grep -H . /sys/power/suspend_stats/*` — `success` is the only honest answer; `cat /sys/power/mem_sleep` says which path |
-| current while suspended | `docs/power/suspend-slope.sh` — ☠️ **only `voltage_now`/`current_now` are live**; `capacity`, `charge_now` and `voltage_ocv` are one cached number the frozen poll worker maintains, and all three lie across a suspend. Use a slope of compensated `voltage_now`, calibrated against an awake control |
+| current while suspended | `docs/power/bringup/tools/suspend-slope.sh` — ☠️ **only `voltage_now`/`current_now` are live**; `capacity`, `charge_now` and `voltage_ocv` are one cached number the frozen poll worker maintains, and all three lie across a suspend. Use a slope of compensated `voltage_now`, calibrated against an awake control |
 | does the RTC alarm wake it | `echo 0 > /sys/class/rtc/rtc0/wakealarm; echo +90 > …` then `echo mem > /sys/power/state` — ☠️ prove this **before** relying on it to bring an unattended leg back |
 
 ### Why suspend only halves it: there is no `deep` state
@@ -410,7 +410,7 @@ WARNING: drivers/clk/qcom/clk-alpha-pll.c:421 at wait_for_pll+0xf4/0x108, CPU#5:
 
 Every one is the little cluster's PLL (`policy0`) refusing to lock while
 schedutil tries to change frequency. Full capture:
-[`2026-08-16_apcs-cpu0-pll-lock-failures.txt`](2026-08-16_apcs-cpu0-pll-lock-failures.txt).
+[`2026-08-16_apcs-cpu0-pll-lock-failures.txt`](captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
 
 **The timing is what matters.** The first is at 21:49:55 and they run to
 06:22:55 — several a minute at the start, thinning out later. Phase A finished
@@ -689,7 +689,7 @@ work; then re-run with both phases below ~4.0 V so they share the flat region.
 Run to find how long the resume transient lasts, so `SETTLE_WAKE` could be set
 from data. It answered a different and more useful question, and it disproved
 the hypothesis it was built for. Data:
-[`2026-08-17_pmos_resume-shape.txt`](2026-08-17_pmos_resume-shape.txt).
+[`2026-08-17_pmos_resume-shape.txt`](captures/2026-08-17_pmos_resume-shape.txt).
 
 **There is no decaying transient.** 90 reads two seconds apart after a 901 s
 deep suspend:
@@ -730,7 +730,8 @@ regime it was taken in.
 
 Armed the new `qcom_rpm_smd_write` tracepoint across a real 30 s suspend.
 2159 events. Trace kept as
-[`2026-08-17_pmos_rpm-votes.trace`](2026-08-17_pmos_rpm-votes.trace).
+`2026-08-17_pmos_rpm-votes.trace` (never committed - the raw ftrace was too large; the
+decoded result is in [`leads/rpm-sleep-set.md`](leads/rpm-sleep-set.md)).
 
 | resource type | active | sleep |
 |---|---|---|
@@ -807,7 +808,7 @@ and the failure recovered on a plain reboot.
 
 **The instrument is fixed and verified.** `suspend-slope.sh dryrun-20260818 60 2
 120` ran the loops it was told to
-([`2026-08-18_pmos_dryrun-gate.txt`](2026-08-18_pmos_dryrun-gate.txt)): settle
+([`2026-08-18_pmos_dryrun-gate.txt`](captures/2026-08-18_pmos_dryrun-gate.txt)): settle
 `n=0,1`, phase A `n=0,1` with `slept=61s of 60s` both times and `suspends=2 of
 2`, phase B `n=0,1`, charger restored. Long legs can be trusted again. Run this
 gate after any edit to the script - it costs eight minutes and it is the only
@@ -836,7 +837,7 @@ none of which needed a build:
    exactly the condition that produces the longest collapses of the night.
 
 So the experiment is a soak, not a build: leave the phone idle on the charger
-with [`emmc-watch.sh`](emmc-watch.sh) running and see whether it recurs, with the
+with [`emmc-watch.sh`](tools/emmc-watch.sh) running and see whether it recurs, with the
 record on tmpfs this time so that it survives the filesystem it is watching.
 Started 2026-08-18 at uptime 2620, `apss_shut=48262`.
 
@@ -891,7 +892,7 @@ oracle that was not deliberate.
 ### Who actually holds it - measured 2026-08-18, and it is neither remoteproc
 
 Two probes on the r60 package kernel
-([`2026-08-18_pmos_xo-vote-probe.txt`](2026-08-18_pmos_xo-vote-probe.txt)):
+([`2026-08-18_pmos_xo-vote-probe.txt`](captures/2026-08-18_pmos_xo-vote-probe.txt)):
 
 | step | `bi_tcxo` | `apss_xo` | `vlow` | `vmin` |
 |---|---|---|---|---|
@@ -1000,7 +1001,7 @@ it survives the session that asked for it.
 ### ★★★ 2026-08-18: the sleep-set XO vote WAS blocking the processor - and the oracle does not do this
 
 `clk_smd_rpm.xo_sleep_off=1`, r61, one boot, two 60 s suspends
-([`2026-08-18_pmos_xo-sleep-off.txt`](2026-08-18_pmos_xo-sleep-off.txt)):
+([`2026-08-18_pmos_xo-sleep-off.txt`](captures/2026-08-18_pmos_xo-sleep-off.txt)):
 
 | | before | with `xo_sleep_off=1` |
 |---|---|---|
@@ -1019,7 +1020,7 @@ vote and it shuts it down constantly, and nothing breaks.
 running the vendor stack on the same hardware, reports APSS `xo_count: 0x0` and
 `xo_accumulated_duration: 0x0` while its MPSS, PRONTO and LPASS all shut XO down
 thousands of times
-([`2026-08-15_ut_oracle_rpm-master-stats.txt`](2026-08-15_ut_oracle_rpm-master-stats.txt)).
+([`2026-08-15_ut_oracle_rpm-master-stats.txt`](captures/2026-08-15_ut_oracle_rpm-master-stats.txt)).
 **The vendor's application processor never does this either.** Our pre-change
 behaviour matched the oracle exactly; the change makes us diverge from it. So
 this is either a saving the vendor leaves on the table, or a vote the processor
@@ -1124,7 +1125,7 @@ moved.
 Leg `baseline-20260819`, **no cuts**, same pack and same day as
 `nomodem-20260819`, launched by `await-charge.sh` at 99 % and run to completion:
 **6 of 6 suspends**, `dpms=Off`, raw
-[`2026-08-19_pmos_baseline-leg.txt`](2026-08-19_pmos_baseline-leg.txt).
+[`2026-08-19_pmos_baseline-leg.txt`](captures/2026-08-19_pmos_baseline-leg.txt).
 
 | leg | cut | phase-A slope | r² | phase-B awake | derived asleep |
 |---|---|---|---|---|---|
@@ -1209,13 +1210,13 @@ system-level RPM state, and that is what LPASS explains.
 44-minute episode of 2026-08-18).
 
 ☠️ Dropped by decision: the Sxmo comparison. Disk numbers and reasoning in the
-banner of [`de-compare.md`](de-compare.md).
+banner of [`de-compare.md`](leads/de-compare.md).
 
 ### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
 
 Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,
 started from a full pack. **6 of 6 suspends, every one `slept=902s of 900s`** -
-nothing woke it early. Raw: [`2026-08-19_pmos_nomodem-leg.txt`](2026-08-19_pmos_nomodem-leg.txt).
+nothing woke it early. Raw: [`2026-08-19_pmos_nomodem-leg.txt`](captures/2026-08-19_pmos_nomodem-leg.txt).
 
 | phase | window | slope | r² | `current_now` mean |
 |---|---|---|---|---|
@@ -1340,7 +1341,7 @@ a falling voltage that has nothing to do with charge leaving it. `SETTLE_OFF` is
 whether it was enough.
 
 **Then the control leg**, which is the whole point. The script for it exists:
-`docs/power/leg3-control.sh`, installed as `/root/leg3-control.sh` - `leg3.sh`
+`docs/power/bringup/tools/leg3-control.sh`, installed as `/root/leg3-control.sh` - `leg3.sh`
 with the guard inverted, the tag `xo-off-20260818`, the log
 `/var/log/leg3c-20260818.txt`, and two guards the A leg did not need (see
 below). Neither number means anything alone.
@@ -1480,7 +1481,7 @@ the device is committed until then.
 
 ### The A leg landed: 74.4 mA with the sleep-set XO vote zeroed
 
-`docs/power/2026-08-18_pmos_xo-on-leg.txt`, r61 booted from the
+`docs/power/bringup/captures/2026-08-18_pmos_xo-on-leg.txt`, r61 booted from the
 `postmarketOS-xo` label (`clk_smd_rpm.xo_sleep_off=1`), `leg3.sh` from
 4.266 V down to 4.018 V under load, 1800 s settle, then six 900 s sleeps and
 six awake windows. All six suspends completed (`slept=901s of 900s`), the

@@ -122,7 +122,7 @@ that says which marginals that gap disqualifies.
 
 ## The result, 2026-08-18
 
-Capture: [`2026-08-18_idle-ladder.txt`](2026-08-18_idle-ladder.txt). One boot,
+Capture: [`2026-08-18_idle-ladder.txt`](../captures/2026-08-18_idle-ladder.txt). One boot,
 seven stages, 60 samples each, drift control at the end.
 
 | stage | floor (p10) | ±SE | median | what was cut |
@@ -176,7 +176,7 @@ by anything running as a service on top of this kernel.
 
 **The controlled probe says no.** `freq-probe.sh` ran three phases in one boot
 at 23:32-00:26 - baseline, modem stack stopped, restored -
-[`2026-08-18_freq-probe.txt`](2026-08-18_freq-probe.txt):
+[`2026-08-18_freq-probe.txt`](../captures/2026-08-18_freq-probe.txt):
 
 | phase | floor (p10) | policy0 transitions/min | little cluster at 614 MHz |
 |---|---|---|---|
@@ -251,7 +251,7 @@ invisible against a floor that had already doubled. That stage has to be redone.
 The ladder's S5 measured the radio at −0.6 mA but ran entirely inside the
 anomalous episode, so the number was void. Redone with `freq-probe.sh` as a
 three-phase A/B in one clean boot -
-[`2026-08-19_wifi-probe.txt`](2026-08-19_wifi-probe.txt):
+[`2026-08-19_wifi-probe.txt`](../captures/2026-08-19_wifi-probe.txt):
 
 | phase | floor (p10) | ±SE | median | ±SE | policy0 trans/min | little cluster at 614 MHz |
 |---|---|---|---|---|---|---|
@@ -303,7 +303,7 @@ nothing blanks the display. `phosh` blanks it. Every stage of this ladder, and
 both `freq-probe` runs, therefore ran with a *powered* panel at zero backlight
 brightness, which is not the same thing as a dark one.
 
-Measured directly, [`2026-08-19_disp-probe.txt`](2026-08-19_disp-probe.txt):
+Measured directly, [`2026-08-19_disp-probe.txt`](../captures/2026-08-19_disp-probe.txt):
 
 | phase | floor (p10) | ±SE | `dpms` |
 |---|---|---|---|
