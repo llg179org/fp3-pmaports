@@ -133,15 +133,30 @@ attached, and LPASS did not collapse once.
 result, and the A/B that alternates the two conditions is
 [`../tools/lpass-usb-ab.sh`](../tools/lpass-usb-ab.sh).
 
-If it holds, it reframes the whole page: LPASS does not "never sleep", it does
-not sleep *while a USB cable is enumerated* - which has been true of every
-measurement this investigation has ever taken, including every asleep current in
-[`../../README.md`](../../README.md).
+### ☠️ It did not hold: USB is not the difference
 
-☠️ And it is the second time in one hour that USB turned out to be the difference
-- the first was the [rail census](rpm-sleep-set.md), where four of five suspect
-rails were the PHY's. The instrument that carries the data off the phone is
-inside every measurement of the phone.
+[`../tools/lpass-usb-ab.sh`](../tools/lpass-usb-ab.sh), three alternating rounds
+on a fresh boot, 30 s suspend per arm. **`LPASS +0` and `XOdur +0 ms` in all six**
+([`../captures/2026-08-19_lpass-usb-ab.txt`](../captures/2026-08-19_lpass-usb-ab.txt)).
+The one observed collapse had something else behind it.
+
+**But the header of that same run is the more useful line.** Forty-seven seconds
+into a fresh boot the counters already read `shutdowns=3 xo=2 xo_dur=2464840` -
+0.128 s. So they **reset at every boot**, and every boot shows two or three
+collapses of about 0.12 s in the first seconds and then nothing for hours.
+
+That is not "a DSP that cannot collapse". That is **a DSP that collapses freely
+until something opens a session on it, and then never again**. And it puts the
+one 30.9 s collapse in its place: it came ten minutes after the ADSP had been
+stopped and restarted, with nothing having touched audio since - a second
+first-few-seconds, arriving in the middle of a suspend instead of a boot.
+
+The test is [`../tools/lpass-restart-ab.sh`](../tools/lpass-restart-ab.sh): a
+plain suspend against a suspend on a freshly restarted ADSP, alternating.
+
+If *that* holds, it reframes the whole page: LPASS does not "never sleep" - **something we
+start keeps a session open on it and never closes it**, and the fix is a
+release, not a new power-collapse request.
 
 **So the lead is weakened where it was strongest and strengthened where it was
 not.** LPASS remains the only master that never

@@ -1,0 +1,25 @@
+# lpass-usb-ab.sh 3 30, run 2026-08-19 19:20 on a fresh boot after the S4
+# reboot. Three alternating rounds: one 30 s rtcwake suspend with the USB
+# controller and QUSB2 PHY bound, one with both unbound.
+#
+# ☠️ CLEAN NEGATIVE. USB is not what stopped LPASS collapsing.
+# ☠️ Note the header: 47 s into a fresh boot the counters already read
+#    shutdowns=3 xo=2 xo_dur=2464840 (0.128 s). They RESET at every boot,
+#    and every boot shows two or three collapses of about 0.12 s in the
+#    first seconds and then nothing for hours.
+
+# lpass-usb-ab uptime=47 rounds=3 suspend=30s
+# LPASS at start: shutdowns=3 xo=2 xo_dur=2464840
+
+== round 1 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+== round 2 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+== round 3 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+
+# lpass-usb-ab done uptime=284
+# restored: usb=yes phy=yes rc=0
