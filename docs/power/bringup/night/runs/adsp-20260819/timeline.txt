@@ -50,3 +50,4 @@
 23:32:27 192.168.100.17 up=15264 q=active g=active cap=78 v=3861987 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 23:37:32 192.168.100.17 up=15568 q=active g=active cap=77 v=3849141 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 23:42:34 192.168.100.17 up=15870 q=active g=active cap=77 v=3876001 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+23:47:35 192.168.100.17 up=16172 q=active g=active cap=76 v=3862961 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
