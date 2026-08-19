@@ -633,7 +633,7 @@ enumerate and then let go.
 2026-08-13, using a bare shell as the holder (`sh -c 'exec 3</dev/v4l-subdev17;
 sleep 100000'`) so that exactly one node is open per phase — three more
 twelve-minute phases on one discharge
-([capture](power/2026-08-13_pmos_lens-vs-chain.txt)):
+([capture](power/bringup/captures/2026-08-13_pmos_lens-vs-chain.txt)):
 
 | phase | held open | median current | median power |
 |---|---|---|---|
@@ -664,7 +664,7 @@ lens is asked back to it. Focus is never lost, because a non-zero position keeps
 the reference; idle costs nothing, because idle *is* the rest position.
 Hot-swapped into the running kernel and measured with the same phases: **holding
 the subdev costs +2.8 mA / +0.011 W**, against +72.7 mA / +0.30 W on the stock
-driver ([capture](power/2026-08-13_pmos_ak7375-position-power.txt)).
+driver ([capture](power/bringup/captures/2026-08-13_pmos_ak7375-position-power.txt)).
 
 What is left on it:
 
@@ -1668,8 +1668,8 @@ repository than a missing one, and the README has no row for it.
 from `alpha_pll_huayra_set_rate()` under `sugov_work`, 266 times in one boot on
 2026-08-15/16, ending in an unclean power cut with no shutdown sequence in the
 journal. Evidence and the analysis are in
-[`docs/power/RUNBOOK.md`](power/RUNBOOK.md); the raw capture is
-[`docs/power/2026-08-16_apcs-cpu0-pll-lock-failures.txt`](power/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
+[`docs/power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md); the raw capture is
+[`docs/power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt`](power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
 
 Two reasons this outranks the power numbers it was found under. It makes the
 device **unreliable** — an unclean cut can corrupt the rootfs and did once
@@ -2479,7 +2479,7 @@ The last row is the one that matters: **`fastboot boot` fails identically for a
 known-good image**, so it is broken on this bootloader for every input, and the
 whole dtb / `id` / load-address investigation above was chasing a message that
 was never about the image. The lesson is now rule 22 in `fp3-kernel-test`, and
-the procedure lives in [`../deploy/README.md`](../deploy/README.md) under *If the
+the procedure lives in [`../deploy/README.md`](deploy/README.md) under *If the
 phone does not boot at all*. `lk2nd.img` was flashed back to `boot_b` afterwards,
 so the normal boot chain is intact and the button press is all that is missing.
 

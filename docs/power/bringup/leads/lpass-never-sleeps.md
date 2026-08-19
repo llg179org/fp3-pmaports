@@ -10,7 +10,7 @@ on the same hardware, it shuts down thousands of times and keeps the XO off.
 
 Read from `/sys/kernel/debug/qcom_rpm_master_stats/` on 2026-08-19, against the
 Ubuntu Touch oracle capture of 2026-08-15
-([`2026-08-15_ut_oracle_rpm-master-stats.txt`](2026-08-15_ut_oracle_rpm-master-stats.txt)):
+([`2026-08-15_ut_oracle_rpm-master-stats.txt`](../captures/2026-08-15_ut_oracle_rpm-master-stats.txt)):
 
 | master | shutdowns, pmOS | XO duration, pmOS | shutdowns, UT | XO shutdowns, UT |
 |---|---|---|---|---|

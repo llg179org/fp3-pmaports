@@ -54,7 +54,7 @@ Measured on the device unless a row says otherwise.
 | | state |
 |---|---|
 | charging works | yes |
-| **a charge finishes** | **yes** — the charger reaches `TERMINATE` within a minute of the current crossing the threshold, ending at `BATTERY_CHARGER_STATUS_1 = 0x45`, the value the vendor stack shows in the same state. Last measured on the packaged `r52` kernel: taper crossing at 99.3 mA, then `Full` at `0x45` inside the minute ([capture](../power/2026-08-13_pmos_r52-charge-to-termination.txt)) |
+| **a charge finishes** | **yes** — the charger reaches `TERMINATE` within a minute of the current crossing the threshold, ending at `BATTERY_CHARGER_STATUS_1 = 0x45`, the value the vendor stack shows in the same state. Last measured on the packaged `r52` kernel: taper crossing at 99.3 mA, then `Full` at `0x45` inside the minute ([capture](../power/bringup/captures/2026-08-13_pmos_r52-charge-to-termination.txt)) |
 | the termination threshold | from the battery's `charge-term-current-microamp`; read back as `0xFD71` = 99.9 mA against the 100 mA asked for |
 | a finished charge is restarted when the pack falls back | yes — SMB5 recharge selected on battery voltage, threshold 4.30 V from the device tree, read back at `0x107E/7F = 56 4c` |
 | a finished charge reads as full | yes — the completion is remembered through the inhibit that follows it, and survives the input flickering |
