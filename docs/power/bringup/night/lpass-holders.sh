@@ -89,14 +89,14 @@ stage() {
 	label=$1; window=$2
 	a0=$(mf APSS 'Shutdown count'); m0=$(mf MPSS 'Shutdown count')
 	p0=$(mf PRONTO 'Shutdown count'); l0=$(mf LPASS 'Shutdown count')
-	lx0=$(mf LPASS 'XO shutdown count'); lt0=$(mf LPASS 'Sleep Accumulated Duration')
+	lx0=$(mf LPASS 'XO shutdown count'); lt0=$(mf LPASS 'XO total duration')
 	v0=$(cnt vlow); n0=$(cnt vmin)
 
 	sleep "$window"
 
 	a1=$(mf APSS 'Shutdown count'); m1=$(mf MPSS 'Shutdown count')
 	p1=$(mf PRONTO 'Shutdown count'); l1=$(mf LPASS 'Shutdown count')
-	lx1=$(mf LPASS 'XO shutdown count'); lt1=$(mf LPASS 'Sleep Accumulated Duration')
+	lx1=$(mf LPASS 'XO shutdown count'); lt1=$(mf LPASS 'XO total duration')
 	v1=$(cnt vlow); n1=$(cnt vmin)
 
 	d() { echo $(( ${2:-0} - ${1:-0} )); }
@@ -108,7 +108,7 @@ stage() {
 	say "STAGE $label window=${window}s uptime=$(up)"
 	say "  APSS +$(d "$a0" "$a1")  MPSS +$(d "$m0" "$m1")  PRONTO +$(d "$p0" "$p1")"
 	say "  LPASS shutdowns +$(d "$l0" "$l1")  (total $l1)   XO +$(d "$lx0" "$lx1")  (total $lx1)"
-	say "  LPASS sleep duration +$(d "$lt0" "$lt1")"
+	say "  LPASS XO total duration (19.2 MHz ticks) +$(d "$lt0" "$lt1")"
 	say "  vlow $v0 -> $v1   vmin $n0 -> $n1"
 	if [ "$moved" -ge 2 ]; then
 		say "  counter-live: OK ($moved of 3 other masters moved)"
@@ -157,7 +157,7 @@ STAGES=${LPASS_STAGES:-S0 S1 S2 S3 S4 S5}
 want() { case " $STAGES " in *" $1 "*) return 0 ;; esac; return 1; }
 
 say "# lpass-holders start uptime=$(up) dwell=${DWELL}s live=${LIVE}s stages=\"$STAGES\""
-say "# LPASS at start: shutdowns=$(mf LPASS 'Shutdown count') xo=$(mf LPASS 'XO shutdown count') sleep=$(mf LPASS 'Sleep Accumulated Duration')"
+say "# LPASS at start: shutdowns=$(mf LPASS 'Shutdown count') xo=$(mf LPASS 'XO shutdown count') xo_dur=$(mf LPASS 'XO total duration')"
 say ""
 
 # S0: the control. Everything running, same window as every stage below.
