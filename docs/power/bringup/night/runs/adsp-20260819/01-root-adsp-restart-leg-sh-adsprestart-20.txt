@@ -3,3 +3,18 @@
 # adsp state=running
 # probe suspend: LPASS +1  XO off 31599ms of 30000ms
 # gate passed - handing over to slope-leg.sh adsprestart-20260819
+suspend-slope: adsprestart-20260819 === settle 1800s off VBUS ===
+adsprestart-20260819 phase=settle n=0 t=3561 v=4056040 i=-109634 pll=89 nread=20
+adsprestart-20260819 phase=settle n=1 t=3632 v=4075991 i=-117111 pll=92 nread=20
+adsprestart-20260819 phase=settle n=2 t=3702 v=4086403 i=-83007 pll=96 nread=20
+adsprestart-20260819 phase=settle n=3 t=3773 v=4085138 i=-138396 pll=101 nread=20
+adsprestart-20260819 phase=settle n=4 t=3843 v=4086501 i=-115661 pll=104 nread=20
+adsprestart-20260819 phase=settle n=5 t=3914 v=4086793 i=-115737 pll=110 nread=20
+adsprestart-20260819 phase=settle n=6 t=3984 v=4089907 i=-112762 pll=113 nread=20
+adsprestart-20260819 phase=settle n=7 t=4055 v=4087280 i=-107040 pll=113 nread=20
+adsprestart-20260819 phase=settle n=8 t=4126 v=4083387 i=-154190 pll=119 nread=20
+adsprestart-20260819 phase=settle n=9 t=4196 v=4085820 i=-107269 pll=120 nread=20
+adsprestart-20260819 phase=settle n=10 t=4267 v=4083679 i=-122298 pll=123 nread=20
+adsprestart-20260819 phase=settle n=11 t=4337 v=4085528 i=-119094 pll=127 nread=20
+adsprestart-20260819 phase=settle n=12 t=4408 v=4074531 i=-150680 pll=131 nread=20
+adsprestart-20260819 phase=settle n=13 t=4478 v=4090978 i=-62636 pll=132 nread=20

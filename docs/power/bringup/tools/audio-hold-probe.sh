@@ -24,6 +24,11 @@
 # collapses with everything in place, the phone is not in the held state and the
 # probe refuses to run.
 #
+# ☠️ DAYTIME ONLY, BY INSTRUCTION. This changes the card's routing, and the only
+# honest verification is that audio still works afterwards - which means someone
+# has to hear it. Audio testing at night is not acceptable on this project, so
+# this never goes in a night queue however cheap the measurement is.
+#
 # ☠️ Run under systemd-run, over either link. It changes mixer settings and puts
 # them back on every exit path.
 #

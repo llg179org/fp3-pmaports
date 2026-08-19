@@ -148,6 +148,19 @@ sudo install -m 644 /root/night/night-resume.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable night-resume.service
 ```
 
+## ☠️ What does not go in a night queue
+
+**Anything whose verification needs a human sense.** Audio is the standing
+example and it is a project rule, not a preference: a probe that changes the
+card's routing is only honestly verified by someone hearing that audio still
+works, so it waits for daylight and a person in the room - however cheap the
+measurement itself is. [`../tools/audio-hold-probe.sh`](../tools/audio-hold-probe.sh)
+is armed and deliberately unscheduled; it lives in
+[`../../../TODO.md`](../../../TODO.md) under a daytime heading.
+
+The same test applies to anything else that ends in "and then check it still
+works" where the check is a person: the display, the vibrator, the flash, a call.
+
 ## The job file
 
 ```

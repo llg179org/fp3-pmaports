@@ -108,6 +108,64 @@ LKML. Functionally it is the call path, so `voice` is the closest fit.
 under `systemd-run --collect` cannot be contaminated by the observer polling it;
 and a warning for anything that assumes the device is reachable while asleep.
 
+## ☀️ DAYTIME ONLY: is our own UCM verb what keeps the audio DSP awake?
+
+☠️ **This is not night work.** It changes the card's routing and the only honest
+verification is that audio still works afterwards, which means someone has to
+hear it. Audio testing at night is not acceptable, so this waits for daylight and
+a person in the room - however cheap the measurement itself is.
+
+**The measurement is two minutes.**
+[`power/bringup/tools/audio-hold-probe.sh`](power/bringup/tools/audio-hold-probe.sh),
+armed and committed 2026-08-19, not run.
+
+**Why it matters.** Measured 2026-08-19: one restart of the ADSP and the audio
+DSP power-collapses in *every* suspend for the rest of the boot, keeping the
+crystal off for the whole of it - where before it had collapsed twice since boot,
+0.12 s in total
+([`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md)).
+So something opened at boot holds a session on the DSP and never closes it, and
+reloading the firmware is the only thing that has released it.
+
+**The suspect is ours.** The FP3 HiFi verb's `EnableSequence` leaves two
+q6routing paths permanently on and its `DisableSequence` is empty:
+
+```
+cset "name='QUIN_MI2S_RX Audio Mixer MultiMedia1' 1"    # playback FE -> speaker BE
+cset "name='MultiMedia2 Mixer SLIMBUS_0_TX' 1"          # mic -> ADSP, pre-routed
+cset "name='AIF1_CAP Mixer SLIM TX0' 1"
+```
+
+We put them there deliberately - pulseaudio probes a profile by opening the PCM
+after only the verb sequence, and a q6asm front-end cannot be opened until it is
+routed to a backend. The signature fits: applied once at boot, never re-applied,
+and gone after an ADSP restart.
+
+☠️ **It needs a FRESH BOOT.** Once the ADSP has been restarted the DSP collapses
+freely and every arm reads +1, which would look like a result and be noise. The
+probe's first arm is a gate for exactly this and refuses to run otherwise.
+
+**If it confirms, the fix is ranked by risk:**
+
+1. **Release the capture pre-route only** - the mic is not a UCM device on this
+   card (pulseaudio can only wrap PCM device 0), it is loaded separately as
+   `module-alsa-source` on `hw:0,1`, so the profile-probe argument does not apply
+   to it. Three lines, lowest risk.
+2. **Let the verb leave nothing enabled** and have each device's sequence do it.
+   ☠️ This is the one that can break the pulseaudio profile probe, which is why
+   the routing is at verb level in the first place. Only with audio re-verified
+   by ear.
+3. **Kernel side, and upstreamable** - if a merely *routed* but not streaming
+   path keeps the AFE port up, the backend should only power with an active
+   front-end stream. Best of the three: not a patch on our UCM, and it affects
+   every msm8953 board.
+4. ☠️ **Not an ADSP restart at the end of boot.** It would work and it is not a
+   release; it hides the symptom, and reloading the audio topology is not free.
+
+☠️ **And a fair warning about what this buys.** `vlow` stayed 0 on 2026-08-19
+*with the DSP collapsing for the whole of every suspend*. If this confirms, we
+have fixed a real mechanism - not necessarily the gate to deep sleep.
+
 ## Open before anything is submitted
 
 A red-team pass over the five `submit/7.1.3/*` branches on 2026-07-30 produced

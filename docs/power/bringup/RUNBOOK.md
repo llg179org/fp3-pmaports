@@ -1212,10 +1212,15 @@ this investigation has ever taken.
 **Next, in order:**
 
 1. *(running)* what the ADSP restart is worth in mA.
-2. **Who opens the session.** The candidates are whatever probes the ADSP at
-   boot: the q6 stack's AFE/ADM, the sound card probe, `fp3-voiced`, the SMGR
-   clients. The test is a boot with one of them prevented from starting, then a
-   suspend - the counter answers in 30 seconds.
+2. ☀️ **Who opens the session - DAYTIME ONLY.** The suspect is our own UCM verb:
+   its `EnableSequence` leaves `QUIN_MI2S_RX Audio Mixer MultiMedia1` and the
+   microphone's `MultiMedia2 Mixer SLIMBUS_0_TX` pre-route permanently on, and
+   its `DisableSequence` is empty. `tools/audio-hold-probe.sh` answers it in two
+   minutes and is armed. ☠️ **It is deliberately not scheduled**: it changes the
+   card's routing and the only honest verification is a person hearing that audio
+   still works, so it waits for daylight. Full entry, including the ranked fixes,
+   in [`../../TODO.md`](../../TODO.md). ☠️ It also needs a FRESH BOOT - after an
+   ADSP restart every arm reads +1 and means nothing.
 3. **What else votes.** `vlow` did not move with LPASS collapsing, so the
    remaining blocker is a different master or a standing resource vote.
 4. Still open and unrelated: wakeup accounting across a suspend, for the modem's
