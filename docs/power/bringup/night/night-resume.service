@@ -1,0 +1,21 @@
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# Resume an interrupted night after a reboot. See night-resume.sh for the four
+# conditions that must all hold before it does anything at all.
+#
+# Install with:
+#   install -m 644 night-resume.service /etc/systemd/system/
+#   systemctl daemon-reload && systemctl enable night-resume.service
+
+[Unit]
+Description=Resume an interrupted unattended power-measurement night
+After=multi-user.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/night/night-resume.sh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

@@ -14,7 +14,7 @@
 # The net is not optional: the reason long unattended runs were barred is that
 # the one failure this device has shown destroys its own record.
 #
-#   queue.sh <jobfile> [tag]
+#   queue.sh <jobfile> [tag] [start_at_job]
 #
 # Job file grammar, one directive per line:
 #
@@ -32,13 +32,15 @@
 
 set -u
 
-JOBFILE=${1:?usage: queue.sh <jobfile> [tag]}
+JOBFILE=${1:?usage: queue.sh <jobfile> [tag] [start_at_job]}
 TAG=${2:-night}
+START_AT=${3:-1}
 DIR=/run/night
 LOG=$DIR/queue.log
 CHG=/sys/class/power_supply/pmi632-charger
 BAT=/sys/class/power_supply/pmi632-battery
 HERE=$(dirname "$0")
+CURSOR=/root/night/cursor
 
 mkdir -p "$DIR"
 up() { cut -d. -f1 /proc/uptime; }
@@ -131,7 +133,28 @@ while IFS= read -r line; do
 		continue ;;
 	esac
 
+	# The guardian has its own deadline, and a queue can outlive it. Checking
+	# only at startup would mean the net quietly disappears halfway through the
+	# night, which is exactly the half where it matters.
+	if ! systemctl is-active --quiet night-guardian 2>/dev/null; then
+		say "# guardian is gone - restarting it before job $((n + 1))"
+		systemd-run --unit=night-guardian --collect "$HERE/guardian.sh" 30 2>/dev/null \
+			|| say "# WARNING: could not restart the guardian"
+	fi
+
 	n=$((n + 1))
+	if [ "$n" -lt "$START_AT" ]; then
+		say "# job $n SKIPPED (resuming at $START_AT): $line"
+		continue
+	fi
+
+	# ☠️ The cursor lives on the eMMC on purpose. Everything else this harness
+	# writes is on tmpfs so it survives a read-only root - but the one thing
+	# that has to survive a REBOOT cannot be on tmpfs, and a reboot is exactly
+	# what the guardian does when the card dies. Written before the job, so a
+	# reboot mid-job resumes by repeating that job rather than skipping it.
+	printf '%s %s %s\n' "$TAG" "$JOBFILE" "$n" > "$CURSOR" 2>/dev/null || true
+
 	slug=$(echo "$line" | tr -c 'A-Za-z0-9' '-' | cut -c1-40)
 	out=$(printf '%s/%02d%s.txt' "$DIR" "$n" "$slug")
 	say "# job $n START (timeout ${TIMEOUT}s): $line"
@@ -150,4 +173,5 @@ while IFS= read -r line; do
 	fi
 done < "$JOBTMP"
 
-say "# queue $TAG done, $failed job(s) failed"
+rm -f "$CURSOR"
+say "# queue $TAG done, $failed job(s) failed - cursor cleared"
