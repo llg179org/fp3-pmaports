@@ -1119,55 +1119,43 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
-### ★ RESUME POINT, 2026-08-18 23:50
+### ★ RESUME POINT, 2026-08-19 04:15
 
-**Running on the device:** `freq-probe.service`, started 23:32, ends about
-**00:26**. Three phases in one boot - P0 baseline, P1 modem stack stopped, P2
-restored - sampling the full `time_in_state` residency table alongside current.
+**Running on the device:** `slope.service` -
+`slope-leg.sh nomodem-20260819 ModemManager rmtfs tqftpserv`, started 04:10 from
+a full pack (100 %, 4.329 V). Descent, 1800 s settle, 6x900 s asleep, 6x900 s
+awake control. Ends about **08:15**. A host poller checks every 4 minutes and
+exits when the unit does.
 
-**Why it is running.** The idle ladder finished at 23:31 and produced two
-things. Read [`idle-ladder.md`](idle-ladder.md) "The result, 2026-08-18" for
-both; the short form:
+☠️ **Nothing else may touch the device until it finishes** - no `apk`, no
+`episode-watch.sh`, no CPU-heavy anything. Phase A is measuring suspends; a
+wakeup a minute would be measuring the instrument.
 
-1. **Three classes of userspace cost nothing.** Desktop services +0.6 ± 2.3 mA,
-   the sensor stack −1.3 ± 2.1 mA, our own audio watchers +0.3 ± 1.8 mA, on a
-   ladder whose drift control closed at +3.4 ± 2.3 mA. The ~60 mA is not being
-   spent by a service running on top of this kernel.
-2. **Stopping the modem stack COSTS 84 mA.** The floor doubled, 85.6 → 169.7 mA,
-   the variance collapsed, and the `apcs-cpu0-pll` storm went to exactly zero
-   for 40 minutes. Restoring the services reverted all three. Zero PLL warnings
-   with a doubled steady draw reads as the little cluster having stopped
-   changing frequency at all, at a high one - the warning is per *failed
-   transition*. `freq-probe.sh` is the instrument that can tell.
+**Why the modem cut.** Awake it is worth 2 mA (`freq-probe`), so any difference
+asleep is attributable to the *sleep-vote* path rather than to awake load - and
+MPSS is one of the masters whose vote the RPM waits on. Every other candidate
+the ladder tested came back zero.
 
-☠️ **The median nearly ate the whole ladder.** Every marginal is inside its own
-error bar by median and resolved to a milliamp by floor (p10). The distribution
-is a quiet floor plus bursts and no stage changed the burst rate. Before
-choosing the statistic, ask whether the intervention acts on the *level* or the
-*rate*.
+Baseline for it, captured 04:08: `qcom_stats/vlow` **Count 0**,
+`Client Votes: 0x17131715`. As it has been in every capture ever taken here.
 
-**When freq-probe finishes:**
+**Order for what remains** (the user reversed it; the install still has to
+precede the legs that need it):
 
-```sh
-scp fp3@172.16.42.1:/home/fp3/freq-probe-20260818.txt docs/power/
-```
+| # | what | how long |
+|---|---|---|
+| 1 | *(running)* deep-sleep slope leg | → 08:15 |
+| 2 | redo ladder stage S5 - "wifi costs 0.6 mA" was measured inside the anomaly and is void | ~25 min |
+| 3 | Sxmo install: `apk add --simulate` first, read for `Purging`, then boot-fallback check | ~30 min |
+| 4 | four `de-compare.sh` legs, one boot each | ~2 h 45 |
 
-Read P1 against P0 **and** P2. If P1's `p0tis` residency shows the little
-cluster parked at a high OPP with `p0trans` flat, the anomaly is a cpufreq
-lock-up and not a modem cost, and it is a bug worth more than the DE comparison.
-
-**Then, in order:**
-
-1. The Sxmo install and the four `de-compare.sh` legs - `de-compare.md`, and
-   `de-switch.sh show` on the device first.
-2. Last, the single deep-sleep `slope-leg.sh` - the only eMMC exposure.
-3. ☠️ Stage S5 of the ladder has to be redone: "the wifi radio costs 0.6 mA"
-   was measured entirely inside the anomalous pinned state and means nothing.
-
-**Ready, not scheduled:** `rail-census.sh` + `rail-census-parse.py` name the 14
-LDO rails that vote active and never vote sleep - see
-[`rpm-sleep-set.md`](rpm-sleep-set.md), which also carries the rail-to-consumer
-map and the four rails (eMMC and SD) that are off the table.
+**New and not yet deployed:** `episode-watch.sh`. On 2026-08-18 the idle floor
+doubled for ~44 minutes, silenced the PLL storm entirely, and cleared on its
+own; the ladder mis-attributed it and the controlled probe exonerated the cut,
+leaving it unexplained with nothing watching for it. This samples current
+(median of nine reads), cpufreq residency, transition counts and the PLL failure
+count once a minute to tmpfs, bounded to 48 h. Deploy it **after** the slope
+leg, and never during one.
 
 ### Superseded - the A leg, started 2026-08-18 08:5x
 
