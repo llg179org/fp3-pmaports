@@ -1,0 +1,4 @@
+# usb-off-census uptime=35215 census=30s
+# before: usb=yes phy=yes
+# usb unbound: 1 -> bound=no
+# phy unbound: 1 -> bound=no

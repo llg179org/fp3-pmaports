@@ -185,6 +185,40 @@ The remaining 17 no-sleep-vote resources are interconnect masters and slaves and
 one RPM clock, not PMIC rails. ☠️ The parser used to print those as `pm8953_lNN`,
 inventing rails that do not exist; fixed the same day.
 
+## ★★ The repeat without USB, an hour later: five became one
+
+[`../tools/usb-off-census.sh`](../tools/usb-off-census.sh) unbinds `7000000.usb`
+from `dwc3-qcom` and `79000.phy` from `qcom-qusb2-phy`, re-runs the census over
+the WiFi link, and rebinds on every exit path and on a `RuntimeMaxSec` deadline.
+Raw and decoded:
+[`../captures/2026-08-19_rail-census-usb-off.txt`](../captures/2026-08-19_rail-census-usb-off.txt).
+
+| | USB attached | USB unbound |
+|---|---|---|
+| resources voted | 35 | 31 |
+| no sleep vote | 22 | 18 |
+| **enabled PMIC rails with no sleep vote** | **5** | **1** |
+
+The one that remains is `ldoa/8` — `sdhc_1:vmmc`, the eMMC, which is marked
+NOSLEEP in the rail map and has to stay up. `ldoa/3`, `ldoa/7`, `ldoa/13` and
+`smpa/3` do not appear in the vote list at all with the PHY gone: they were not
+"voted active and never sleep", they were **the USB PHY's, and it released them**.
+
+`clk1/0` and `clk1/1` moved too — they voted `KHz=87500` in both sets with USB
+attached and `KHz=0` for sleep without it.
+
+**So the sleep-set gap is real in the code and costs nothing droppable here.**
+Mainline's `qcom_smd-regulator.c` still only ever writes the active state, and
+that is still a nine-year divergence from the vendor worth fixing upstream — but
+on this device, in the state that matters, it leaves exactly one rail up and that
+rail is the eMMC's. No patch on this page buys any current on the FP3.
+
+☠️ **The measurement that produced the five-rail list was not wrong, it was
+mis-set-up** — and it looked like a finding, complete with consumers named from
+the DT. What separated it from a real one was asking what else was true of the
+phone at the time. The answer was "a USB cable", which is true of every
+measurement in this investigation.
+
 ## The next measurement, not the next patch
 
 1. Trace `qcom_rpm_smd_write` across a suspend and print the **resource ids**,
