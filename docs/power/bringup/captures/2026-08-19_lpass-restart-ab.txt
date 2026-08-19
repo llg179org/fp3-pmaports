@@ -1,0 +1,32 @@
+# lpass-restart-ab.sh 3 30 20, run 2026-08-19 19:35.
+#
+# ★★★ THE RESULT: one ADSP restart and the DSP collapses in EVERY suspend
+# afterwards, plain arms included. Round 1 PLAIN is the only arm that did
+# not - it is the only one taken before the first restart. The effect is not
+# 'restart then suspend', it is 'restart once and it stays fixed for the boot'.
+#
+# XO off for 30.7-31.3 s of a 30 s suspend, i.e. the whole of it.
+# ☠️ vlow stayed 0 in all six arms: LPASS collapsing is necessary and not
+#    sufficient for the RPM's own low-power mode.
+# ☠️ The sensors still answer afterwards (in_illuminance_input=7.0,
+#    in_proximity_raw=245), so this is not 'the SMGR session died'.
+
+# lpass-restart-ab uptime=340 rounds=3 suspend=30s settle=20s
+# LPASS at start: shutdowns=3 xo=2 xo_dur=2464840
+# audio services: active active active
+
+== round 1 ==
+  PLAIN          suspends +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +31071ms  vlow 0->0  vmin 0->0
+== round 2 ==
+  PLAIN          suspends +1  LPASS +1  XO +1  XOdur +30846ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +30995ms  vlow 0->0  vmin 0->0
+== round 3 ==
+  PLAIN          suspends +1  LPASS +1  XO +1  XOdur +30756ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +31259ms  vlow 0->0  vmin 0->0
+
+# lpass-restart-ab done uptime=708
+# restored: adsp=running rc=0

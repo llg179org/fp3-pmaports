@@ -154,6 +154,46 @@ first-few-seconds, arriving in the middle of a suspend instead of a boot.
 The test is [`../tools/lpass-restart-ab.sh`](../tools/lpass-restart-ab.sh): a
 plain suspend against a suspend on a freshly restarted ADSP, alternating.
 
+### ★★★ It held: one ADSP restart and the DSP collapses in every suspend after it
+
+[`../tools/lpass-restart-ab.sh`](../tools/lpass-restart-ab.sh), three alternating
+rounds, 30 s suspend per arm
+([`../captures/2026-08-19_lpass-restart-ab.txt`](../captures/2026-08-19_lpass-restart-ab.txt)):
+
+| round | arm | LPASS | XO off |
+|---|---|---|---|
+| 1 | plain | +0 | 0 ms |
+| 1 | after restart | **+1** | **31 071 ms** |
+| 2 | plain | **+1** | **30 846 ms** |
+| 2 | after restart | +1 | 30 995 ms |
+| 3 | plain | +1 | 30 756 ms |
+| 3 | after restart | +1 | 31 259 ms |
+
+**Round 1 plain is the only arm that did not collapse, and it is the only one
+taken before the first restart.** So the effect is not "restart, then suspend" -
+it is *restart once and it stays fixed for the rest of the boot*, which is why
+the plain arms of rounds 2 and 3 collapse too. The crystal is off for 30.7-31.3 s
+of a 30 s suspend: the whole of it.
+
+**So something opened at boot holds a session on the ADSP and never closes it.**
+Reloading the firmware tears that session down and nothing re-establishes it.
+This is the shape the boot counters predicted: free collapses until the first
+session, then none.
+
+☠️ **`vlow` stayed 0 in all six arms.** LPASS collapsing is necessary and not
+sufficient for the RPM's own low-power mode - something else votes too. The
+original claim on this page (a master that never shuts down is a *sufficient*
+explanation for `vlow`) is therefore **half wrong**: it was a sufficient
+explanation while it was true, and now that it is false `vlow` has not moved.
+
+☠️ **The sensors still answer after the restart** (`in_illuminance_input=7.0`,
+`in_proximity_raw=245`), so this is not "the SMGR session died and took the
+sensors with it".
+
+**What is still unmeasured is the only thing that matters: what it is worth.**
+A slope leg with the ADSP restarted at the start, against `baseline-20260819`.
+Until that number exists this is a mechanism with no price.
+
 If *that* holds, it reframes the whole page: LPASS does not "never sleep" - **something we
 start keeps a session open on it and never closes it**, and the fix is a
 release, not a new power-collapse request.
