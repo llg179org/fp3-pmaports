@@ -1119,6 +1119,46 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
+### ★ RESUME POINT, 2026-08-19 11:15
+
+**Running on the device:** `ctl-leg.service` - `await-charge.sh` waiting for the
+pack to reach 99 %, which then **execs** `slope-leg.sh baseline-20260819` with
+no cuts. One unit for both, so `systemctl is-active ctl-leg` covers the whole
+chain. Started at 78 %; expect the leg itself to end mid-afternoon.
+
+**That leg is the control the modem result needs.** Everything the 36 % claim is
+currently measured against comes from a different day.
+
+**The state of the answer, after the panel correction:**
+
+| | draw |
+|---|---|
+| awake idle, panel **off**, session running | **~58-63 mA** |
+| awake idle, panel powered at zero brightness | ~85-87 mA |
+| asleep, modem stack cut (`nomodem-20260819`) | ~43 mA derived |
+| what the panel costs | **+24.5 ± 6.4 mA** |
+| what any userspace service costs | zero, five of five |
+
+☠️ **Suspend is buying very little.** ~58-63 mA awake and dark against ~43 mA
+asleep. That is the sharp form of the problem, and it agrees with `vlow` having
+read **0** in every capture ever taken here: the RPM never enters a low-power
+mode, so suspending the application processor removes the application
+processor's own consumption and nothing else.
+
+**Next, once the control leg lands:**
+
+1. Fit it, and state the modem result as a same-day A/B or withdraw it.
+2. The **rail census** - `rail-census.sh` + `rail-census-parse.py`, ready and
+   deployed. It names the 14 LDO rails that vote active and never vote sleep.
+   With userspace excluded and the panel accounted for, the remaining ~43 mA is
+   platform, and this is the instrument pointed at it.
+3. `episode-watch.sh` is written but **not deployed** - it must not run during a
+   suspend leg. Deploy after the control leg if the 44-minute episode is still
+   worth catching.
+
+☠️ Dropped by decision: the Sxmo comparison - see the banner in
+[`de-compare.md`](de-compare.md) for the disk numbers and the reasoning.
+
 ### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
 
 Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,
