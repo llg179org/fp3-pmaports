@@ -291,3 +291,45 @@ sleep set, which is where [`rpm-sleep-set.md`](rpm-sleep-set.md) already points.
 The one thing that has moved a number since is the modem cut measured **asleep**
 (36 % off the discharge slope, `RUNBOOK.md`), and its cost is bursts rather than
 baseline - which is why it shows up in a slope and not in a floor.
+
+## ☠️★★ CORRECTION, 2026-08-19: ~25 mA of every floor above is the panel
+
+The `phosh` screen-off leg came back with a floor of **58.3 ± 0.4 mA** against
+this ladder's no-session floor of **85.3 ± 1.5 mA**. A session cannot draw
+negative current, so the difference was never the session.
+
+It was the panel. **The ladder stops `greetd`** - and with no compositor left,
+nothing blanks the display. `phosh` blanks it. Every stage of this ladder, and
+both `freq-probe` runs, therefore ran with a *powered* panel at zero backlight
+brightness, which is not the same thing as a dark one.
+
+Measured directly, [`2026-08-19_disp-probe.txt`](2026-08-19_disp-probe.txt):
+
+| phase | floor (p10) | ±SE | `dpms` |
+|---|---|---|---|
+| P0 | 87.1 | 2.8 | **On** |
+| P1 | **62.6** | 5.8 | **Off** |
+| P2 | 87.2 | 2.5 | **On** |
+
+**The panel costs +24.5 ± 6.4 mA** (P0−P1) and **+24.6 ± 6.3 mA** (P2−P1),
+against a drift control of **+0.1 ± 3.7 mA**. As clean as this instrument gets.
+
+**What has to be re-read, and what stands.**
+
+- **Every floor level on this page is ~25 mA too high.** The real awake platform
+  floor, panel off, is **~58-63 mA**, not ~85.
+- **Every marginal on this page stands unchanged.** They are differences between
+  stages that all shared the same panel state, and a constant offset cancels in
+  a difference. The three userspace nulls are still nulls; the wifi null is
+  still a null.
+- ☠️ **The "s2idle roughly halves the draw" framing is dead.** Awake floor with
+  the panel off is ~58-63 mA and the best suspend leg derives 43 mA. Suspend is
+  buying **very little** over an idle, dark, awake phone - which is exactly what
+  a `vlow` count of 0 has been saying all along, and is a much sharper statement
+  of the problem than "we are 60 mA over budget".
+
+**The lesson, which cost the whole night's levels:** `backlight = 0` is not
+`dpms off`. A panel at zero brightness is still powered, and a measurement that
+dims instead of blanking reports a lit panel as a dark one. Worse, the error is
+invisible in exactly the way that matters - it shifts every level by the same
+amount, so the internal consistency of the run looks perfect.
