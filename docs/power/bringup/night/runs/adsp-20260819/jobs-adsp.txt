@@ -6,10 +6,10 @@
 #
 # ☠️ Compare phase-A slopes directly. The derived mA is for scale only.
 @preflight 95
-# ☠️ slope-leg.sh refuses to start under 99%, and the pack sits at 97% after a
+# ☠️ slope-leg.sh needs a pack above START_CAP (95 % since 2026-08-19). It used
 # termination until it falls to the 4.30 V recharge threshold - which is minutes
 # to an hour of idle, not a fault. Wait for it rather than aborting a night on it.
-@charge 99 240
+@charge 95 60
 @note restart the ADSP, gate on a probe suspend, then a full slope leg
 @timeout 21600
 /root/adsp-restart-leg.sh adsprestart-20260819

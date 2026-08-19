@@ -43,3 +43,52 @@ up=1647 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=24885 apss_x
 up=1677 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=25352 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4343130 i=0 chg=Not charging online=1
 up=1707 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=25800 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4342935 i=0 chg=Not charging online=1
 up=1738 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=26293 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4342935 i=0 chg=Not charging online=1
+up=1768 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=26774 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4341768 i=0 chg=Not charging online=1
+up=1798 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=27260 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4341768 i=0 chg=Not charging online=1
+up=1828 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=27702 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4342157 i=0 chg=Not charging online=1
+up=1858 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=28153 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4342157 i=0 chg=Not charging online=1
+up=1888 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=28584 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4341378 i=0 chg=Not charging online=1
+up=1918 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=29056 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4341378 i=0 chg=Not charging online=1
+up=1948 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=29530 apss_xo=0 lpass_shut=19 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=97 v=4341378 i=0 chg=Not charging online=1
+up=1978 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=30029 apss_xo=0 lpass_shut=20 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=96 v=4340600 i=0 chg=Not charging online=1
+up=2008 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=30598 apss_xo=0 lpass_shut=22 vlow=0 vmin=0 susp_ok=13 susp_fail=0 cap=96 v=4340600 i=0 chg=Not charging online=1
+up=2070 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=31146 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=96 v=4311404 i=-55999 chg=Discharging online=0
+up=2100 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=31618 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=96 v=4035798 i=-990448 chg=Discharging online=0
+up=2130 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=31618 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=96 v=3957359 i=-1075592 chg=Discharging online=0
+up=2160 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=31618 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=95 v=3905002 i=-1071625 chg=Discharging online=0
+up=2190 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=31648 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=95 v=4114042 i=-189819 chg=Discharging online=0
+up=2220 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32015 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=95 v=3886317 i=-1191407 chg=Discharging online=0
+up=2251 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32015 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=95 v=3870746 i=-930634 chg=Discharging online=0
+up=2281 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32015 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=95 v=3850893 i=-961151 chg=Discharging online=0
+up=2311 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32048 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=94 v=4108203 i=-76141 chg=Discharging online=0
+up=2341 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32479 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=94 v=3886122 i=-1077423 chg=Discharging online=0
+up=2371 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32479 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=94 v=3830651 i=-1111450 chg=Discharging online=0
+up=2401 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32479 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=93 v=3820335 i=-948181 chg=Discharging online=0
+up=2431 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32529 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=93 v=4052732 i=-304107 chg=Discharging online=0
+up=2461 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32927 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=93 v=3901693 i=-1064301 chg=Discharging online=0
+up=2491 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32927 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=93 v=3842913 i=-1019745 chg=Discharging online=0
+up=2522 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32927 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=93 v=3822087 i=-1017304 chg=Discharging online=0
+up=2552 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=32977 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=4092243 i=-70190 chg=Discharging online=0
+up=2582 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33372 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=3913566 i=-1154480 chg=Discharging online=0
+up=2612 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33372 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=3868994 i=-969696 chg=Discharging online=0
+up=2642 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33372 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=3853034 i=-967865 chg=Discharging online=0
+up=2672 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33437 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=4073558 i=-125885 chg=Discharging online=0
+up=2702 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33848 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=92 v=3906949 i=-913239 chg=Discharging online=0
+up=2732 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33848 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=91 v=3820140 i=-1110688 chg=Discharging online=0
+up=2762 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33848 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=91 v=3868410 i=-865173 chg=Discharging online=0
+up=2793 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=33910 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=91 v=4060128 i=-231933 chg=Discharging online=0
+up=2823 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34276 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=91 v=3869578 i=-1077729 chg=Discharging online=0
+up=2853 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34276 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=90 v=3871330 i=-1120758 chg=Discharging online=0
+up=2883 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34276 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=90 v=3861403 i=-862427 chg=Discharging online=0
+up=2913 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34358 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=90 v=4022368 i=-335388 chg=Discharging online=0
+up=2943 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34704 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=90 v=3869773 i=-1020508 chg=Discharging online=0
+up=2973 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34704 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=90 v=3852839 i=-878296 chg=Discharging online=0
+up=3003 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34704 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=89 v=3865685 i=-788574 chg=Discharging online=0
+up=3034 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=34764 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=89 v=4033852 i=-173492 chg=Discharging online=0
+up=3064 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35130 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=89 v=3854980 i=-1035309 chg=Discharging online=0
+up=3094 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35130 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=89 v=3835906 i=-1131592 chg=Discharging online=0
+up=3124 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35130 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=89 v=3808657 i=-1023560 chg=Discharging online=0
+up=3154 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35226 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=88 v=4027234 i=-208587 chg=Discharging online=0
+up=3184 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35607 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=88 v=3852839 i=-1043549 chg=Discharging online=0
+up=3214 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35607 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=88 v=3851477 i=-829163 chg=Discharging online=0
+up=3244 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=35607 apss_xo=0 lpass_shut=23 vlow=0 vmin=0 susp_ok=14 susp_fail=0 cap=88 v=3862377 i=-715790 chg=Discharging online=0
