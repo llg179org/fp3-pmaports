@@ -245,3 +245,49 @@ in one boot, baseline / modem-stopped / restored, sampling the whole
 ☠️ Do not read S5 as "the wifi radio is free". It measured −0.6 mA, but S5 ran
 entirely inside the anomalous pinned state, where a 10 mA term would be
 invisible against a floor that had already doubled. That stage has to be redone.
+
+## Stage S5 redone properly, 2026-08-19: the wifi radio costs nothing either
+
+The ladder's S5 measured the radio at −0.6 mA but ran entirely inside the
+anomalous episode, so the number was void. Redone with `freq-probe.sh` as a
+three-phase A/B in one clean boot -
+[`2026-08-19_wifi-probe.txt`](2026-08-19_wifi-probe.txt):
+
+| phase | floor (p10) | ±SE | median | ±SE | policy0 trans/min | little cluster at 614 MHz |
+|---|---|---|---|---|---|---|
+| P0 radio on | 86.4 | 1.6 | 129.3 | 13.5 | 820 | 93.6 % |
+| P1 **radio off** | 87.5 | 1.7 | 130.3 | 11.3 | 833 | 93.2 % |
+| P2 radio on | 89.6 | 3.7 | 140.9 | 16.5 | 810 | 93.6 % |
+
+**wifi costs −1.1 ± 2.4 mA** (P0−P1) and **+2.1 ± 4.0 mA** (P2−P1), against a
+drift control of +3.1 ± 4.0. Zero on the floor *and* zero on the median, so it
+is not hiding in bursts either. An associated, idle wifi link on this device is
+free to within a few milliamps.
+
+☠️ Worth noting that the ladder's void number happened to be right. That is not
+a reason to have trusted it - it was measured inside a state where a 10 mA term
+would have been invisible, and being accidentally correct is not a property an
+instrument can be relied on for.
+
+## What the awake idle budget now looks like
+
+Five candidates measured, each with its own control:
+
+| candidate | cost at the floor | instrument |
+|---|---|---|
+| desktop services (`cups avahi bluetooth udisks2 tuned`) | +0.6 ± 2.3 mA | ladder |
+| sensor stack (`snsregd iio-sensor-proxy`) | −1.3 ± 2.1 mA | ladder |
+| our own watchers (`spkwatch ringwatch fp3-voiced`) | +0.3 ± 1.8 mA | ladder |
+| wifi radio | −1.1 ± 2.4 mA | `freq-probe` A/B |
+| modem stack | +2.2 mA *(≈23 mA on the median - bursts, not floor)* | `freq-probe` A/B |
+
+**The floor is ~85-87 mA and none of it has been attributed to anything running
+in userspace.** Every service that was a plausible suspect has been measured and
+come back at zero, and the two radios with it.
+
+That is the useful shape of a negative result: it moves the search off userspace
+entirely and onto the platform - the kernel, the RPM votes and the regulator
+sleep set, which is where [`rpm-sleep-set.md`](rpm-sleep-set.md) already points.
+The one thing that has moved a number since is the modem cut measured **asleep**
+(36 % off the discharge slope, `RUNBOOK.md`), and its cost is bursts rather than
+baseline - which is why it shows up in a slope and not in a floor.
