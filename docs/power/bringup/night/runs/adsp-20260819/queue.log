@@ -1,4 +1,8 @@
-[1113] # queue adsp start jobfile=/root/night/jobs-adsp.txt cap=97% v=4346633
-[1113] # preflight 95
-[1133] # preflight PASSED
-[1133] # charge: waiting for >= 99%, cap now 97%, max 240 min
+[1935] # queue adsp start jobfile=/root/night/jobs-adsp.txt cap=97% v=4341378
+[1935] # preflight 95
+[1955] # preflight PASSED
+[1955] # charge: waiting for >= 95%, cap now 96%, max 60 min
+[1955] # charge: reached 96% after 0 min
+[1955] # note: restart the ADSP, gate on a probe suspend, then a full slope leg
+[1955] # timeout is now 21600s
+[1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819

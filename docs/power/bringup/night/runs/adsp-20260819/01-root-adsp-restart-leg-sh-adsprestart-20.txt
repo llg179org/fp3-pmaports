@@ -1,0 +1,5 @@
+# adsp-restart-leg adsprestart-20260819 uptime=1955
+# LPASS before: shutdowns=19 xo_dur=5448448818
+# adsp state=running
+# probe suspend: LPASS +1  XO off 31599ms of 30000ms
+# gate passed - handing over to slope-leg.sh adsprestart-20260819

@@ -2,3 +2,8 @@
 19:37:13 192.168.100.17 up=1149 q=active g=active cap=97 v=4345855 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
 19:42:15 192.168.100.17 up=1451 q=active g=active cap=97 v=4344103 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
 19:47:17 192.168.100.17 up=1753 q=active g=active cap=97 v=4342935 chg=Not charging root=rw [1133] # charge: waiting for >= 99%, cap now 97%, max 240 min 
+19:52:21 192.168.100.17 up=2057 q=active g=active cap=96 v=4340405 chg=Not charging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+19:57:22 192.168.100.17 up=2359 q=active g=active cap=94 v=3832013 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:02:24 192.168.100.17 up=2661 q=active g=active cap=92 v=3849920 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:07:26 192.168.100.17 up=2963 q=active g=active cap=90 v=3817026 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+20:12:28 192.168.100.17 up=3264 q=active g=active cap=88 v=3817026 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 

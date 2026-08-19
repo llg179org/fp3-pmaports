@@ -42,3 +42,25 @@ PASS  mmc-clean              no mmc error in dmesg this boot
 #     mmc-timing             10 (mmc HS400)
 
 PREFLIGHT OK - the night may be armed
+# preflight uptime=1935 mincap=95%
+PASS  root-rw                wrote /root/.preflight-probe
+PASS  root-space             345 MB free
+PASS  tmpfs                  /run writable, 1778 MB free
+PASS  boot-default           default label is postmarketOS
+PASS  boot-fallback          vmlinuz-fallback and dtb-fallback both present and non-empty
+PASS  charger                online=1 status=Not charging
+PASS  battery                capacity=97% voltage=4341378
+#     battery-current        current_now=0 (one read; ±138 mA scatter, never trust a single sample)
+PASS  battery-temp           288 (dC)
+PASS  no-stale-units         no measurement unit is running
+PASS  rpm-stats              /sys/kernel/debug/qcom_rpm_master_stats/APSS readable
+#     qcom_stats-vlow        Count: 0
+#     qcom_stats-vmin        Count: 0
+PASS  counters-live          over 20 s: APSS +351 MPSS +44 PRONTO +167 LPASS +0
+PASS  mem-sleep              [s2idle]
+#     suspend-stats          success=13 fail=0
+PASS  dpms                   writable, currently Off
+PASS  mmc-clean              no mmc error in dmesg this boot
+#     mmc-timing             10 (mmc HS400)
+
+PREFLIGHT OK - the night may be armed
