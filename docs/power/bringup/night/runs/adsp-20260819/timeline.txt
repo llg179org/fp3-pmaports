@@ -18,3 +18,6 @@
 20:58:30 !! device unreachable on both links (miss 2)
 21:03:41 !! device unreachable on both links (miss 3)
 21:03:41 !! ALERT: silent for 3 polls (~15 min)
+21:08:58 !! device unreachable on both links (miss 4)
+21:14:09 !! device unreachable on both links (miss 5)
+21:19:20 !! device unreachable on both links (miss 6)
