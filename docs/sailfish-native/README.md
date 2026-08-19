@@ -217,10 +217,43 @@ plus the runtime `Requires`: `pulseaudio-modules-nemo-mainvolume` and
 `sailjail-daemon`. `dsme_dbus_if` most likely comes from the `dsme-dev`
 subpackage that is already there.
 
-**So the honest size of it is: ten to twelve small packages, then lipstick, then a
-home UI** — and the home UI is where it stops being mechanical. Jolla's Silica and
-`jolla-*` homescreen are **closed**; the open alternative is Glacier
-(nemomobile), which is not packaged in Alpine or pmaports either.
+Every one of them was checked to exist and to be openly licensed, and four of the
+names guessed from the pkgconfig tokens were wrong — ☠️ worth stating, because a
+plausible package name is not a package:
+
+| pkgconfig token | the repository that actually provides it | licence |
+|---|---|---|
+| `contentaction5` | `sailfishos/libcontentaction` | LGPL-2.1 |
+| `mce-qt5` | `sailfishos/libmce-qt` | (open, unlabelled) |
+| `dsme_dbus_if`, **`thermalmanager_dbus_if`** | `sailfishos/libdsme` — **one package, not two** | |
+| `usb_moded` | `sailfishos/usb-moded` | |
+| `usb-moded-qt5` | `sailfishos/libusb-moded-qt` | BSD-3 |
+| `libresourceqt5` | `sailfishos/libresourceqt` | LGPL-2.1 |
+| `ngf-qt5` | `sailfishos/libngf-qt` (+ `sailfishos/ngfd`) | LGPL-2.1 |
+| `systemsettings` | `sailfishos/nemo-qml-plugin-systemsettings` | BSD-3 |
+| `sailfishusermanager` | `sailfishos/user-managerd` | BSD-3 |
+| runtime | `sailfishos/sailjail`, `sailfishos/pulseaudio-modules-nemo` | |
+
+### ★ And there is a fully open path that avoids Jolla's closed homescreen
+
+Jolla's Silica and the `jolla-*` homescreen are **closed**, and no amount of
+building solves that. But the NemoMobile project maintains both halves in the
+open and both are alive:
+
+| | | last push | licence |
+|---|---|---|---|
+| [`nemomobile-ux/lipstick`](https://github.com/nemomobile-ux/lipstick) | the compositor | 2026-07-01 | LGPL-2.1 |
+| [`nemomobile-ux/glacier-home`](https://github.com/nemomobile-ux/glacier-home) | **the homescreen** | 2026-07-18 | open |
+| [`sailfishos/lipstick`](https://github.com/sailfishos/lipstick) | Jolla's own | 2026-08-18 | LGPL-2.1 |
+
+☠️ **The NemoMobile fork is not a shortcut on dependencies.** It is the same
+version (0.36.29) with the same `BuildRequires` minus two, so the ten-package list
+above stands either way. What it buys is the *homescreen*, which is the part that
+is otherwise unobtainable.
+
+**So the honest size of it is: about ten small packages, then lipstick, then
+`glacier-home`** — and none of it needs a Qt rebuild, a kernel port, or anything
+from Jolla.
 
 ## What is still unmeasured
 
