@@ -42,8 +42,21 @@ trap restore EXIT INT TERM
 say "# de-compare label=$LABEL screen=$SCREEN uptime=$(cut -d. -f1 /proc/uptime)"
 
 # What is actually running - the label is a promise, this is the fact.
-sess=$(ps -eo comm | grep -cE '^(phosh|sway)$' 2>/dev/null || true)
-say "# phosh=$(pgrep -c phosh 2>/dev/null || echo 0) sway=$(pgrep -c sway 2>/dev/null || echo 0) procs_matched=$sess"
+# ☠️ busybox pgrep HAS NO -c. `pgrep -c phosh` does not return a count, it
+# prints a usage error to stderr and exits non-zero - and the `|| echo 0` that
+# looked like careful defensive style turned that into a silent "0". The first
+# version of this line used it, so it would have recorded every session, on
+# every leg, as absent, while looking perfectly healthy. Count with
+# `ps -eo comm | grep -cx`, which busybox does implement.
+#
+# Both processes are recorded because they answer different questions: phoc is
+# the compositor and phosh is the shell. A boot that produces phoc without
+# phosh is a session that came up into nothing - measured 2026-08-19, on a
+# greetd restarted by hand rather than by a boot, where the selftest correctly
+# reported "no local graphical session". After a clean boot both are 1.
+say "# phoc=$(pgrep -xc phoc 2>/dev/null || echo 0) phosh=$(pgrep -xc phosh 2>/dev/null || echo 0) sway=$(pgrep -xc sway 2>/dev/null || echo 0)"
+say "# session procs: $(ps -eo comm | grep -icE 'phoc|phosh|sway|sxmo|gnome-session' 2>/dev/null || echo 0)"
+say "# sessions: $(loginctl list-sessions --no-legend 2>/dev/null | wc -l)"
 # ☠️ The live greetd config on this device is NOT /etc/greetd/config.toml -
 # that path does not exist here. greetd is configured from the phrog package's
 # file, and an earlier version of this line silently recorded nothing.
