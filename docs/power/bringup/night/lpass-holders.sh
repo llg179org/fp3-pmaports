@@ -203,7 +203,14 @@ if want S4; then
 	# the references are the BOUND CARD, not other modules. So the device has
 	# to be unbound from its driver first, or the stage silently measures
 	# nothing while looking like it measured something.
+	# ☠️ THE UNBIND IS NOT CLEANLY REVERSIBLE ON THIS KERNEL. Measured
+	# 2026-08-19: after the rebind, wcd9335-slim cannot re-request IRQ 143
+	# ("Flags mismatch irq 143 ... SLIM Slave"), the card fails to instantiate
+	# with -EBUSY, and /proc/asound/cards stays empty until a REBOOT. Reloading
+	# snd_soc_wcd9335 does not clear it. So S4 costs a reboot: run it last, or
+	# run it knowing the phone needs one before it has audio again.
 	say "# S4: unbinding the sound card, then removing the q6 stack"
+	say "# ☠️ S4 leaks the wcd9335 SLIMbus IRQ - audio needs a REBOOT after this"
 	CARD_DEV=$(ls "$CARD_DRV" 2>/dev/null | grep sound-card | head -1)
 	if [ -n "$CARD_DEV" ]; then
 		if echo "$CARD_DEV" > "$CARD_DRV/unbind" 2>/dev/null; then
