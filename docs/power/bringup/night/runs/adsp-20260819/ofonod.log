@@ -1,0 +1,53 @@
+ofonod[8104]: oFono version 2.19
+src/main.c:main() Using configuration directory: /etc/ofono
+ofonod[8104]: src/module.c:__ofono_modules_init() 
+ofonod[8104]: src/rmnet.c:rmnet_init() 
+ofonod[8104]: src/provision.c:provision_init() 
+ofonod[8104]: src/plugin.c:__ofono_plugin_init() 
+ofonod[8104]: plugins/push-notification.c:push_notification_init() 
+ofonod[8104]: plugins/smart-messaging.c:smart_messaging_init() 
+ofonod[8104]: plugins/upower.c:upower_init() upower init
+ofonod[8104]: plugins/hfp_ag_bluez5.c:hfp_ag_init() 
+ofonod[8104]: src/handsfree-audio.c:ofono_handsfree_card_driver_register() driver: 0xaaaabdd11a10
+ofonod[8104]: plugins/dun_gw_bluez5.c:dun_gw_init() 
+ofonod[8104]: src/handsfree-audio.c:ofono_handsfree_card_driver_register() driver: 0xaaaabdd118e0
+ofonod[8104]: plugins/connman.c:connman_init() 
+ofonod[8104]: src/private-network.c:ofono_private_network_driver_register() driver: 0xaaaabdd11888, name: ConnMan Private Network
+ofonod[8104]: plugins/phonesim.c:parse_config() filename /etc/ofono/phonesim.conf
+ofonod[8104]: plugins/udevng.c:udev_start() 
+ofonod[8104]: plugins/udevng.c:enumerate_devices() 
+ofonod[8104]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/platform/soc@0/7900000.ipa/net/rmnet_ipa0
+ofonod[8104]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_ipa0 [(null)] ==> (null) (null)
+ofonod[8104]: plugins/udevng.c:create_modem() /embedded/qrtr/3
+ofonod[8104]: plugins/udevng.c:create_modem() driver=qrtrsoc
+ofonod[8104]: src/modem.c:ofono_modem_create() name: (null), type: qrtrsoc
+ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() /embedded/qrtr/3
+ofonod[8104]: plugins/udevng.c:setup_qrtrsoc() Not enough rmnet_data interfaces found
+ofonod[8104]: plugins/udevng.c:destroy_modem() /embedded/qrtr/3
+ofonod[8104]: src/modem.c:ofono_modem_remove() 0xffff89859cc0
+ofonod[8104]: plugins/udevng.c:destroy_modem() (null)
+ofonod[8104]: plugins/upower.c:upower_connect() upower connect
+ofonod[8104]: plugins/hfp_hf_bluez5.c:connect_handler() Registering External Profile handler ...
+ofonod[8104]: plugins/bluez5.c:bt_register_profile() Bluetooth: Registering 0000111e-0000-1000-8000-00805f9b34fb (hfp_hf) profile
+ofonod[8104]: plugins/upower.c:enum_devices_reply() 
+ofonod[8104]: plugins/upower.c:parse_devices_reply() 
+ofonod[8104]: parse_devices_reply: found 1st battery device: /org/freedesktop/UPower/devices/battery_pmi632_battery
+ofonod[8104]: plugins/upower.c:enum_devices_reply() parse_devices_reply OK
+ofonod[8104]: plugins/bluez5.c:profile_register_cb() 
+ofonod[8104]: plugins/upower.c:battery_props_changed() 
+ofonod[8104]: plugins/upower.c:battery_props_changed() 
+ofonod[8104]: plugins/upower.c:battery_props_changed() 
+ofonod[8104]: plugins/upower.c:battery_props_changed() 
+ofonod[8104]: plugins/upower.c:battery_props_changed() 
+ofonod[8104]: Terminating
+ofonod[8104]: src/plugin.c:__ofono_plugin_cleanup() 
+ofonod[8104]: plugins/push-notification.c:push_notification_exit() 
+ofonod[8104]: plugins/smart-messaging.c:smart_messaging_exit() 
+ofonod[8104]: plugins/hfp_ag_bluez5.c:hfp_ag_exit() 
+ofonod[8104]: src/handsfree-audio.c:ofono_handsfree_card_driver_unregister() driver: 0xaaaabdd11a10
+ofonod[8104]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/dun_gw
+ofonod[8104]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/hfp_hf
+ofonod[8104]: src/handsfree-audio.c:ofono_handsfree_card_driver_unregister() driver: 0xaaaabdd118e0
+ofonod[8104]: src/private-network.c:ofono_private_network_driver_unregister() driver: 0xaaaabdd11888, name: ConnMan Private Network
+src/module.c:__ofono_modules_cleanup() 
+ofonod[8104]: Exit

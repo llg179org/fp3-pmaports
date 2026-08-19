@@ -1,0 +1,18 @@
+# audio-hold-probe uptime=303 suspend=30s
+# controls at start: playback=1 mm2=1 aif=1
+# LPASS at start: shutdowns=3 xo_dur=538054
+
+  A  everything as booted   LPASS +0  XO off 0ms of 30000ms
+
+# B: dropping the capture pre-route only
+  B  capture route off     LPASS +0  XO off 0ms of 30000ms
+
+# C: dropping the playback route as well
+  C  both routes off       LPASS +0  XO off 0ms of 30000ms
+
+# D: capture back, playback still off
+  D  playback route off    LPASS +0  XO off 0ms of 30000ms
+
+# audio-hold-probe done
+# restored: playback=1 mm2=1 aif=1 rc=0
+# ☠️ check audio actually works again before trusting this line

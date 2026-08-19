@@ -1,0 +1,654 @@
+ofonod[12173]: oFono version 2.19
+src/main.c:main() Using configuration directory: /etc/ofono
+ofonod[12173]: src/module.c:__ofono_modules_init() 
+ofonod[12173]: src/rmnet.c:rmnet_init() 
+ofonod[12173]: src/provision.c:provision_init() 
+ofonod[12173]: src/plugin.c:__ofono_plugin_init() 
+ofonod[12173]: plugins/push-notification.c:push_notification_init() 
+ofonod[12173]: plugins/smart-messaging.c:smart_messaging_init() 
+ofonod[12173]: plugins/upower.c:upower_init() upower init
+ofonod[12173]: plugins/hfp_ag_bluez5.c:hfp_ag_init() 
+ofonod[12173]: src/handsfree-audio.c:ofono_handsfree_card_driver_register() driver: 0xaaaab8201a10
+ofonod[12173]: plugins/dun_gw_bluez5.c:dun_gw_init() 
+ofonod[12173]: src/handsfree-audio.c:ofono_handsfree_card_driver_register() driver: 0xaaaab82018e0
+ofonod[12173]: plugins/connman.c:connman_init() 
+ofonod[12173]: src/private-network.c:ofono_private_network_driver_register() driver: 0xaaaab8201888, name: ConnMan Private Network
+ofonod[12173]: plugins/phonesim.c:parse_config() filename /etc/ofono/phonesim.conf
+ofonod[12173]: plugins/udevng.c:udev_start() 
+ofonod[12173]: plugins/udevng.c:enumerate_devices() 
+ofonod[12173]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/platform/soc@0/7900000.ipa/net/rmnet_ipa0
+ofonod[12173]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_ipa0 [(null)] ==> (null) (null)
+ofonod[12173]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/virtual/net/rmnet_data0
+ofonod[12173]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_data0 [(null)] ==> (null) (null)
+ofonod[12173]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/virtual/net/rmnet_data1
+ofonod[12173]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_data1 [(null)] ==> (null) (null)
+ofonod[12173]: plugins/udevng.c:add_device() modem:/embedded/qrtr/3 device:/sys/devices/virtual/net/rmnet_data2
+ofonod[12173]: plugins/udevng.c:add_device() (null) (qrtrsoc) rmnet_data2 [(null)] ==> (null) (null)
+ofonod[12173]: plugins/udevng.c:create_modem() /embedded/qrtr/3
+ofonod[12173]: plugins/udevng.c:create_modem() driver=qrtrsoc
+ofonod[12173]: src/modem.c:ofono_modem_create() name: (null), type: qrtrsoc
+ofonod[12173]: plugins/udevng.c:setup_qrtrsoc() /embedded/qrtr/3
+ofonod[12173]: plugins/udevng.c:setup_gobi_qrtr_premux() Adding premux interface rmnet_data2, mux id: 3
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface1
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface1MuxId
+ofonod[12173]: plugins/udevng.c:setup_gobi_qrtr_premux() Adding premux interface rmnet_data1, mux id: 2
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface2
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface2MuxId
+ofonod[12173]: plugins/udevng.c:setup_gobi_qrtr_premux() Adding premux interface rmnet_data0, mux id: 1
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface3
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface3MuxId
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property NumPremuxInterfaces
+ofonod[12173]: plugins/udevng.c:setup_qmi_qrtr() net: rmnet_ipa0 kernel_driver: qrtr
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: src/modem.c:ofono_modem_set_driver() type: qrtrqmi
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property NetworkInterfaceKernelDriver
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property NetworkInterface
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property NetworkInterfaceIndex
+ofonod[12173]: src/modem.c:set_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/modem.c:ofono_modem_register() 0xffffb3fd5cc0
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_probe() 0xffffb3fd5cc0
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NetworkInterfaceKernelDriver
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NetworkInterface
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NetworkInterfaceIndex
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_probe() net: rmnet_ipa0[qrtr](3) embedded
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NetworkInterfaceIndex
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NetworkInterface
+ofonod[12173]: src/modem.c:ofono_modem_set_capabilities() 1
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property NumPremuxInterfaces
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface1MuxId
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface1
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface2MuxId
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface2
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface3MuxId
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property PremuxInterface3
+ofonod[12173]: src/modem.c:emit_modem_added() 0xffffb3fd5cc0
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/modem.c:call_modemwatches() 0xffffb3fd5cc0 added:1
+ofonod[12173]: plugins/dun_gw_bluez5.c:modem_watch() modem: 0xffffb3fd5cc0, added: 1
+ofonod[12173]: plugins/hfp_ag_bluez5.c:modem_watch() modem: 0xffffb3fd5cc0, added: 1
+ofonod[12173]: plugins/hfp_ag_bluez5.c:modem_watch() Adding modem 0xffffb3fd5cc0, info: 0xffffb3fd3330
+ofonod[12173]: plugins/smart-messaging.c:modem_watch() modem: 0xffffb3fd5cc0, added: 1
+ofonod[12173]: plugins/push-notification.c:modem_watch() modem: 0xffffb3fd5cc0, added: 1
+ofonod[12173]: src/rmnet.c:rmnet_link_dump_cb() Removing existing rmnet link: rmnet_data0(6) mux_id: 1
+ofonod[12173]: src/rmnet.c:rmnet_link_dump_cb() Removing existing rmnet link: rmnet_data1(7) mux_id: 2
+ofonod[12173]: plugins/upower.c:upower_connect() upower connect
+ofonod[12173]: plugins/hfp_hf_bluez5.c:connect_handler() Registering External Profile handler ...
+ofonod[12173]: plugins/bluez5.c:bt_register_profile() Bluetooth: Registering 0000111e-0000-1000-8000-00805f9b34fb (hfp_hf) profile
+ofonod[12173]: src/rmnet.c:rmnet_link_dump_cb() Removing existing rmnet link: rmnet_data2(8) mux_id: 3
+ofonod[12173]: src/rmnet.c:rmnet_start_next_request() Start DELLINK: ifindex: 6, interface: 0/1, request: 2
+ofonod[12173]: plugins/udevng.c:remove_device() /sys/devices/virtual/net/rmnet_data0
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data0(6) with mux_id: 1
+ofonod[12173]: plugins/upower.c:enum_devices_reply() 
+ofonod[12173]: plugins/upower.c:parse_devices_reply() 
+ofonod[12173]: parse_devices_reply: found 1st battery device: /org/freedesktop/UPower/devices/battery_pmi632_battery
+ofonod[12173]: plugins/upower.c:enum_devices_reply() parse_devices_reply OK
+ofonod[12173]: plugins/upower.c:modemwatch() modem: /qrtrsoc_0, added: 1
+ofonod[12173]: plugins/bluez5.c:profile_register_cb() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data0(6) with mux_id: 1
+ofonod[12173]: src/rmnet.c:rmnet_del_link_cb() DELLINK 2 (0/1) complete, error: 0
+ofonod[12173]: src/rmnet.c:rmnet_start_next_request() Start DELLINK: ifindex: 7, interface: 0/1, request: 3
+ofonod[12173]: plugins/udevng.c:remove_device() /sys/devices/virtual/net/rmnet_data1
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data1(7) with mux_id: 2
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data1(7) with mux_id: 2
+ofonod[12173]: src/rmnet.c:rmnet_del_link_cb() DELLINK 3 (0/1) complete, error: 0
+ofonod[12173]: src/rmnet.c:rmnet_start_next_request() Start DELLINK: ifindex: 8, interface: 0/1, request: 4
+ofonod[12173]: plugins/udevng.c:remove_device() /sys/devices/virtual/net/rmnet_data2
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data2(8) with mux_id: 3
+ofonod[12173]: src/rmnet.c:rmnet_link_notification() link_notification: rmnet_data2(8) with mux_id: 3
+ofonod[12173]: src/rmnet.c:rmnet_del_link_cb() DELLINK 4 (0/1) complete, error: 0
+ofonod[12173]: plugins/upower.c:battery_props_changed() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_enable() 0xffffb3fd5cc0
+ofonod[12173]: plugins/qrtrqmi.c:lookup_done() 
+ofonod[12173]: plugins/qrtrqmi.c:get_oper_mode_cb() 
+ofonod[12173]: plugins/qrtrqmi.c:power_reset_cb() 
+ofonod[12173]: src/modem.c:modem_change_state() old state: 0, new state: 1
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_pre_sim() 0xffffb3fd5cc0
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_devinfo_probe() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_sim_probev() 
+ofonod[12173]: drivers/qmimodem/voicecall.c:qmi_voicecall_probe() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:voicecall_watch() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:get_caps_cb() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_query_manufacturer() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:string_cb() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_query_model() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:string_cb() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_query_revision() 
+ofonod[12173]: drivers/qmimodem/sim.c:event_registration_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:event_registration_cb() event mask 0x0003
+ofonod[12173]: drivers/qmimodem/devinfo.c:string_cb() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_query_serial() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_card_status_cb() 
+ofonod[12173]: src/sim.c:ofono_sim_add_state_watch() 0xffffb3fd39d0
+ofonod[12173]: src/sim.c:ofono_sim_add_state_watch() 0xffffb3fd39d0
+ofonod[12173]: src/sim.c:ofono_sim_add_state_watch() 0xffffb3fd39d0
+ofonod[12173]: src/sim.c:ofono_sim_add_state_watch() 0xffffb3fd39d0
+ofonod[12173]: plugins/hfp_ag_bluez5.c:sim_watch() 
+ofonod[12173]: src/sim.c:ofono_sim_add_state_watch() 0xffffb3fd39d0
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_query_locked() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_query_locked() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_query_locked() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:query_locked_cb() 
+ofonod[12173]: drivers/qmimodem/devinfo.c:get_ids_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: Requested file structure differs from SIM: 6fb7
+ofonod[12173]: src/voicecall.c:ecc_g2_read_cb() 0
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/voicecall.c:ecc_g3_read_cb() 1
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/voicecall.c:ecc_g3_read_cb() 1
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/voicecall.c:ecc_g3_read_cb() 1
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/voicecall.c:ecc_g3_read_cb() 1
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6fb7 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/voicecall.c:ecc_g3_read_cb() 1
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x2fe2 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x2fe2 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 10
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f05 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6f05 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 12
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x2f05 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x2f05 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 12
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_query_passwd_state() 
+ofonod[12173]: drivers/qmimodem/sim.c:query_passwd_state_cb() passwd state 0
+ofonod[12173]: src/sim.c:sim_pin_query_cb() sim->pin_type: 0, pin_type: 0
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_query_pin_retries() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fae path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fad path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:query_pin_retries_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6fad path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 4
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f16 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f38 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6f38 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 17
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f56 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6f56 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 3
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_imsi() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_imsi_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6f07 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:update_profile_registration() Registering HFP AG profile
+ofonod[12173]: plugins/bluez5.c:bt_register_profile() Bluetooth: Registering 0000111f-0000-1000-8000-00805f9b34fb (hfp_ag) profile
+ofonod[12173]: src/modem.c:modem_change_state() old state: 1, new state: 2
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_post_sim() 0xffffb3fd5cc0
+ofonod[12173]: drivers/qmimodem/lte.c:qmimodem_lte_probe() 
+ofonod[12173]: drivers/qmimodem/radio-settings.c:qmi_radio_settings_probev() 
+ofonod[12173]: drivers/qmimodem/sms.c:qmi_sms_probe() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_probev() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 3
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 3
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_probev() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 2
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 2
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_probev() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 1
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property Bus
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() interface_number: 1
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_bind_mux() mux_id: 1
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property AlwaysOnline
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fca path len 0
+ofonod[12173]: RegisterProfile() replied an error: org.bluez.Error.NotPermitted, UUID already registered
+ofonod[12173]: drivers/qmimodem/lte.c:get_default_profile_cb() 
+ofonod[12173]: drivers/qmimodem/lte.c:get_default_profile_cb() Default profile index: 5
+ofonod[12173]: drivers/qmimodem/radio-settings.c:get_rat_mode_any_cb() 
+ofonod[12173]: src/radio-settings.c:radio_load_settings() TechnologyPreference: 0
+ofonod[12173]: src/radio-settings.c:radio_load_settings() GsmBand: 0
+ofonod[12173]: src/radio-settings.c:radio_load_settings() UmtsBand: 0
+ofonod[12173]: drivers/qmimodem/radio-settings.c:qmi_set_rat_mode() 
+ofonod[12173]: drivers/qmimodem/sms.c:set_event_cb() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: Unable to read waiting messages numbers from SIM
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fc9 path len 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/radio-settings.c:set_system_selection_pref_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: Unable to read mailbox identifies from SIM
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f11 path len 0
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() 
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() found 6 routes
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 0 => type 1 value 1
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 1 => type 1 value 1
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 2 => type 0 value 1
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 3 => type 255 value 2
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 4 => type 255 value 2
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() type 0 class 5 => type 255 value 2
+ofonod[12173]: drivers/qmimodem/sms.c:get_routes_cb() transfer status report 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:bind_mux_data_port_cb() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:set_ip_family_preference_cb() 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:set_ip_family_preference_cb() 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:set_ip_family_preference_cb() 0
+ofonod[12173]: drivers/qmimodem/gprs.c:get_default_profile_number_cb() Default profile index: 5
+ofonod[12173]: drivers/qmimodem/sms.c:set_routes_cb() 
+ofonod[12173]: drivers/qmimodem/sms.c:qmi_bearer_set() bearer 3
+ofonod[12173]: src/sms.c:sms_restore_tx_queue() 
+ofonod[12173]: plugins/push-notification.c:sms_watch() registered
+ofonod[12173]: plugins/smart-messaging.c:sms_watch() registered
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() 
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() delete msg tag 0 mode 0
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() 
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() delete msg tag 2 mode 0
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() 
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() delete msg tag 0 mode 1
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() 
+ofonod[12173]: drivers/qmimodem/sms.c:delete_msg() delete msg tag 2 mode 1
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_protocol() 
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_protocol_cb() 
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_protocol_cb() query both CDMA and WCDMA
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list() 
+ofonod[12173]: drivers/qmimodem/sms.c:set_domain_pref_cb() 
+ofonod[12173]: drivers/qmimodem/lte.c:reset_profile_cb() 
+ofonod[12173]: src/sim.c:ofono_sim_add_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: drivers/qmimodem/gprs.c:set_event_report_cb() 
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x20 len 0x0004
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list_cb() 
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list_cb() Err: get msg list mode=0 47=UNKNOWN
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list() 
+ofonod[12173]: drivers/qmimodem/gprs.c:indication_register_cb() 
+ofonod[12173]: src/sim.c:ofono_sim_add_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list_cb() 
+ofonod[12173]: drivers/qmimodem/sms.c:get_msg_list_cb() msgs found 0
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 0
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status unregistered (0)
+ofonod[12173]: src/gprs.c:ofono_gprs_detached_notify() /qrtrsoc_0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: src/message-waiting.c:mw_cphs_mwis_read_cb() No CPHS MWIS on SIM
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f40 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f40 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f40 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f40 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_record() file id 0x6f49 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f46 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_transparent() file id 0x6f46 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:read_generic_cb() 
+ofonod[12173]: src/simfs.c:sim_fs_op_read_block_cb() bufoff: 0, dataoff: 0, tocopy: 17
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() Obtained 4 contexts for 21670, spn: (null)
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: standardnet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: internet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: vitamax.snet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: vitamax.internet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: Duplicate detected for 21670, spn: (null)
+ofonod[12173]: Provisioning failed
+ofonod[12173]: src/sim.c:ofono_sim_remove_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: src/gprs.c:add_context() Registering new context
+ofonod[12173]: plugins/bluez5.c:bt_register_profile() Bluetooth: Registering 00001103-0000-1000-8000-00805f9b34fb (dun_gw) profile
+ofonod[12173]: src/sim.c:ofono_sim_remove_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: src/lte.c:provision_default_attach_info() Provisioning default bearer info with mcc:'216', mnc:'70', spn:'(null)'
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() Obtained 4 contexts for 21670, spn: (null)
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: standardnet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: internet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: vitamax.snet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: src/provision.c:__ofono_provision_get_settings() APN: vitamax.internet.vodafone.net, Type: 1, Proto: 2
+ofonod[12173]: Duplicate detected for 21670, spn: (null)
+ofonod[12173]: drivers/qmimodem/lte.c:qmimodem_lte_set_default_attach_info() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x4f20 path len 0
+ofonod[12173]: drivers/qmimodem/lte.c:modify_profile_cb() 
+ofonod[12173]: plugins/bluez5.c:profile_register_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property AlwaysOnline
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_set_online() 0xffffb3fd5cc0 online
+ofonod[12173]: plugins/qrtrqmi.c:powered_up_cb() error: 0: No error information
+ofonod[12173]: plugins/qrtrqmi.c:set_online_cb() 
+ofonod[12173]: src/modem.c:modem_change_state() old state: 2, new state: 3
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_post_online() 0xffffb3fd5cc0
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_netreg_probe() 
+ofonod[12173]: drivers/qmimodem/netmon.c:qmi_netmon_probe() 
+ofonod[12173]: drivers/qmimodem/ussd.c:qmi_ussd_probe() 
+ofonod[12173]: drivers/qmimodem/call-settings.c:qmi_call_settings_probe() 
+ofonod[12173]: drivers/qmimodem/call-barring.c:qmi_call_barring_probe() 
+ofonod[12173]: drivers/qmimodem/call-forwarding.c:qmi_call_forwarding_probe() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f13 path len 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:set_event_report_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_registration_status() 
+ofonod[12173]: src/sim.c:ofono_sim_add_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: src/network.c:__ofono_netreg_add_status_watch() 0xffffb3fd4040
+ofonod[12173]: src/network.c:__ofono_netreg_add_status_watch() 0xffffb3fd4040
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_ss_info_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 2
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech -1
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 2 tech -1 lac -1 ci -1
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0
+ofonod[12173]: src/gprs.c:netreg_status_changed() 2 (searching)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 0, driver_attached: 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6fc5 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_read_attributes() file id 0x6f15 path len 0
+ofonod[12173]: drivers/qmimodem/sim.c:get_file_attributes_cb() 
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 0
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status unregistered (0)
+ofonod[12173]: src/gprs.c:ofono_gprs_detached_notify() /qrtrsoc_0
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 2
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech -1
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 2 tech -1 lac -1 ci -1
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0
+ofonod[12173]: src/gprs.c:netreg_status_changed() 2 (searching)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 0, driver_attached: 0
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 0
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status unregistered (0)
+ofonod[12173]: src/gprs.c:ofono_gprs_detached_notify() /qrtrsoc_0
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 2
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech -1
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 2 tech -1 lac -1 ci -1
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0
+ofonod[12173]: src/gprs.c:netreg_status_changed() 2 (searching)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 0, driver_attached: 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() signal with 100%(67 dBm) on 8
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 8
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status unregistered (0)
+ofonod[12173]: src/gprs.c:ofono_gprs_detached_notify() /qrtrsoc_0
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 2
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 8
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 216070 (216:070)
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech 7
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 2 tech 7 lac -1 ci -1
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0
+ofonod[12173]: src/gprs.c:netreg_status_changed() 2 (searching)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 0, driver_attached: 0
+ofonod[12173]: drivers/qmimodem/network-registration.c:system_info_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x12 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x13 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x14 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x19 len 0x001d
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x1e len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x27 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x28 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x30 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x32 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x35 len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3a len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3f len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x45 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x0004
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() rat 8 band 145 channel 6200
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x16 len 0x0008
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x16 len 0x0008
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 8
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status registered (1)
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 8
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 216070 (216:070)
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: lte
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 0 lac 65534 cellid 1470722 tech 7
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 1 tech 7 lac 65534 ci 1470722
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_current_operator() 
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0
+ofonod[12173]: src/gprs.c:netreg_status_changed() 1 (registered)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 1, driver_attached: 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_signal_strength() 
+ofonod[12173]: src/gprs.c:netreg_status_changed() 1 (registered)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 1, driver_attached: 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:system_info_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x12 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x13 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x14 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x19 len 0x001d
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x1e len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x21 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x27 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x28 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2a len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2b len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x30 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x32 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x35 len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x39 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3a len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3f len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x45 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x0004
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:event_notify() rat 8 band 145 channel 6200
+ofonod[12173]: drivers/qmimodem/gprs.c:ss_info_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:handle_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/gprs.c:extract_ss_info() radio in use 8
+ofonod[12173]: src/gprs.c:ofono_gprs_status_notify() /qrtrsoc_0 status registered (1)
+ofonod[12173]: drivers/qmimodem/network-registration.c:ss_info_notify() 
+ofonod[12173]: src/network.c:ofono_netreg_time_notify() net time 2026-08-19 22:17:31 utcoff 7200 dst 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() serving system status 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio in use 8
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() radio techs in use: lte
+ofonod[12173]: drivers/qmimodem/network-registration.c:extract_ss_info() roaming 2 lac -1 cellid -1 tech 7
+ofonod[12173]: src/network.c:ofono_netreg_status_notify() /qrtrsoc_0 status 1 tech 7 lac 65534 ci 1470722
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_current_operator() 
+ofonod[12173]: src/network.c:current_operator_callback() 0xffffb3fd4040, 0xffffb384e590
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_signal_strength() 
+ofonod[12173]: src/gprs.c:netreg_status_changed() 1 (registered)
+ofonod[12173]: src/gprs.c:gprs_netreg_update() attach: 1, driver_attached: 1
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() signal with -67 dBm on 8
+ofonod[12173]: src/network.c:ofono_netreg_strength_notify() strength 60
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() 
+ofonod[12173]: drivers/qmimodem/network-registration.c:get_rssi_cb() signal with -67 dBm on 8
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/gprs.c:get_lte_attach_params() 
+ofonod[12173]: drivers/qmimodem/gprs.c:event_report_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x20 len 0x0004
+ofonod[12173]: drivers/qmimodem/gprs.c:get_lte_attach_param_cb() 
+ofonod[12173]: src/gprs.c:ofono_gprs_cid_activated() cid 5
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_read_settings() cid 5
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_lte_attach_param_cb() error: 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:start_network_common_cb() family: 4, error: 0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() conn status 2 ip family 4
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() IP addr: 10.112.77.125
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway: 10.112.77.126
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway netmask: 255.255.255.252
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Primary DNS: 80.244.99.37
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Secondary DNS: 80.244.99.36
+ofonod[12173]: src/gprs.c:pri_read_settings_callback() 0xffffb3fdcaa0
+ofonod[12173]: drivers/qmimodem/network-registration.c:system_info_notify() 
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x12 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x13 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x14 len 0x0003
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x19 len 0x001d
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x1e len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x21 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x27 len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x28 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2a len 0x0001
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x2b len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x30 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x32 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x35 len 0x0002
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x39 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3a len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x3f len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x45 len 0x0004
+ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x0004
+ofonod[12173]: plugins/upower.c:battery_props_changed() 
+ofonod[12173]: src/modem.c:get_modem_property() modem 0xffffb3fd5cc0 property SystemPath
+ofonod[12173]: Terminating
+ofonod[12173]: src/modem.c:modem_change_state() old state: 3, new state: 0
+ofonod[12173]: src/modem.c:flush_atoms() 
+ofonod[12173]: src/call-forwarding.c:call_forwarding_remove() atom: 0xffffb384d830
+ofonod[12173]: drivers/qmimodem/call-forwarding.c:qmi_call_forwarding_remove() 
+ofonod[12173]: src/call-barring.c:call_barring_remove() atom: 0xffffb384d080
+ofonod[12173]: drivers/qmimodem/call-barring.c:qmi_call_barring_remove() 
+ofonod[12173]: src/call-settings.c:call_settings_remove() atom: 0xffffb385cd00
+ofonod[12173]: drivers/qmimodem/call-settings.c:qmi_call_settings_remove() 
+ofonod[12173]: src/ussd.c:ussd_remove() atom: 0xffffb385cbb0
+ofonod[12173]: drivers/qmimodem/ussd.c:qmi_ussd_remove() 
+ofonod[12173]: drivers/qmimodem/netmon.c:qmi_netmon_remove() 
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_detach_shutdown() 
+ofonod[12173]: src/sim.c:ofono_sim_remove_spn_watch() 0xffffb3fd39d0
+ofonod[12173]: src/network.c:netreg_remove() atom: 0xffffb385ca90
+ofonod[12173]: drivers/qmimodem/network-registration.c:qmi_netreg_remove() 
+ofonod[12173]: src/gprs.c:gprs_context_unregister() 0xffffb382c240, 0xffffb3b73470
+ofonod[12173]: src/gprs.c:gprs_context_remove() atom: 0xffffb385c7c0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_remove() 
+ofonod[12173]: src/gprs.c:gprs_context_unregister() 0xffffb382c180, 0xffffb3b73470
+ofonod[12173]: src/gprs.c:gprs_context_remove() atom: 0xffffb385baa0
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_remove() 
+ofonod[12173]: src/gprs.c:gprs_context_unregister() 0xffffb382c080, 0xffffb3b73470
+ofonod[12173]: src/gprs.c:gprs_context_remove() atom: 0xffffb385b980
+ofonod[12173]: drivers/qmimodem/gprs-context.c:qmi_gprs_context_remove() 
+ofonod[12173]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/dun_gw
+ofonod[12173]: src/gprs.c:gprs_unregister() 0xffffb3b73470
+ofonod[12173]: src/gprs.c:gprs_remove() atom: 0xffffb385b800
+ofonod[12173]: drivers/qmimodem/gprs.c:qmi_gprs_remove() 
+ofonod[12173]: src/message-waiting.c:mw_remove() atom: 0xffffb3a4f120
+ofonod[12173]: plugins/push-notification.c:push_notification_cleanup() 0xffffb3820120
+ofonod[12173]: plugins/smart-messaging.c:smart_messaging_cleanup() 0xffffb3820090
+ofonod[12173]: src/sms.c:sms_remove() atom: 0xffffb3829270
+ofonod[12173]: drivers/qmimodem/sms.c:qmi_sms_remove() 
+ofonod[12173]: src/radio-settings.c:radio_settings_remove() atom: 0xffffb3829240
+ofonod[12173]: drivers/qmimodem/radio-settings.c:qmi_radio_settings_remove() 
+ofonod[12173]: src/lte.c:lte_remove() atom: 0xffffb38291e0
+ofonod[12173]: drivers/qmimodem/lte.c:qmimodem_lte_remove() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:voicecall_watch() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:update_profile_registration() Unregistering HFP AG profile
+ofonod[12173]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/hfp_ag
+ofonod[12173]: src/voicecall.c:voicecall_remove() atom: 0xffffb3820cf0
+ofonod[12173]: drivers/qmimodem/voicecall.c:qmi_voicecall_remove() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:sim_watch() 
+ofonod[12173]: src/sim.c:sim_remove() atom: 0xffffb3820c90
+ofonod[12173]: drivers/qmimodem/sim.c:qmi_sim_remove() 
+ofonod[12173]: src/modem.c:devinfo_remove() atom: 0xffffb382a950
+ofonod[12173]: drivers/qmimodem/devinfo.c:qmi_devinfo_remove() 
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_disable() 0xffffb3fd5cc0
+ofonod[12173]: plugins/bluez5.c:unregister_profile_cb() 
+ofonod[12173]: UnregisterProfile() replied an error: org.bluez.Error.DoesNotExist, Does Not Exist
+ofonod[12173]: plugins/qrtrqmi.c:power_disable_cb() 
+ofonod[12173]: src/modem.c:modem_change_state() old state: 0, new state: 0
+ofonod[12173]: src/plugin.c:__ofono_plugin_cleanup() 
+ofonod[12173]: plugins/push-notification.c:push_notification_exit() 
+ofonod[12173]: plugins/smart-messaging.c:smart_messaging_exit() 
+ofonod[12173]: plugins/hfp_ag_bluez5.c:hfp_ag_exit() 
+ofonod[12173]: src/handsfree-audio.c:ofono_handsfree_card_driver_unregister() driver: 0xaaaab8201a10
+ofonod[12173]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/dun_gw
+ofonod[12173]: plugins/bluez5.c:bt_unregister_profile() Bluetooth: Unregistering profile /bluetooth/profile/hfp_hf
+ofonod[12173]: src/handsfree-audio.c:ofono_handsfree_card_driver_unregister() driver: 0xaaaab82018e0
+ofonod[12173]: src/private-network.c:ofono_private_network_driver_unregister() driver: 0xaaaab8201888, name: ConnMan Private Network
+ofonod[12173]: plugins/udevng.c:destroy_modem() /embedded/qrtr/3
+ofonod[12173]: src/modem.c:ofono_modem_remove() 0xffffb3fd5cc0
+ofonod[12173]: src/modem.c:modem_unregister() 0xffffb3fd5cc0
+ofonod[12173]: plugins/qrtrqmi.c:qrtrqmi_remove() 0xffffb3fd5cc0
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3820430
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828e30
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828bf0
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3820450
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828db0
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3820490
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828c90
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828d30
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb381fa40
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828df0
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb38204d0
+ofonod[12173]: src/modem.c:unregister_property() property 0xffffb3828ed0
+ofonod[12173]: src/modem.c:emit_modem_removed() 0xffffb3fd5cc0
+ofonod[12173]: src/modem.c:call_modemwatches() 0xffffb3fd5cc0 added:0
+ofonod[12173]: plugins/udevng.c:destroy_modem() (null)
+ofonod[12173]: plugins/udevng.c:destroy_modem() (null)
+ofonod[12173]: plugins/udevng.c:destroy_modem() (null)
+ofonod[12173]: plugins/udevng.c:destroy_modem() (null)
+src/module.c:__ofono_modules_cleanup() 
+ofonod[12173]: Exit
