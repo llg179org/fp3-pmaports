@@ -1162,69 +1162,66 @@ MPSS out of its own low-power state or waking the application processor
 repeatedly, and those two have different fixes. **The next measurement is
 wakeup accounting across a suspend**, not a patch.
 
-### ★ RESUME POINT, 2026-08-19 19:00 - READ THIS FIRST
+### ★ RESUME POINT, 2026-08-19 19:40 - READ THIS FIRST
 
-**Nothing is running on the device.** The first unattended night finished
-cleanly: three jobs, zero failures, charger restored, everything modprobed back.
-Artefacts in [`night/runs/lpass-20260819/`](night/runs/).
+**Running on the device:** `night-guardian` and `night-queue`
+([`night/jobs-adsp.txt`](night/jobs-adsp.txt)), waiting for the pack to reach
+99 % and then running `adsp-restart-leg.sh adsprestart-20260819` - a full slope
+leg with the ADSP restarted first. A host supervisor pulls to
+[`night/runs/adsp-20260819/`](night/runs/) every five minutes. Expect it to
+finish some hours after the charge completes.
 
-**The harness works.** [`night/`](night/README.md) - preflight, guardian, queue,
-host supervisor, reboot-resume. Both gates were shown failing before being
-trusted, and the first armed attempt aborted in twenty seconds on a gate that
-listed the unit running it. Arming instructions are in that README.
+☠️ **Nothing else may touch the device until it ends.**
 
-**★★ The night's result is a negative, and it is the important kind.**
+## ★★★ The finding of the evening
 
-Step 1 asked which ADSP client holds LPASS awake. Six stages, 240 s each, the
-counter re-verified live in all six (3 of 3 other masters moving every time):
+**One restart of the ADSP and the audio DSP power-collapses in every suspend
+after it, for the rest of the boot.** Before: 2 collapses since boot, 0.12 s
+total. After: the crystal off for 30.7-31.3 s of every 30 s suspend, and by the
+time the leg started, 16 collapses and 253 s of XO-off in ordinary idle.
 
-| stage | removed | LPASS shutdowns | vlow |
-|---|---|---|---|
-| S0 | nothing | +0 | 0 |
-| S1 | sensor userspace | +0 | 0 |
-| S2 | all six SMGR drivers | +0 | 0 |
-| S3 | audio userspace | +0 | 0 |
-| S4 | ☠️ nothing - the rmmod could not work | +0 | 0 |
-| S5 | **the ADSP itself, `state=offline`** | **+0** | **0** |
+The evidence is an alternating A/B
+([`captures/2026-08-19_lpass-restart-ab.txt`](captures/2026-08-19_lpass-restart-ab.txt)):
+round 1's plain arm is the only one that did not collapse, and the only one taken
+before the first restart. So **something opened at boot holds a session on the
+ADSP and never closes it**; reloading the firmware tears it down and nothing
+re-establishes it. The sensors still answer afterwards, so it is not the SMGR
+session.
 
-A late control with everything restored read the same, so the zeros are not an
-artefact of the removals. Raw:
-[`captures/2026-08-19_lpass-holders.txt`](captures/2026-08-19_lpass-holders.txt).
+☠️ **`vlow` is still 0.** LPASS collapsing is necessary and not sufficient. The
+claim this investigation carried for a day - that a master which never shuts down
+is a *sufficient* explanation for `vlow` - is now measured to be half wrong.
 
-**With the DSP stopped outright the gate did not open.** No client of ours holds
-LPASS in a way that removing the client fixes. ☠️ It does **not** follow that
-LPASS is innocent: a halted subsystem may leave its last vote standing, in which
-case S5 removed the processor and not the vote. That is now the question.
+☠️ **And it has no price yet.** That is what the running leg is for. Compare its
+phase-A slope directly against `baseline-20260819`'s **-35.77 mV/h**; the derived
+mA is for scale only.
 
-☠️ **S4 was not a cut** - every q6 module stayed loaded, `snd_soc_apq8016_sbc` at
-refcount 3 with no module users, because the references were the bound sound
-card. It printed `still loaded` above its own delta, which is the only reason it
-did not become a finding. Fixed: S4 unbinds `c051000.sound-card` first.
+## What closed today, and how
 
-**★ And the rail census landed**, across a real 30 s suspend: 35 resources voted,
-**22 cast no sleep vote**, five of those are enabled PMIC rails.
-[`leads/rpm-sleep-set.md`](leads/rpm-sleep-set.md) has the table. ☠️ Three of the
-five are USB PHY rails and the census was taken with USB attached - that is our
-own confound, not a finding.
+| branch | verdict |
+|---|---|
+| "an ADSP client holds LPASS" | **closed.** Six stages, up to and including stopping the DSP; nothing moved. ☠️ S1-S4 never suspended, so half of them could not have shown anything |
+| "the regulator sleep set costs current here" | **closed.** Five suspect rails became one with USB unbound, and that one is the eMMC's |
+| "USB stops the DSP collapsing" | **closed**, three alternating rounds, 20 minutes after it was proposed |
+| "something holds a session on the ADSP" | **open and now the lead** |
+
+☠️ Two of those four were closed by asking what else was true of the phone at the
+time. The answer both times was "a USB cable", which is true of every measurement
+this investigation has ever taken.
 
 **Next, in order:**
 
-1. **Repeat the census without USB.** Unbind the USB controller over the WiFi
-   link (`192.168.100.17`), then re-run `rail-census.sh`. What survives is the
-   real list. Until then `ldoa/3` and `ldoa/13` mean nothing.
-2. **Does a stopped LPASS still vote?** Stop the ADSP and re-run the census: if
-   its rails are still voted active with the processor offline, the vote outlives
-   the master and S5's negative has an explanation that does not clear LPASS.
-3. **Whether the ADSP is ever told it may collapse** - the vendor sends explicit
-   power-collapse requests over APR that mainline may not send at all. This is
-   source work, not a measurement.
-4. **Re-run S4 as a real cut** now that it unbinds the card.
-5. Still open and unrelated: wakeup accounting across a suspend, for the modem's
+1. *(running)* what the ADSP restart is worth in mA.
+2. **Who opens the session.** The candidates are whatever probes the ADSP at
+   boot: the q6 stack's AFE/ADM, the sound card probe, `fp3-voiced`, the SMGR
+   clients. The test is a boot with one of them prevented from starting, then a
+   suspend - the counter answers in 30 seconds.
+3. **What else votes.** `vlow` did not move with LPASS collapsing, so the
+   remaining blocker is a different master or a standing resource vote.
+4. Still open and unrelated: wakeup accounting across a suspend, for the modem's
    36 mA.
 
-☠️ Do not write a patch yet. Two mechanically plausible branches have now closed
-with the counter moving and the current not (XO), or the counter not moving at
-all (LPASS).
+☠️ Still no patch. Four mechanically plausible branches have now closed.
 ### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
 
 Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,

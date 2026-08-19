@@ -1,0 +1,15 @@
+# lpass-usb-ab uptime=47 rounds=3 suspend=30s
+# LPASS at start: shutdowns=3 xo=2 xo_dur=2464840
+
+== round 1 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+== round 2 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+== round 3 ==
+  USB ON    suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  USB OFF   suspends +1  APSS +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+
+# lpass-usb-ab done uptime=284
+# restored: usb=yes phy=yes rc=0

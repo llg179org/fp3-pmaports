@@ -1,0 +1,4 @@
+[1113] # queue adsp start jobfile=/root/night/jobs-adsp.txt cap=97% v=4346633
+[1113] # preflight 95
+[1133] # preflight PASSED
+[1133] # charge: waiting for >= 99%, cap now 97%, max 240 min
