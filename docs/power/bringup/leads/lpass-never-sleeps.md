@@ -229,6 +229,47 @@ nothing.** It sits alongside `vlow` never moving: the master goes down, the gate
 stays shut, and the current barely notices. Whatever the 43–79 mA of sleep is
 spent on, it is not the ADSP being awake.
 
+### ★★ And the holder is named: an LPASS clock the codec never releases
+
+Two measurements, minutes apart, on a fresh boot (2026-08-20 00:06):
+
+**It is not the UCM verb.** [`../tools/audio-hold-probe.sh`](../tools/audio-hold-probe.sh)
+dropped the capture pre-route, then the playback route, then put one back, with a
+30 s suspend after each. Its first arm is a gate and it passed - the phone was in
+the held state, `LPASS +0` as booted - and then **every arm read `LPASS +0`,
+`XO off 0 ms of 30000 ms`**. Turning off both q6routing mixers changes nothing.
+
+**It is a clock.** `clk_summary`, one line, with everything else in the LPASS
+block at zero:
+
+```
+LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE  enable=1  prepare=1  19200000 Hz  c0f0000.codec  mclk
+```
+
+That clock is **provided by the ADSP over APR** (`q6afe-clocks`), and it is held by
+the codec, prepared and enabled, from boot. A processor cannot power-collapse
+while it is sourcing a 19.2 MHz clock for someone else.
+
+It fits every observation this page has collected:
+
+- it is taken at probe and never released, so the DSP is free for the first few
+  seconds of a boot and held thereafter — which is exactly the counter's shape;
+- an **ADSP restart** tears the APR session down and nothing re-enables it, which
+  is why one restart frees the DSP *for the rest of the boot*;
+- it is a clock, not a DAPM route, so the UCM mixers were never going to matter;
+- the stage that removed the q6 stack (S4) never suspended, so it could not have
+  seen it either.
+
+☠️ **And it is ours.** The MCLK wiring is part of this port's WCD9335 bring-up.
+The fix is a release — the codec should drop the clock when no path needs it —
+not a new power-collapse request.
+
+☠️ **Unconfirmed.** No experiment has yet dropped that clock and watched the
+counter; the chain above is consistent but circumstantial. The test is to release
+it (unbind or unload the codec) and suspend. It is cheap, and it is worth doing
+for correctness — but on the evidence above it buys about 4 % of the sleep
+current, so it should not be scheduled ahead of anything that might buy more.
+
 ☠️ **This does not make the mechanism worthless — it makes it cheap and clean.**
 Something we start at boot holds a session on the DSP forever; finding and
 releasing it is a correctness fix worth having, and possibly an upstream one. It

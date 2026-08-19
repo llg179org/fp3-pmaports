@@ -53,3 +53,5 @@
 23:47:35 192.168.100.17 up=16172 q=active g=active cap=76 v=3862961 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 23:52:37 192.168.100.17 up=16474 q=active g=active cap=76 v=3862961 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
 23:57:39 192.168.100.17 up=16776 q=active g=active cap=76 v=3853813 chg=Discharging root=rw [1955] # job 1 START (timeout 21600s): /root/adsp-restart-leg.sh adsprestart-20260819 
+00:02:41 192.168.100.17 up=33 q=inactive g=inactive cap=76 v=3953661 chg=Charging root=rw 
+00:07:58 !! device unreachable on both links (miss 1)
