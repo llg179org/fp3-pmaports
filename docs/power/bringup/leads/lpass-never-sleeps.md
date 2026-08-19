@@ -190,9 +190,50 @@ explanation while it was true, and now that it is false `vlow` has not moved.
 `in_proximity_raw=245`), so this is not "the SMGR session died and took the
 sensors with it".
 
-**What is still unmeasured is the only thing that matters: what it is worth.**
-A slope leg with the ADSP restarted at the start, against `baseline-20260819`.
-Until that number exists this is a mechanism with no price.
+### ☠️☠️ What it is worth: about 4 %, and that is inside the noise
+
+Measured overnight, `adsprestart-20260819`, gated on a probe suspend that showed
+the DSP collapsing for 30 625 ms of a 30 000 ms suspend before the four hours were
+spent. 6 of 6 suspends, every one `slept=901s of 900s`. Raw:
+[`../captures/2026-08-20_pmos_adsprestart-leg.txt`](../captures/2026-08-20_pmos_adsprestart-leg.txt).
+
+| phase | window | slope | r² |
+|---|---|---|---|
+| A (asleep, DSP collapsing) | 4.0547 → 4.0106 V | **−34.32 mV/h** | 0.9885 |
+| B (awake control) | 3.9795 → 3.8860 V | −73.13 mV/h | 0.9915 |
+
+**Compare phase-A slopes directly, which is the rule the XO A/B paid for:**
+
+| leg | cut | phase-A slope |
+|---|---|---|
+| `xo-on-20260818` | — | −35.29 mV/h |
+| `xo-off-20260818` | — | −35.44 mV/h |
+| `baseline-20260819` | — | −35.77 mV/h |
+| **`adsprestart-20260819`** | **ADSP collapsing every suspend** | **−34.32 mV/h** |
+
+**4 % against a baseline that reproduces to 1.4 %.** That is not zero and it is
+not a result either: one leg, one arm, and the effect is the same size as two
+baselines' disagreement.
+
+☠️ **And the window is lower than the baseline's** (4.055→4.011 V against
+4.088→4.059 V). Near 4.0 V the OCV curve is flatter, so the same current produces
+a *slower* voltage fall — which biases this leg toward looking better than it is.
+The honest reading is **"at most 4 %, plausibly nothing"**, not "4 %".
+
+The awake control is 150.8 mA, which is the figure this instrument has always
+reproduced, so unlike the modem leg this one's derived numbers are directly
+comparable: **70.8 mA asleep against the baseline's 79.1 mA.**
+
+**So the audio DSP's permanent wakefulness is a real mechanism that costs almost
+nothing.** It sits alongside `vlow` never moving: the master goes down, the gate
+stays shut, and the current barely notices. Whatever the 43–79 mA of sleep is
+spent on, it is not the ADSP being awake.
+
+☠️ **This does not make the mechanism worthless — it makes it cheap and clean.**
+Something we start at boot holds a session on the DSP forever; finding and
+releasing it is a correctness fix worth having, and possibly an upstream one. It
+is simply not the deep-sleep lever, and the next measurement should not be spent
+as if it were.
 
 If *that* holds, it reframes the whole page: LPASS does not "never sleep" - **something we
 start keeps a session open on it and never closes it**, and the fix is a
