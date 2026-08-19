@@ -44,18 +44,33 @@ CUTS="$*"
 cut_off() {
 	for s in $CUTS; do
 		if [ "$s" = wifi ]; then nmcli radio wifi off 2>/dev/null
+		elif [ "$s" = display ]; then
+			# ☠️ "cutting" the display means forcing DPMS off. Setting the
+			# backlight to 0 is NOT the same thing and was the trap: a panel at
+			# zero brightness is still powered, and a leg that only dimmed it
+			# measured the panel as if it were off.
+			for d in /sys/class/drm/card0/card0-*/dpms; do
+				[ -w "$d" ] && echo off > "$d"
+			done
+			for fb in /sys/class/graphics/fb*/blank; do [ -w "$fb" ] && echo 4 > "$fb"; done
 		else systemctl stop "$s" 2>/dev/null; fi
 	done
 }
 cut_on() {
 	for s in $CUTS; do
 		if [ "$s" = wifi ]; then nmcli radio wifi on 2>/dev/null
+		elif [ "$s" = display ]; then
+			for fb in /sys/class/graphics/fb*/blank; do [ -w "$fb" ] && echo 0 > "$fb"; done
+			for d in /sys/class/drm/card0/card0-*/dpms; do
+				[ -w "$d" ] && echo on > "$d"
+			done
 		else systemctl start "$s" 2>/dev/null; fi
 	done
 }
 cut_state() {
 	for s in $CUTS; do
 		if [ "$s" = wifi ]; then say "#   wifi radio -> $(nmcli radio wifi 2>/dev/null)"
+		elif [ "$s" = display ]; then say "#   dpms -> $(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)"
 		else say "#   $s -> $(systemctl is-active "$s" 2>/dev/null)"; fi
 	done
 }
@@ -74,6 +89,18 @@ say "# $LABEL start uptime=$(cut -d. -f1 /proc/uptime) boot_id=$(cat /proc/sys/k
 systemctl stop greetd 2>/dev/null
 sleep 5
 for bl in /sys/class/backlight/*; do [ -w "$bl/brightness" ] && echo 0 > "$bl/brightness"; done
+
+# ☠️ A probe has to ESTABLISH the un-cut state, not assume it. Measured
+# 2026-08-19: this was launched to test the display with the panel already
+# blanked by phosh, so P0 and P1 would have been the same state and the probe
+# would have reported "the display costs nothing" - a null produced by the
+# setup, not by the device. Whatever is in CUTS, put it back on first.
+case " $CUTS " in
+*" display "*)
+	for d in /sys/class/drm/card0/card0-*/dpms; do [ -w "$d" ] && echo on > "$d"; done
+	say "# forced dpms on for the baseline -> $(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)"
+	;;
+esac
 
 echo Unknown > $CHG/status
 sleep 15
@@ -95,7 +122,9 @@ sample() {
 	say "$1 $(cut -d. -f1 /proc/uptime) $(cat $B/current_now) $(cat $B/voltage_now) $(cat $B/capacity) \
 p0cur=$(cat $CPU/policy0/scaling_cur_freq) p4cur=$(cat $CPU/policy4/scaling_cur_freq) \
 p0trans=$(cat $CPU/policy0/stats/total_trans) p4trans=$(cat $CPU/policy4/stats/total_trans) \
-p0tis=[$(tis 0)] p4tis=[$(tis 4)]"
+p0tis=[$(tis 0)] p4tis=[$(tis 4)] \
+dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null) \
+bl=$(cat /sys/class/backlight/*/brightness 2>/dev/null | head -1)"
 }
 
 phase() {
