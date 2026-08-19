@@ -53,3 +53,4 @@ adsprestart-20260819 phase=B n=0 t=12190 v=3963198 i=-135650 pll=254 nread=20
 adsprestart-20260819 phase=B n=1 t=13121 v=3944708 i=-151443 pll=294 nread=20
 adsprestart-20260819 phase=B n=2 t=14052 v=3915804 i=-157623 pll=329 nread=20
 adsprestart-20260819 phase=B n=3 t=14982 v=3903542 i=-139007 pll=360 nread=20
+adsprestart-20260819 phase=B n=4 t=15913 v=3882716 i=-168762 pll=397 nread=20

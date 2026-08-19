@@ -332,3 +332,13 @@ up=15774 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=287208 apss
 up=15804 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=288691 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3886122 i=-210113 chg=Discharging online=0
 up=15834 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=290090 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3878921 i=-179596 chg=Discharging online=0
 up=15864 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=291486 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3884176 i=-168762 chg=Discharging online=0
+up=15894 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=292823 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3891183 i=-114135 chg=Discharging online=0
+up=15924 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=294110 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3875807 i=-163421 chg=Discharging online=0
+up=15954 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=295529 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3882814 i=-155334 chg=Discharging online=0
+up=15984 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=296922 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3866659 i=-356903 chg=Discharging online=0
+up=16014 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=298347 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3885344 i=-153656 chg=Discharging online=0
+up=16044 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=299762 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3869967 i=-233154 chg=Discharging online=0
+up=16074 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=301190 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=77 v=3889820 i=-94757 chg=Discharging online=0
+up=16104 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=302618 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=76 v=3869773 i=-180816 chg=Discharging online=0
+up=16134 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=303989 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=76 v=3896049 i=-93383 chg=Discharging online=0
+up=16165 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=305401 apss_xo=0 lpass_shut=29 vlow=0 vmin=0 susp_ok=20 susp_fail=0 cap=76 v=3892156 i=-186615 chg=Discharging online=0

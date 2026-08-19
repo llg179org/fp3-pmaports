@@ -169,6 +169,34 @@ Plus everything the graphics set needs: `mesa-egl`/`gles`/`gbm`/`dri-gallium`
 anywhere — not in Alpine, not in pmaports (checked both; `device-wd-glacier` is a
 phone, not the UI). Neither is `ngfd`, nor a home UI.
 
+### ★ Both Qt prerequisites are already packaged — no Qt rebuild
+
+Verified by downloading the packages and listing them, not by reading a package
+description. ☠️ The names are misleading in both directions and this is exactly
+where an assumption would have produced a wrong estimate.
+
+`qt5-qtbase-x11` 5.15.18 — despite the name, this is where `libQt5Gui` and **all**
+the platform plugins live:
+
+```
+usr/lib/qt5/plugins/platforms/libqeglfs.so
+usr/lib/qt5/plugins/egldeviceintegrations/libqeglfs-kms-integration.so      <- KMS/GBM
+usr/lib/qt5/plugins/egldeviceintegrations/libqeglfs-kms-egldevice-integration.so
+```
+
+`qt5-qtwayland` 5.15.18 — ships the **compositor**, not only the client:
+
+```
+usr/lib/libQt5WaylandCompositor.so.5
+usr/lib/qt5/plugins/wayland-graphics-integration-server/libqt-wayland-compositor-wayland-egl.so
+usr/lib/qt5/plugins/wayland-graphics-integration-server/libqt-wayland-compositor-linux-dmabuf-unstable-v1.so
+```
+
+**That is the whole platform foundation Lipstick needs, already built for
+aarch64.** The PinePhone adaptation's eight-package graphics list maps onto Alpine
+packages one for one, and the eglfs KMS integration — the piece that would have
+meant rebuilding Qt if it were missing — is there.
+
 ### What building Lipstick would take
 
 From `sailfishos/lipstick`'s own spec (`lipstick-qt5.spec`, version 0.36.29), the
