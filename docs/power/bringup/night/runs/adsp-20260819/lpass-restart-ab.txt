@@ -1,0 +1,19 @@
+# lpass-restart-ab uptime=340 rounds=3 suspend=30s settle=20s
+# LPASS at start: shutdowns=3 xo=2 xo_dur=2464840
+# audio services: active active active
+
+== round 1 ==
+  PLAIN          suspends +1  LPASS +0  XO +0  XOdur +0ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +31071ms  vlow 0->0  vmin 0->0
+== round 2 ==
+  PLAIN          suspends +1  LPASS +1  XO +1  XOdur +30846ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +30995ms  vlow 0->0  vmin 0->0
+== round 3 ==
+  PLAIN          suspends +1  LPASS +1  XO +1  XOdur +30756ms  vlow 0->0  vmin 0->0
+  (adsp restarted, state=running, settled 20s)
+  AFTER RESTART  suspends +1  LPASS +1  XO +1  XOdur +31259ms  vlow 0->0  vmin 0->0
+
+# lpass-restart-ab done uptime=708
+# restored: adsp=running rc=0

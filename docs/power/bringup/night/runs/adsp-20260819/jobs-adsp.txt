@@ -1,0 +1,15 @@
+# The price of the ADSP's held session.
+#
+# Measured 2026-08-19 19:35: one restart and the DSP power-collapses in every
+# suspend afterwards, crystal off for the whole of it. This leg is what that is
+# worth in mA, against baseline-20260819 (phase-A slope -35.77 mV/h).
+#
+# ☠️ Compare phase-A slopes directly. The derived mA is for scale only.
+@preflight 95
+# ☠️ slope-leg.sh refuses to start under 99%, and the pack sits at 97% after a
+# termination until it falls to the 4.30 V recharge threshold - which is minutes
+# to an hour of idle, not a fault. Wait for it rather than aborting a night on it.
+@charge 99 240
+@note restart the ADSP, gate on a probe suspend, then a full slope leg
+@timeout 21600
+/root/adsp-restart-leg.sh adsprestart-20260819
