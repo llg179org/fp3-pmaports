@@ -35,7 +35,7 @@ PIDS=/run/slope-leg-$TAG.pids
 TARGET=4030000
 FLOOR=3800000
 START_MIN=4200000
-START_CAP=99
+START_CAP=${START_CAP:-95}
 
 say() { echo "$(cut -d. -f1 /proc/uptime) $TAG: $*" >> "$LOG"; }
 
@@ -56,9 +56,20 @@ say "kernel=$(uname -r) boot_id=$(cat /proc/sys/kernel/random/boot_id)"
 say "cmdline=$(tr '\0' ' ' < /proc/cmdline)"
 
 # ☠️ voltage_now is inflated while the charger is pushing, so it alone cannot
-# say the pack is full; capacity is the second opinion. Legs that start from
-# different amounts of charge cover different parts of the curve, and then the
-# phases land in different places - the exact failure this guard exists for.
+# say the pack is full; capacity is the second opinion.
+#
+# START_CAP was 99 on the reasoning that legs starting from different amounts of
+# charge cover different parts of the curve. ☠️ Measured 2026-08-19, that
+# reasoning is already satisfied twice over: the leg DESCENDS to a fixed TARGET
+# (4.03 V) under CPU load before it measures anything, so every leg's phases land
+# in the same window whatever it started from - and START_MIN is the guard that
+# actually matters. The 99 % it demanded cost one to three hours of charge wait
+# per leg for no measurement benefit.
+#
+# Worse, it could not be satisfied at all in the state it usually found: with the
+# charger attached and the pack terminated, current_now reads 0 and charge_now
+# does not move, because the system runs off USB. The pack never falls to the
+# 4.30 V recharge threshold, so "wait for 99 %" waits forever.
 if [ "$v0" -lt "$START_MIN" ]; then
 	say "ABORT: starting at $v0, below START_MIN=$START_MIN - charge first"
 	exit 1

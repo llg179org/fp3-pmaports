@@ -101,6 +101,25 @@ the ADSP unbound with nothing running to rebind them.
 reason long unattended runs were barred is that the one failure this device has
 shown destroys its own record.
 
+## ☠️ Waiting for a charge that cannot happen
+
+`@charge 99` looks like a safe way to start a leg from a full pack. Measured
+2026-08-19: with the charger attached and the pack terminated, `current_now`
+reads **0** and `charge_now` does not move for minutes at a time - the system is
+running off USB and the battery is neither charging nor discharging. The pack
+therefore never falls to the 4.30 V recharge threshold, the charger never
+restarts, and the wait runs to its timeout having achieved nothing.
+
+Two ways out, and the second is better:
+
+1. Dip it deliberately - suspend USBIN long enough to drop the pack under the
+   recharge threshold, then restore. Costs the dip.
+2. **Do not need a full pack.** `slope-leg.sh` descends to a fixed 4.03 V target
+   under CPU load before it measures anything, so every leg's phases land in the
+   same window whatever it started from. `START_CAP` was 99 % on reasoning the
+   descent already satisfies; it is 95 % now, and that alone removes one to three
+   hours of charge wait per leg.
+
 ## Surviving a reboot
 
 A night that ends at the first reboot is not autonomous, and the guardian's own
