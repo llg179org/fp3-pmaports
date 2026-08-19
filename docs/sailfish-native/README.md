@@ -67,6 +67,89 @@ whether the userspace exists. Treat it as one gate passed out of several.
 set) are requirements of Jolla's own middleware rather than of the kernel/Sailfish
 boundary. A native port may not need all 29. None of them is expensive either way.
 
+## Question 1, first answer: the plugin exists, and it is not auto-detected
+
+**ofono has a QRTR driver upstream.** `plugins/qrtrqmi.c` is in
+`git.kernel.org/pub/scm/network/ofono/ofono.git`, copyright 2024 Cruise LLC, and
+`Makefile.am` builds it unconditionally inside the `if QMIMODEM` block - which is
+on by default. Alpine ships **ofono 2.19** in `community/aarch64`, configured with
+a plain `./configure --enable-external-ell --enable-test`, so it does **not**
+disable QMI. The plugin is therefore in the packaged binary we can install.
+
+That removes the version of this question that would have ended the enquiry: it
+is not "does ofono speak QRTR at all".
+
+☠️ **But `qrtrqmi` is a modem *driver*, not an auto-detecting plugin.** Read the
+source rather than assuming udev finds it: it registers via
+`OFONO_MODEM_DRIVER_BUILTIN(qrtrqmi, ...)` and takes its whole configuration from
+modem properties, documented in the file itself:
+
+| property | what it wants |
+|---|---|
+| `NetworkInterface` | *"`rmnet_ipa` on SoC systems, or `wwan0` for upstream linux systems"* |
+| `NetworkInterfaceIndex` | the index of that interface |
+| `PremuxInterface<n>` / `<n>MuxId` | the pre-multiplexed netdev and its mux id (e.g. `rmnet0`, mux 1) |
+| `NumPremuxInterfaces` | how many of them |
+
+So on this device the modem has to be **declared by hand** in `/etc/ofono/modem.conf`
+with `Driver=qrtrqmi` and the interface names this phone actually has. There is no
+udev rule that will do it for an integrated SoC modem, and an ofono that starts
+and reports no modems is the expected outcome of skipping this - not a failure.
+
+**Which makes the first device measurement a cheap one:** what rmnet interfaces
+exist on FP3 pmOS today, and what does ModemManager - the working oracle on the
+same phone, on the same transport - bind to? `ipa2_lite` is in the module list, so
+the netdevs should be there.
+
+## Question 2, second answer: the open graphics set is small, and it is Mesa + eglfs
+
+From the PinePhone adaptation, which is the reference native (non-hybris) port:
+[`sailfish-on-dontbeevil/droid-config-pinephone`](https://github.com/sailfish-on-dontbeevil/droid-config-pinephone),
+`patterns/patterns-sailfish-device-adaptation-pinephone.inc`. The entire graphics
+requirement is eight packages:
+
+```
+mesa-dri-drivers  mesa-libEGL  mesa-libGLESv2  mesa-libgbm  wayland-egl
+qt5-plugin-platform-eglfs  qt5-qtwayland-wayland_egl  qtscenegraph-adaptation
+```
+
+plus one config file, `/etc/eglfs-config.json`, whose entire content is:
+
+```json
+{ "device": "/dev/dri/card1", "hwcursor": false }
+```
+
+**Lipstick runs on Qt's `eglfs` platform over KMS/GBM, with Mesa underneath.** No
+libhybris, no droidmedia, no Android container in that path - and the pattern
+proves it by what it comments *out*: `hybris-libsensorfw-qt5` and
+`gstreamer1.0-droid` are both disabled on this port.
+
+☠️ **One hybris-named package survives on the native port**: `mce-plugin-libhybris`,
+for the notification LED. The name is misleading; it does not imply an Android
+layer.
+
+The rest of the pattern is ordinary middleware — `pulseaudio`, `gstreamer1.0-*`,
+`bluez5-tools`, `usb-moded`, `connman` plugins, `gpsd`/`geoclue`, `alsa-ucm-conf`,
+`sensorfw` config — and the device-specific packages follow the familiar HADK
+shape even on a native port: `droid-config-<device>`,
+`droid-hal-version-<device>`, `kernel-adaptation-<device>`. **The "droid-" names
+are kept for the packaging scaffolding, not because Android is involved.**
+
+☠️ **The PinePhone's modem is not comparable to ours and its ofono fork is not the
+one we want.** It carries `eg25-manager` and `atinout` because the EG25-G is an
+external USB modem; the org's `ofono` fork is described as *"Ofono fork with QMI
+modem support for the PinePhone"*, i.e. USB QMI. The FP3's modem is integrated and
+reached over QRTR, so the relevant code is upstream `qrtrqmi`, not that fork.
+
+## What is still unmeasured
+
+- Everything on the device. Both answers above are from source and packaging.
+- Whether `qt5-plugin-platform-eglfs` and `qtwayland` exist as **pmOS/Alpine**
+  packages (the PinePhone set is RPM, from Jolla's own OBS).
+- Whether Lipstick itself builds. Lipstick is open
+  (`github.com/sailfishos/lipstick`); the **Silica UI and the homescreen are
+  not**, which is the part no amount of building solves.
+
 ## Run log
 
 ### 2026-08-19 21:xx — started, host-side only
@@ -76,3 +159,6 @@ was deliberately not touched: an SSH login wakes it, and the leg's phase A is a
 series of 900 s suspends. Host-side work only until it finished.
 
 - `mer_verify_kernel_config` run and written up above.
+- ofono `qrtrqmi` confirmed present upstream and built by default; Alpine ships
+  ofono 2.19. The driver's own configuration requirements read out of its source.
+- The PinePhone adaptation pattern and `eglfs-config.json` read from GitHub.
