@@ -54,7 +54,7 @@ say "# de-compare label=$LABEL screen=$SCREEN uptime=$(cut -d. -f1 /proc/uptime)
 # phosh is a session that came up into nothing - measured 2026-08-19, on a
 # greetd restarted by hand rather than by a boot, where the selftest correctly
 # reported "no local graphical session". After a clean boot both are 1.
-say "# phoc=$(pgrep -xc phoc 2>/dev/null || echo 0) phosh=$(pgrep -xc phosh 2>/dev/null || echo 0) sway=$(pgrep -xc sway 2>/dev/null || echo 0)"
+say "# phoc=$(ps -eo comm | grep -cx phoc) phosh=$(ps -eo comm | grep -cx phosh) sway=$(ps -eo comm | grep -cx sway)"
 say "# session procs: $(ps -eo comm | grep -icE 'phoc|phosh|sway|sxmo|gnome-session' 2>/dev/null || echo 0)"
 say "# sessions: $(loginctl list-sessions --no-legend 2>/dev/null | wc -l)"
 # ☠️ The live greetd config on this device is NOT /etc/greetd/config.toml -
