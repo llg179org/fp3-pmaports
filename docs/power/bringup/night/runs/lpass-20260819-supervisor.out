@@ -1,0 +1,4 @@
+18:27:05 # supervisor lpass-20260819 start poll=300s max=6h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/lpass-20260819
+18:27:06 192.168.100.17 up=33081 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:27:27 # supervisor lpass-20260819 start poll=300s max=6h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/lpass-20260819
+18:27:28 192.168.100.17 up=33103 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 

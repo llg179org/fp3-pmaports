@@ -1,0 +1,15 @@
+# guardian start uptime=32837 gap=10s reboot_on_fail=1 emerg=3550000uV max=14h
+up=32837 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=845338 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4412226 i=220489 chg=Charging online=1
+up=32848 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=845542 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4412810 i=218353 chg=Charging online=1
+up=32858 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=845726 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4412421 i=217743 chg=Charging online=1
+up=32868 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=845932 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413005 i=218353 chg=Charging online=1
+up=32878 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=846113 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413394 i=218048 chg=Charging online=1
+up=32888 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=846292 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413199 i=216217 chg=Charging online=1
+up=32898 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=846472 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413589 i=215149 chg=Charging online=1
+up=32908 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=846631 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413005 i=214996 chg=Charging online=1
+# guardian start uptime=32962 gap=30s reboot_on_fail=1 emerg=3550000uV max=14h
+up=32962 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=847630 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413199 i=213318 chg=Charging online=1
+up=32993 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=848166 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413199 i=210724 chg=Charging online=1
+up=33023 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=848714 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413394 i=208435 chg=Charging online=1
+up=33053 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=849233 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413005 i=206604 chg=Charging online=1
+up=33083 write=ok timing=10 (mmc HS400) clock=200000000 Hz apss_shut=849753 apss_xo=0 lpass_shut=2 vlow=0 vmin=0 susp_ok=6 susp_fail=0 cap=100 v=4413199 i=204467 chg=Charging online=1

@@ -1,0 +1,18 @@
+# Night of the LPASS holder hunt - step 1 of the deep-sleep chain.
+# Measurement only. Nothing here may become a patch until the counter moves.
+@preflight 95
+@note step 1: who holds LPASS - six stages, four minutes each, counter re-verified per stage
+@timeout 7200
+/root/night/lpass-holders.sh 240 30
+
+# Whatever the stages said, take the rail census across a suspend: it names the
+# rails still voting active-set, which is the other half of the same gate.
+@note rail census across a suspend
+@timeout 3600
+/root/rail-census.sh
+
+# And one control the harness owes itself: the same LPASS reading with nothing
+# removed, hours later, so a drift in the counter cannot be read as a result.
+@note late control - LPASS with everything running again
+@timeout 1800
+LPASS_STAGES=S0 /root/night/lpass-holders.sh 240 30
