@@ -108,12 +108,22 @@ LKML. Functionally it is the call path, so `voice` is the closest fit.
 under `systemd-run --collect` cannot be contaminated by the observer polling it;
 and a warning for anything that assumes the device is reachable while asleep.
 
-## ☀️ DAYTIME ONLY: is our own UCM verb what keeps the audio DSP awake?
+## Is our own UCM verb what keeps the audio DSP awake?
 
-☠️ **This is not night work.** It changes the card's routing and the only honest
-verification is that audio still works afterwards, which means someone has to
-hear it. Audio testing at night is not acceptable, so this waits for daylight and
-a person in the room - however cheap the measurement itself is.
+☠️ **The probe is silent and may run at night; the acoustic confirmation may
+not.** This started as "audio is daytime work", which was too broad - the audio
+coverage is automated and most of it makes no sound:
+[`20-audio`](../tests/checks/20-audio-test.sh) proves the codec enumerated and
+the PCMs open, and
+[`24-speaker-amp`](../tests/checks/24-speaker-amp-test.sh) measures the amplifier
+on its **control bus** so it cannot be confused with the room. What is audible is
+[`21-audio-acoustic`](../tests/checks/21-audio-acoustic-test.sh), which plays a
+tone - already opt-in behind `--acoustic`, and **that one waits for daylight**,
+because someone is asleep next to the phone. `queue.sh` refuses a job line that
+would play anything rather than trusting the job file.
+
+So: run the probe overnight, verify with `fp3-selftest --only audio` (silent),
+and keep the end-to-end acoustic proof for the morning.
 
 **The measurement is two minutes.**
 [`power/bringup/tools/audio-hold-probe.sh`](power/bringup/tools/audio-hold-probe.sh),

@@ -24,10 +24,13 @@
 # collapses with everything in place, the phone is not in the held state and the
 # probe refuses to run.
 #
-# ☠️ DAYTIME ONLY, BY INSTRUCTION. This changes the card's routing, and the only
-# honest verification is that audio still works afterwards - which means someone
-# has to hear it. Audio testing at night is not acceptable on this project, so
-# this never goes in a night queue however cheap the measurement is.
+# ☠️ THIS PROBE IS SILENT and may run at night: it only reads counters, changes
+# mixer values and suspends. Nothing plays. Verify it afterwards with the SILENT
+# half of the audio coverage - `fp3-selftest --only audio` without `--acoustic`,
+# which proves the codec enumerated and the PCMs still open.
+#
+# ☠️ The end-to-end acoustic proof (21-audio-acoustic, behind --acoustic) plays a
+# tone and is DAYTIME ONLY. Someone is asleep next to the phone.
 #
 # ☠️ Run under systemd-run, over either link. It changes mixer settings and puts
 # them back on every exit path.
