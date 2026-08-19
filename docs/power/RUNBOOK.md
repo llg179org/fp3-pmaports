@@ -1119,6 +1119,48 @@ the phase-A slopes directly** - same instrument, same window, no division - and
 use the derived mA only to give the reader a scale. A ratio hides which half
 moved.
 
+### ★★★ CONFIRMED by same-day control: the modem stack costs ~36 mA ASLEEP
+
+Leg `baseline-20260819`, **no cuts**, same pack and same day as
+`nomodem-20260819`, launched by `await-charge.sh` at 99 % and run to completion:
+**6 of 6 suspends**, `dpms=Off`, raw
+[`2026-08-19_pmos_baseline-leg.txt`](2026-08-19_pmos_baseline-leg.txt).
+
+| leg | cut | phase-A slope | r² | phase-B awake | derived asleep |
+|---|---|---|---|---|---|
+| `xo-on-20260818` | — | −35.29 mV/h | 0.994 | 150.1 mA | 74.4 mA |
+| `xo-off-20260818` | — | −35.44 mV/h | 0.992 | 161.0 mA | 86.3 mA |
+| **`baseline-20260819`** | **—** | **−35.77 mV/h** | 0.926 | 101.3 mA | **79.1 mA** |
+| **`nomodem-20260819`** | **modem stack** | **−22.62 mV/h** | 0.994 | 97.3 mA | **43.3 mA** |
+
+Two things make this a result rather than a claim.
+
+**The baseline reproduced.** Three legs with no cut, across two days and three
+different awake controls, gave phase-A slopes of −35.29, −35.44 and −35.77 mV/h.
+That is a 1.4 % spread on the quantity being compared, and it is the first time
+this instrument has demonstrated its own repeatability.
+
+**The pair is same-day and its awake controls agree.** 101.3 vs 97.3 mA, unlike
+the 150-vs-161 mismatch that made yesterday's derived figures incomparable. So
+here the derived numbers may be read directly: **79.1 → 43.3 mA, about 36 mA
+saved asleep by stopping `ModemManager`, `rmtfs` and `tqftpserv`.**
+
+☠️ **The window difference runs against the finding, not for it.** The control's
+phase A sits at 3.97-4.02 V and the cut leg's at 4.06-4.09 V. Lower is deeper
+into the plateau, where the same current produces a *flatter* slope - so the
+control had the easier half of the curve and still came out steeper. The effect
+is real or understated.
+
+⚠️ The control's phase-A fit is the weak one, r² = 0.926 against 0.994 for the
+cut leg. Treat 36 mA as ±5, not as three digits.
+
+**What it is not.** It is not a fix - a phone needs its modem - and it is not
+yet a mechanism. Awake, the same cut is worth ~2 mA at the floor and ~23 mA in
+bursts; asleep it is worth 36 mA. Something in that stack is either keeping the
+MPSS out of its own low-power state or waking the application processor
+repeatedly, and those two have different fixes. **The next measurement is
+wakeup accounting across a suspend**, not a patch.
+
 ### ★ RESUME POINT, 2026-08-19 11:15
 
 **Running on the device:** `ctl-leg.service` - `await-charge.sh` waiting for the
