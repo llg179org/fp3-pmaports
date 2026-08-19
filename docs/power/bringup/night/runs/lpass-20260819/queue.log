@@ -1,0 +1,6 @@
+[33043] # queue lpass start jobfile=/root/night/jobs-lpass.txt cap=100% v=4411448
+[33043] # preflight 95
+[33064] # preflight PASSED
+[33064] # note: step 1: who holds LPASS - six stages, four minutes each, counter re-verified per stage
+[33064] # timeout is now 7200s
+[33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30
