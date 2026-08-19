@@ -1,0 +1,53 @@
+suspend-slope: nomodem-20260819 === settle 1800s off VBUS ===
+nomodem-20260819 phase=settle n=0 t=55310 v=4034922 i=-114974 pll=404 nread=20
+nomodem-20260819 phase=settle n=1 t=55381 v=4069665 i=-115432 pll=407 nread=20
+nomodem-20260819 phase=settle n=2 t=55452 v=4090004 i=-72478 pll=410 nread=20
+nomodem-20260819 phase=settle n=3 t=55523 v=4098277 i=-64086 pll=411 nread=20
+nomodem-20260819 phase=settle n=4 t=55593 v=4101780 i=-63095 pll=412 nread=20
+nomodem-20260819 phase=settle n=5 t=55664 v=4102072 i=-64391 pll=416 nread=20
+nomodem-20260819 phase=settle n=6 t=55735 v=4104797 i=-64086 pll=421 nread=20
+nomodem-20260819 phase=settle n=7 t=55806 v=4106646 i=-61950 pll=428 nread=20
+nomodem-20260819 phase=settle n=8 t=55877 v=4106354 i=-65841 pll=429 nread=20
+nomodem-20260819 phase=settle n=9 t=55947 v=4107425 i=-61263 pll=431 nread=20
+nomodem-20260819 phase=settle n=10 t=56018 v=4107425 i=-61111 pll=433 nread=20
+nomodem-20260819 phase=settle n=11 t=56089 v=4105965 i=-75301 pll=435 nread=20
+nomodem-20260819 phase=settle n=12 t=56160 v=4106159 i=-60958 pll=444 nread=20
+nomodem-20260819 phase=settle n=13 t=56231 v=4105965 i=-62484 pll=448 nread=20
+nomodem-20260819 phase=settle n=14 t=56302 v=4098763 i=-74386 pll=452 nread=20
+nomodem-20260819 phase=settle n=15 t=56372 v=4100417 i=-104904 pll=454 nread=20
+nomodem-20260819 phase=settle n=16 t=56443 v=4097692 i=-91247 pll=390 nread=20
+nomodem-20260819 phase=settle n=17 t=56514 v=4092535 i=-77209 pll=392 nread=20
+nomodem-20260819 phase=settle n=18 t=56585 v=4092924 i=-97045 pll=398 nread=20
+nomodem-20260819 phase=settle n=19 t=56655 v=4097692 i=-63628 pll=402 nread=20
+nomodem-20260819 phase=settle n=20 t=56726 v=4099152 i=-63400 pll=407 nread=20
+nomodem-20260819 phase=settle n=21 t=56797 v=4099055 i=-60653 pll=410 nread=20
+nomodem-20260819 phase=settle n=22 t=56868 v=4097498 i=-62026 pll=414 nread=20
+nomodem-20260819 phase=settle n=23 t=56938 v=4097595 i=-62866 pll=416 nread=20
+nomodem-20260819 phase=settle n=24 t=57009 v=4096622 i=-60729 pll=418 nread=20
+nomodem-20260819 phase=settle n=25 t=57080 v=4095065 i=-67367 pll=420 nread=20
+nomodem-20260819 phase=settle n=26 t=57151 v=4093702 i=-61721 pll=423 nread=20
+nomodem-20260819 phase=settle n=27 t=57221 v=4093897 i=-60653 pll=430 nread=20
+nomodem-20260819 phase=settle n=28 t=57292 v=4093021 i=-60424 pll=433 nread=20
+nomodem-20260819 phase=settle n=29 t=57363 v=4090102 i=-66528 pll=435 nread=20
+suspend-slope: nomodem-20260819 === phase A: 6 sleeps of 900s ===
+nomodem-20260819 phase=A n=0 t=58355 v=4076769 i=-92925 pll=441 nread=20
+suspend-slope: nomodem-20260819 A0 slept=902s of 900s
+nomodem-20260819 phase=A n=1 t=59287 v=4071124 i=-92315 pll=445 nread=20
+suspend-slope: nomodem-20260819 A1 slept=902s of 900s
+nomodem-20260819 phase=A n=2 t=60219 v=4064701 i=-96282 pll=446 nread=20
+suspend-slope: nomodem-20260819 A2 slept=902s of 900s
+nomodem-20260819 phase=A n=3 t=61151 v=4056721 i=-97503 pll=450 nread=20
+suspend-slope: nomodem-20260819 A3 slept=902s of 900s
+nomodem-20260819 phase=A n=4 t=62083 v=4053510 i=-90484 pll=453 nread=20
+suspend-slope: nomodem-20260819 A4 slept=902s of 900s
+nomodem-20260819 phase=A n=5 t=63015 v=4047865 i=-94375 pll=453 nread=20
+suspend-slope: nomodem-20260819 A5 slept=902s of 900s
+suspend-slope: nomodem-20260819 phase A done suspends=6 of 6
+suspend-slope: nomodem-20260819 === phase B: awake control, 6 x 900s ===
+nomodem-20260819 phase=B n=0 t=63946 v=4019740 i=-91857 pll=498 nread=20
+nomodem-20260819 phase=B n=1 t=64877 v=4004753 i=-91933 pll=402 nread=20
+nomodem-20260819 phase=B n=2 t=65807 v=3989572 i=-98495 pll=446 nread=20
+nomodem-20260819 phase=B n=3 t=66738 v=3978185 i=-110015 pll=496 nread=20
+nomodem-20260819 phase=B n=4 t=67669 v=3966897 i=-92773 pll=404 nread=20
+nomodem-20260819 phase=B n=5 t=68600 v=3951520 i=-98800 pll=447 nread=20
+suspend-slope: nomodem-20260819 done - restoring charger and greetd
