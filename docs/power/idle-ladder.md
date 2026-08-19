@@ -172,7 +172,42 @@ worth knowing before anyone spends a night optimising them.
 **What that adds up to is a negative with teeth:** the ~60 mA is not being spent
 by anything running as a service on top of this kernel.
 
-### ☠️ And one thing nobody was looking for: stopping the modem stack COSTS 84 mA
+### ☠️ RETRACTED: stopping the modem stack does NOT cost 84 mA
+
+**The controlled probe says no.** `freq-probe.sh` ran three phases in one boot
+at 23:32-00:26 - baseline, modem stack stopped, restored -
+[`2026-08-18_freq-probe.txt`](2026-08-18_freq-probe.txt):
+
+| phase | floor (p10) | policy0 transitions/min | little cluster at 614 MHz |
+|---|---|---|---|
+| P0 baseline | 86.7 mA | 799 | 93.7 % |
+| P1 **modem stopped** | **88.9 mA** | 733 | 94.5 % |
+| P2 restored | 89.2 mA | 798 | 93.7 % |
+
+Stopping `ModemManager`/`rmtfs`/`tqftpserv` costs about **2 mA**, not 84. The
+cluster did not pin: it sat at its lowest OPP 94 % of the time in every phase,
+and it kept changing frequency at ~750 transitions per minute throughout. The
+cpufreq lock-up story is dead too.
+
+So the ladder's S4 and S5 stages recorded **a real 44-minute episode** - floor
+85.6 → 169.7 mA, variance collapsed, PLL storm to exactly zero - that was
+**not caused by the thing that was changed at its boundary**. It began at the S4
+cut and cleared before stage R, and the modem cut is now excluded as the cause.
+
+☠️ **This is the ladder's one structural weakness, and it is worth naming.** A
+cumulative ladder attributes whatever happens during a stage to that stage's
+cut. It buys freedom from boot-to-boot variance and pays for it in exactly this
+coin: a spontaneous 44-minute episode looks identical to a 84 mA finding. The
+drift control catches slow drift; it cannot catch an episode that starts and
+ends inside the ladder. **Any single-leg marginal that large deserves its own
+A/B before it is believed** - which is what happened here, four hours later, and
+it cost the claim.
+
+What remains true, and unexplained: something doubled this phone's idle floor
+for 44 minutes and silenced the PLL storm completely while it did. There is no
+instrument on it yet.
+
+### The original reading, now superseded
 
 `S3 → S4` is **−84.1 ± 1.4 mA**. The floor did not fall when
 `ModemManager`/`rmtfs`/`tqftpserv` stopped, it **doubled**, 85.6 → 169.7 mA, and
