@@ -26,6 +26,7 @@ headset](first-call/README.md)**.
 | [`charger/`](charger/README.md) | the PMI632 charger: what makes it charge, what makes it *stop*, the JEITA and thermal guards that let it charge harder, and why the ceiling is the USB port rather than the battery — with the investigation in [`charger/bringup/`](charger/bringup/README.md) |
 | [`sensors/`](sensors/README.md) | the proximity / ambient-light / IMU bring-up, which runs through the SSC — working, with calibration left |
 | [`power/`](power/README.md) | what the phone actually draws, measured against the vendor stack on the same hardware: the idle figures, the ~100 mA the held-open camera costs, and every raw capture the charger work rests on — with the investigation in [`power/bringup/`](power/bringup/README.md) |
+| [`sailfish-native/`](sailfish-native/README.md) | whether a **native** Sailfish — Lipstick on the mainline kernel and Mesa, no hybris — is reachable on this device: the two measurements that decide it, and the answer |
 | [`debug/`](debug/README.md) | the bring-up safety net: the watchdog started at probe, why there is no ramoops, and where the debugging *method* lives — with [`debug/create_debug.md`](debug/create_debug.md), the step-by-step for building that safety net onto any branch from scratch |
 
 ## What is still open

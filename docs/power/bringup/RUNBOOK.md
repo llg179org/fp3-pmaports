@@ -1162,72 +1162,79 @@ MPSS out of its own low-power state or waking the application processor
 repeatedly, and those two have different fixes. **The next measurement is
 wakeup accounting across a suspend**, not a patch.
 
-### ★ RESUME POINT, 2026-08-19 19:40 - READ THIS FIRST
+### ★ RESUME POINT, 2026-08-20 05:00 - READ THIS FIRST
 
-**Running on the device:** `night-guardian` and `night-queue`
-([`night/jobs-adsp.txt`](night/jobs-adsp.txt)), waiting for the pack to reach
-99 % and then running `adsp-restart-leg.sh adsprestart-20260819` - a full slope
-leg with the ADSP restarted first. A host supervisor pulls to
-[`night/runs/adsp-20260819/`](night/runs/) every five minutes. Expect it to
-finish some hours after the charge completes.
+**Nothing is running on the device.** No transient units, no host pollers, no
+guardian. The phone was rebooted at 04:48 into a clean autologin session: modem
+`registered`, root `rw`, sound card present, charger connected.
 
-☠️ **Nothing else may touch the device until it ends.**
+☠️ **The night installed 19 packages that are still there** - the ofono stack,
+`iproute2`, Qt, `icu-data-full` - and free space on `/` fell from 345 MB to
+234 MB. Nothing was enabled and no boot configuration was touched, but a floor
+measured after 2026-08-20 is measured on a larger install than one measured
+before it. The full inventory is in
+[`../../sailfish-native/README.md`](../../sailfish-native/README.md).
 
-## ★★★ The finding of the evening
+## What the night settled
 
-**One restart of the ADSP and the audio DSP power-collapses in every suspend
-after it, for the rest of the boot.** Before: 2 collapses since boot, 0.12 s
-total. After: the crystal off for 30.7-31.3 s of every 30 s suspend, and by the
-time the leg started, 16 collapses and 253 s of XO-off in ordinary idle.
+**The ADSP leg came in, and it is a null.** `adsprestart-20260819`, gated on a
+probe suspend that showed the DSP collapsing for 30 625 ms of 30 000 before the
+four hours were committed. Phase-A slope **−34.32 mV/h** against the baseline's
+−35.77, on an instrument whose baseline reproduces to 1.4 % across three legs -
+so **4 %, and the window sits lower where the OCV curve is flatter**, which
+biases it optimistic. Read it as *at most 4 %, plausibly nothing*.
 
-The evidence is an alternating A/B
-([`captures/2026-08-19_lpass-restart-ab.txt`](captures/2026-08-19_lpass-restart-ab.txt)):
-round 1's plain arm is the only one that did not collapse, and the only one taken
-before the first restart. So **something opened at boot holds a session on the
-ADSP and never closes it**; reloading the firmware tears it down and nothing
-re-establishes it. The sensors still answer afterwards, so it is not the SMGR
-session.
+**And the holder of the ADSP is named — it is upstream's, not ours.**
+`c0f0000.codec` is bound to `msm8916-wcd-digital-codec`, the SoC's internal
+digital codec, which is not in this phone's audio path.
+`msm8916_wcd_digital_probe()` calls `clk_prepare_enable()` on `mclk`
+(`LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE`, supplied by the ADSP over APR) and
+on `ahbix-clk`, unconditionally, releasing them only in `remove()`. No runtime PM,
+no DAPM gating. ☠️ An earlier version of this page attributed it to this port's
+WCD9335 MCLK work; that was wrong and is corrected in
+[`leads/lpass-never-sleeps.md`](leads/lpass-never-sleeps.md).
 
-☠️ **`vlow` is still 0.** LPASS collapsing is necessary and not sufficient. The
-claim this investigation carried for a day - that a master which never shuts down
-is a *sufficient* explanation for `vlow` - is now measured to be half wrong.
+**Four branches closed**, so nobody re-runs them: an ADSP client holding LPASS
+(six stages, up to stopping the DSP); the regulator sleep set costing anything
+droppable (five suspect rails became one with USB unbound, and that one is the
+eMMC's); USB stopping the DSP collapsing (three alternating rounds); and the held
+ADSP session being the lever (the leg above).
 
-☠️ **And it has no price yet.** That is what the running leg is for. Compare its
-phase-A slope directly against `baseline-20260819`'s **-35.77 mV/h**; the derived
-mA is for scale only.
+## Where the numbers stand
 
-## What closed today, and how
-
-| branch | verdict |
+| | draw |
 |---|---|
-| "an ADSP client holds LPASS" | **closed.** Six stages, up to and including stopping the DSP; nothing moved. ☠️ S1-S4 never suspended, so half of them could not have shown anything |
-| "the regulator sleep set costs current here" | **closed.** Five suspect rails became one with USB unbound, and that one is the eMMC's |
-| "USB stops the DSP collapsing" | **closed**, three alternating rounds, 20 minutes after it was proposed |
-| "something holds a session on the ADSP" | **open and now the lead** |
+| awake idle, panel off, session running | ~58-63 mA |
+| the panel, powered at zero brightness | +24.5 ± 6.4 mA |
+| asleep, no cuts (`baseline-20260819`) | 79.1 mA |
+| asleep, ADSP collapsing (`adsprestart-20260819`) | 70.8 mA |
+| asleep, modem stack cut (`nomodem-20260819`) | 43.3 mA |
+| every userspace service tested, five of five | zero |
 
-☠️ Two of those four were closed by asking what else was true of the phone at the
-time. The answer both times was "a USB cable", which is true of every measurement
-this investigation has ever taken.
+☠️ `mem_sleep` offers **only `[s2idle]`**. "Deep sleep" here means getting the RPM
+into `vlow`, and `vlow` has read **`Count: 0` in every capture ever taken on this
+device** - including with the audio DSP collapsing for the whole of every suspend.
+A master being down is **necessary and not sufficient**, and that is a measured
+correction to the claim this investigation carried for several days.
 
-**Next, in order:**
+## Next, in order
 
-1. *(running)* what the ADSP restart is worth in mA.
-2. **Who opens the session.** The suspect is our own UCM verb:
-   its `EnableSequence` leaves `QUIN_MI2S_RX Audio Mixer MultiMedia1` and the
-   microphone's `MultiMedia2 Mixer SLIMBUS_0_TX` pre-route permanently on, and
-   its `DisableSequence` is empty. `tools/audio-hold-probe.sh` answers it in two
-   minutes. ☠️ **The probe is silent** - it reads counters, changes mixer values
-   and suspends - so it may run at night, verified with the silent half of the
-   audio coverage (`fp3-selftest --only audio`). ☠️ The **acoustic** end-to-end
-   proof plays a tone and waits for daylight. Full entry, including the ranked
-   fixes, in [`../../TODO.md`](../../TODO.md). ☠️ It also needs a FRESH BOOT - after an
-   ADSP restart every arm reads +1 and means nothing.
-3. **What else votes.** `vlow` did not move with LPASS collapsing, so the
-   remaining blocker is a different master or a standing resource vote.
-4. Still open and unrelated: wakeup accounting across a suspend, for the modem's
-   36 mA.
+1. **The modem's 36 %.** The only intervention that has ever moved the sleeping
+   slope, and its mechanism is unnamed. Wakeup accounting across a suspend
+   separates "the MPSS never idles" from "the MPSS keeps waking the AP" - those
+   have different fixes. **This is where the next measurement belongs.**
+2. **What else votes.** The regulator branch and the master branch are both
+   closed, so what is left is another master or a standing resource vote. ☠️ The
+   `qcom_rpm_smd_write` tracepoint is blind to a vote cast once at boot and never
+   changed - `clk_summary` is the instrument for those, not the trace.
+3. **Confirm and fix the internal codec's clocks** - one `unbind` and a 30 s
+   suspend confirms it; the fix is runtime PM or DAPM gating in
+   `msm8916-wcd-digital.c`. Upstreamable. ☠️ Not scheduled for its current: ~4 %.
 
-☠️ Still no patch. Four mechanically plausible branches have now closed.
+☠️ Still no patch on any of this. Four mechanically plausible branches have now
+closed, two of them because someone asked what *else* was true of the phone at
+the time - and the answer both times was a USB cable.
+
 ### ★★ The modem stack is the first thing to move the SUSPEND number, 2026-08-19 08:20
 
 Leg `nomodem-20260819`, `slope-leg.sh` with `ModemManager rmtfs tqftpserv` cut,

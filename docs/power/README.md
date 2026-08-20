@@ -40,6 +40,7 @@ says *asleep*, it is not a measurement of a sleeping phone.
 | awake, idle, panel **off**, session running | **58–63 mA** | 2026-08-19 |
 | the panel, powered at zero brightness | **+24.5 ± 6.4 mA** | 2026-08-19 |
 | asleep, no cuts | 79.1 mA | 2026-08-19 |
+| asleep, ADSP collapsing every suspend | 70.8 mA | 2026-08-20 |
 | asleep, modem stack cut | **43.3 mA** | 2026-08-19 |
 | every userspace service tested, five of five | zero | 2026-08-19 |
 
@@ -69,6 +70,11 @@ measurement *of the gauge*.
 What is missing is the system-level RPM state, and "deep sleep" on this device
 means getting the RPM into `vlow`/`vmin`, not finding a suspend mode that is not
 there.
+
+☠️ **And a master going down is not enough.** Measured 2026-08-20: with the audio
+DSP power-collapsing for the *whole* of every suspend, `vlow` still read
+`Count: 0`. The claim this investigation carried for several days — that a master
+which never shuts down is a *sufficient* explanation for `vlow` — is half wrong.
 
 **pmOS does not suspend on its own here, because we asked it not to.** Automatic
 sleep works and was demonstrated on this base; it is switched back off because an
@@ -108,9 +114,10 @@ runs. The reasoning behind each is in
 
 | question | where it is being worked |
 |---|---|
-| **LPASS never shuts down** — 2 shutdowns / 0.12 s since boot against 4344 on the vendor stack. A master that never goes down is a sufficient explanation for `vlow` reading 0 in every capture ever taken here | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
-| **the modem stack costs ~36 mA asleep** — reproduced against a same-day control; the mechanism is not yet named | [`bringup/RUNBOOK.md`](bringup/RUNBOOK.md) |
-| **the RPM sleep set** — mainline's `qcom_smd-regulator.c` only ever votes the active state; 14 LDOs vote active and never sleep | [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
+| ★ **the modem stack costs ~36 mA asleep** — reproduced against a same-day control, and **the only intervention that has ever moved the sleeping slope**. The mechanism is still unnamed, and this is where the next measurement belongs | [`bringup/RUNBOOK.md`](bringup/RUNBOOK.md) |
+| **`vlow` has never once been reached** — not even with the audio DSP collapsing for the whole of every suspend. So a master being down is **necessary and not sufficient**, and what else votes is now the question | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
+| ~~**LPASS never shuts down**~~ — **solved and priced, 2026-08-19/20.** It is held by upstream's internal digital codec (`msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` at probe and drops them only in `remove()`). Freeing it is worth **~4 %**, inside the instrument's own spread — a correctness fix, not a power one | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
+| ~~**the RPM sleep set**~~ — **closed, 2026-08-19.** Five enabled rails with no sleep vote became **one** with the USB controller unbound, and that one is the eMMC's. The mainline/vendor divergence is real in the code and costs nothing droppable here | [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
 | **the CPU0 PLL storm** — 7.3 failures per 10 000 frequency transitions, flat in voltage. It spoils absolute awake currents; it does not spoil slope ratios | [`bringup/findings-log.md`](bringup/findings-log.md) |
 | **one eMMC dropout, 2026-08-18** — the card stopped answering, root went `emergency_ro`, a reboot cleared it completely. Not reproduced across the four long runs since | [`bringup/night/README.md`](bringup/night/README.md) |
 
