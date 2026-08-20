@@ -1259,6 +1259,27 @@ removes is the two explanations that were easiest to reach for.
 
 ## Next, in order
 
+**The instrument for it is written and unarmed:**
+[`tools/ab-leg.sh`](tools/ab-leg.sh) + [`tools/ab-leg-fit.py`](tools/ab-leg-fit.py).
+One descent, then the arms **alternate** — one suspend with the cut, one without,
+repeating — so drift, temperature and the OCV curve's shape act on both equally
+and no cross-day control is needed. Both arms from one pack.
+
+☠️ **Run the dry run after any edit**: `ab-leg.sh dryrun-ab "rmtfs" 2 60`.
+
+☠️ **The obvious analysis is wrong and a synthetic test caught it before any
+device time was spent.** Regressing all of one arm's samples against time is
+contaminated: between two CUT suspends the FULL arm ran and discharged the pack,
+so that discharge lands in the CUT fit's gaps. On data built with a true 11.6 mV/h
+difference, the whole-arm regression reported **2.1**. The fitter therefore
+compares **per-suspend** slopes, and it was proved on three known answers — a real
+37 % effect (found), identical arms (refused), and one usable suspend per arm
+(refused, after that case crashed it).
+
+☠️ **A null from this leg means "no fast-acting difference".** The cut is
+re-applied from cold every cycle, so an effect that needs ten quiet minutes to
+appear cannot show up in a 900 s alternation.
+
 ☠️ **And there is no fast instrument to do it with.** `charge_now` was tested as a
 way to price a state in fifteen minutes instead of four hours
 ([`captures/2026-08-20_coulomb-probe.txt`](captures/2026-08-20_coulomb-probe.txt)):
