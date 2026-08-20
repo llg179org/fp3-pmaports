@@ -1,0 +1,85 @@
+# eglfs-probe uptime=17019 seconds=20
+== DRM devices ==
+  /dev/dri/by-path
+  /dev/dri/card0
+  /dev/dri/renderD128
+  card0 -> msm_dpu
+
+# using DRM device: /dev/dri/card0
+# /etc/eglfs-config.json: { "device": "/dev/dri/card0", "hwcursor": false }
+
+== stopping greetd (was: active) to free the DRM device ==
+  phoc now: 0
+
+== running qmlscene-qt5 -platform eglfs ==
+  ★ qmlscene is STILL RUNNING after 20s - eglfs initialised
+
+== qmlscene / qpa output ==
+  QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+  qt.qpa.egldeviceintegration: EGL device integration plugin keys: ("eglfs_emu", "eglfs_kms_egldevice", "eglfs_kms", "eglfs_x11")
+  qt.qpa.egldeviceintegration: EGL device integration plugin keys (sorted): ("eglfs_kms", "eglfs_emu", "eglfs_kms_egldevice", "eglfs_x11")
+  qt.qpa.egldeviceintegration: Trying to load device EGL integration "eglfs_kms"
+  qt.qpa.eglfs.kms: Loading KMS setup from "/etc/eglfs-config.json"
+  qt.qpa.eglfs.kms: Requested configuration (some settings may be ignored):
+   	headless: false 
+   	hwcursor: false 
+   	pbuffers: false 
+   	separateScreens: false 
+   	virtualDesktopLayout: 0 
+   	outputs: QMap()
+  qt.qpa.eglfs.kms: New DRM/KMS via GBM integration created
+  qt.qpa.egldeviceintegration: Using EGL device integration "eglfs_kms"
+  qt.qpa.eglfs.kms: platformInit: Opening DRM device
+  qt.qpa.eglfs.kms: GBM: Using DRM device "/dev/dri/card0" specified in config file
+  qt.qpa.eglfs.kms: Using backend-provided DRM device /dev/dri/card0
+  qt.qpa.eglfs.kms: Creating GBM device for file descriptor 5 obtained from "/dev/dri/card0"
+  qt.qpa.eglfs.kms: Using dedicated drm event reading thread
+  qt.qpa.eglfs.kms: Initializing event reader for device 0xffff9c09e2d0 fd 5
+  qt.qpa.eglfs.kms: Querying EGLDisplay
+  qt.qpa.eglfs.kms: Event reader thread: entering event loop
+  qt.qpa.eglfs.kms: Atomic reported as supported
+  qt.qpa.eglfs.kms: Atomic disabled
+  qt.qpa.eglfs.kms: Found 4 planes
+  qt.qpa.eglfs.kms: plane 0: id = 37 countFormats = 30 possibleCrtcs = 0xff supported formats = AR24 AB24 RA24 BA24 XR24 RX24 BX24 XB24 AR30 XR30 RG24 BG24 RG16 BG16 AR15 AB15 RA15 BA15 XR15 XB15 RX15 BX15 AR12 AB12 RA12 BA12 XR12 XB12 RX12 BX12 
+  qt.qpa.eglfs.kms:   property 0: id = 9 name = 'type'
+  qt.qpa.eglfs.kms:   type is ENUM, value is 1, possible values are:
+  qt.qpa.eglfs.kms:     enum 0: Overlay - 0
+  qt.qpa.eglfs.kms:     enum 1: Primary - 1
+  qt.qpa.eglfs.kms:     enum 2: Cursor - 2
+  qt.qpa.eglfs.kms:   property 1: id = 18 name = 'FB_ID'
+  qt.qpa.eglfs.kms:   type is OBJECT
+  qt.qpa.eglfs.kms:   property 2: id = 19 name = 'IN_FENCE_FD'
+  qt.qpa.eglfs.kms:   type is SIGNED_RANGE, value is -1, possible values are:
+  qt.qpa.eglfs.kms:     -1
+  qt.qpa.eglfs.kms:     2147483647
+  qt.qpa.eglfs.kms:   property 3: id = 21 name = 'CRTC_ID'
+  qt.qpa.eglfs.kms:   type is OBJECT
+  qt.qpa.eglfs.kms:   property 4: id = 14 name = 'CRTC_X'
+  qt.qpa.eglfs.kms:   type is SIGNED_RANGE, value is 0, possible values are:
+  qt.qpa.eglfs.kms:     -2147483648
+  qt.qpa.eglfs.kms:     2147483647
+  qt.qpa.eglfs.kms:   property 5: id = 15 name = 'CRTC_Y'
+  qt.qpa.eglfs.kms:   type is SIGNED_RANGE, value is 0, possible values are:
+  qt.qpa.eglfs.kms:     -2147483648
+  qt.qpa.eglfs.kms:     2147483647
+  qt.qpa.eglfs.kms:   property 6: id = 16 name = 'CRTC_W'
+  qt.qpa.eglfs.kms:   type is RANGE, value is 1080, possible values are:
+  qt.qpa.eglfs.kms:     0
+  qt.qpa.eglfs.kms:     2147483647
+  qt.qpa.eglfs.kms:   property 7: id = 17 name = 'CRTC_H'
+  qt.qpa.eglfs.kms:   type is RANGE, value is 2160, possible values are:
+  qt.qpa.eglfs.kms:     0
+  qt.qpa.eglfs.kms:     2147483647
+  qt.qpa.eglfs.kms:   property 8: id = 10 name = 'SRC_X'
+  qt.qpa.eglfs.kms:   type is RANGE, value is 0, possible values are:
+  qt.qpa.eglfs.kms:     0
+  qt.qpa.eglfs.kms:     4294967295
+  qt.qpa.eglfs.kms:   property 9: id = 11 name = 'SRC_Y'
+
+# VERDICT: Qt eglfs came up on /dev/dri/card0. Lipstick's platform prerequisite is met.
+
+# restoring the session
+#   greetd: active
+#   phoc: 1  phosh: 0
+#   dpms: On
+# restore done rc=0

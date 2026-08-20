@@ -273,3 +273,6 @@ ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x47 len 0x00
 
 # restoring
 #   unloaded rmnet
+#   ModemManager: active, No modems were found
+#   interfaces now: ipa_lan0 lo rmnet_ipa0 usb0 wlan0 
+# restore done rc=0
