@@ -115,3 +115,5 @@
 04:55:25 192.168.100.17 up=411 q=inactive g=inactive cap=100 v=4333787 chg=Not charging root=rw 
 05:00:28 192.168.100.17 up=714 q=inactive g=inactive cap=96 v=4333009 chg=Not charging root=rw 
 05:05:30 192.168.100.17 up=1015 q=inactive g=inactive cap=96 v=4332425 chg=Not charging root=rw 
+05:10:31 192.168.100.17 up=1317 q=inactive g=inactive cap=96 v=4330868 chg=Not charging root=rw 
+05:15:33 192.168.100.17 up=1618 q=inactive g=inactive cap=96 v=4330868 chg=Not charging root=rw 

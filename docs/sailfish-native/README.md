@@ -416,26 +416,59 @@ leaves `phoc` running with no `phosh`. A reboot restores the autologin session.
   (`github.com/sailfishos/lipstick`); the **Silica UI and the homescreen are
   not**, which is the part no amount of building solves.
 
-## Run log
+## Run log — the night of 2026-08-19/20
 
-### 2026-08-19 21:xx — started, host-side only
+☠️ Until 00:00 the device was busy with a power-measurement slope leg and was
+deliberately not touched: an SSH login wakes it, and the leg's phase A is a series
+of 900 s suspends. Everything before that line is host-side.
 
-☠️ The device was busy with a power-measurement slope leg until roughly 23:35 and
-was deliberately not touched: an SSH login wakes it, and the leg's phase A is a
-series of 900 s suspends. Host-side work only until it finished.
+| time | what |
+|---|---|
+| 21:20 | `mer_verify_kernel_config` against `config-fp3.aarch64` — 29 errors, none structural |
+| 21:30 | ofono `qrtrqmi` confirmed upstream and built by default; Alpine ships 2.19. Its configuration requirements read out of the source rather than assumed |
+| 21:40 | PinePhone adaptation pattern and `eglfs-config.json` read from GitHub — the eight-package graphics set |
+| 21:50 | Alpine's real inventory read from the **APKINDEX** files. ☠️ A first pass scraped the package search page and reported "NOT FOUND" for packages that are plainly there |
+| 22:00 | Lipstick's `BuildRequires` split against that inventory; every missing package checked to exist and be openly licensed; the NemoMobile homescreen found |
+| 22:30 | Qt packages downloaded and **listed** — eglfs, the KMS integration and `libQt5WaylandCompositor` all present for aarch64 |
+| 23:49 | the two device scripts written and syntax-checked while still waiting |
+| 00:03 | *(device free)* ofono survey: ModemManager binds `qrtr0` + `rmnet_ipa0`, `plugin qcom-soc`, registered |
+| 00:11 | ofono installed and run: modem found by `udevng`, stopped on `Not enough rmnet_data interfaces found` |
+| 00:15 | first attempt to create them failed. ☠️ **busybox `ip` cannot set `mux_id`** — a false negative from the wrong tool |
+| 00:17 | `apk add iproute2`, three `rmnet_data*` created, **ofono brought the modem online, read the SIM and registered** |
+| 00:19 | restore verified: links deleted, `rmnet` unloaded, ModemManager back to registered + attached |
+| 00:25 | Qt installed; **eglfs probe drove the panel** on `/dev/dri/card0`, CRTC 1080×2160; session restored |
+| 04:48 | reboot to a clean autologin session; modem back, root `rw`, sound card present |
 
-- `mer_verify_kernel_config` run and written up above.
-- ofono `qrtrqmi` confirmed present upstream and built by default; Alpine ships
-  ofono 2.19. The driver's own configuration requirements read out of its source.
-- The PinePhone adaptation pattern and `eglfs-config.json` read from GitHub.
-- 00:11 ofono installed, first run: modem found by `udevng`, stopped on
-  `Not enough rmnet_data interfaces found`.
-- 00:17 three `rmnet_data*` created (after `apk add iproute2` — busybox `ip`
-  cannot set `mux_id`); ofono brought the modem online, read the SIM and
-  registered.
-- 00:25 Qt installed, eglfs probe ran on `/dev/dri/card0`; session restored.
-- ☠️ eMMC clean all night: no `-110`, root stayed `rw`, checked before each
-  phase.
-- Alpine's real package inventory read from the APKINDEX files, after the search
-  page produced a false negative.
-- Lipstick's BuildRequires split against that inventory.
+☠️ **The eMMC stayed clean all night** — no `-110`, root never went read-only,
+checked before each phase. That was the standing precondition for doing device
+work at all.
+
+## What this night left on the device
+
+The next session inherits these, and none of them is reverted:
+
+**19 packages installed**, and they stay: `ofono` 2.19 + `ofono-scripts` +
+`ofono-udev` + `ell`, `iproute2` (and its `-minimal/-ss/-tc` splits), `qt5-qtbase`,
+`qt5-qtbase-x11`, `qt5-qtdeclarative`, `qt5-qtwayland`, five `xcb-util*`,
+`libpcre2-16`, and `icu-data-full`.
+
+☠️ **One of those was a purge**: `apk` replaced `icu-data-en` with
+`icu-data-full`, which the simulation showed before the install went ahead. It is
+a provides-swap rather than a leftover deletion, but it is the kind of line the
+rule exists to make someone read.
+
+**Free space on `/` went from 345 MB to 234 MB.** That matters for the next kernel
+package, and it is the reason the Sxmo experiment was dropped weeks ago.
+
+**Not enabled, not running:** `ofono` is `inactive` and has **no systemd unit at
+all** (`is-enabled` → `not-found`), so nothing starts it at boot. `/etc/ofono/`
+holds only the packaged `phonesim.conf` — the `modem.conf` the experiment wrote
+was removed by its own restore.
+
+**Left in place deliberately:** `/etc/eglfs-config.json`, two lines, harmless and
+needed by any repeat of the probe. The four scripts are in `/root/sf/`.
+
+☠️ **Nothing here changes what the phone runs day to day** — no service was
+enabled, no boot configuration touched, no kernel flashed. But a power measurement
+taken after tonight is being taken on a slightly larger install than one taken
+before it, and that is worth knowing before comparing floors across the date.
