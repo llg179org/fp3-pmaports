@@ -1257,6 +1257,34 @@ Two things follow, and the second is a criticism of the original result:
 ☠️ **n is 3 per arm and one positive.** This narrows; it does not name. What it
 removes is the two explanations that were easiest to reach for.
 
+## ★ 2026-08-20 11:16: the first rmtfs ab-leg ran clean and is a lead, not a result
+
+`ab-leg.sh rmtfs-20260820 "rmtfs" 6 900` — dry run passed first (4/4 arms,
+cut applied and restored), then the real leg: descent 4.39 → 4.03 V, **12 of 12
+suspends slept 901–902 s of 900**, charger and greetd restored on exit. Raw:
+[`captures/2026-08-20_ab-leg-rmtfs.txt`](captures/2026-08-20_ab-leg-rmtfs.txt).
+
+| arm | n | median mV/h |
+|---|---|---|
+| CUT (rmtfs stopped) | 6 | **−16.33** |
+| FULL | 6 | −73.02 |
+
+Difference +56.7 mV/h in CUT's favour — 78 % of FULL — **but the within-arm
+scatter is 97 mV/h and the standard error of the difference 56, so it is inside
+2 SE and the fitter itself refuses it.** Several CUT arms measured *rising*
+voltage: post-descent relaxation reaches well past the 20 s settle, and a 900 s
+suspend does not integrate it away.
+
+Two mechanical notes from this run: `TARGET` in `ab-leg.sh` is now
+env-overridable so a dry run can skip the descent (a priced leg leaves the
+default), and the leg was launched under `systemd-run --collect` so it survives
+both the suspends and the SSH drops.
+
+**Next: the same leg, stronger** — longer suspends halve the relative
+relaxation noise and more anything helps the median: `ab-leg.sh rmtfs2-<date>
+"rmtfs" 8 1800` (~8.5 h of arms) once the pack is back above the 4.2 V /
+95 % start gates. If +56.7 mV/h is even half real, 8 × 1800 s puts it past 2 SE.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
