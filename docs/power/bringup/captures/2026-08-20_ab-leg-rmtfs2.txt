@@ -1,0 +1,42 @@
+24552 rmtfs2-20260820: start v=4320357 cap=95% cuts='rmtfs' cycles=8 suspend=1800s
+24552 rmtfs2-20260820: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=dcde892b-14db-4f88-9477-905ece74394b
+24556 rmtfs2-20260820: dpms=Off
+24566 rmtfs2-20260820: USBIN suspended: status=Discharging online=0
+24566 rmtfs2-20260820: descending to 4030000
+24686 rmtfs2-20260820: descent v=4059933
+24806 rmtfs2-20260820: descent v=4013804
+24806 rmtfs2-20260820: settled at v=4013804; alternating arms now
+24806 rmtfs2-20260820: 
+24806 rmtfs2-20260820: === cycle 1 of 8 ===
+24806 rmtfs2-20260820: cut applied: rmtfs
+26629 rmtfs2-20260820: ARM CUT t0=24826 v0=4028791 t1=26629 v1=4061101 slept=1803s of 1800s
+28471 rmtfs2-20260820: ARM FULL t0=26669 v0=4059155 t1=28471 v1=4003683 slept=1802s of 1800s
+28471 rmtfs2-20260820: === cycle 2 of 8 ===
+28471 rmtfs2-20260820: cut applied: rmtfs
+30293 rmtfs2-20260820: ARM CUT t0=28491 v0=4024120 t1=30293 v1=4008549 slept=1802s of 1800s
+32135 rmtfs2-20260820: ARM FULL t0=30333 v0=4023536 t1=32135 v1=3852256 slept=1802s of 1800s
+32135 rmtfs2-20260820: === cycle 3 of 8 ===
+32135 rmtfs2-20260820: cut applied: rmtfs
+33957 rmtfs2-20260820: ARM CUT t0=32155 v0=3977991 t1=33957 v1=3939258 slept=1802s of 1800s
+35799 rmtfs2-20260820: ARM FULL t0=33997 v0=3962615 t1=35799 v1=3942956 slept=1802s of 1800s
+35799 rmtfs2-20260820: === cycle 4 of 8 ===
+35799 rmtfs2-20260820: cut applied: rmtfs
+37621 rmtfs2-20260820: ARM CUT t0=35819 v0=3934003 t1=37621 v1=3905975 slept=1802s of 1800s
+39463 rmtfs2-20260820: ARM FULL t0=37661 v0=3910063 t1=39463 v1=3892740 slept=1802s of 1800s
+39463 rmtfs2-20260820: === cycle 5 of 8 ===
+39463 rmtfs2-20260820: cut applied: rmtfs
+41285 rmtfs2-20260820: ARM CUT t0=39483 v0=3896827 t1=41285 v1=3890015 slept=1802s of 1800s
+43127 rmtfs2-20260820: ARM FULL t0=41325 v0=3895660 t1=43127 v1=3840577 slept=1802s of 1800s
+43127 rmtfs2-20260820: === cycle 6 of 8 ===
+43127 rmtfs2-20260820: cut applied: rmtfs
+44949 rmtfs2-20260820: ARM CUT t0=43147 v0=3876585 t1=44949 v1=3851672 slept=1802s of 1800s
+46791 rmtfs2-20260820: ARM FULL t0=44989 v0=3869189 t1=46791 v1=3862182 slept=1802s of 1800s
+46791 rmtfs2-20260820: === cycle 7 of 8 ===
+46791 rmtfs2-20260820: cut applied: rmtfs
+48613 rmtfs2-20260820: ARM CUT t0=46811 v0=3854397 t1=48613 v1=3857511 slept=1802s of 1800s
+50455 rmtfs2-20260820: ARM FULL t0=48653 v0=3846222 t1=50455 v1=3845832 slept=1802s of 1800s
+50455 rmtfs2-20260820: === cycle 8 of 8 ===
+50455 rmtfs2-20260820: cut applied: rmtfs
+52277 rmtfs2-20260820: ARM CUT t0=50475 v0=3824812 t1=52277 v1=3796979 slept=1802s of 1800s
+52277 rmtfs2-20260820: ABORT: below floor at v=3796979
+52277 rmtfs2-20260820: restored: charger=Not charging online=1 rc=1
