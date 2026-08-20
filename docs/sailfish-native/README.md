@@ -329,6 +329,43 @@ is otherwise unobtainable.
 `glacier-home`** — and none of it needs a Qt rebuild, a kernel port, or anything
 from Jolla.
 
+## ★★★ Question 2, answered on the device: Qt eglfs comes up on this panel
+
+Package listings can say the plugin exists; they cannot say it initialises on this
+display stack. Measured 2026-08-20 00:25, raw:
+[`2026-08-20_eglfs-probe.txt`](2026-08-20_eglfs-probe.txt).
+
+`apk add qt5-qtbase-x11 qt5-qtdeclarative qt5-qtwayland`, then with greetd stopped
+so the DRM device is free:
+
+```sh
+QT_QPA_PLATFORM=eglfs QT_QPA_EGLFS_INTEGRATION=eglfs_kms QT_QPA_EGLFS_KMS_CONFIG=/etc/eglfs-config.json QT_LOGGING_RULES="qt.qpa.*=true" qmlscene-qt5 probe.qml
+```
+
+**It ran for the full 20 s and drove the panel.** The `qt.qpa.eglfs.kms` log walks
+the real display: planes enumerated (Overlay / Primary / Cursor), atomic
+properties read, and the CRTC at **1080 × 2160** — this phone's panel, not a
+fallback mode. The config file is the PinePhone's two-line one with this device's
+card:
+
+```json
+{ "device": "/dev/dri/card0", "hwcursor": false }
+```
+
+☠️ **The card number is not portable.** The PinePhone adaptation names `card1`;
+here the display controller (`msm_dpu`) is `card0`, and a wrong number produces
+"Could not open DRM device", which reads like a missing driver rather than a
+wrong path. The probe derives it from the driver rather than copying it.
+
+**So both of Lipstick's platform prerequisites are met on the real hardware:** the
+compositor library ships in `qt5-qtwayland`, and the eglfs KMS platform starts on
+this panel with Mesa 26.1.6 underneath.
+
+☠️ **Session restore, verified rather than assumed:** greetd came back and the
+panel is `dpms: On`. Note it returns to the **greeter**, not the autologin
+session — `[initial_session]` fires at boot only, so a hand-restarted greetd
+leaves `phoc` running with no `phosh`. A reboot restores the autologin session.
+
 ## What is still unmeasured
 
 - Everything on the device. Both answers above are from source and packaging.
