@@ -544,7 +544,7 @@ would have closed in five minutes.
 
 | "the ~130 mA is the idle baseline" | it is the *runtime* idle baseline. The phone had never suspended — `suspend_stats/success` was 0 after fifty minutes of uptime |
 | "s2idle is a fallback here for a missing deeper state" | it is the only entry `mem_sleep` offers, and it is the suspend path. Proven working: 91 s slept for a 90 s alarm |
-| "a µAh-valued attribute counts charge" | there is no coulomb counter. `charge_now` is `capacity × charge_full / 100`, and `capacity` is an OCV table lookup |
+| "a µAh-valued attribute counts charge" | there is no coulomb counter. `charge_now` is `capacity × charge_full / 100`, and `capacity` is an OCV table lookup. ☠️ **Refined 2026-08-20**, and the refinement nearly became a third retraction: `charge_now` *does* move while the integer `capacity` stands still, in multiples of 306 µAh = 0.01 % of `charge_full`, so the underlying value has a hundred times the resolution sysfs shows. It is still not charge: over one 582 s discharge `dQ/dt` gave **85.2 mA** against **62.0 mA** from medianed `current_now`, 37 % apart in the direction IR sag predicts. Fine resolution, wrong quantity |
 | "capacity did not move over 3 h asleep, so the phone drew under 10 mA" | the poll worker that maintains it does not run while userspace is frozen. It never had a chance to move |
 | "`voltage_ocv` is instantaneous — it matches `v - i·R` to the microvolt" | it is an 8-deep 30 s ring average. Matching the formula says the formula is right, not that it was evaluated now |
 | "after hours asleep the pack is relaxed, so both endpoints are comparable" | the snapshot happens *after* resume, not while asleep. The second endpoint was read 90 s after a 725 mA resume transient |

@@ -1,0 +1,51 @@
+# coulomb-probe.sh 10 20, 2026-08-20 06:05, USBIN suspended so there is a real
+# discharge to count. 21 samples over 582 s.
+#
+# THE RESULT, and it is a three-way one:
+#  * charge_now DOES move while capacity stays at 96 - in steps of 306, 612
+#    and 918 uAh, all multiples of 306 = 0.01% of charge_full. So the value
+#    has a hundred times the resolution the integer percent shows.
+#  * but it is NOT a coulomb count. dQ/dt over the window gives 85.2 mA
+#    while the median of the per-sample medians of current_now gives 62.0 mA
+#    - 37% apart, in the direction IR sag predicts, because capacity is an
+#    OCV lookup and the voltage here is loaded (4.2997 -> 4.2748 V).
+#  * so it cannot replace the slope leg for a sleeping current: it is biased
+#    by the very quantity being measured.
+#
+# ☠️ The first sample agreed exactly with the repo's retraction row
+# (96% x 3060000/100 = 2937600). A confirmation on the first sample is the
+# most dangerous kind - it removes the reason to keep looking.
+
+inactive
+Charging
+# coulomb-probe uptime=3653 minutes=10 gap=20s
+# charge_full=3060000 capacity=96%
+# USBIN suspended: status=Discharging online=0
+
+# t_s  charge_now_uAh  voltage_uV  capacity  median_i_uA
+3669 2937600 4299726 96 -96130
+3698 2936682 4268779 96 -107879
+3727 2936070 4283571 96 -95825
+3756 2935458 4275202 96 -61950
+3785 2934540 4257490 96 -103607
+3814 2933622 4288437 96 -56915
+3843 2932704 4285128 96 -83313
+3872 2931786 4278900 96 -93841
+3901 2931174 4283960 96 -54626
+3931 2930562 4282014 96 -93841
+3960 2930256 4266248 96 -55389
+3989 2929644 4283376 96 -61187
+4018 2929032 4281430 96 -54626
+4047 2928420 4279873 96 -54779
+4076 2927808 4278900 96 -68969
+4105 2927196 4266443 96 -54931
+4134 2926890 4259047 96 -54473
+4164 2926278 4264302 96 -94451
+4193 2925360 4244254 96 -100860
+4222 2924748 4255738 96 -55847
+4251 2923830 4274812 96 -55084
+
+# ☠️ Read the second column. If it never changes, there is no fast
+# instrument here and the slope leg stays the only way.
+# charger restored: status=Charging online=1
+# done rc=0
