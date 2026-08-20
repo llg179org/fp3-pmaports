@@ -48,7 +48,9 @@ BATT=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
 LOG=/var/log/ab-leg-$TAG.txt
 OUT=/run/night/ab-leg-$TAG.txt
-TARGET=4030000
+# TARGET is env-overridable so a dry run can exercise the mechanics without
+# spending the descent; a priced leg must leave it at the default.
+TARGET=${TARGET:-4030000}
 FLOOR=3800000
 START_MIN=4200000
 START_CAP=${START_CAP:-95}

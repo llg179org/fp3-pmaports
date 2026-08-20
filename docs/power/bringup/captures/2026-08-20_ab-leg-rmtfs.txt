@@ -1,0 +1,46 @@
+10187 rmtfs-20260820: start v=4387507 cap=100% cuts='rmtfs' cycles=6 suspend=900s
+10187 rmtfs-20260820: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=dcde892b-14db-4f88-9477-905ece74394b
+10192 rmtfs-20260820: dpms=Off
+10202 rmtfs-20260820: USBIN suspended: status=Discharging online=0
+10202 rmtfs-20260820: descending to 4030000
+10322 rmtfs-20260820: descent v=4188199
+10442 rmtfs-20260820: descent v=4137593
+10562 rmtfs-20260820: descent v=4109566
+10682 rmtfs-20260820: descent v=4094968
+10802 rmtfs-20260820: descent v=4112096
+10922 rmtfs-20260820: descent v=4099250
+11042 rmtfs-20260820: descent v=4086404
+11162 rmtfs-20260820: descent v=4078424
+11282 rmtfs-20260820: descent v=4060128
+11402 rmtfs-20260820: descent v=4048060
+11522 rmtfs-20260820: descent v=4044751
+11642 rmtfs-20260820: descent v=4012636
+11642 rmtfs-20260820: settled at v=4012636; alternating arms now
+11642 rmtfs-20260820: 
+11642 rmtfs-20260820: === cycle 1 of 6 ===
+11642 rmtfs-20260820: cut applied: rmtfs
+12564 rmtfs-20260820: ARM CUT t0=11662 v0=4037355 t1=12564 v1=4096330 slept=902s of 900s
+13506 rmtfs-20260820: ARM FULL t0=12605 v0=4085625 t1=13506 v1=4059739 slept=901s of 900s
+13506 rmtfs-20260820: === cycle 2 of 6 ===
+13507 rmtfs-20260820: cut applied: rmtfs
+14428 rmtfs-20260820: ARM CUT t0=13527 v0=4085236 t1=14428 v1=4084847 slept=901s of 900s
+15370 rmtfs-20260820: ARM FULL t0=14468 v0=4063242 t1=15370 v1=4044168 slept=902s of 900s
+15371 rmtfs-20260820: === cycle 3 of 6 ===
+15371 rmtfs-20260820: cut applied: rmtfs
+16292 rmtfs-20260820: ARM CUT t0=15391 v0=4066940 t1=16292 v1=4076477 slept=901s of 900s
+17235 rmtfs-20260820: ARM FULL t0=16333 v0=4066356 t1=17235 v1=4048839 slept=902s of 900s
+17235 rmtfs-20260820: === cycle 4 of 6 ===
+17235 rmtfs-20260820: cut applied: rmtfs
+18156 rmtfs-20260820: ARM CUT t0=17255 v0=4049228 t1=18156 v1=4041443 slept=901s of 900s
+19099 rmtfs-20260820: ARM FULL t0=18197 v0=4044751 t1=19099 v1=4039107 slept=902s of 900s
+19099 rmtfs-20260820: === cycle 5 of 6 ===
+19099 rmtfs-20260820: cut applied: rmtfs
+20020 rmtfs-20260820: ARM CUT t0=19119 v0=3995314 t1=20020 v1=3961836 slept=901s of 900s
+20963 rmtfs-20260820: ARM FULL t0=20061 v0=3989669 t1=20963 v1=4014583 slept=902s of 900s
+20963 rmtfs-20260820: === cycle 6 of 6 ===
+20963 rmtfs-20260820: cut applied: rmtfs
+21884 rmtfs-20260820: ARM CUT t0=20983 v0=3985582 t1=21884 v1=3967675 slept=901s of 900s
+22827 rmtfs-20260820: ARM FULL t0=21925 v0=3988307 t1=22827 v1=3957359 slept=902s of 900s
+22827 rmtfs-20260820: 
+22827 rmtfs-20260820: done - fit with tools/ab-leg-fit.py
+22827 rmtfs-20260820: restored: charger=Not charging online=1 rc=0
