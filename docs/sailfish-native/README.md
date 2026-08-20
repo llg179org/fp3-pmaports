@@ -192,15 +192,64 @@ script now refuses to run under busybox rather than producing that false negativ
 0x4F20) and `qmimodem/lte.c` sets the default attach profile. This is not "ofono
 starts"; it is ofono **operating** the modem over QRTR.
 
-**So the telephony answer for a native Sailfish port is: yes, with one small
-kernel-side gap** — the three `rmnet_data` interfaces. Two ways to close it, and
-neither is research:
+### The rmnet gap, explained — and it is not a kernel gap
 
-1. **Userspace**: create them at boot (a udev rule or a systemd unit doing the
-   three `ip link add`s). Zero kernel work; that is what this experiment did.
-2. **Kernel**: have `ipa2_lite` create its own `rmnet_data` children the way the
-   downstream IPA driver does. Cleaner, and it would make ofono work out of the
-   box on every msm8953 mainline device.
+☠️ **Corrected.** The first version of this section called it "one small
+kernel-side gap" and proposed making `ipa2_lite` create the children "the way the
+downstream IPA driver does". That was speculation, and reading the source says it
+is the wrong fix.
+
+**What the two kernel pieces actually are.** `drivers/net/ipa2-lite/ipa.c` creates
+exactly **one** netdev — the name is a literal in the driver, `"rmnet_ipa0"` — and
+it is **QMAP-framed**: it sets `skb->protocol = htons(ETH_P_MAP)` and reserves
+`ndev->needed_headroom = 4 /* QMAP_HDR */`. QMAP is Qualcomm's multiplexing
+framing: every packet carries a **mux id**, so one physical link can carry several
+PDN contexts at once.
+
+The thing that *demultiplexes* it is a separate upstream driver,
+`drivers/net/ethernet/qualcomm/rmnet/` (`CONFIG_RMNET=m` here). It attaches to a
+MAP-framed parent and creates one child netdev per mux id:
+
+```sh
+modprobe rmnet
+ip link add link rmnet_ipa0 name rmnet_data0 type rmnet mux_id 1
+ip link add link rmnet_ipa0 name rmnet_data1 type rmnet mux_id 2
+ip link add link rmnet_ipa0 name rmnet_data2 type rmnet mux_id 3
+```
+
+**So both halves are present and neither is broken.** What is absent is anybody
+*calling* that — and by upstream's design that is **userspace's job**, which is
+why the rmnet driver exposes it as an rtnetlink link type rather than creating
+children itself. ofono's `setup_qrtrsoc()` does not create them; it **looks for
+them** through udev while enumerating the modem, requires at least three, and
+derives `mux_id = N + 1` from the name. Absent, it destroys the modem it had just
+created.
+
+**ModemManager, on the same phone, does not need them** — it binds `qrtr0` for
+control and `rmnet_ipa0` for data and reaches `packet service state: attached`
+with no `rmnet_data*` in existence. ☠️ Whether it creates them when a bearer is
+actually activated was **not tested**: no data context was brought up on either
+stack tonight.
+
+**Which makes this an ofono expectation rather than a platform defect**, and
+changes what the fix should be:
+
+1. **A userspace unit or udev rule** that creates the three links at boot. This is
+   what the experiment did, it is what upstream's design intends, and it is the
+   whole of the work.
+2. **Or a change in ofono** to create the links itself when a `qrtrsoc` modem has
+   none — arguably the right upstream fix, since ofono already knows the mux ids
+   it wants.
+3. ☠️ **Not a change to `ipa2_lite`.** Having the MAP driver create rmnet children
+   would duplicate the demuxer's job and fight the split the two drivers were
+   written to have.
+
+☠️ **What is proven and what is not.** Proven: with the three interfaces present,
+ofono enumerates the modem, powers it, reads the SIM and registers. **Not proven:
+that those interfaces carry data.** No context was activated, so the mux ids were
+never exercised end to end — which is the next measurement, and it is the one that
+would tell whether three is the right number or merely the number ofono checks
+for.
 
 ☠️ **Restore verified, not assumed.** The links were deleted, `rmnet` unloaded,
 and ModemManager started again: `state: registered`, `packet service state:
