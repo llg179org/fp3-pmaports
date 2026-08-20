@@ -27,6 +27,110 @@ then disproved, every lead still being chased — is under
 | [`bringup/captures/`](bringup/captures/) | the raw data every number here came from |
 | [`bringup/patches/`](bringup/patches/) | patches carried out of this work |
 | [`bringup/disproven/`](bringup/disproven/README.md) | hypotheses that were disproved, kept so they are not re-run |
+
+## The theory: how this platform sleeps
+
+Stable background, so the numbers below have something to sit on. Nothing in
+this section is FP3-specific except where it says so; it is how every
+RPM-generation Snapdragon (msm8916/8937/8953, SDM632) is built.
+
+### The ladder
+
+Power is given up in rungs, each one conditional on everything below it:
+
+```
+userspace idle                    nothing scheduled, timers quiet
+  └─ WFI / cpu-power-collapse     cpuidle: one core at a time
+      └─ cluster-ret / gdhs / pc  genpd: the whole cluster, deepest last
+          └─ system-pc            genpd: the domain above both clusters
+              └─ PSCI → TZ        the kernel asks the secure firmware
+                  └─ APSS ↔ RPM   TZ performs the handshake: "Apps is down"
+                      └─ vlow / vmin   the RPM's own low-power modes
+                          └─ XO shutdown   the 19.2 MHz crystal stops
+```
+
+Two properties of the ladder explain most of this investigation:
+
+* **Each rung is gated by the one below.** `genpd_power_off()` refuses to
+  power a parent down unless every child is already in its *deepest* state —
+  which is why one `bool` that capped the clusters at index 1 (see
+  [the real cause](#-the-real-cause-a-bool-that-should-have-been-an-unsigned-int))
+  made the entire top of the ladder structurally unreachable, with every
+  counter reading zero and nothing "rejected".
+* **The top rungs are not the kernel's.** Above the PSCI call sits secure
+  firmware and the RPM's own firmware. The kernel can only make its request
+  correctly and verify the counters move; when they do not, the remaining
+  question is votes, not code paths.
+
+### The RPM, masters, and the two vote sets
+
+The RPM (Resource Power Manager) is a separate always-on microcontroller that
+owns the shared resources: regulators, RPM-routed clocks, buses, and the XO
+crystal. Around it sit the **masters** — APSS (us, the application processor),
+MPSS (modem), PRONTO (WiFi), LPASS (audio DSP), TZ — and each one both
+*handshakes* (tells the RPM when it powers down) and *votes* (tells the RPM
+what resources it needs).
+
+Every vote lands in one of two sets:
+
+* the **active set** — what the master needs while it is awake;
+* the **sleep set** — what it needs while it is power-collapsed.
+
+The rule that shapes everything: **a resource with an active vote and no sleep
+vote keeps its active vote at all times, including through power collapse.**
+The sets only separate once the first sleep vote for that resource arrives.
+So "forgot to cast a sleep vote" and "needs this rail during sleep" are
+indistinguishable to the RPM — which is why the census in
+[`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) had to be
+taken, and why mainline's regulator driver never casting sleep votes is a real
+divergence even where it costs nothing.
+
+The RPM enters `vlow`/`vmin` — and ultimately shuts the crystal down — only
+when the aggregate allows it: **every master down (or sleep-voting), and no
+resource held active-set.** That is why a master being down is *necessary and
+not sufficient*, measured twice on this device: the AP handshake fixed and
+`vlow` still 0, then the audio DSP collapsing for whole suspends and `vlow`
+still 0.
+
+### Why there is no `deep`, and why it does not matter
+
+`/sys/power/mem_sleep` on this firmware offers only `[s2idle]`. `deep` (S3,
+suspend-to-RAM via firmware) exists only if the secure firmware implements
+PSCI `SYSTEM_SUSPEND`, and this one does not — that is not ours to add. What
+makes it not matter: s2idle freezes userspace and lets cpuidle take the same
+ladder as runtime idle, and **measured here, the system power domain collapses
+from s2idle** — the deepest state the AP side has is reachable without `deep`.
+On this platform s2idle *is* the suspend path, not a fallback for a missing
+one.
+
+The corollary is that the RPM cannot tell a deep runtime idle from a suspend —
+both look like "APSS handshaked down". Sleep-set votes therefore take effect
+at deepest cpuidle *any time the system is idle enough*, not just during
+suspend, which is also why bolting the RPM sleep set onto the regulator
+framework's system-suspend states would be the wrong shape (see the lead page).
+
+### What "deep sleep" and the ~10 mA regime actually require
+
+Downstream phones reach ~10 mA in **full suspend + RPM `vlow` + XO off + the
+modem in its own power-save**, never in runtime idle. Translated to this
+ladder, the checklist is:
+
+1. AP side down and staying down — **done**, four fixes shipped
+   ([below](#what-is-fixed-and-shipped));
+2. every other master down or sleep-voting — LPASS was the holdout, now
+   understood and priced (~4 %); the modem mostly keeps the XO on but is
+   *capable* of releasing it (measured once, 80 % of a suspend);
+3. no resource held active-set through the collapse — the LDO sleep-vote gap
+   lives here, measured to leave exactly one rail up on this device (the
+   eMMC's, which must stay);
+4. the RPM then enters `vlow` and stops the crystal — **never yet observed
+   here**, and the open question is which of 2–3 still blocks it.
+
+☠️ **The regime is not a target to shave toward.** 130 mA runtime idle does
+not become 10 mA by trimming services; the two numbers come from different
+rungs of the ladder. Every measurement below states which regime it was taken
+in, and comparing across regimes is the mistake this page exists to prevent.
+
 ## Where the numbers stand
 
 Idle here means display off, WiFi associated, one SSH session open. Unless a row
