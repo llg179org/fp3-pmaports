@@ -12,37 +12,62 @@ context to pick up later. Each entry says what was measured, not what was
 guessed. Items that are already written up elsewhere are linked rather than
 repeated.
 
-## Where this stopped, 2026-08-14 — read this first after a long gap
+## Where this stopped, 2026-08-20 — read this first after a long gap
 
-Three facts and one direction. Everything else on this page is detail under one
-of them.
+☠️ **The version of this section dated 2026-08-14 was still here on 2026-08-20 and
+every load-bearing sentence in it had gone false.** It said the application
+processor had *never once* told the RPM it was going down, that its shutdown count
+was zero, and that "that single zero explains the rest". The count is now **16 991
+after ten minutes of uptime**, the zero was fixed on 2026-08-17 by one hex digit,
+and `vlow` is *still* 0 — which is precisely the sentence the old section used to
+rule out. A "read this first" paragraph that is wrong is worse than no paragraph;
+that is why this one now carries its own date in the heading.
 
-**The device is on `linux-fp3-7.1.3-r53` and nothing is half-applied.** The
-package pins `_commit=fa5d294c702d75aa447fe8ca90b65d49b1075c36`, that commit is
-the tip of `debug-int/7.1.3`, it is what the phone is running, and the kernel
-working tree is clean. Automatic sleep is off, the `smp2p-modem` wake experiment
-is reverted, and no transient units are left on the device.
+**The device is on `linux-fp3-7.1.3-r61`, and the running kernel is ours.**
+`/boot/vmlinuz` matches the file owned by that package byte for byte.
+☠️ `uname -r` reads `7.1.3-postmarketos-qcom-msm8953`, which looks like the
+upstream flavour and is not: the package's own `kernel.release` says so, while its
+flavour directory is `fp3`. **But `linux-postmarketos-qcom-msm8953-7.1.3-r0` is
+also installed**, owns no `/boot/vmlinuz`, and is what makes every `apk` run end
+with `only one kernel release/flavor is supported`. Removing it is housekeeping
+nobody has done.
 
-**The one thing worth working on is idle current — and as of 2026-08-14 evening
-it is a platform gap, not a tuning problem.** The application processor has
-**never once told the RPM it is going down**: its shutdown count is zero while
-the modem's is 170 and the WLAN subsystem's is 284, and the SoC has consequently
-reached neither `vlow` nor `vmin` since boot — not while idle, and not across
-suspends of 60, 120, 300 and 600 s. That single zero explains the rest: the
-unreachable 10.4 mA S3 threshold, the fuel gauge's rest anchor that never fires,
-and why removing ten userspace daemons moved the floor by nothing. The whole
-measurement, and the instruments that had to be added to make it, are in
-[`power/README.md`](power/README.md#measured-2026-08-14-the-soc-never-reaches-an-rpm-low-power-mode).
+**The one thing worth working on is still idle current, and it is still a platform
+gap — but a different one.** Three of the four gates now open:
 
-**So the next question is: what should send the APSS sleep vote on mainline
-msm8953, and why does nothing send it.** Everything below about milliamps is
-downstream of that answer.
+| gate | state |
+|---|---|
+| the cores reach `cpu-power-collapse` | ✅ since the genpd `bool` fix |
+| the AP tells the RPM it went down | ✅ since `0x42000353`, and it does it thousands of times a minute |
+| the audio DSP shuts down | ✅ reachable — an ADSP restart frees it for the rest of the boot |
+| **the RPM enters `vlow` / `vmin`** | ❌ **`Count: 0` in every capture ever taken here** |
+
+☠️ **There is no `deep` on this platform.** `mem_sleep` offers `[s2idle]` only, and
+s2idle itself works — 6/6 suspends, full duration. "Deep sleep" here means getting
+the RPM into `vlow`, not finding a suspend mode that does not exist.
+
+**Where the numbers stand:** awake, panel off, ~58–63 mA · asleep, no cuts,
+**79.1 mA** · asleep with the modem stack cut, 43.3 mA · asleep with the ADSP
+collapsing, 70.8 mA. The target is under 10.
+
+**What closed on 2026-08-19/20, so nobody re-runs it:** that an ADSP client holds
+LPASS (six stages, up to stopping the DSP — nothing moved); that the regulator
+sleep-set costs anything droppable here (five suspect rails became one with USB
+unbound, and that one is the eMMC's); that USB stops the DSP collapsing (three
+alternating rounds, nothing); and that the held ADSP session is the lever (the leg
+prices it at ~4 %, inside the instrument's own spread). Full account in
+[`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md)
+and [`power/bringup/findings-log.md`](power/bringup/findings-log.md).
+
+**So the next question is: what else is voting, now that a master going down is
+demonstrably not enough.** And the one thing that has *ever* moved the sleeping
+number is the modem stack — a 36 % slope reduction, mechanism still unnamed. That
+is where the next measurement belongs, not on the ADSP.
 
 ☠️ **The 139–143 mA floor and its daemon subtraction are retracted** — the lens
-actuator was powered underneath the whole run. And the `ak7375` kernel fix that
-was queued as "the cheapest next step" **already shipped**: `fa5d294c` is that
-commit and r53 pins it. What remains there is userspace — nothing returns the
-lens to rest when the preview stops.
+actuator was powered underneath the whole run. The `ak7375` kernel fix that was
+queued as "the cheapest next step" shipped long ago. What remains there is
+userspace — nothing returns the lens to rest when the preview stops.
 
 **Two lines of work were deliberately stopped, not abandoned.** Both are written
 up so they need no re-investigation:
@@ -54,8 +79,36 @@ up so they need no re-investigation:
 * automatic sleep — demonstrated working, then switched back off because an
   incoming call cannot wake the phone. See the next section.
 
-☠️ **Do not restart either by building a kernel.** Neither is blocked on code
-that has not been written; both are blocked on the same 140 mA.
+## ☠️ Deep sleep: `vlow` has never once been reached
+
+The single open item behind every idle-current number on this page, stated
+separately because the section above is a status summary and this is a task.
+
+**What is known.** The application processor collapses constantly and says so to
+the RPM; the audio DSP can be made to collapse for the whole of every suspend; and
+`vlow` and `vmin` still read `Count: 0`. So a master being down is **necessary and
+not sufficient**, which is a measured correction to a claim this project carried
+for several days.
+
+**What to measure next, in order:**
+
+1. **What else votes.** The regulator branch is closed and the master branch is
+   closed; what remains is another master (MPSS, PRONTO, TZ) or a standing
+   resource vote that the `qcom_rpm_smd_write` tracepoint cannot see because it
+   was cast once at boot and never changed. ☠️ That blind spot is real and has
+   already cost one investigation: `bi_tcxo` never appears in a trace for exactly
+   that reason. `clk_summary` is the instrument for standing votes, not the trace.
+2. **The modem's 36 %.** The only intervention that has ever moved the sleeping
+   slope, and its mechanism is unnamed. Wakeup accounting across a suspend
+   separates "the MPSS never idles" from "the MPSS keeps waking the AP", and those
+   have different fixes.
+3. **Release the codec's LPASS clock** — `LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE`
+   is held `enable=1 prepare=1` by `c0f0000.codec` from boot and never dropped,
+   which is what keeps the ADSP awake. ☠️ Worth doing for correctness; it is
+   **not** a power fix, because the leg prices the whole mechanism at ~4 %.
+
+☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
+code that has not been written; it is blocked on not knowing which vote is left.
 
 ## An incoming call cannot wake the phone from s2idle
 
