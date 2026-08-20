@@ -219,6 +219,37 @@ the DT. What separated it from a real one was asking what else was true of the
 phone at the time. The answer was "a USB cable", which is true of every
 measurement in this investigation.
 
+## ★ 2026-08-20: prior art checked — no solution exists, and the obvious shape is disputed
+
+Searched before writing any code. Nothing adds sleep-set support to
+`qcom_smd-regulator.c` anywhere: not mainline, not a lore series, not the
+msm8916-mainline tree. The closest thing is the discussion under Stephan
+Gerhold's 2023 series "[PATCH 8/8] arm64: dts: qcom: msm8916-pm8916: Mark
+always-on regulators" (with Konrad Dybcio), and it rules out the
+implementation a regulator developer would reach for first:
+
+* **RPM sleep votes are not the regulator framework's suspend states.** The
+  sleep set takes effect whenever cpuidle reaches the deepest cluster state —
+  any time at runtime — while `regulator-state-mem`/`set_suspend_*` model
+  system suspend. Mapping one onto the other is semantically wrong.
+* Gerhold confirms the RPM rule this page reads out of the vendor comment:
+  every active request counts as active+sleep **until the first sleep vote
+  for that resource arrives**.
+* The direction he suggests is per-rail **active-only** support (as `rpmpd`
+  already has), or treating CPU-feeding rails as power domains — a binding
+  design conversation, not a driver one-liner.
+* Sibling-device data point: on msm8916, L7 (CPU PLL) "seems to stay
+  always-on no matter what" — the vendor's `_ao` trio (s2/s7/l7 on msm8953)
+  is exactly the CPU-rail set this feature exists for.
+
+Thread: https://lore.kernel.org/all/ (search: msm8916-pm8916 Mark always-on
+regulators, 2023-05); archived copy: https://lkml.indiana.edu/2305.3/03307.html
+
+Combined with the census above — one rail left standing and it is the eMMC's —
+the conclusion stands: **no patch here buys current on the FP3 today**, and if
+`vlow` turns out to be gated on a missing vote, the fix should take the
+active-only shape from that thread, not the suspend-ops shape.
+
 ## The next measurement, not the next patch
 
 1. Trace `qcom_rpm_smd_write` across a suspend and print the **resource ids**,
