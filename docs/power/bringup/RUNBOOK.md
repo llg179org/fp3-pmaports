@@ -1285,6 +1285,36 @@ relaxation noise and more anything helps the median: `ab-leg.sh rmtfs2-<date>
 "rmtfs" 8 1800` (~8.5 h of arms) once the pack is back above the 4.2 V /
 95 % start gates. If +56.7 mV/h is even half real, 8 × 1800 s puts it past 2 SE.
 
+### ★★ 2026-08-20 19:30: the second leg is a clean null, and the instrument failed its power budget
+
+`ab-leg.sh rmtfs2-20260820 "rmtfs" 8 1800` ran 11:40 → 19:26; every arm slept
+1802–1803 s of 1800; ended safely on the 3.8 V floor after cycle 8's CUT arm
+(8 CUT / 7 FULL arms, charger restored). Raw:
+[`captures/2026-08-20_ab-leg-rmtfs2.txt`](captures/2026-08-20_ab-leg-rmtfs2.txt).
+
+| arm | n | median mV/h |
+|---|---|---|
+| CUT | 8 | −40.44 |
+| FULL | 7 | −39.27 |
+
+**Difference −1.16 mV/h (3 % of FULL).** The first leg's +56.7 did not
+reproduce — it was the noise its own fitter refused to accept.
+
+☠️ **But the null is weak too, and that is the real finding.** A 36 %-of-sleep
+effect is ~14 mV/h at these slopes, and the per-suspend scatter is ~87 mV/h —
+so this design would need ~40 arms per side to resolve the effect it was built
+to chase. Per-suspend slopes on a gauge whose single reads scatter ±138 mA are
+intrinsically this noisy; the instrument that *did* detect the 36 %
+(`nomodem-20260819`) integrates a whole 4 h phase into one fitted line.
+**Pricing the three services separately therefore costs a slope-leg each**, the
+very cost `ab-leg.sh` was invented to avoid — the invention ran and failed its
+power budget. What the alternation still excludes: any *fast-acting* rmtfs
+effect bigger than ~90 mV/h.
+
+Next: `slope-leg.sh <tag> rmtfs` overnight — same instrument and protocol as
+`nomodem-20260819`, one cut for the whole leg, compared by phase-A slope
+against `baseline-20260819` (−35.77) and the nomodem leg.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
