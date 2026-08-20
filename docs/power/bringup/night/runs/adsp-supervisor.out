@@ -119,3 +119,24 @@
 05:15:33 192.168.100.17 up=1618 q=inactive g=inactive cap=96 v=4330868 chg=Not charging root=rw 
 05:20:34 192.168.100.17 up=1920 q=inactive g=inactive cap=96 v=4330868 chg=Not charging root=rw 
 05:25:35 192.168.100.17 up=2221 q=inactive g=inactive cap=96 v=4330284 chg=Not charging root=rw 
+05:30:52 !! device unreachable on both links (miss 1)
+05:36:08 !! device unreachable on both links (miss 2)
+05:41:09 # max 10h reached, exiting
+05:41:09 # supervisor adsp-20260819 done; artefacts in /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/adsp-20260819
+total 232
+drwxrwxr-x 2 fp3 fp3  4096 Aug 20 00:18 .
+drwxrwxr-x 4 fp3 fp3  4096 Aug 19 19:38 ..
+-rw-r--r-- 1 fp3 fp3  4188 Aug 19 23:57 01-root-adsp-restart-leg-sh-adsprestart-20.txt
+-rw-r--r-- 1 fp3 fp3   624 Aug 20 04:45 audio-hold.txt
+-rw-r--r-- 1 fp3 fp3 97806 Aug 20 04:45 guardian.log
+-rw-r--r-- 1 fp3 fp3   757 Aug 19 23:57 jobs-adsp.txt
+-rw-r--r-- 1 fp3 fp3   901 Aug 19 23:57 lpass-restart-ab.txt
+-rw-r--r-- 1 fp3 fp3   708 Aug 19 23:57 lpass-usb-ab.txt
+-rw-r--r-- 1 fp3 fp3 11334 Aug 20 04:45 ofono-rmnet.txt
+-rw-r--r-- 1 fp3 fp3  3573 Aug 20 04:45 ofono-survey.txt
+-rw-r--r-- 1 fp3 fp3  2584 Aug 20 04:45 ofono-try.txt
+-rw-r--r-- 1 fp3 fp3 50340 Aug 20 04:45 ofonod-rmnet.log
+-rw-r--r-- 1 fp3 fp3  3692 Aug 20 04:45 ofonod.log
+-rw-r--r-- 1 fp3 fp3  3527 Aug 19 23:57 preflight.txt
+-rw-r--r-- 1 fp3 fp3   425 Aug 19 23:57 queue.log
+-rw-rw-r-- 1 fp3 fp3 13453 Aug 20 05:41 timeline.txt
