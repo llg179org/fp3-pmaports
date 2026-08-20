@@ -289,6 +289,43 @@ silent one; each is enforced somewhere in the code above.
    volume changes: the daemon watches all three and asks nothing until something
    moves. Idle cost is about 0.1% of a CPU.
 
+## ☠️ One known defect, and it is not in this port's code
+
+**The SoC's internal digital codec pins the audio DSP awake for the whole boot.**
+Found from the power side on 2026-08-20 and recorded here because this is where
+anyone touching audio will look.
+
+`c0f0000.codec` — bound to `msm8916-wcd-digital-codec`, the *internal* digital
+codec, which is **not** in this phone's audio path — holds two clocks from probe:
+
+```
+LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE  enable=1 prepare=1  19200000 Hz  mclk
+xo                                        enable=7            19200000 Hz  ahbix-clk
+```
+
+`msm8916_wcd_digital_probe()` calls `clk_prepare_enable()` on both unconditionally
+and releases them only in `remove()` — no runtime PM, no DAPM gating. The `mclk`
+is supplied by the ADSP over APR, so the ADSP cannot power-collapse while it is
+held. Measured consequence: the DSP shuts down two or three times in the first
+seconds of a boot and then never again, until something restarts it.
+
+**Why it matters here even though it costs almost nothing.** The power side prices
+the whole mechanism at about 4 % of the sleep current, so this is not a
+battery-life item. It matters because it is a **standing hardware request that no
+audio path asks for**, on a board where that codec is unused: playback and capture
+run over the WCD9335 on SLIMbus and the AW8898 on MI2S.
+
+☠️ **It is not caused by this port's MCLK routing, and that was checked rather
+than assumed.** The two routes this port added — `"AMIC2", "MCLK"` and
+`"AMIC5", "MCLK"` — are DAPM routes on the *WCD9335*, a different device. At idle
+the WCD9335's own `MCLK` supply widget reads `Off` and both PulseAudio sources are
+`SUSPENDED`, while the internal codec's clock count is still 1. A clock held
+outside DAPM cannot be released by anything DAPM does.
+
+The fix, and the confirming measurement, are tracked in
+[`../TODO.md`](../TODO.md); the evidence is in
+[`../power/bringup/leads/lpass-never-sleeps.md`](../power/bringup/leads/lpass-never-sleeps.md).
+
 ## Checking it works
 
 | what to look at | what it should say |

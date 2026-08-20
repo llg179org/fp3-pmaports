@@ -246,9 +246,40 @@ block at zero:
 LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE  enable=1  prepare=1  19200000 Hz  c0f0000.codec  mclk
 ```
 
-That clock is **provided by the ADSP over APR** (`q6afe-clocks`), and it is held by
-the codec, prepared and enabled, from boot. A processor cannot power-collapse
-while it is sourcing a 19.2 MHz clock for someone else.
+That clock is **provided by the ADSP over APR** (`q6afe-clocks`), and it is held
+prepared and enabled from boot. A processor cannot power-collapse while it is
+sourcing a 19.2 MHz clock for someone else.
+
+☠️☠️ **CORRECTED 2026-08-20: the holder is not the WCD9335 and not our work.**
+The first version of this section read `c0f0000.codec` as "the codec" and
+attributed it to this port's WCD9335 MCLK bring-up. Measured on the device:
+`c0f0000.codec` is bound to **`msm8916-wcd-digital-codec`** — the SoC's *internal
+digital* codec, a different device from the SLIMbus WCD9335 (`217:1a0:*`). It
+holds two clocks: `mclk` and `xo` as `ahbix-clk` at enable count 7.
+
+And the mechanism is in upstream mainline, not in anything this port wrote —
+`sound/soc/codecs/msm8916-wcd-digital.c`, `msm8916_wcd_digital_probe()`:
+
+```c
+ret = clk_prepare_enable(priv->ahbclk);   /* xo, ahbix-clk */
+ret = clk_prepare_enable(priv->mclk);     /* LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE */
+```
+
+Both are taken **unconditionally at probe** and released only in `remove()`.
+There is no runtime PM and no DAPM gating on either. So the ADSP is pinned awake
+from the moment that driver binds until its module is unloaded.
+
+☠️ **The evidence that killed the DAPM explanation is worth keeping**, because it
+is what a plausible wrong answer looks like: DAPM's own `MCLK` supply widget reads
+**`Off`** and both PulseAudio sources are `SUSPENDED`, while `clk_summary` still
+shows `enable=1`. A clock held outside DAPM cannot be released by anything DAPM
+does — which is also why the mixer probe's four arms all read zero.
+
+**What this makes it:** an upstream defect affecting every msm8916/8939/8953 board
+that instantiates the internal digital codec, and on the FP3 that codec is not
+even in the audio path — playback and capture run over the WCD9335 on SLIMbus and
+the AW8898 on MI2S. The fix is to take those clocks in runtime PM or in DAPM
+rather than at probe.
 
 It fits every observation this page has collected:
 
@@ -260,15 +291,15 @@ It fits every observation this page has collected:
 - the stage that removed the q6 stack (S4) never suspended, so it could not have
   seen it either.
 
-☠️ **And it is ours.** The MCLK wiring is part of this port's WCD9335 bring-up.
-The fix is a release — the codec should drop the clock when no path needs it —
-not a new power-collapse request.
+☠️ **It is not ours** — see the correction above. The fix belongs in
+`msm8916-wcd-digital.c`: take the clocks under runtime PM or from the DAPM supply
+widget, instead of at probe.
 
-☠️ **Unconfirmed.** No experiment has yet dropped that clock and watched the
-counter; the chain above is consistent but circumstantial. The test is to release
-it (unbind or unload the codec) and suspend. It is cheap, and it is worth doing
-for correctness — but on the evidence above it buys about 4 % of the sleep
-current, so it should not be scheduled ahead of anything that might buy more.
+☠️ **Unconfirmed on the device.** The source is unambiguous and the clock counts
+match it, but no experiment has yet unbound that driver and watched the LPASS
+counter. The test is one `unbind` and a 30 s suspend. It is cheap, and worth doing
+for correctness — but on the leg above it buys about 4 % of the sleep current, so
+it should not be scheduled ahead of anything that might buy more.
 
 ☠️ **This does not make the mechanism worthless — it makes it cheap and clean.**
 Something we start at boot holds a session on the DSP forever; finding and
