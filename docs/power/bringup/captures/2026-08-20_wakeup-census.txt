@@ -1,0 +1,35 @@
+# wakeup-census.sh 3 60, first run, 2026-08-20 05:28. AP-side arms only (this run
+# predates the MPSS column).
+#
+# ☠️ The raw file was destroyed by the follow-up run before it reached the host:
+# the script truncated its own output instead of rotating it. Fixed the same
+# morning; the six arm lines below are transcribed from the live reads, and the
+# interrupt block is round 1's, which is the only one that was read in full.
+#
+# THE RESULT: six arms, all identical. Nothing wakes the application processor
+# early, with the modem stack up or cut.
+
+# wakeup-census uptime=2444 rounds=3 suspend=60s cuts='ModemManager rmtfs tqftpserv'
+# ☠️ elapsed < asked means something woke it early. That is the whole question.
+
+== round 1 ==
+  MODEM UP    asked=60s  elapsed=62s  suspends=+1
+    irq IPI1:                  +1238
+    irq 11:                    +265
+    irq 24:                    +237
+    irq 39:                    +214
+    irq IPI0:                  +146
+    irq IPI4:                  +143
+    irq 22:                    +107
+    irq IPI5:                  +60
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1
+
+== round 2 ==
+  MODEM UP    asked=60s  elapsed=62s  suspends=+1
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1
+
+== round 3 ==
+  MODEM UP    asked=60s  elapsed=62s  suspends=+1
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1
+
+# No wakeup source's active count changed in any arm.

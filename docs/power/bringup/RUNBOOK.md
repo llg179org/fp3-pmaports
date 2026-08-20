@@ -1217,12 +1217,55 @@ device** - including with the audio DSP collapsing for the whole of every suspen
 A master being down is **necessary and not sufficient**, and that is a measured
 correction to the claim this investigation carried for several days.
 
+## ★ 2026-08-20 05:45: the modem's 36 % is not AP wakeups, and not our userspace
+
+Two censuses, twelve suspends, `tools/wakeup-census.sh`. Raw:
+[`captures/2026-08-20_wakeup-census.txt`](captures/2026-08-20_wakeup-census.txt)
+and [`captures/2026-08-20_mpss-census.txt`](captures/2026-08-20_mpss-census.txt).
+
+**The AP side is a clean negative.** Six arms, alternating modem-up / modem-cut,
+60 s asked each: **every one elapsed 62 s** with `suspends=+1` and no wakeup
+source's active count moving. Nothing wakes the application processor early, with
+the modem stack running or stopped. So the 36 % is **not** paid in resumes.
+
+**The modem side does not confirm the other hypothesis either:**
+
+| round | arm | MPSS shutdowns | XO off |
+|---|---|---|---|
+| 1 | modem up | +0 | 0 ms of 61 000 |
+| 1 | modem cut | +0 | 0 ms of 62 000 |
+| 2 | **modem up** | **+3** | **49 442 ms of 62 000** |
+| 2 | modem cut | +0 | 0 ms of 62 000 |
+| 3 | modem up | +0 | 0 ms of 62 000 |
+| 3 | modem cut | +0 | 0 ms of 62 000 |
+
+Five of six arms show the MPSS never going down across the suspend — and **the one
+exception is an uncut arm**. Cutting our userspace never made the modem sleep.
+
+Two things follow, and the second is a criticism of the original result:
+
+1. **The modem is capable of it.** In that one arm it kept the crystal off for
+   80 % of the suspend, so nothing structural prevents it. What gates it is not
+   our host software.
+2. ☠️ **"Cutting the modem stack" does not cut the modem.** `systemctl stop
+   ModemManager rmtfs tqftpserv` stops *host* services; the radio stays powered,
+   registered and attached throughout — `mmcli` says so on the way back in.
+   Whatever the 36 % is, it is not "the modem being off". `rmtfs` and `tqftpserv`
+   are the interesting two, because they serve the modem's own filesystem and TFTP
+   requests: stopping them changes what the modem *does*, not whether it runs.
+
+☠️ **n is 3 per arm and one positive.** This narrows; it does not name. What it
+removes is the two explanations that were easiest to reach for.
+
 ## Next, in order
 
-1. **The modem's 36 %.** The only intervention that has ever moved the sleeping
-   slope, and its mechanism is unnamed. Wakeup accounting across a suspend
-   separates "the MPSS never idles" from "the MPSS keeps waking the AP" - those
-   have different fixes. **This is where the next measurement belongs.**
+1. **The modem's 36 %, now narrower.** AP wakeups are excluded and a userspace
+   cut does not move the MPSS, so the next question is which of the three
+   services carries it — and `rmtfs` is the first suspect, because it answers the
+   modem's own filesystem requests and stopping it changes what the modem does
+   rather than whether it runs. A three-way `freq-probe`-style cut, one service at
+   a time, prices them separately. **This is still where the next measurement
+   belongs.**
 2. **What else votes.** The regulator branch and the master branch are both
    closed, so what is left is another master or a standing resource vote. ☠️ The
    `qcom_rpm_smd_write` tracepoint is blind to a vote cast once at boot and never

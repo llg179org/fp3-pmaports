@@ -1,0 +1,72 @@
+# wakeup-census.sh 3 60, second run, 2026-08-20 05:45, with the MPSS master-record
+# column added. Six arms, alternating.
+#
+# ☠️ Read the MPSS column, not the elapsed one: the AP never woke early in any
+# arm of either run. Five of six arms show the modem never going down across
+# the suspend, and the one exception is a MODEM UP arm.
+
+# wakeup-census uptime=2992 rounds=3 suspend=60s cuts='ModemManager rmtfs tqftpserv'
+# ☠️ elapsed < asked means something woke it early. That is the whole question.
+
+== round 1 ==
+  MODEM UP    asked=60s  elapsed=61s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 61000ms
+    irq IPI1:                  +1187
+    irq 11:                    +257
+    irq 39:                    +254
+    irq 24:                    +248
+    irq IPI4:                  +167
+    irq IPI0:                  +119
+    irq 22:                    +117
+    irq IPI5:                  +75
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 62000ms
+    irq IPI1:                  +1132
+    irq 24:                    +243
+    irq 11:                    +214
+    irq 39:                    +190
+    irq IPI4:                  +125
+    irq IPI0:                  +107
+    irq 22:                    +92
+    irq IPI5:                  +65
+
+== round 2 ==
+  MODEM UP    asked=60s  elapsed=62s  suspends=+1  MPSS +3 shutdowns, XO +3, XO off 49442ms of 62000ms
+    irq IPI1:                  +1129
+    irq 24:                    +240
+    irq 11:                    +237
+    irq IPI4:                  +154
+    irq IPI0:                  +148
+    irq 22:                    +104
+    irq 39:                    +78
+    irq IPI5:                  +55
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 62000ms
+    irq IPI1:                  +903
+    irq 24:                    +219
+    irq 11:                    +179
+    irq IPI4:                  +129
+    irq IPI0:                  +121
+    irq 22:                    +92
+    irq IPI5:                  +45
+    irq 140:                   +33
+
+== round 3 ==
+  MODEM UP    asked=60s  elapsed=62s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 62000ms
+    irq IPI1:                  +1168
+    irq 24:                    +248
+    irq 11:                    +223
+    irq 39:                    +183
+    irq IPI4:                  +134
+    irq IPI0:                  +134
+    irq 22:                    +105
+    irq IPI5:                  +66
+  MODEM CUT   asked=60s  elapsed=62s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 62000ms
+    irq IPI1:                  +903
+    irq 24:                    +240
+    irq 11:                    +210
+    irq 39:                    +169
+    irq IPI0:                  +140
+    irq IPI4:                  +116
+    irq 22:                    +104
+    irq IPI5:                  +72
+
+# census done
+
