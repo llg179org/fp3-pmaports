@@ -1315,6 +1315,43 @@ Next: `slope-leg.sh <tag> rmtfs` overnight — same instrument and protocol as
 `nomodem-20260819`, one cut for the whole leg, compared by phase-A slope
 against `baseline-20260819` (−35.77) and the nomodem leg.
 
+### ★★★ 2026-08-21 00:15: rmtfs alone carries about half the modem's cost — and the effect is slow-acting
+
+`slope-leg.sh rmtfsslope-20260820 rmtfs` ran overnight and completed clean
+(6 of 6 sleeps, phase B control intact, charger restored). Raw:
+[`captures/2026-08-21_pmos_rmtfs-slope-leg.txt`](captures/2026-08-21_pmos_rmtfs-slope-leg.txt).
+
+The phase-A ladder, the comparison the instrument is built for:
+
+| leg | cut | phase-A slope | vs baseline |
+|---|---|---|---|
+| `baseline-20260819` | — | −35.77 mV/h | — |
+| `adsprestart-20260819` | ADSP collapsing | −34.32 | ≤4 % |
+| **`rmtfsslope-20260820`** | **rmtfs only** | **−28.46** (r²=0.99) | **−20 %** |
+| `nomodem-20260819` | all three | −22.62 | −37 % |
+
+**So rmtfs alone buys about 20 % of the sleeping draw — roughly half of the
+trio's 37 % — an order of magnitude past the instrument's 1.4 % spread.** The
+remainder sits in `ModemManager`/`tqftpserv` or in the combination.
+
+**And this names the shape of the mechanism.** The ab-leg alternation, which
+re-applied the same cut for 30-minute windows, measured a clean null on the
+same service the whole-leg cut prices at 20 %: **the effect needs time to
+appear.** Whatever the modem does when its filesystem service is gone, it
+takes longer than half an hour to settle into it. That is a property the
+mechanism hunt can use — and it is why both results are right.
+
+⚠️ Two honesty notes: the phase-A window (3.98→3.94 V) sits lower than the
+baseline's (4.09→4.06), which biases the ratio optimistic — the direction and
+order of magnitude are safe, the third digit is not. And phase B's control
+came in at 124.1 mA against the usual ~150; the derived asleep figure
+(71.6 mA) is therefore less comparable across legs than the slope ratio is.
+
+Next, in order: the same whole-leg cut for `ModemManager` and for `tqftpserv`
+(one night each), and only then the mechanism question — what rmtfs's absence
+makes the modem stop doing, with `qcom_rpm_master_stats` (MPSS shutdowns, XO
+duration) read across the sleeps of whichever leg shows the saving.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
