@@ -555,6 +555,36 @@ would have closed in five minutes.
 | "`syncstate-snap.sh` came back clean, so `sync_state()` is not the amplifier's problem" | the conclusion happens to have held, but that run saw 13 of 39 files and no i2c device at all. A null result from an instrument that does not cover the question is not evidence |
 | "the tarball check passes, so the pinned commit is still reachable" | without `-L`, GitHub answers 302 for every hash including `deadbeef…`. The check had never once been shown failing |
 
+Added 2026-08-19/20, when the search moved into the RPM masters. The full account
+is in [`findings-log.md`](findings-log.md) and
+[`leads/lpass-never-sleeps.md`](leads/lpass-never-sleeps.md):
+
+| claim | what it turned out to be |
+|---|---|
+| "a master that never shuts down is a **sufficient** explanation for `vlow` reading 0" | half wrong, and measured so. LPASS was made to collapse for the *whole* of every suspend and `vlow` did not move. Necessary, not sufficient |
+| "stopping the ADSP outright and seeing no LPASS shutdown is a negative result about who holds it" | the stage could not have succeeded either way: the counter counts *handshakes*, and a halted subsystem performs none. It is absent, not asleep |
+| "five PMIC rails vote active and never sleep" | four of the five were the USB PHY's, and the census was taken with a cable in the phone. With the controller unbound, one remains — the eMMC's, which cannot be dropped |
+| "USB is what stops the audio DSP collapsing" | three alternating rounds, `LPASS +0` on both arms. The one observed collapse had a different cause: the ADSP had been restarted ten minutes earlier |
+| "the held ADSP session is the deep-sleep lever" | the leg prices it at ~4 %, against a baseline that reproduces to 1.4 %. A real mechanism worth almost nothing |
+| "`ip link add … type rmnet mux_id 1` returned `Invalid argument`, so the kernel refuses it" | the device's `ip` is **busybox**, which never sent the mux-id attribute. Real `iproute2` did it first time. ☠️ A negative from the wrong tool |
+| "the package search page says those packages are not in Alpine" | it says so because the scrape was wrong. The APKINDEX has them. ☠️ A failed query is not a negative result |
+
+## Where the story continues
+
+This page stops at Step 16, and deliberately: it is the narrative of how the
+*idle* current was localised, and it is not revised when the device changes.
+Everything after it — the RPM handshake, the masters, the LPASS chapter, the four
+branches that closed on 2026-08-19 — is in
+[`findings-log.md`](findings-log.md), which is the dated record in the order it
+happened. The questions still live are one page each under
+[`leads/`](leads/README.md), the instruments are in [`tools/`](tools/README.md),
+and the unattended harness that now runs the long legs is
+[`night/`](night/README.md).
+
+☠️ **If you are picking the work up, none of those is the entry point.**
+[`RUNBOOK.md`](RUNBOOK.md) is: it says what is running on the device right now and
+what to do next, and it is the only page that does.
+
 ## What is still open here
 
 Deliberately not listed on this page. See [`../README.md`](../README.md) for
