@@ -23,6 +23,47 @@ Two questions decide it, and neither is answered by reading:
 Everything below is measured or read from a named file. Where a number came from
 a run, the run is in this directory and dated.
 
+## ★ Morning report, 2026-08-20 — both questions answered, and the answer is go
+
+Everything below this section is the evidence. This is the summary and the
+recommendation.
+
+| question | answer | measured |
+|---|---|---|
+| **Can ofono drive this modem over QRTR?** | **Yes** — modem created, SIM read, **registered on the network**, thirteen ofono interfaces including `ConnectionManager` and `MessageManager` | on the device, 00:11–00:20 |
+| **What is missing for it?** | **Three `rmnet_data` netdevs.** ofono wants ≥3; mainline's `ipa2_lite` creates none. `CONFIG_RMNET=m`, so three `ip link add`s fix it | on the device |
+| **Does Qt's eglfs start on this panel?** | **Yes** — KMS planes enumerated, CRTC 1080×2160, ran the full probe | on the device, 00:25 |
+| **Is the kernel config a blocker?** | **No** — 29 `mer-kernel-check` errors, all netfilter/PPP/IPsec/quota, nothing structural | `mer_verify_kernel_config` |
+| **How much of the stack is packaged?** | Most of it: Mesa, Qt (with eglfs-KMS **and** the Wayland compositor), `mce`, `dsme`, `sensorfw`, `mlite`, `libngf`, `nemo-*`, `connman`, `maliit` — all in Alpine edge | APKINDEX |
+| **What has to be built?** | **~10 small packages** + lipstick + a homescreen. All open, all in `sailfishos`/`nemomobile-ux` | lipstick's own spec |
+
+### Go / no-go: **go**, as a staged effort, and not as a replacement for pmOS
+
+**Why go.** Nothing in the way is research. The two things that could have ended
+it — "ofono cannot reach a QRTR modem" and "Qt cannot drive this panel without a
+rebuilt Qt" — were both tested tonight and both came back positive, on the real
+hardware. The remaining work is packaging: about ten small open components, then
+lipstick, then `glacier-home`.
+
+**Why staged.** The order matters and each stage is independently useful:
+
+1. **Fix the rmnet gap** — worth doing regardless of Sailfish, and if it goes into
+   `ipa2_lite` it fixes ofono for every msm8953 mainline device.
+2. **Package the ten** into pmaports/Alpine. Each one is a small tarball with a
+   qmake or CMake build; they are useful to anyone running Nemo/Glacier.
+3. **Then** lipstick and glacier-home, which is where it becomes a UI project
+   rather than a packaging one.
+
+**What would make it a no-go, and did not:** a closed telephony stack, a closed
+graphics path, a kernel that needs porting, or a homescreen with no open
+alternative. None of those hold.
+
+☠️ **What this is not.** It is not an estimate of effort in hours, because the
+part after step 3 — making a phone people can use — is not measured by anything
+tested tonight. And it is not a claim that Sailfish would be *better* here: pmOS
+boots, and every subsystem this project has fixed is fixed on pmOS. This is a
+statement that the native path is **open**, not that it is preferable.
+
 ## Question 2, first answer: the kernel config is not the obstacle
 
 `mer_verify_kernel_config` (the Sailfish adaptation checker, from the
@@ -387,6 +428,14 @@ series of 900 s suspends. Host-side work only until it finished.
 - ofono `qrtrqmi` confirmed present upstream and built by default; Alpine ships
   ofono 2.19. The driver's own configuration requirements read out of its source.
 - The PinePhone adaptation pattern and `eglfs-config.json` read from GitHub.
+- 00:11 ofono installed, first run: modem found by `udevng`, stopped on
+  `Not enough rmnet_data interfaces found`.
+- 00:17 three `rmnet_data*` created (after `apk add iproute2` — busybox `ip`
+  cannot set `mux_id`); ofono brought the modem online, read the SIM and
+  registered.
+- 00:25 Qt installed, eglfs probe ran on `/dev/dri/card0`; session restored.
+- ☠️ eMMC clean all night: no `-110`, root stayed `rw`, checked before each
+  phase.
 - Alpine's real package inventory read from the APKINDEX files, after the search
   page produced a false negative.
 - Lipstick's BuildRequires split against that inventory.
