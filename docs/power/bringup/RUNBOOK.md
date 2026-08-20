@@ -1259,6 +1259,15 @@ removes is the two explanations that were easiest to reach for.
 
 ## Next, in order
 
+☠️ **And there is no fast instrument to do it with.** `charge_now` was tested as a
+way to price a state in fifteen minutes instead of four hours
+([`captures/2026-08-20_coulomb-probe.txt`](captures/2026-08-20_coulomb-probe.txt)):
+it has 0.01 % resolution, which was the hopeful part, but it is an OCV lookup and
+not a coulomb count — `dQ/dt` read 85.2 mA where medianed `current_now` read 62.0,
+37 % apart in the direction sag predicts. **Sleeping currents still cost a slope
+leg**, so a three-way service cut is three legs, and the way to afford it is the
+alternating-arms-within-one-descent design, not a cheaper meter.
+
 1. **The modem's 36 %, now narrower.** AP wakeups are excluded and a userspace
    cut does not move the MPSS, so the next question is which of the three
    services carries it — and `rmtfs` is the first suspect, because it answers the
