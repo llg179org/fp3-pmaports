@@ -102,10 +102,13 @@ for several days.
    slope, and its mechanism is unnamed. Wakeup accounting across a suspend
    separates "the MPSS never idles" from "the MPSS keeps waking the AP", and those
    have different fixes.
-3. **Release the codec's LPASS clock** — `LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE`
-   is held `enable=1 prepare=1` by `c0f0000.codec` from boot and never dropped,
-   which is what keeps the ADSP awake. ☠️ Worth doing for correctness; it is
-   **not** a power fix, because the leg prices the whole mechanism at ~4 %.
+3. **Release the internal digital codec's LPASS clocks** —
+   `msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` unconditionally and
+   drops them only in `remove()`, which pins the ADSP awake for the life of the
+   boot. ☠️ **Upstream code, not ours**, and on this board that codec is not in the
+   audio path. Worth doing for correctness and upstreamable; it is **not** a power
+   fix, because the leg prices the whole mechanism at ~4 %. Detail in the audio
+   section above.
 
 ☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
 code that has not been written; it is blocked on not knowing which vote is left.
@@ -161,73 +164,52 @@ LKML. Functionally it is the call path, so `voice` is the closest fit.
 under `systemd-run --collect` cannot be contaminated by the observer polling it;
 and a warning for anything that assumes the device is reachable while asleep.
 
-## Is our own UCM verb what keeps the audio DSP awake?
+## ~~Is our own UCM verb what keeps the audio DSP awake?~~ — answered 2026-08-20: no, and the real holder is upstream
 
-☠️ **The probe is silent and may run at night; the acoustic confirmation may
-not.** This started as "audio is daytime work", which was too broad - the audio
-coverage is automated and most of it makes no sound:
-[`20-audio`](../tests/checks/20-audio-test.sh) proves the codec enumerated and
-the PCMs open, and
-[`24-speaker-amp`](../tests/checks/24-speaker-amp-test.sh) measures the amplifier
-on its **control bus** so it cannot be confused with the room. What is audible is
-[`21-audio-acoustic`](../tests/checks/21-audio-acoustic-test.sh), which plays a
-tone - already opt-in behind `--acoustic`, and **that one waits for daylight**,
-because someone is asleep next to the phone. `queue.sh` refuses a job line that
-would play anything rather than trusting the job file.
+**Measured, both halves.** [`audio-hold-probe.sh`](power/bringup/tools/audio-hold-probe.sh)
+on a fresh boot dropped the capture pre-route, then the playback route, then put
+one back, with a 30 s suspend after each. Its first arm is a gate and it passed —
+the phone was in the held state — and **every arm read `LPASS +0`, XO off 0 ms of
+30 000**. Our UCM verb is not the holder.
 
-So: run the probe overnight, verify with `fp3-selftest --only audio` (silent),
-and keep the end-to-end acoustic proof for the morning.
+**What is.** `clk_summary` shows `LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE` at
+`enable=1 prepare=1`, 19.2 MHz, consumer `c0f0000.codec` — which is bound to
+**`msm8916-wcd-digital-codec`**, the SoC's *internal digital* codec, not the
+SLIMbus WCD9335. It also holds `xo` as `ahbix-clk` at enable count 7. That mclk is
+provided by the ADSP over APR, so the ADSP cannot power-collapse while it is
+sourced.
 
-**The measurement is two minutes.**
-[`power/bringup/tools/audio-hold-probe.sh`](power/bringup/tools/audio-hold-probe.sh),
-armed and committed 2026-08-19, not run.
+`sound/soc/codecs/msm8916-wcd-digital.c`, `msm8916_wcd_digital_probe()` takes both
+clocks **unconditionally at probe** and drops them only in `remove()` — no runtime
+PM, no DAPM gating. ☠️ **This is upstream mainline code, not this port's.** It
+affects every msm8916/8939/8953 board that instantiates the internal digital
+codec, and on the FP3 that codec is not in the audio path at all: playback and
+capture run over the WCD9335 on SLIMbus and the AW8898 on MI2S.
 
-**Why it matters.** Measured 2026-08-19: one restart of the ADSP and the audio
-DSP power-collapses in *every* suspend for the rest of the boot, keeping the
-crystal off for the whole of it - where before it had collapsed twice since boot,
-0.12 s in total
-([`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md)).
-So something opened at boot holds a session on the DSP and never closes it, and
-reloading the firmware is the only thing that has released it.
+☠️ **The DAPM explanation was tested and is dead.** DAPM's own `MCLK` supply
+widget reads `Off` and both PulseAudio sources are `SUSPENDED` while the clock
+count is still 1 — a clock held outside DAPM cannot be released by anything DAPM
+does, which is also why the four mixer arms all read zero.
 
-**The suspect is ours.** The FP3 HiFi verb's `EnableSequence` leaves two
-q6routing paths permanently on and its `DisableSequence` is empty:
+**What remains to do here, in order:**
 
-```
-cset "name='QUIN_MI2S_RX Audio Mixer MultiMedia1' 1"    # playback FE -> speaker BE
-cset "name='MultiMedia2 Mixer SLIMBUS_0_TX' 1"          # mic -> ADSP, pre-routed
-cset "name='AIF1_CAP Mixer SLIM TX0' 1"
-```
+1. **Confirm on the device** — unbind `c0f0000.codec` from
+   `msm8916-wcd-digital-codec`, suspend 30 s, read the LPASS counter. One command
+   and one suspend. ☠️ Check afterwards that audio still works (the silent
+   `20-audio` and `24-speaker-amp` checks); the internal codec should not be in
+   the path, but "should not" is not a measurement.
+2. **Then decide the fix.** Runtime PM on the clocks, or taking them from the
+   codec's own DAPM supply widget. Either is a small upstream patch.
+3. ☠️ **Do not schedule this for its current.** The whole mechanism — the ADSP
+   collapsing through every suspend — is priced at ~4 % of the sleep current,
+   inside the instrument's own spread. This is a correctness fix and an
+   upstreamable one; it is not the deep-sleep lever.
 
-We put them there deliberately - pulseaudio probes a profile by opening the PCM
-after only the verb sequence, and a q6asm front-end cannot be opened until it is
-routed to a backend. The signature fits: applied once at boot, never re-applied,
-and gone after an ADSP restart.
-
-☠️ **It needs a FRESH BOOT.** Once the ADSP has been restarted the DSP collapses
-freely and every arm reads +1, which would look like a result and be noise. The
-probe's first arm is a gate for exactly this and refuses to run otherwise.
-
-**If it confirms, the fix is ranked by risk:**
-
-1. **Release the capture pre-route only** - the mic is not a UCM device on this
-   card (pulseaudio can only wrap PCM device 0), it is loaded separately as
-   `module-alsa-source` on `hw:0,1`, so the profile-probe argument does not apply
-   to it. Three lines, lowest risk.
-2. **Let the verb leave nothing enabled** and have each device's sequence do it.
-   ☠️ This is the one that can break the pulseaudio profile probe, which is why
-   the routing is at verb level in the first place. Only with audio re-verified
-   by ear.
-3. **Kernel side, and upstreamable** - if a merely *routed* but not streaming
-   path keeps the AFE port up, the backend should only power with an active
-   front-end stream. Best of the three: not a patch on our UCM, and it affects
-   every msm8953 board.
-4. ☠️ **Not an ADSP restart at the end of boot.** It would work and it is not a
-   release; it hides the symptom, and reloading the audio topology is not free.
-
-☠️ **And a fair warning about what this buys.** `vlow` stayed 0 on 2026-08-19
-*with the DSP collapsing for the whole of every suspend*. If this confirms, we
-have fixed a real mechanism - not necessarily the gate to deep sleep.
+**The night-work rule this entry established stands:** nothing may make a sound at
+night. The audio coverage is automated and mostly silent (`20-audio`,
+`24-speaker-amp` on the control bus); only `21-audio-acoustic` plays a tone, it is
+already behind `--acoustic`, and `queue.sh` refuses any job line that would play
+something.
 
 ## Open before anything is submitted
 
