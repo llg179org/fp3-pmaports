@@ -312,10 +312,27 @@ Why RX never latched while TX did (open question, not needed for the fix): the
 ADSP-side AFE port stop presumably tears down its own producer/consumer for RX
 but not the AP-defined TX channel. Not pursued further.
 
-## Phone state right now
-- pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
-  watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
-  until step 2+3 reboot. Modem/MM fine. rmtfs untouched.
+## CLOSED 2026-08-21 evening — r63 deployed, phone restored, battery green
+
+- linux-fp3 **7.1.3-r63** (_commit cff137fd…) built, installed, and the phone
+  runs it (`uname -v` = #64-fp3): full desktop stack, PA autospawn restored
+  (noautospawn conf removed), LPASS asleep with everything running.
+  extlinux.conf survived the install with all three labels intact.
+- Selftest on r63: 29 ok. The only real FAIL is `24-speaker-amp` = the
+  pre-existing aw8898 amp-death lead (separate). 98/99 first "failed" on a
+  vanished /tmp helper (infra) and 05 on my own .ko.bak leftovers — all three
+  PASS on re-run after cleanup (`no .orig/.bak leftovers`, af-rail, suspend
+  incl. power-domain collapse).
+- Instrumented LPASSDBG q6 modules are GONE (package replaced them); the
+  uncommitted LPASSDBG edits still sit in /mnt/1TB/pmos/linux-fp3 (q6afe/adm/asm)
+  — revert with `git checkout --` when no longer wanted.
+- Known wart: the mkinitfs trigger errors with "only one kernel release/flavor
+  is supported" because linux-postmarketos-qcom-msm8953-7.1.3-r0 is still
+  installed alongside linux-fp3 — pre-existing (initramfs dated Aug 16), boots
+  fine, but the initramfs is not regenerated on kernel installs. Worth removing
+  the stray package some day.
+- Remaining separate leads: aw8898 always-on DAPM path / amp death;
+  apcs-cpu0/cpu4-pll wait_for_pll WARNs; why only TX channels latched.
 - ☠️ never reboot with USBIN suspended (check `pmi632-charger/status` = Charging).
 
 ## Earlier today (already committed/pushed, no action)
