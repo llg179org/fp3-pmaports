@@ -1495,6 +1495,50 @@ votes 0x1050105) — LPASS was necessary, not sufficient. The LDO
 active-only sleep-set gap (`leads/rpm-sleep-set.md`) remains the next
 named blocker.
 
+### ★★★ 2026-08-21 12:10: the codec fix works — and a SECOND, later latch showed itself
+
+The culprit was pinned to `msm8916-wcd-digital` (codec loaded with the card
+blocked → frozen awake from ~27 s; codec blocked → sleeps forever), i.e. the
+probe-time unconditional `clk_prepare_enable(mclk)` — on msm8953 mclk is the
+ADSP's own q6afecc `LPASS_CLK_ID_INTERNAL_DIGITAL_CODEC_CORE`, so the enable
+is a standing AFE clock request. The one-way behaviour (releasing the clock
+live does not help, only SSR does) means the DSP **latches awake on the first
+request**, so the fix is to never make it at probe: mclk moved into the DAI
+startup/shutdown path. Kernel commit `4b09b2158dd8` on `wip/7.1.3/power`
+("ASoC: msm8916-wcd-digital: hold mclk only while a stream runs"),
+hot-swap-deployed as `snd-soc-msm8916-digital.ko` (clang-built test vehicle,
+vermagic-matched; the ftrace WARN it may log is the known toolchain-mismatch
+artifact, not a defect).
+
+Rebooted with the FULL stack restored (card, wcd9335, NGD, smgr, pipewire,
+pulseaudio, watchers): **LPASS took 56 shutdowns in the first two minutes**
+against 2-for-the-whole-uptime before. The fix is proven necessary.
+
+☠️ **And then a second latch fired.** At ~38.8 s (ADSP ticks) the LPASS
+froze awake again — during session bring-up (pulseaudio's UCM profile probe
+opens every PCM around 24 s; the exact trigger between 24–52 s is not yet
+pinned). Same one-way signature: no PCM open afterwards, mclk enable-count 0,
+NGD runtime-suspended, and stopping watchers/iio-sensor-proxy/snsregd or
+removing the smgr modules releases nothing. The aw8898's DAPM widgets
+(IN/SPK PA/OUT) read On with the BE DAI off — worth chasing, but not the
+ADSP holder by itself. The UT oracle plays audio and still sleeps 4344×, so
+mainline is missing some teardown the vendor stack performs after audio use.
+**Open follow-up: find what the first audio-path use leaves behind in the
+ADSP** — candidates: q6afe port start/stop asymmetry, q6adm/q6asm session
+teardown, an ADSP-internal object created on first APR audio traffic.
+
+☠️ Every live-removal negative from the earlier round was confounded: the
+codec latch was present on all those boots, so "removing X does not release
+LPASS" said nothing about X. With the codec fixed, live removals get their
+meaning back — and the second latch has already been probed clean of the
+sensor stack and our watchers.
+
+Audio regression: `speaker-test` runs; `fp3-selftest --only speaker-amp`
+FAILs with the **documented pre-existing aw8898 death signature** (amp not
+answering on I2C) — the patch touches only the internal codec, and this is
+the known open bug, not a regression. The wcd9335 acoustic path needs an
+`--acoustic` run with a human when convenient.
+
 ☠️ Recovery notes from the live-removal round: rebinding the sound card
 after an unbind fails with `genirq: Flags mismatch irq 143` → `-EBUSY`
 (wcd9335 never frees its SLIM Slave IRQ on teardown — itself a bug worth
