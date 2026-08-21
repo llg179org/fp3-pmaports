@@ -147,6 +147,26 @@ originals in .ko.bak). Kernel #62-fp3. Boot 14:57 local.
   idle vs unmanaged satellites; oracle: UT's NGD sleeps 4344× with the same
   hardware. Fix direction is bus-side, not codec-side.
 
+## CORRECTED picture (2026-08-21 ~15:00, clean boot 14:42)
+The 14:42 boot accidentally ran WITHOUT any session audio (leftover
+exp2 `autospawn = no` + stopped pulse frontend ⇒ nothing ever probed the
+card; dmesg had ZERO LPASSDBG lines) — and with the full driver stack
+(wcd9335 attached, sensors up) LPASS reached XO shutdown and STAYED down
+(count 47 stable, cores 0x0, enter>exit) from ~14 min uptime. Three states
+now separate cleanly:
+1. wcd9335 driver ATTACHED + no PCM session ever → ADSP sleeps permanently
+   (GOAL state; also exonerates sensors — smgr ran the whole time).
+2. codec enumerated but DRIVERLESS (or broken post-SSR re-attach) → latch.
+3. after a PCM session (UCM probe or any open/close) → ADSP awake for a
+   long hold; whether it EVER releases is being measured right now
+   (device-side logger /tmp/lpass-release.log, 30 s × 25 min, one 4 s
+   speaker-test session closed 15:01:16 as the trigger; route via
+   `amixer cset "SLIMBUS_0_RX Audio Mixer MultiMedia1" 1`, FE open fails
+   -22 without it).
+☠️ The morning "one-way latch" verdicts rested on minutes-long sampling
+windows; a slow release (>8 min) would have looked identical. Do not carry
+"one-way" forward until the release logger says so.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
