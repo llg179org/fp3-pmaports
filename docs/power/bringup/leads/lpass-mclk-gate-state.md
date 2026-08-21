@@ -253,6 +253,32 @@ Next bisect within capture (each needs a virgin reboot, prevention-style):
    innocent; prime suspects are the ASM read session / ADM path 2 / SLIM TX
    data channel.
 
+## ★★★ 2026-08-21 16:21 — Latch lever narrowed to the ACTIVE SLIMbus TX data channel
+
+Three prevention tests on one virgin boot (16:09, count 42→…, all baselines
+asleep before each test):
+
+| test | q6 chain | SLIM TX data | result |
+|---|---|---|---|
+| FE-only capture (`MultiMedia2 Mixer SLIMBUS_0_TX` only, no codec routes; arecord errors at 1.4 s, 44-byte wav) | full (port 0x4001, adm path 2, asm) | none | **clean** (47→53, sleeps) |
+| codec TX routes only (AIF1_CAP/SLIM TX0 MUX/ADC MUX0/DMIC MUX0), no FE session | zero q6 calls | none | **clean** (53→55, sleeps) |
+| full capture with **AMIC** instead of DMIC (rc=0, 480 kB real data) | full, balanced teardown | **5 s active** | **LATCHED** (count frozen 55, cores 0x1) |
+
+Combined with the earlier DMIC-routed capture latch: **any real TX stream
+latches (DMIC and AMIC alike, so the DMIC clock is exonerated); neither the
+QDSP session objects nor the codec register routes alone do. RX streams never
+latch.** The lever is the active SLIMbus TX (source) data channel — the
+ADSP-side XO vote taken when a TX channel is activated is never dropped by the
+teardown, while the RX equivalent is.
+
+Where to look next (source): TX-vs-RX asymmetry in SLIMbus stream teardown —
+`drivers/slimbus/stream.c` (slim_stream_disable/unprepare/free: are source
+pipes' channels deactivated/removed the same way as sink pipes?) and
+`drivers/slimbus/qcom-ngd-ctrl.c` (NGD channel dealloc messages), plus the
+wcd9335 hw_free/shutdown for the capture DAI (slim_stream API usage for
+AIF1_CAP). The fix would be upstreamable (audio category? it is the capture
+path of the codec — likely `wip/<base>/audio`).
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
