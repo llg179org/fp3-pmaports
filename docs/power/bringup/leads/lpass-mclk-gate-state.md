@@ -221,6 +221,38 @@ play/record, sample LPASS (grep master_stats) ~3× 50 s.
   Instrument gap: q6voice (mvm/cvs/cvp) has NO LPASSDBG prints yet — add if
   (b) is suspected.
 
+## ★★★ 2026-08-21 16:04 — THE LATCH PIECE FOUND: real SLIMBUS_0_TX capture
+
+Test (a) of the NEXT plan, on the 15:51 boot (voice-open had run on it and left
+LPASS asleep, count 49 / cores 0x0 — valid virgin-equivalent baseline):
+
+- Script (root, /tmp/cap-test.sh on phone): set `MultiMedia2 Mixer SLIMBUS_0_TX`
+  + `AIF1_CAP Mixer SLIM TX0` + `SLIM TX0 MUX`=DEC0 + `ADC MUX0`=DMIC +
+  `DMIC MUX0`=DMIC0, then `arecord -D hw:0,1 -f S16_LE -r 48000 -c 1 -d 5`,
+  then all routes back off. arecord rc=0, 480 kB real data.
+- dmesg proof the DSP was reached AND the teardown was balanced:
+  port_start 0x4001 → adm_open port 0x3 path 2 → port_stop 0x4001 →
+  asm_cmd close → adm_close → adm_copp_free. Nothing left open on the AP side.
+- LPASS after (3×50 s + 2 min confirm): **exit (13252438482) > enter
+  (2193640501), Active cores 0x1, count frozen at 49** — LATCHED.
+
+⇒ **Playback (RX) never latches; one real capture session (TX) latches, even
+with a fully balanced AP-side teardown.** The UCM probe latches because it opens
+the capture path. The earlier "capture innocent" run was the INVALID one (no q6
+calls); this run is the valid measurement.
+
+Next bisect within capture (each needs a virgin reboot, prevention-style):
+1. FE-only: `MultiMedia2 Mixer SLIMBUS_0_TX` alone, NO codec-side controls
+   (no AIF1_CAP/DMIC) + same arecord → separates QDSP ASM/ADM/AFE-TX from the
+   WCD9335/SLIMbus TX channel path.
+2. If FE-only stays clean: codec-side TX routes alone (no arecord) — does the
+   SLIMbus TX channel allocation latch without any FE session?
+3. Suspects by layer: AFE SLIMBUS_0_TX port (0x4001) vs ADM TX copp vs the
+   slim TX channel map on the NGD — the voice-open control test also did
+   port_start/stop 0x4001 WITHOUT latching, so the bare AFE port is likely
+   innocent; prime suspects are the ASM read session / ADM path 2 / SLIM TX
+   data channel.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
