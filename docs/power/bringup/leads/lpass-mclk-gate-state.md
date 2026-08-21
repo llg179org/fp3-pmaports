@@ -186,6 +186,41 @@ windows; a slow release (>8 min) would have looked identical. Do not carry
 - DAPM scan needs `find` + proper quoting: the card dir is "Fairphone 3"
   (space); a naive glob silently matches nothing.
 
+## Single-session bisect (2026-08-21 15:35–15:56) — ALL SINGLE SESSIONS CLEAN
+Virgin boot vehicle: `/etc/pulse/client.conf.d/00-noautospawn.conf`
+(`autospawn = no`) ⇒ nothing probes the card, LPASS asleep from ~1 min.
+Trigger recipe: FE open fails -22 without a route; set route via amixer cset,
+play/record, sample LPASS (grep master_stats) ~3× 50 s.
+- SLIMBUS_0_RX playback, route turned OFF after: sleeps ≤14 s, 25 min proof.
+- Same, route left ON: still sleeps (+6 count then down) ⇒ leftover RX route innocent.
+- QUIN_MI2S_RX (0x1016, the speaker/aw8898 BE, the probe's dominant port):
+  +3 count then down ⇒ innocent. NO set_lpass_clock calls at all (MI2S clocks
+  not via q6afe here).
+- VoiceMMode1 open (needs voice routes set; read errors EINVAL — voice PCM is
+  control-only): port 0x4001 start+stop, sleeps ⇒ WEAK negative (full
+  MVM/CVS/CVP chain may never build without a real trigger).
+- Capture arecord plughw:0,1 with TX routes: INVALID negative — no q6 calls at
+  all reached the DSP (check dmesg LPASSDBG before believing any such run).
+- ★ LIVE REPRO: starting pulseaudio on a sleeping boot (rm the noautospawn
+  conf, `sudo -u fp3 XDG_RUNTIME_DIR=/run/user/10000 pulseaudio --start`)
+  runs the UCM probe (~105 q6 calls) and LATCHES (count frozen 77, cores 0x1,
+  4+ min) — reboot NOT needed to reproduce.
+- Post-hoc lever tests all fail (turning off the 5 leftover controls does not
+  release) — consistent with a one-way DSP-side latch; only prevention tests
+  are meaningful.
+- Leftover-ON controls after UCM probe (for reference): AIF1_CAP Mixer SLIM
+  TX0, DMIC MUX0, MultiMedia2 Mixer SLIMBUS_0_TX, QUIN_MI2S_RX Audio Mixer
+  MultiMedia1, RX HPH Mode. DAPM-On islands while latched: ONLY aw8898
+  IN/SPK PA/OUT (static always-complete path IN→SPK PA→OUT, no kcontrol —
+  separate lead: ties to the amp-death invariant ~24.5 s ≈ UCM probe time).
+- NEXT (the bisect converges here): on a virgin boot reproduce the latch with
+  pieces of the UCM probe: (a) REAL capture session on SLIMBUS_0_TX/AIF1
+  (fix the arecord so q6 calls appear), (b) genuine voice trigger (full
+  MVM/CVS/CVP build-up), (c) multiple simultaneous FE sessions, (d) the exact
+  UCM verb sequence via alsaucm. Each followed by 3×50 s LPASS samples.
+  Instrument gap: q6voice (mvm/cvs/cvp) has NO LPASSDBG prints yet — add if
+  (b) is suspected.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
