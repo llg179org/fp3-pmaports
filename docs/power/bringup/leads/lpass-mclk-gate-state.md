@@ -88,6 +88,38 @@ do not report as defect; final package build is gcc).
 7. Memory update: project_fp3_power_idle.md (root cause + fix + method traps:
    enter/exit ambiguity, mask-vs-disable, blacklist-vs-install, irq143 rebind).
 
+## Second-latch experiment ladder (2026-08-21 afternoon, instrumented boot)
+Instrument: LPASSDBG dev_info prints in q6afe/q6adm/q6asm (built from the
+debug-int tree in /mnt/1TB/pmos/linux-fp3 — NOT the sensor worktree, whose
+q6afe.c lacks the voice-category ADSP_EALREADY handling; .ko hot-swapped,
+originals in .ko.bak). Kernel #62-fp3. Boot 14:57 local.
+- Boot capture: UCM probe at ~25.3-31.4 s cycles port 0x1016 (+0x4001 TX once);
+  ALL AP-side calls balanced: 11 port_start / 11 port_stop, 11 adm_open /
+  11 adm_close+copp_free, 10+1 asm opens closed. Latch still engages (count
+  froze at 63, exit>enter) ⇒ NOT an unbalanced AP-side teardown.
+- ☠️ RPM master-stats counters SURVIVE an AP reboot (RPM keeps running):
+  per-boot behaviour must be read as deltas, not absolutes.
+- ☠️ rpm_master_stats did NOT autoload this boot — modprobe by hand.
+- exp1 (sensors stopped+rmmod smgr*, SSR): audio re-probed after SSR
+  (balanced), latch re-engaged. CONFOUNDED: snsregd was stopped too.
+- exp2 (audio daemons also stopped, SSR, nothing re-opens): +3 sleeps during
+  SSR then frozen at 67. Still latched with NO AP sessions at all. CONFOUNDED
+  same way (registry down; ADSP sensor PD may busy-wait on it).
+- exp3 (snsregd back UP, audio down, SSR): +7 sleeps during bring-up, then
+  frozen at 74 ⇒ registry alone does not fix it; plain ADSP bring-up +
+  AP reattach latches. Next suspect: SLIMbus NGD re-enumeration / wcd9335
+  reattach (the NGD controller runs on the ADSP).
+- exp4 IN FLIGHT: card+wcd9335+regmap_slimbus+slim_qcom_ngd_ctrl rmmod-ed,
+  then SSR — if LPASS duty-cycles, the SLIMbus side is the holder.
+- Separate NEW lead (do not lose): `apcs-cpu0/cpu4-pll failed to enable!`
+  wait_for_pll WARNs from sugov, 346× on the previous boot, recurring and
+  quickening this boot. First seen after the 08-17 RPM-handshake fix made
+  cluster power-collapse real ⇒ likely relock fallout of APSS PC and/or the
+  smd-rpm XO sleep-vote EXPERIMENT commit. Needs its own investigation.
+- Phone audio is torn down for these experiments (irq-143 trap makes rebind
+  impossible) — REBOOT restores; r62 package exists but do NOT install while
+  the instrumented .ko-s are the measurement.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
