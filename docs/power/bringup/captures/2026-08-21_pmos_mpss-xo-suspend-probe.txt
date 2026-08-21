@@ -1,0 +1,144 @@
+APSS:
+	Last shutdown @ 1978850005032
+	Last bringup req @ 1978850009081
+	Last bringup ack @ 1978850015040
+	Last wakeup idx: 1978818212632
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 21320
+	Last wake transition duration: 2163
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 1257826
+	Active cores bitmask: 0x1
+LPASS:
+	Last shutdown @ 518518827
+	Last bringup req @ 518520609
+	Last bringup ack @ 518525738
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 516379922
+	Last XO shutdown exit @ 518410849
+	XO total duration: 2030927
+	Last sleep transition duration: 5210
+	Last wake transition duration: 1843
+	XO shutdown count: 1
+	Wakeup reason: 0x0
+	Shutdown count: 2
+	Active cores bitmask: 0x1
+MPSS:
+	Last shutdown @ 1978843541733
+	Last bringup req @ 1978849013470
+	Last bringup ack @ 1978849013582
+	Last wakeup idx: 1978849012589
+	Last XO shutdown enter @ 1978843555680
+	Last XO shutdown exit @ 1978848998880
+	XO total duration: 660614513545
+	Last sleep transition duration: 18727
+	Last wake transition duration: 18614
+	XO shutdown count: 115432
+	Wakeup reason: 0x1
+	Shutdown count: 115620
+	Active cores bitmask: 0x1
+PRONTO:
+	Last shutdown @ 1978852704731
+	Last bringup req @ 1978854272801
+	Last bringup ack @ 1978854272912
+	Last wakeup idx: 1978854272527
+	Last XO shutdown enter @ 1978852715438
+	Last XO shutdown exit @ 1978854265302
+	XO total duration: 1735537539280
+	Last sleep transition duration: 11984
+	Last wake transition duration: 13413
+	XO shutdown count: 414580
+	Wakeup reason: 0x1
+	Shutdown count: 414671
+	Active cores bitmask: 0x1
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+Fri Aug 21 09:26:06 CEST 2026
+===AFTER===
+APSS:
+	Last shutdown @ 1984753292137
+	Last bringup req @ 1984753296181
+	Last bringup ack @ 1984753302648
+	Last wakeup idx: 1984745119798
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 21275
+	Last wake transition duration: 2163
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 1257915
+	Active cores bitmask: 0x1
+LPASS:
+	Last shutdown @ 518518827
+	Last bringup req @ 518520609
+	Last bringup ack @ 518525738
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 516379922
+	Last XO shutdown exit @ 518410849
+	XO total duration: 2030927
+	Last sleep transition duration: 5210
+	Last wake transition duration: 1843
+	XO shutdown count: 1
+	Wakeup reason: 0x0
+	Shutdown count: 2
+	Active cores bitmask: 0x1
+MPSS:
+	Last shutdown @ 1984753587713
+	Last bringup req @ 1984752567537
+	Last bringup ack @ 1984752567649
+	Last wakeup idx: 1984752566469
+	Last XO shutdown enter @ 1984753601489
+	Last XO shutdown exit @ 1984752552752
+	XO total duration: 664340044095
+	Last sleep transition duration: 18732
+	Last wake transition duration: 21577
+	XO shutdown count: 116177
+	Wakeup reason: 0x0
+	Shutdown count: 116365
+	Active cores bitmask: 0x0
+PRONTO:
+	Last shutdown @ 1984752747820
+	Last bringup req @ 1984752527831
+	Last bringup ack @ 1984752527942
+	Last wakeup idx: 1984752527510
+	Last XO shutdown enter @ 1984752758641
+	Last XO shutdown exit @ 1984752520159
+	XO total duration: 1741368038299
+	Last sleep transition duration: 11897
+	Last wake transition duration: 13705
+	XO shutdown count: 414611
+	Wakeup reason: 0x0
+	Shutdown count: 414702
+	Active cores bitmask: 0x0
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+Fri Aug 21 09:31:13 CEST 2026
+

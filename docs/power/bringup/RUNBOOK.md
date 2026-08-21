@@ -1433,6 +1433,34 @@ noise — the interesting instrument is `qcom_rpm_master_stats` around sleeps:
 does the MPSS ever XO-shutdown while registered, and if not, is that a
 network/config question (PSM, eDRX, band) rather than an AP-side one.
 
+### ★★ 2026-08-21 09:31: the MPSS duty-cycles during AP suspend — XO held ~37 % of the time
+
+Answered the same morning, on the charger (this probe counts shutdowns, it does
+not need a discharge leg). Snapshots of `qcom_rpm_master_stats` around one
+`rtcwake -m mem -s 300`, modem registered throughout. Raw:
+[`captures/2026-08-21_pmos_mpss-xo-suspend-probe.txt`](captures/2026-08-21_pmos_mpss-xo-suspend-probe.txt).
+Tick rate is the 19.2 MHz XO (verified: the APSS timestamp delta over the
+307 s wall window is 5.90e9 ticks).
+
+| master | Δ shutdowns | Δ XO-off time | share of the 307 s window |
+|---|---|---|---|
+| MPSS | +745 | +194.0 s | **63 % off, 37 % holding XO** |
+| PRONTO | +31 | +303.7 s | ~99 % off |
+| APSS | +89 | 0 | never XO-shutdowns (vendor identical) |
+| LPASS | **+0** | +0 | still never sleeps |
+
+So the modem is **not** a master that never sleeps — it wakes ~2.5×/s
+(745/300, faster than a bare 1.28 s LTE paging cycle, so more than paging is
+running) and holds the crystal ~113 s out of every 300. That residency is the
+mechanism behind the remaining ~26 % (36 % modem-off minus ~10 % MM): it is
+**network/protocol territory — paging cadence, PSM/eDRX — not an AP-side kernel
+defect.** The AP-side avenues on the modem are closed; what would move it is
+carrier/modem configuration, which is out of scope for this bring-up.
+
+Two standing facts restated by the same capture: the LPASS took zero new
+shutdowns across the suspend (the never-sleeps lead is still the open AP-side
+item), and the APSS never XO-shutdowns by design — matching the oracle.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
