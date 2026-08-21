@@ -1,0 +1,11 @@
+[Unit]
+Description=FP3 diag: ftrace trap around the aw8898 death
+After=sysinit.target
+DefaultDependencies=no
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/awdeath-trap.py
+
+[Install]
+WantedBy=multi-user.target
