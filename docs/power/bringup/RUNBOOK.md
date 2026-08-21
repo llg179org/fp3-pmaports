@@ -1352,6 +1352,58 @@ Next, in order: the same whole-leg cut for `ModemManager` and for `tqftpserv`
 makes the modem stop doing, with `qcom_rpm_master_stats` (MPSS shutdowns, XO
 duration) read across the sleeps of whichever leg shows the saving.
 
+### ☠️☠️ 2026-08-21 05:00: `rmtfs -P` — stopping rmtfs POWERS THE MODEM DOWN, and it rewrites every "service cut" above
+
+Found while recovering the phone after the second overnight leg: `ModemManager`
+would not start (`msm-modem-uim-selection` looping on "node with id 0 not found
+in QRTR bus"), because **the modem remoteproc (`4080000.remoteproc`) was
+offline** — and had been since 23:25. The cause is in the unit file:
+
+```
+ExecStart=/usr/bin/rmtfs -r -P -s
+```
+
+`-P` powers the modem processor down when rmtfs exits. `systemctl stop rmtfs`
+is therefore not a service cut — **it is a modem shutdown**. And the modem does
+not come back when rmtfs restarts; it stays down until someone writes `start`
+to the remoteproc (which is what the recovery did; after that MM starts and the
+radio registers again — `pd-mapper` keeps failing with "no pd maps available",
+noted as an open question).
+
+What this rewrites, leg by leg:
+
+* **`nomodem-20260819` (−37 %)** cut all three services, so it powered the
+  modem down. Its honest name is *modem-off*, not "modem stack cut". The ~36 mA
+  is what the **modem processor being off** is worth — unusable as a fix, since
+  the phone needs the modem, but finally a named mechanism.
+* **`rmtfsslope-20260820` (−20 %)** also powered the modem down at the cut.
+  Same state, measured lower — the two legs disagree by more than the
+  instrument's spread, and the differing voltage windows are the suspect.
+* **`mmslope-20260821` (−27 %)** is **contaminated**: the modem was already
+  offline for its entire duration (never rebooted after the rmtfs leg). It
+  measured *modem-off + MM stopped*, not "MM alone". Its number must not be
+  read as ModemManager's price.
+* **The ab-leg null and the "slow-acting effect" story are both re-explained,
+  and the story is retracted.** The first CUT arm powered the modem down; the
+  rmtfs restart between arms did not bring it back; so every subsequent arm —
+  CUT and FULL alike — ran modem-off. Identical states, null by construction.
+  Nothing here ever measured a slow-acting effect.
+* **The 2026-08-20 05:45 census line "the radio stays powered, registered and
+  attached throughout" needs re-reading** — it was taken across stop/restart
+  cycles of all three services and `mmcli` answered on the way back in. With
+  `-P` in the unit, what exactly the modem was during those arms is now an
+  open question, not a fact.
+
+The method lesson is the same one the USB census taught, one layer deeper:
+**"stop a userspace service" is not a bounded intervention until every side
+effect of the stop is enumerated.** `-P` was in the unit file all along; nobody
+had read it.
+
+What a valid service-pricing now requires: the modem verified `running` at cut
+time and at leg end (one `cat /sys/class/remoteproc/*/state` in the leg
+preamble and epilogue), and **rmtfs never stopped** while pricing anything
+other than modem-off itself.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**

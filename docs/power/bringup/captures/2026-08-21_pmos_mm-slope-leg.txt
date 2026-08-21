@@ -1,0 +1,72 @@
+71942 mmslope-20260821: start v=4237442 cap=100% cuts='ModemManager'
+71942 mmslope-20260821: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=dcde892b-14db-4f88-9477-905ece74394b
+71942 mmslope-20260821: cmdline=quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10
+71942 mmslope-20260821: moved previous slope file aside as /home/fp3/suspend-slope.txt.pre-mmslope-20260821
+71946 mmslope-20260821: dpms=Off
+71956 mmslope-20260821: off VBUS online=0 status=Discharging
+71956 mmslope-20260821: load started on 8 cores
+71956 mmslope-20260821: load stopped
+71986 mmslope-20260821: rested v=4069665 t=302
+71986 mmslope-20260821: load started on 8 cores
+72076 mmslope-20260821: load stopped
+72106 mmslope-20260821: rested v=3976045 t=325
+72106 mmslope-20260821: reached target v=3976045
+72106 mmslope-20260821: cut ModemManager -> inactive
+72106 mmslope-20260821: cooling before the leg; temp=325
+72106 mmslope-20260821: launching slope leg
+85419 mmslope-20260821: slope leg exited rc=0 v=3780240
+85466 mmslope-20260821: done
+---
+suspend-slope: mmslope-20260821 === settle 1800s off VBUS ===
+mmslope-20260821 phase=settle n=0 t=72129 v=3980715 i=-70037 pll=459 nread=20
+mmslope-20260821 phase=settle n=1 t=72199 v=3998525 i=-85525 pll=463 nread=20
+mmslope-20260821 phase=settle n=2 t=72270 v=4004364 i=-87661 pll=466 nread=20
+mmslope-20260821 phase=settle n=3 t=72341 v=4006408 i=-67596 pll=470 nread=20
+mmslope-20260821 phase=settle n=4 t=72412 v=4005143 i=-67977 pll=474 nread=20
+mmslope-20260821 phase=settle n=5 t=72483 v=4004169 i=-63476 pll=476 nread=20
+mmslope-20260821 phase=settle n=6 t=72553 v=4002028 i=-62408 pll=479 nread=20
+mmslope-20260821 phase=settle n=7 t=72624 v=4000958 i=-61568 pll=482 nread=20
+mmslope-20260821 phase=settle n=8 t=72695 v=3999206 i=-61492 pll=486 nread=20
+mmslope-20260821 phase=settle n=9 t=72766 v=3996578 i=-66909 pll=487 nread=20
+mmslope-20260821 phase=settle n=10 t=72837 v=3995703 i=-65155 pll=491 nread=20
+mmslope-20260821 phase=settle n=11 t=72908 v=3994243 i=-61874 pll=491 nread=20
+mmslope-20260821 phase=settle n=12 t=72978 v=3992589 i=-67825 pll=494 nread=20
+mmslope-20260821 phase=settle n=13 t=73049 v=3991323 i=-63171 pll=496 nread=20
+mmslope-20260821 phase=settle n=14 t=73120 v=3987723 i=-71181 pll=499 nread=20
+mmslope-20260821 phase=settle n=15 t=73191 v=3985873 i=-73089 pll=506 nread=20
+mmslope-20260821 phase=settle n=16 t=73262 v=3984122 i=-94222 pll=510 nread=20
+mmslope-20260821 phase=settle n=17 t=73333 v=3982078 i=-94451 pll=517 nread=20
+mmslope-20260821 phase=settle n=18 t=73403 v=3981884 i=-64544 pll=518 nread=20
+mmslope-20260821 phase=settle n=19 t=73474 v=3980424 i=-63781 pll=520 nread=20
+mmslope-20260821 phase=settle n=20 t=73545 v=3976045 i=-107497 pll=522 nread=20
+mmslope-20260821 phase=settle n=21 t=73616 v=3980716 i=-61416 pll=527 nread=20
+mmslope-20260821 phase=settle n=22 t=73687 v=3979158 i=-61721 pll=533 nread=20
+mmslope-20260821 phase=settle n=23 t=73758 v=3978283 i=-61263 pll=536 nread=20
+mmslope-20260821 phase=settle n=24 t=73829 v=3975850 i=-83084 pll=542 nread=20
+mmslope-20260821 phase=settle n=25 t=73899 v=3974876 i=-65307 pll=546 nread=20
+mmslope-20260821 phase=settle n=26 t=73970 v=3974390 i=-64086 pll=548 nread=20
+mmslope-20260821 phase=settle n=27 t=74041 v=3972541 i=-61950 pll=338 nread=20
+mmslope-20260821 phase=settle n=28 t=74112 v=3971665 i=-64697 pll=342 nread=20
+mmslope-20260821 phase=settle n=29 t=74183 v=3971179 i=-61263 pll=344 nread=20
+suspend-slope: mmslope-20260821 === phase A: 6 sleeps of 900s ===
+mmslope-20260821 phase=A n=0 t=75174 v=3955121 i=-98724 pll=350 nread=20
+suspend-slope: mmslope-20260821 A0 slept=901s of 900s
+mmslope-20260821 phase=A n=1 t=76106 v=3946946 i=-97503 pll=353 nread=20
+suspend-slope: mmslope-20260821 A1 slept=901s of 900s
+mmslope-20260821 phase=A n=2 t=77038 v=3940426 i=-98266 pll=353 nread=20
+suspend-slope: mmslope-20260821 A2 slept=901s of 900s
+mmslope-20260821 phase=A n=3 t=77970 v=3932446 i=-99334 pll=354 nread=20
+suspend-slope: mmslope-20260821 A3 slept=901s of 900s
+mmslope-20260821 phase=A n=4 t=78902 v=3927775 i=-95825 pll=356 nread=20
+suspend-slope: mmslope-20260821 A4 slept=901s of 900s
+mmslope-20260821 phase=A n=5 t=79834 v=3921351 i=-95443 pll=359 nread=20
+suspend-slope: mmslope-20260821 A5 slept=901s of 900s
+suspend-slope: mmslope-20260821 phase A done suspends=6 of 6
+suspend-slope: mmslope-20260821 === phase B: awake control, 6 x 900s ===
+mmslope-20260821 phase=B n=0 t=80765 v=3899552 i=-97350 pll=397 nread=20
+mmslope-20260821 phase=B n=1 t=81696 v=3886317 i=-99563 pll=428 nread=20
+mmslope-20260821 phase=B n=2 t=82626 v=3865783 i=-141601 pll=334 nread=20
+mmslope-20260821 phase=B n=3 t=83557 v=3854493 i=-114059 pll=359 nread=20
+mmslope-20260821 phase=B n=4 t=84488 v=3841550 i=-145568 pll=400 nread=20
+mmslope-20260821 phase=B n=5 t=85418 v=3832402 i=-131454 pll=432 nread=20
+suspend-slope: mmslope-20260821 done - restoring charger and greetd
