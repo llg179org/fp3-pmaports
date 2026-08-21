@@ -17,8 +17,13 @@ FP3_PW="${FP3_PW:-}"
 # password only on the USB subnet (`Match Address 172.16.0.0/16`), so the
 # hardening that keeps the WiFi link key-only also locked the tests out of it.
 # The only symptom was `device <ip> unreachable`, which reads like a link fault.
+# ☠️ Without a keepalive a dead TCP session hangs a check forever: measured
+# 2026-08-21, the 45-camera-af-windows-pipewire ssh sat 73 minutes on a
+# connection whose remote side had already vanished, stalling the whole
+# battery. Four missed 15 s probes (~1 min) is the bound on that now.
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-	-o LogLevel=ERROR -o ConnectTimeout=10"
+	-o LogLevel=ERROR -o ConnectTimeout=10
+	-o ServerAliveInterval=15 -o ServerAliveCountMax=4"
 
 # Run a command on the device as the normal user.
 ssh_run() {
