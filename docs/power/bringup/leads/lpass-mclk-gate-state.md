@@ -167,6 +167,25 @@ now separate cleanly:
 windows; a slow release (>8 min) would have looked identical. Do not carry
 "one-way" forward until the release logger says so.
 
+## SMOKING GUN (2026-08-21 15:31, boot 15:29)
+- A single manual FE session (route on → 4 s speaker-test → route off)
+  releases the ADSP in ≤14 s and it stays down 25 min (logger proof).
+  The UCM probe does NOT release ⇒ the latch is state the session
+  userspace LEAVES ON, not the session itself.
+- Live DAPM scan while latched: the ONLY On widgets on the whole card are
+  **aw8898.4-0034: IN, SPK PA, OUT** (in 1 out 1) — the speaker amp path
+  stays powered after the UCM probe (matches the morning observation).
+  NEXT: find the kcontrol gating this path (UCM "Speaker" switch /
+  machine-level route), toggle it off live, watch LPASS release within ~30 s;
+  then the fix is UCM (turn the switch off when idle) and/or the aw8898
+  driver's DAPM (why does closing the stream not power it down —
+  compare stream-widget vs pin-switch; likely an always-on pin switch left
+  enabled by ucm2).
+- ☠️ /tmp is tmpfs — the pre-UCM alsactl snapshot died with the reboot;
+  store reference states under /home or pull to host immediately.
+- DAPM scan needs `find` + proper quoting: the card dir is "Fairphone 3"
+  (space); a naive glob silently matches nothing.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
