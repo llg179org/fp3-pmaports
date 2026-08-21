@@ -1404,6 +1404,35 @@ time and at leg end (one `cat /sys/class/remoteproc/*/state` in the leg
 preamble and epilogue), and **rmtfs never stopped** while pricing anything
 other than modem-off itself.
 
+### ★★★ 2026-08-21 09:20: the first VALID service price — ModemManager alone is ~10 %, not 27 %
+
+Leg `mmslope2-20260821`, run exactly to the validity rule above: only
+`ModemManager` cut, `rmtfs` untouched, and the mpss verified `running` in the
+preamble, at every monitor poll, **and in the epilogue**. 6 of 6 suspends
+completed, rc=0, charger restored. Raw:
+[`captures/2026-08-21_pmos_mm2-slope-leg.txt`](captures/2026-08-21_pmos_mm2-slope-leg.txt).
+
+| phase | window | slope | r² | `current_now` mean |
+|---|---|---|---|---|
+| A (asleep, MM cut, modem RUNNING) | 3.9472 → 3.9037 V | **−32.23 mV/h** | 0.9693 | 133.1 mA |
+| B (awake control) | 3.8714 → 3.7996 V | −55.06 mV/h | 0.9885 | 144.3 mA |
+
+Read against the phase-A ladder: baseline −35.77, this leg −32.23 — **the
+ModemManager daemon with the modem alive is worth about 3.5 mV/h, ~10 % of
+sleeping draw.** The earlier `mmslope` leg's −26.13 (−27 %) is confirmed void:
+most of what it "measured" was the `-P`-powered-down modem it inherited from
+the rmtfs leg before it. The adsprestart leg put per-leg reproducibility at
+≤4 %, so ~10 % is above the noise floor but only just — it is a real but
+minor cost, and it does **not** carry the modem's 36 %.
+
+What this decides: **the modem's ~36 % (nomodem −22.62 vs baseline −35.77) is
+the modem processor itself being up, not any one userspace daemon.** MM is
+~10 %; the remainder is the MPSS's own floor (XO holds, RPM votes cast by the
+modem as an RPM master). A tqftpserv leg is now unlikely to find more than
+noise — the interesting instrument is `qcom_rpm_master_stats` around sleeps:
+does the MPSS ever XO-shutdown while registered, and if not, is that a
+network/config question (PSM, eDRX, band) rather than an AP-side one.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
@@ -1441,8 +1470,9 @@ alternating-arms-within-one-descent design, not a cheaper meter.
    services carries it — and `rmtfs` is the first suspect, because it answers the
    modem's own filesystem requests and stopping it changes what the modem does
    rather than whether it runs. A three-way `freq-probe`-style cut, one service at
-   a time, prices them separately. **This is still where the next measurement
-   belongs.**
+   a time, prices them separately. **Partly answered 2026-08-21 09:20: MM alone
+   is ~10 %; the bulk of the 36 % is the MPSS itself. Next instrument is
+   `qcom_rpm_master_stats` around sleeps, not another service leg.**
 2. **What else votes.** The regulator branch and the master branch are both
    closed, so what is left is another master or a standing resource vote. ☠️ The
    `qcom_rpm_smd_write` tracepoint is blind to a vote cast once at boot and never
