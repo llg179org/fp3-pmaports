@@ -1461,6 +1461,49 @@ Two standing facts restated by the same capture: the LPASS took zero new
 shutdowns across the suspend (the never-sleeps lead is still the open AP-side
 item), and the APSS never XO-shutdowns by design — matching the oracle.
 
+### ★★★ 2026-08-21 midday: the LPASS sleeps PERMANENTLY once the audio-card boot path is out
+
+The never-sleeps hunt ran the same day as a live-removal ladder plus a
+module-blacklist bisection over ~6 reboots. Every live removal failed —
+userspace audio (pipewire/pulseaudio, socket-masked and autospawn-off),
+our watchers (fp3-voiced/spkwatch/ringwatch), the SMGR sensor stack, the
+sound card, the internal codec, even the SLIMbus NGD controller: with all
+of them gone the LPASS still would not take a shutdown, and an ADSP SSR in
+that fully stripped state released it within 10 s (2 → 17 shutdowns). So
+the holding state lives **inside the ADSP**, is created once at boot, and
+no AP-side handle removal releases it — only firmware restart, or not
+creating it in the first place.
+
+The blacklist bisection then found the creator. With
+`snd_soc_apq8016_sbc` + `snd_soc_msm8916_digital` + wcd9335 + NGD + smgr
+all blocked at boot, the LPASS enters XO shutdown ~75 s into boot and
+**stays there indefinitely** (`Active cores bitmask: 0x0`, last-enter >
+last-exit, counters static because nothing wakes it). The full q6/APR
+module stack was loaded on that boot — **the q6 protocol layer is
+exonerated**; the culprit is in the card/codec/wcd9335/NGD probe group
+(bisection of that group in progress below).
+
+☠️ **Method trap that cost several reads: a static shutdown counter is
+ambiguous.** "Count stopped growing" means *frozen awake* only if
+last-XO-exit > last-XO-enter; when last-enter is the newer timestamp the
+master is DOWN and staying down — the success case reads identically to
+the failure case in the count column. Always capture the full stats
+block, never just the two counts.
+
+☠️ And a permanent LPASS sleep did **not** move `vlow` (still 0, client
+votes 0x1050105) — LPASS was necessary, not sufficient. The LDO
+active-only sleep-set gap (`leads/rpm-sleep-set.md`) remains the next
+named blocker.
+
+☠️ Recovery notes from the live-removal round: rebinding the sound card
+after an unbind fails with `genirq: Flags mismatch irq 143` → `-EBUSY`
+(wcd9335 never frees its SLIM Slave IRQ on teardown — itself a bug worth
+fixing); only a reboot restores audio. The greetd-user pipewire masks do
+nothing — since the 2026-08-16 autologin the session user is fp3, and
+`systemctl mask` on our /etc-installed watcher units fails ("File exists");
+`systemctl disable --now` is the working form. A plain `blacklist` line
+does not stop dependency-loads by name — `install <mod> /bin/false` does.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
