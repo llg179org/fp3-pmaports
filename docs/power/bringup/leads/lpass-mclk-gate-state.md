@@ -120,6 +120,33 @@ originals in .ko.bak). Kernel #62-fp3. Boot 14:57 local.
   impossible) — REBOOT restores; r62 package exists but do NOT install while
   the instrumented .ko-s are the measurement.
 
+## Second-latch: where the ladder ended (2026-08-21 ~14:45)
+- exp4: SSR with NO slim-ngd and NO sensors → LPASS enters XO shutdown and
+  STAYS down (cores 0x0) ⇒ the holder is on the SLIMbus/NGD side.
+- Fresh boot with ONLY `install snd_soc_wcd9335 /bin/false` (NGD up, the
+  physical codec enumerated as 217:1a0:0:0 + 217:1a0:1:0, sensors up):
+  LATCHED (count frozen at 2, cores 0x1) ⇒ an enumerated-but-driverless
+  SLIMbus satellite is sufficient to hold the ADSP awake; wcd9335 driver code
+  is NOT required for the latch.
+- Unifying candidate (UNPROVEN for the full-stack case): every latched
+  configuration had the codec effectively unmanaged — post-SSR re-attach
+  breaks anyway (irq-143 leak), driverless boot by construction. Full-stack
+  UCM-probe latch might be the same mechanism if stream teardown leaves the
+  satellite/bus state the NGD keeps servicing. Needs a boot-matrix.
+- Live-reattach traps (measured): a re-modprobed slim_qcom_ngd_ctrl never
+  re-probes (waits for a PDR cycle that only happens with the driver present
+  at ADSP boot); a late `modprobe snd_soc_wcd9335` fails with
+  "Failed to get logical address".
+- ☠️ Instrument traps: RPM master-stats counters SOMETIMES survive an AP
+  reboot (56→63) and sometimes reset (97→2) — only deltas within one boot are
+  meaningful. `rpm_master_stats` does not autoload. Multi-step fp3-ssh scripts
+  die on link drops — run them as `systemd-run --unit=... --collect` device-side.
+- NEXT (continuation): scripted boot-matrix over {wcd9335 blocked/up} ×
+  {sensors blocked/up} × {card blocked/up} reading LPASS deltas at 3+5 min;
+  then read qcom-ngd-ctrl.c/slim core for clock-gear/runtime-PM handling of
+  idle vs unmanaged satellites; oracle: UT's NGD sleeps 4344× with the same
+  hardware. Fix direction is bus-side, not codec-side.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
