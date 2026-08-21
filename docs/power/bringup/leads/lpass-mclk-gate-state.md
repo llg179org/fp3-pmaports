@@ -43,6 +43,22 @@ do not report as defect; final package build is gcc).
   cherry-pick 4b09b2158dd8); fp3-sensors-wt also has it UNCOMMITTED (revert
   with git checkout -- after, keep the built .ko).
 
+## Branch propagation DONE (2026-08-21 afternoon)
+- wip/7.1.3/power: **4b09b2158dd8** (pushed to fork).
+- integration/7.1.3: cherry-pick **63b826b741f3** (pushed).
+- debug-int/7.1.3: applied via `git am` on the real tip → **1a18f3137887**
+  (pushed; tarball check: real hash 200, bogus 404).
+- ☠️ `/mnt/1TB/pmos/linux-fp3-work` is a STALE clone (8+ commits behind fork's
+  debug-int) — the live debug-int checkout is the MAIN clone
+  `/mnt/1TB/pmos/linux-fp3` itself. Work clone reset back to its old tip.
+- ☠️ `git fetch` in/into that work clone was killed mid-run three times
+  (object negotiation on the slow disk); workaround that worked:
+  `git format-patch --stdout` + `git am`.
+- fp3-sensors-wt codec diff reverted (built .ko kept).
+- REMAINING (deliberately not done): `_commit` bump to 1a18f3137887 + pkgrel +
+  `pmbootstrap checksum` + package build — note debug-int tip includes the
+  smd-rpm XO EXPERIMENT commit the phone already runs.
+
 ## Continuation plan (do next, in order)
 1. Artifact gate: `.output/sound/soc/codecs/snd-soc-msm8916-digital.ko`
    exists, `modinfo | grep vermagic` == `7.1.3-postmarketos-qcom-msm8953 SMP preempt mod_unload aarch64`,
