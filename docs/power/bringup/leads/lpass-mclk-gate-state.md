@@ -279,6 +279,39 @@ wcd9335 hw_free/shutdown for the capture DAI (slim_stream API usage for
 AIF1_CAP). The fix would be upstreamable (audio category? it is the capture
 path of the codec — likely `wip/<base>/audio`).
 
+## ★★★★★ 2026-08-21 16:35 — ROOT CAUSE FOUND AND FIXED: NGD drops the channel teardown
+
+Mechanism (source, `drivers/slimbus/qcom-ngd-ctrl.c`):
+- The NGD xfer path silently drops EVERY core reconfiguration-sequence message
+  (`mc` in BEGIN_RECONFIGURATION..RECONFIGURE_NOW ⇒ `return 0`), which includes
+  NEXT_DEACTIVATE_CHANNEL and NEXT_REMOVE_CHANNEL.
+- `enable_stream` = `qcom_slim_ngd_enable_stream` activates the channel for real
+  via the SLIM_USR_MC_DEF_ACT_CHAN user message, but there was NO
+  `disable_stream` hook — the generic teardown's deactivate/remove fell into the
+  dropped range. The ADSP satellite manager therefore never saw a channel
+  removal and kept the XO vote for every TX (source) channel forever.
+- `SLIM_USR_MC_CHAN_CTRL` (0x23) was #defined but unused. The downstream msm-4.9
+  driver (on disk: `hadk22/kernel/fairphone/sdm632/drivers/slimbus/slim-msm-ngd.c`)
+  sends it with `(SLIM_CH_REMOVE << 6) | (laddr & 0x1f)`, tid, then channel ids,
+  followed by RECONFIG_NOW — that recipe was ported as
+  `qcom_slim_ngd_disable_stream()`.
+
+Fix commit: `slimbus: qcom-ngd-ctrl: implement disable_stream so the ADSP
+releases the channel` — debug-int/7.1.3 cff137fdef8e, wip/7.1.3/power
+dbb414e0be28, integration/7.1.3 693f4e5c99f6, all pushed to fork.
+
+Measured with the fixed slim-qcom-ngd-ctrl.ko (md5 303b59af…, hot-deployed,
+original as .ko.bak, virgin boot 16:26):
+- AMIC capture (the guaranteed latch): releases, count 45→46, cores 0x0.
+- FULL PulseAudio/UCM probe (the original latch repro): count jumps to 96,
+  cores 0x0 across 4×50 s — NO latch, PA running normally.
+- Functional: PA arecord 5 s rc=0 + paplay rc=0, and LPASS back asleep after
+  (96→99). Audio works AND the ADSP sleeps between sessions.
+
+Why RX never latched while TX did (open question, not needed for the fix): the
+ADSP-side AFE port stop presumably tears down its own producer/consumer for RX
+but not the AP-defined TX channel. Not pursued further.
+
 ## Phone state right now
 - pmOS slot, charging OK. Blacklist file ACTIVE (no sound card, no smgr!),
   watchers disabled, fp3+greetd pipewire masked, autospawn=no. Audio dead
