@@ -776,10 +776,13 @@ Consequences, both observed the same morning:
   rejected during that window (`AUTH_ERR`, then the retry succeeded) is what a
   2026-08-22 test call looked like from the outside.
 
-Open questions, in test order: does greetd re-run `[initial_session]` on a
-plain `systemctl restart greetd` on this version at all (if yes, what made this
-start different); if not, the legs' restore step should do whatever boot does —
-or the harness should stop stopping greetd and lock the session instead. Also
+~~Open questions, in test order: does greetd re-run `[initial_session]` on a
+plain `systemctl restart greetd` on this version at all~~ — **answered
+2026-08-22, measured: it does not.** A plain restart brings up the phrog
+greeter (`loginctl` class `greeter` on seat0), so the autologin fires on boot
+only, and every harness restore lands at the password screen by design of the
+config. The restore step therefore has to do something else — either whatever
+boot does, or stop stopping greetd and lock the session instead. Also
 worth checking: the monotonic-clock trap while reading this journal —
 `short-monotonic` does not advance across suspend, so post-leg timestamps look
 hours old; compare against `/proc/uptime` (boottime) before dating any event.
@@ -806,6 +809,16 @@ freshly spawned audio stack — or at minimum the morning-after check should
 assert `pactl list sinks short` shows a real sink, which is a one-line probe
 the selftest battery could carry (the audio checks all talk to ALSA directly,
 so they stay green while every desktop application is deaf).
+
+Both cheap single-shot discriminators came back negative the same day, which
+narrows the reproduction rather than the suspect list: with a healthy PA, one
+900 s s2idle with no session cycle left the sink and profile intact
+(`suspends=1`, verified), and one `systemctl restart greetd` with no suspend
+tore the session down, restarted the user's PA — and the fresh instance came
+up *correctly*, real sink, `HiFi (Speaker)`. So neither a single suspend nor a
+single session cycle strands it; whatever does needs the full overnight
+pattern — repetition, the combination, or the 07:41 `module-alsa-source`
+failure cascading — and reproducing it costs a night, not fifteen minutes.
 
 ## `pd-mapper.service` is permanently failed, and the RTC cannot be set
 
