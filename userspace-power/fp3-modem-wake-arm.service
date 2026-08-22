@@ -12,7 +12,7 @@ ConditionPathExists=/sys/devices/platform/soc@0/4080000.remoteproc
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'w=$(ls /sys/devices/platform/soc@0/4080000.remoteproc/remoteproc/*/*:smd-edge/power/wakeup 2>/dev/null | head -1); [ -n "$w" ] || { echo "no smd-edge wakeup knob (kernel older than r66?)"; exit 1; }; echo enabled > "$w" && echo "armed $w"'
+ExecStart=/bin/sh -c 'i=0; while [ $$i -lt 30 ]; do w=$$(ls /sys/devices/platform/soc@0/4080000.remoteproc/remoteproc/*/*:smd-edge/power/wakeup 2>/dev/null | head -1); if [ -n "$$w" ]; then echo enabled > "$$w" && echo "armed $$w after $$i tries" && exit 0; fi; i=$$((i+1)); sleep 2; done; echo "no smd-edge wakeup knob after $$i tries (kernel older than r66, or the modem rproc never came up)"; exit 1'
 
 [Install]
 WantedBy=multi-user.target
