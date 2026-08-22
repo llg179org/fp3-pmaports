@@ -1237,3 +1237,25 @@ storm rides *each AP wakeup* regardless of governor, which folds this lead
 back into "reduce the wakeups" (the modem edge's ~35/window) rather than
 "tune cpufreq". Next instrument for naming the modem-edge channel:
 `CONFIG_KPROBE_EVENTS` in the next kernel build.
+
+## 2026-08-22 night: the smd channel census — r67 brings kprobes, and the chatter gets names
+
+r67 is a config-only bump (`CONFIG_KPROBES`/`KPROBE_EVENTS`/`FUNCTION_PROFILER`,
+same `_commit`), deployed through the usual gates. First instrument on it: a
+kprobe on `qcom_smd_channel_intr` decoding `channel->name`
+(`+0x0(+0x18(%x0)):string` — the first attempt with a single deref read the
+pointer bytes as the string, worth remembering). One 120 s disarmed window —
+[`captures/2026-08-22_smd-channel-census.txt`](captures/2026-08-22_smd-channel-census.txt):
+
+    669  rpm_requests        ← our own clk/icc votes and their acks
+     35  IPCRTR              ← the modem edge: ~all its ~35 IRQs land here
+     33  sys_mon / WCNSS family (one event set across every open wcnss channel)
+      2  each DIAG*/DATA*/apr_voice_svc (open/close-level noise only)
+
+Read together with the 4 `qrtr_endpoint_post` hits from the earlier window:
+the modem edge's interrupts poke the **IPCRTR channel without delivering qrtr
+payloads** most of the time — signal-level traffic (flow-control/read-acks),
+not messages. So "quiet the modem's QMI services" remains the wrong lever; the
+right question is what generates the signal-level ring at ~one per 2 s, and
+whether the AP's own sends are part of the loop (every local write earns a
+remote read-ack interrupt back).
