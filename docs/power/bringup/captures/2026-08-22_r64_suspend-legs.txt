@@ -1,0 +1,77 @@
+# 2026-08-22 overnight, kernel 7.1.3 r64 (#65-fp3: i2c-qup pinctrl fix on top of the 08-17 RPM fixes)
+# Instruments: suspend-leg.sh (3 h OCV bound) then suspend-slope.sh (8x900 s + awake control).
+
+## suspend-leg.sh r64-post-rpm-fixes (3 h, OCV bound only)
+suspend-leg: r64-post-rpm-fixes settle 300s from cap=100 v=4333204 ocv=4339759 i=-54626
+suspend-leg: r64-post-rpm-fixes before cap=100 v=4293887 ocv=4312691 i=-156707
+suspend-leg: r64-post-rpm-fixes after cap=100 v=4181581 ocv=4193263 i=-97351 slept=10801s suspends=1
+suspend-leg: r64-post-rpm-fixes settled cap=100 v=4149855 ocv=4169520 i=-163879
+suspend-leg: r64-post-rpm-fixes done - restoring charger and greetd
+
+## suspend-slope.sh r64-post-rpm-fixes (raw samples)
+suspend-slope: r64-post-rpm-fixes === settle 900s off VBUS ===
+r64-post-rpm-fixes phase=settle n=0 t=15104 v=4336318 i=-96282 pll=168 nread=20
+r64-post-rpm-fixes phase=settle n=1 t=15175 v=4322304 i=-86593 pll=171 nread=20
+r64-post-rpm-fixes phase=settle n=2 t=15246 v=4310334 i=-103530 pll=175 nread=20
+r64-post-rpm-fixes phase=settle n=3 t=15316 v=4299239 i=-111770 pll=180 nread=20
+r64-post-rpm-fixes phase=settle n=4 t=15387 v=4302159 i=-89263 pll=183 nread=20
+r64-post-rpm-fixes phase=settle n=5 t=15458 v=4297974 i=-86745 pll=185 nread=20
+r64-post-rpm-fixes phase=settle n=6 t=15528 v=4295638 i=-65154 pll=189 nread=20
+r64-post-rpm-fixes phase=settle n=7 t=15599 v=4289313 i=-99639 pll=190 nread=20
+r64-post-rpm-fixes phase=settle n=8 t=15670 v=4282889 i=-96282 pll=196 nread=20
+r64-post-rpm-fixes phase=settle n=9 t=15741 v=4275299 i=-122756 pll=197 nread=20
+r64-post-rpm-fixes phase=settle n=10 t=15811 v=4284544 i=-72555 pll=203 nread=20
+r64-post-rpm-fixes phase=settle n=11 t=15882 v=4270238 i=-133361 pll=205 nread=20
+r64-post-rpm-fixes phase=settle n=12 t=15953 v=4274131 i=-113830 pll=209 nread=20
+r64-post-rpm-fixes phase=settle n=13 t=16023 v=4277050 i=-65841 pll=212 nread=20
+r64-post-rpm-fixes phase=settle n=14 t=16094 v=4272087 i=-81787 pll=215 nread=20
+suspend-slope: r64-post-rpm-fixes === phase A: 8 sleeps of 900s ===
+r64-post-rpm-fixes phase=A n=0 t=17086 v=4241334 i=-129775 pll=220 nread=20
+suspend-slope: r64-post-rpm-fixes A0 slept=900s of 900s
+r64-post-rpm-fixes phase=A n=1 t=18018 v=4224498 i=-137023 pll=221 nread=20
+suspend-slope: r64-post-rpm-fixes A1 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=2 t=18950 v=4213793 i=-110168 pll=224 nread=20
+suspend-slope: r64-post-rpm-fixes A2 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=3 t=19882 v=4203283 i=-115814 pll=226 nread=20
+suspend-slope: r64-post-rpm-fixes A3 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=4 t=20814 v=4184598 i=-124969 pll=226 nread=20
+suspend-slope: r64-post-rpm-fixes A4 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=5 t=21746 v=4181289 i=-109710 pll=227 nread=20
+suspend-slope: r64-post-rpm-fixes A5 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=6 t=22678 v=4166107 i=-146102 pll=227 nread=20
+suspend-slope: r64-post-rpm-fixes A6 slept=901s of 900s
+r64-post-rpm-fixes phase=A n=7 t=23610 v=4162020 i=-93307 pll=227 nread=20
+suspend-slope: r64-post-rpm-fixes A7 slept=901s of 900s
+suspend-slope: r64-post-rpm-fixes phase A done suspends=8 of 8
+suspend-slope: r64-post-rpm-fixes === phase B: awake control, 8 x 900s ===
+r64-post-rpm-fixes phase=B n=0 t=24540 v=4133214 i=-94070 pll=261 nread=20
+r64-post-rpm-fixes phase=B n=1 t=25471 v=4117156 i=-109405 pll=249 nread=20
+r64-post-rpm-fixes phase=B n=2 t=26402 v=4090491 i=-135650 pll=284 nread=20
+r64-post-rpm-fixes phase=B n=3 t=27333 v=4083192 i=-103530 pll=310 nread=20
+r64-post-rpm-fixes phase=B n=4 t=28263 v=4066745 i=-110854 pll=343 nread=20
+r64-post-rpm-fixes phase=B n=5 t=29194 v=4049520 i=-107574 pll=354 nread=20
+r64-post-rpm-fixes phase=B n=6 t=30125 v=4028402 i=-141982 pll=398 nread=20
+r64-post-rpm-fixes phase=B n=7 t=31056 v=4015750 i=-124053 pll=429 nread=20
+suspend-slope: r64-post-rpm-fixes done - restoring charger and greetd
+
+## slope-fit.py output (tonight's block only; the appended file also holds mmslope2-20260821 - fit that separately, never together: the uptime reset between boots makes a joint fit nonsense)
+phase settle: 15 samples over 0.28 h
+  compensated V: 4.3479 -> 4.2819
+  slope -206.10 mV/h   r2=0.8975   ☠️ not a straight line
+  current_now over these samples: mean 95.0 mA, min 65.2, max 133.4
+
+phase A: 8 samples over 1.81 h
+  compensated V: 4.2569 -> 4.1732
+  slope -45.41 mV/h   r2=0.9881
+  current_now over these samples: mean 120.9 mA, min 93.3, max 146.1
+
+phase B: 8 samples over 1.81 h
+  compensated V: 4.1445 -> 4.0306
+  slope -63.07 mV/h   r2=0.9972
+  current_now over these samples: mean 115.9 mA, min 94.1, max 142.0
+
+============================================================
+CONTROL   phase B awake: 115.9 mA measured directly, slope -63.07 mV/h
+          ☠️ if that current is not the awake figure you already know, stop here.
+RESULT    phase A asleep: 83.4 mA   (= 115.9 x 0.720)
+============================================================

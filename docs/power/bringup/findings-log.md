@@ -1074,3 +1074,51 @@ That is the number a voltage ramp has to be read against. It also shows how much
 the unpinned version was measuring the wrong thing: the same script before the
 fix attributed 90 failures of the *other* cluster to policy0's transition count.
 
+
+## The r64 baseline holds: asleep 83.4 mA, and the i2c-qup fix costs nothing
+
+*2026-08-22 overnight, kernel `7.1.3-r64` (#65-fp3 — the i2c-qup pinctrl
+sleep/default fix on top of the 08-17 RPM fixes). Raw data:
+[`2026-08-22_r64_suspend-legs.txt`](captures/2026-08-22_r64_suspend-legs.txt).*
+
+Two legs, run unattended under the night harness with the guardian armed.
+
+**The 3 h OCV leg first** (`suspend-leg.sh`, one unbroken 10 801 s s2idle,
+`suspends=1`): OCV 4.3127 → 4.1695 V before→settled, which through the DT table
+is ~94.7 % → ~82.4 %, an upper bound of ~125 mA. As the front page says, an OCV
+difference is a bound and not a figure — this one started 300 s off a CV
+charger at 100 %, so surface charge inflates the "before" end. It excludes the
+<20 mA regime and says nothing finer.
+
+**Then the slope leg** (`suspend-slope.sh r64-post-rpm-fixes`, 900 s settle +
+8×900 s sleeps + matched awake control):
+
+```
+phase A  asleep  8 samples  slope -45.41 mV/h  r2=0.9881
+phase B  awake   8 samples  slope -63.07 mV/h  r2=0.9972  I mean 115.9 mA
+RESULT   asleep 83.4 mA   (= 115.9 x 0.720)
+```
+
+All 8 suspends completed at full duration; the charger and greetd were restored
+on exit. Read against the 2026-08-19 "asleep, no cuts" figure of 79.1 mA this
+is the same number within the instrument's spread: **the sleeping baseline
+reproduces on r64, and the i2c-qup pinctrl change did not move it** — expected,
+since a runtime-suspended I2C controller was already idle, but now it is
+measured rather than assumed.
+
+Two caveats that keep this from being over-read:
+
+* ☠️ **Do not compare this leg's −45.4 mV/h against the −35.3…−35.8 mV/h
+  baseline slopes.** Those phases sat at 4.03–4.07 V; this one at 4.17–4.26 V,
+  above the plateau where dV/dQ is steeper. Same systematic the front page
+  already flags — slopes compare only within the same region of the curve.
+* The `pll=` column earned its place again: phase A accumulated **7** lock
+  failures across two hours of sleeping, phase B **168** across the same time
+  awake — the storm tracks transition rate, exactly as characterised on
+  08-16, and the sleeping phase is essentially untouched by it.
+
+☠️ One instrument note for the next reader: `suspend-slope.txt` on the device
+is appended across nights and boots. `slope-fit.py` fits whatever it is given,
+and uptime resets between boots make a joint fit of two runs nonsense (it
+reported "45 samples over −20.14 h" before the blocks were separated). Cut the
+file to one run's block before fitting.

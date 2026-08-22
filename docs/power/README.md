@@ -144,6 +144,7 @@ says *asleep*, it is not a measurement of a sleeping phone.
 | awake, idle, panel **off**, session running | **58–63 mA** | 2026-08-19 |
 | the panel, powered at zero brightness | **+24.5 ± 6.4 mA** | 2026-08-19 |
 | asleep, no cuts | 79.1 mA | 2026-08-19 |
+| asleep, no cuts, reproduced on r64 (i2c-qup fix aboard) | 83.4 mA | 2026-08-22 |
 | asleep, ADSP collapsing every suspend | 70.8 mA | 2026-08-20 |
 | asleep, modem stack cut | **43.3 mA** | 2026-08-19 |
 | every userspace service tested, five of five | zero | 2026-08-19 |
