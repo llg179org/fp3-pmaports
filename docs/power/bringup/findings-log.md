@@ -1302,3 +1302,27 @@ A concrete lever for the sleeping current (a WiFi-down-on-suspend policy or
 wowlan tuning), priceable on the battery with the slope harness. Caveat: the
 WiFi link is also the USB-independent rescue path, so any policy must re-up
 the interface on resume.
+
+## 2026-08-23: a fully-specified sleep set does not unlock vlow either — measured negative
+
+r68 adds a `both_sets=1` experiment knob to `qcom_smd-regulator` (mirror every
+active-set write into the sleep set — the downstream shape: all 23 vendor
+rails carry `qcom,set = <3>`, none turn off in sleep, `smpa/3` included at
+1.225 V, which killed the earlier off-in-suspend idea). Booted with
+`clk_smd_rpm.xo_sleep_off=1 qcom_smd_regulator.both_sets=1`, three full 120 s
+windows ([`captures/2026-08-23_vlow-both-sets.txt`](captures/2026-08-23_vlow-both-sets.txt)):
+**vlow `Count` stays 0.** So the two named blockers were real but not the last
+ones — with the APSS XO-shutdown running and the regulator sleep set fully
+specified, something else still holds vlow off. Next suspects, in instrument
+order: the interconnect/clk sleep-set completeness (the tracepoint shows
+bmas/bslv sleep writes exist — diff what the oracle's sleep set contains
+against ours, resource by resource, from the rail-census parser), and the
+vMPM/TZ side. The vlow `Client Votes` byte-mask churns with the sleep set
+(0x5010501→0x10001 across a window) and remains undecoded — decoding it in
+the RPM firmware or downstream headers is probably the shortest path to the
+name of the blocker.
+
+☠️ Instrument rule earned tonight: since the arm-at-boot unit exists, **every
+suspend-window instrument must disarm the modem edge itself** (and restore it
+after) — the first r68 capture ran 8–19 s windows against an armed edge and
+was silently about the wrong thing.
