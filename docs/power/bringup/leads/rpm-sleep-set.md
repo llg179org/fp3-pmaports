@@ -257,3 +257,30 @@ active-only shape from that thread, not the suspend-ops shape.
 2. Cross the names against the FP3 DT's 19 declared rails (3 SMPS + 16 LDOs,
    `sdm632-fairphone-fp3.dts`) and against what each one supplies.
 3. Only then decide whether any of them can be dropped, and by whose intent.
+
+## 2026-08-22: the driver side exists now — what remains is the DT opt-in
+
+`regulator: qcom_smd: cast sleep-set votes for suspend states` is on
+`wip/7.1.3/power` (`5fe5dba65260`, all three layers, pushed): the driver
+gains `set_suspend_enable/disable/voltage` writing `swen`/`uv` into
+`QCOM_SMD_RPM_SLEEP_STATE`. Without DT it is a no-op — the regulator core
+only calls the suspend ops for a regulator whose constraints carry a
+`regulator-state-mem` child.
+
+The opt-in step, deliberately not rushed overnight:
+
+1. **Re-run the rail census over the WiFi link with USB detached** — the
+   three USB-PHY rails above are confounded until then.
+2. Start with the survivors only: `smpa/3` first
+   (`regulator-state-mem { regulator-off-in-suspend; }` — but it parents
+   l1/l2/l3, so read the vendor DT's own sleep config for it first:
+   `qcom,init-*` / `regulator-*-sleep` properties in the downstream tree at
+   `hadk22/kernel/fairphone/sdm632/arch/arm64/boot/dts/`), never `ldoa/7`
+   (modem PLL) or `ldoa/8` (eMMC, NOSLEEP).
+3. One rail per experiment, the three-window capture as the instrument, vlow
+   `Count` and the APSS/master stats as the readout, combined with
+   `xo_sleep_off=1` (the `-xo` boot entry) since the two blockers are
+   additive.
+4. The failure mode to fear is a rail some active-but-unvoted consumer needs
+   mid-suspend-entry: gate every such boot behind the fallback entry and the
+   30 s guard window, exactly like the xo experiment.
