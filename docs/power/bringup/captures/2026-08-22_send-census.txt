@@ -1,0 +1,63 @@
+elapsed=122 success=5
+--- per-channel send count
+    276 name="rpm_requests"
+     31 name="WLAN_CTRL"
+      2 name="IPCRTR"
+--- stack sample (elso nem-rpm send kornyeke)
+       qmi-proxy-1091    [002] d....  1756.070010: send: (__qcom_smd_send+0x0/0x340) name="IPCRTR"
+       qmi-proxy-1091    [002] d....  1756.070018: <stack trace>
+ => kprobe_trace_func
+ => kprobe_dispatcher
+ => kprobe_brk_handler
+ => do_el1_brk64
+ => el1_brk64
+ => el1h_64_sync_handler
+ => el1h_64_sync
+ => __qcom_smd_send
+ => rpmsg_send
+ => qcom_smd_qrtr_send
+ => qrtr_node_enqueue
+ => qrtr_recvmsg
+ => __sys_recvfrom
+ => __arm64_sys_recvfrom
+ => invoke_syscall.constprop.0
+--
+       qmi-proxy-1091    [002] d....  1756.070249: send: (__qcom_smd_send+0x0/0x340) name="IPCRTR"
+       qmi-proxy-1091    [002] d....  1756.070257: <stack trace>
+ => kprobe_trace_func
+ => kprobe_dispatcher
+ => kprobe_brk_handler
+ => do_el1_brk64
+ => el1_brk64
+ => el1h_64_sync_handler
+ => el1h_64_sync
+ => __qcom_smd_send
+ => rpmsg_send
+ => qcom_smd_qrtr_send
+ => qrtr_node_enqueue
+ => qrtr_recvmsg
+ => ____sys_recvmsg
+ => ___sys_recvmsg
+ => __sys_recvmsg
+--- rpm send stack sample
+         sugov:0-121     [006] d....  1755.433687: send: (__qcom_smd_send+0x0/0x340) name="rpm_requests"
+         sugov:0-121     [006] d....  1755.433703: <stack trace>
+ => kprobe_trace_func
+ => kprobe_dispatcher
+ => kprobe_brk_handler
+ => do_el1_brk64
+ => el1_brk64
+ => el1h_64_sync_handler
+ => el1h_64_sync
+ => __qcom_smd_send
+ => rpmsg_send
+ => qcom_rpm_smd_write
+ => qcom_icc_rpm_set_bus_rate
+ => qcom_icc_update_provider
+ => qcom_icc_set
+ => apply_constraints
+ => icc_set_bw
+--
+         sugov:0-121     [006] d....  1755.436239: send: (__qcom_smd_send+0x0/0x340) name="rpm_requests"
+         sugov:0-121     [006] d....  1755.436248: <stack trace>
+DONE
