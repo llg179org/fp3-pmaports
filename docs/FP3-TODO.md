@@ -1,5 +1,8 @@
 # Fairphone 3 (sdm632) mainline port — what is still open
 
+> Closed sections and items are moved verbatim to [`TODO-DONE.md`](TODO-DONE.md);
+> numbering gaps here are deliberate so references by number still resolve.
+
 > ⚠️ **AI-generated.** This page — and the code, device tree and tooling it
 > describes — was written by Claude (Opus 5) working under the direction of
 > Lajosházi, László Gergely, who reviewed every change and made or reviewed
@@ -108,29 +111,6 @@ Redo this after every base bump; it is the only thing that answers the question.
 Cross-cutting, mostly `dtbs_check` fallout. Detail:
 [`docs/TODO.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/TODO.md).
 
-1. ~~**The camera needs `sony,imx363.yaml` and a MAINTAINERS entry.**~~ **Fixed
-   2026-07-31**: binding, MAINTAINERS block and a third cleanup commit after the
-   byte-identical import. The node had been **skipped silently** by `dtbs_check`
-   for want of a binding; now checked, it adds nothing (44 → 45 errors, the one
-   addition being item 5). Details in
-   [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-2. ~~**Six undocumented codec properties** on the audio `slim217,1a0` node.~~
-   **Fixed 2026-07-30**: the WCD9335 binding carries them, and the button
-   thresholds were renamed to the family's
-   `qcom,mbhc-buttons-vthreshold-microvolt`.
-3. ~~**`divclk1` and `wcd-vout-1p8` must move out from under `soc@0`**~~ —
-   **fixed 2026-07-30**, both are at the board root.
-4. ~~**`wcd-intr-default-state` fails the `qcom,msm8953-pinctrl` schema.**~~
-   **Fixed 2026-07-30** by dropping `input-enable`. Details for 2-4 in
-   [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-5. ~~**The battery node's `qcom,*` properties.**~~ **Moved 2026-08-12**, four
-   commits on `wip/7.1.3/charger`: the JEITA thresholds, the soft-zone currents,
-   the recharge voltage and the ID tolerance are properties of the charger node
-   now, and the pack's identification resistor became the generic
-   `id-resistor-ohms` in `battery.yaml`. Details in
-   [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-6. ~~**`-ohm` → `-ohms`.**~~ **Done in the same commits**;
-   `qcom,batt-id-pullup-ohms` is the only one left carrying a vendor prefix.
 7. **The camera driver's two-line `Kconfig` conflict** — the neighbouring IMX355
    entry gained a `select V4L2_CCI_I2C`. Trivial, but manual.
 8. **The audio prerequisite is named and was posted:** Adam Skladowski,
@@ -151,24 +131,6 @@ Cross-cutting, mostly `dtbs_check` fallout. Detail:
    SLIMBUS_0 work to that series' authors, not to send ours.
 10. **Cover-letter disclosure** per `Documentation/process/generated-content.rst`:
     which tools, which prompts, which parts, and how it was tested.
-11. ~~**Two more invented WCD9335 property names, with an inverted default.**~~
-    **Fixed 2026-07-31**, and not by renaming them: the codec was moved onto the
-    shared `wcd-mbhc-v2`, so it now calls the family's own
-    `wcd_dt_parse_mbhc_data()` and the invented properties were deleted from the
-    driver, the binding and the board file. Details in
-    [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-12. ~~**The rebase table's two audio rows are stale.**~~ **Re-measured
-    2026-07-31** against fresh bases, all nine rows, against the regenerated
-    thirteen-patch series: audio is now 11/12. Table above.
-13. ~~**`submit/7.1.3/audio` still carries the private MBHC implementation.**~~
-    **Regenerated 2026-07-31** as thirteen single-domain patches, the shared-MBHC
-    change split three ways; `aw8898` is excluded because it is not in Linus'
-    tree. Item 12 is now the only thing standing between this series and a
-    rebase measurement. Details in
-    [`TODO.md`](TODO.md#open-before-anything-is-submitted).
-
----
-
 ## `wip/7.1.3/charger` — PMI632 SMB5
 
 Fast charge, hardware JEITA, battery ID + thermistor, cooling device. All nine
@@ -222,20 +184,6 @@ the gaps are here and only here:
     speaker path itself measures clean (999.76 Hz at 31.77 dB). Unexplained, and
     deliberately not filed as environmental.
 22. **A stray `Quinary MI2S` backend can attach to the voice front end.**
-23. ~~**The jack is treated as 3-pole**~~ — **fixed 2026-07-31.** The codec moved
-    onto the shared `wcd-mbhc-v2` with a legacy comparator backend, and a 4-pole
-    headset and a 3-pole headphone now report differently
-    (`SW_MICROPHONE_INSERT` only for the headset). **No TX gain control is
-    exposed for the call path** is still open.
-
-Items 34-40 all come from one reviewer pass over the audio **driver** commits on
-2026-08-02 (`ca9aaa72`, `377269e4`, `254359e1`). **Nothing below is
-implemented**, and each has a counter-argument that has to be settled first —
-written out in [`TODO.md`](TODO.md#open-before-anything-is-submitted) item 15.
-The pass also asked where the six codec properties are defined: they are in the
-binding since 2026-07-30 (item 2 there); only the `wip` branch's discovery
-ordering makes it look otherwise.
-
 34. **A bare `BIT(2)` is written into `WCD9335_CODEC_RPM_CLK_MCLK_CFG`.** It
     wants a macro, but neither we nor downstream can name the field truthfully —
     so either a neutral name plus a comment, or an A/B that decides whether the
@@ -279,43 +227,6 @@ is **Joel Selvaraj's** (`sdm670-mainline/linux` MR !3, commit `5130bc702ea2`,
 delta is +68/−21 on 1514 lines, roughly half comments, functionally four things in
 the power path.
 
-24. ~~**Streaming does not work end to end.**~~ **False, corrected 2026-08-01.**
-    It streams: 15 240 960-byte frames, exactly 4032 x 3024 x 10 / 8, two
-    consecutive frames differing, so it is live sensor data. The old finding was
-    an artefact of asking for `RG10`, which this video node does not offer — the
-    resulting `-EPIPE` from pipeline validation logs nothing and looks exactly
-    like a broken driver. The correct format is **`pRAA`**. What is genuinely
-    open is narrower: **nobody has checked the image is correct** (geometry,
-    Bayer order, stride) against a known scene, and the link frequencies in the
-    DT still disagree with the driver's mode tables. Details in
-    [`docs/camera/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/camera/README.md).
-24c. ~~**The CSIPHY timer clock intermittently refuses to start** (`-EBUSY`,
-    parked 2026-07-26).~~ **Fixed 2026-08-02**, and it was not a settle
-    problem: `gcc-msm8953.c` placed `GPLL0_DIV2` at source select **2** for the
-    three `csi*phytimer` RCGs, where every other camera mux in the file uses 4
-    or 5. `ROOT_OFF` therefore never cleared and the only table entry derived
-    from that source - 100 MHz, the one a 321 MHz link frequency picks - could
-    never stream, while the 200/266 MHz GPLL0 entries always could. 9 of 9
-    capture runs across two boots after the change, with nothing in dmesg.
-    Carries a `Fixes:` tag and is upstream material. Detail in
-    [`docs/camera/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/camera/README.md#the-csiphy-timer-clock-and-why-the-camera-used-to-vanish).
-24b. **Untested: the camera's exposure and gain controls.** The V4L2 controls
-    exist on the sensor subdev; nothing has checked that writing them moves the
-    image. Cheap to settle now that `focus-sweep.py` can hold one stream open -
-    the same brightness statistic it already prints per frame is the measurement.
-25. ~~**Parked: the PMI632 flash LED.**~~ **Works, 2026-08-03.** The parking
-    reason was correct: the module reports subtype **`0x05`**, which
-    `leds-qcom-flash.c` refuses outright, so enabling the node as it stood would
-    have failed the probe. It is the three-channel block with two channels
-    bonded out, so the driver takes a fourth branch with `max_channels = 2`;
-    `CONFIG_LEDS_QCOM_FLASH` was not in the config either. ☠️ The module is on
-    the **second** PMI632 USID (`0-03`), not the charger's. Confirmed three
-    ways — registers programmed, USB input current separating over interleaved
-    passes, and the rear camera measuring the lit scene — after the battery
-    ammeter, which does not exist on this device, produced a confident false
-    negative. Not carried over: the charger-side `FLASH_ACTIVE` handshake that
-    downstream uses around a strobe. Detail in
-    [`TODO.md`](TODO.md#parked-the-pmi632-camera-flash--it-works-2026-08-03).
 33. **The focus actuator is at 0x0c and is not an LC898217.** ☠️ **This
     corrects the same item written earlier the same day.** `lc898217.c` plus its
     binding and MAINTAINERS entry landed 2026-08-01 and are worth keeping — the
@@ -584,31 +495,6 @@ distillation work, are in
 Gaps, in
 [`docs/sensors/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/sensors/README.md#known-gaps):
 
-26. ~~**The magnetometer is uncalibrated and its scale unverified**~~ — **both
-    measured 2026-08-01.** Hard-iron `−0.63494 −0.69576 +0.71721` Gauss;
-    soft-iron negligible (semi-axes within ±2%); and the scale is **correct** —
-    the sphere's radius is 0.4865 G = 48.65 µT against an expected 48–50 µT for
-    this latitude. The gap note said the two cannot be solved from each other,
-    which is true one at a time and false for a full sphere, whose radius *is*
-    the field strength. What is left is narrower: the driver exposes no
-    `in_magn_*_calibbias`, so nothing can carry the offset, and it must not be
-    hardcoded — it is per-unit and drifts.
-27. ~~**The mount matrix is probably wrong**~~ — **fixed 2026-08-01**, and it was
-    not merely wrong: the msm8996 value has **determinant −1**, so it was a
-    reflection rather than a rotation and could not have suited any device. The
-    new value is every one of those signs flipped. Measured from three
-    orientations, and confirmed independently by the phone's own factory
-    calibration, where the permutation between `/persist/sensors/accel_[xyz]`
-    and registry keys 0–2 *is* this matrix.
-28. ~~**Registry groups 20, 2691 and 3050 are zero-filled**, not real.~~
-    **Corrected 2026-08-01 for group 20:** it is zero in this phone's own
-    factory `sns.reg` as well, so `snsregd` serving zeros is serving the truth,
-    not a stand-in. The factory calibrates the accelerometer, the proximity
-    sensor and the ambient light sensor, and nothing else. **2691 and 3050 are
-    still unmapped** and remain open.
-28a. **The gyroscope and the magnetometer have no mount matrix at all** — only
-    the accelerometer ever had one, and the magnetometer's does not follow from
-    it, being a separate part.
 29. **`snsregd.py` is still a Python stand-in** for upstream's C `sns-reg`; it
     should become an aport. (Userspace, tracked here because the driver depends on
     it.)
@@ -674,21 +560,6 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     is missing.
 31. **Untested: the interconnect path for the SCM/crypto node.** Non-blocking;
     kept in case the ADSP-boot timing question reopens.
-32. ~~**The package now pins `debug-int/7.1.3`, not `integration/7.1.3`.**~~
-    **Done and running.** The pin moved on 2026-07-30, and the package has been
-    built and deployed from that branch many times since; what the phone runs
-    carries the watchdog. The two rewrites this item was written about — the
-    camera provenance and the debug split — are still only reachable through
-    `archive/integration-7.1.3-pre-camera-provenance` and
-    `archive/integration-7.1.3-pre-debug-split`, which is why those tags exist.
-    ☠️ GitHub serves a source tarball only while the commit is reachable from some
-    ref — check before trusting a pin:
-
-    ```sh
-    curl -sI -o /dev/null -w '%{http_code}\n' \
-      "https://github.com/llg179org/linux/archive/<_commit>.tar.gz"   # 302, not 404
-    ```
-
 33. **The camera app's *Find Best Size* measures the wrong quantity, and had
     settled on the worst size on the ladder.** It bisects the offered sizes and
     keeps the largest that still delivers frames — and 3840x2400 does deliver
@@ -700,60 +571,6 @@ payloads onto a fresh branch off `integration/7.1.3`: same tree object as
     change, not a rebuild. What should replace the frame-rate criterion in the
     search is the open question; the measurements are in
     [`camera/README.md`](camera/README.md#why-the-sensor-is-always-read-out-whole-and-what-it-costs).
-
-34. ~~**The padded-stride path works at the 1920x1080 sensor mode; the full
-    readout is blocked by CMA, not by the GPU.**~~ **The full readout works,
-    2026-08-12 — CMA was never on its path.** The stride half is done: camss
-    grants a padded bytesperline on VFE 4.1 (checked with a direct
-    VIDIOC_TRY_FMT), and libcamera's request now reaches the driver at all — it
-    did not before, because the multiplanar path copies bytesperline only for
-    the planes named in a count the upstream patch left at zero.
-
-    **Re-measured 2026-08-08 on the deployed package (`linux-fp3-7.1.3-r48`,
-    `#49-fp3`, with the r10 libcamera that carries the stride request), and the
-    earlier "GPU faults" account did not hold up.** `cam` at the 1920x1080
-    sensor mode (a 1280x960 request selects it) reports `Input 1920x1080 stride
-    2560`, imports through EGL and **captures frames with no context fault** —
-    the padded buffer is read by the GPU and comes back. What fails is the
-    **full 4032x3024 readout** (a 1920x1080 or larger request selects it, the
-    size cliff): `Input 4032x3024 stride 5120`, then
-    `cma: __cma_alloc_frozen: reserved: alloc failed, req-size: 11907 pages`
-    — ~48.8 MB contiguous — while CMA is fragmented to a largest run of ~30 MB.
-    The dma-buf allocation fails *before* any buffer exists, so the GPU is
-    never reached and there is no context fault to see. MemAvailable was
-    2.5 GB throughout, so this is CMA contiguity, not memory pressure.
-
-    That measurement stood, and the fix proposed from it — raising
-    `CONFIG_CMA_SIZE_MBYTES` from 32 to 96 — **would not have worked, because
-    the capture path does not allocate from CMA at all.** Re-measured 2026-08-12
-    before spending the build cycle it asked for:
-
-    | | |
-    |---|---|
-    | full readout | `cam -c1 -C15 -s width=4032,height=3024` captures **every frame**, `Input 4032x3024-RGGB-10-CSI2P stride 5120`, `bytesused 48771072` |
-    | CMA during the capture | `CmaFree` sampled four times a second: **30304 kB throughout**, not one kilobyte moved |
-    | CMA failures | none in `dmesg` |
-    | camss | behind an IOMMU (`1b00020.camss` → `iommu_groups/1`), so the sensor readout never needs contiguous pages |
-
-    `CmaFree` is the decisive one, and it settles the question in both
-    directions: 30 MB free cannot satisfy a 49 MB request, so had the
-    allocation come from CMA it would have failed — and had it come from CMA
-    and succeeded, `CmaFree` would have dropped by ~48 MB. It does neither.
-
-    Note also that 11907 pages is **exactly** 48 771 072 bytes, which is the
-    `bytesused` of the ABGR8888 **output** frame, not the raw sensor readout.
-    So the failing allocation was always the output buffer, and what changed is
-    where that buffer comes from: `/dev/dma_heap/` offers only `default_cma_region`
-    and `reserved`, both CMA-backed, but `/dev/udmabuf` exists and libcamera is
-    now **r12** where the note was written against r10. The likely reason is
-    therefore that libcamera's allocator now falls back to udmabuf instead of
-    the CMA heap — likely, not measured: an A/B against r10 would settle it, and
-    nothing depends on the answer while full resolution works.
-
-    So the item is **not a blocker**: at the app's capped ≤1912x1080 size
-    (item 33) the camera works, and the full readout works too. What remains
-    open is only the *cost* — the full readout runs at about 5 fps, which is
-    fine for a photo and not for a viewfinder.
 
 35. **The camera app renders in software, and so does everything else.** The
     distro sets `GSK_RENDERER=cairo` session-wide for the a506; with a
