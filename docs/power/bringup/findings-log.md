@@ -1170,3 +1170,30 @@ the mechanism behind the modem-36 % share, now with a rate.
 `nohup`, detached or not) died at the first `rtcwake` — logind kills the
 session cgroup when the USB link drops, and `setsid` does not leave the cgroup.
 `systemd-run --unit=… --collect` is the one launch that survives suspend.
+
+## 2026-08-22 evening: xo_sleep_off=1 unlocks the APSS XO shutdown — vlow still 0
+
+Capture: [`captures/2026-08-22_vlow-xo-sleep-off.txt`](captures/2026-08-22_vlow-xo-sleep-off.txt),
+same three-window instrument as the morning baseline, booted via the
+`postmarketOS-xo` extlinux entry (`clk_smd_rpm.xo_sleep_off=1`, the parked
+patch that zeroes the bi_tcxo sleep-set vote). Regime check: success 1→4,
+`rtcwake_rc=0` each window.
+
+**The lever works.** The APSS, which had never once entered XO shutdown
+(morning baseline: count 0 against ~50 000 collapses), now does so
+continuously: count 1663 by 124 s of uptime, +74…84 per 120 s suspend window
+(~0.7/s). MPSS/PRONTO keep toggling as before, LPASS stays asleep. So the
+morning diagnosis was right: the bi_tcxo sleep-set vote was the thing keeping
+the APSS out of XO shutdown.
+
+**And it is still not vlow.** `vlow` (and vmin) `Count` stayed 0 through all
+three windows. APSS XO shutdown is necessary and measured insufficient — the
+remaining named suspect is the 08-17 finding that the LDOs cast no sleep votes
+(`qcom_smd-regulator`), which is upstreamable work. The vlow `Client Votes`
+byte pattern did change under the param (0x7030105 / 0x10501 vs the baseline's
+0x3070307 family) — undecoded, but it moves with the sleep set.
+
+Operationally: the param survived a guard window plus three full windows plus
+a desktop session with zero anomalies. The `-xo` entry stays non-default; the
+next step that would make it worth pricing on the battery is a slope leg run
+under it, against the 79.1/83.4 mA baseline.
