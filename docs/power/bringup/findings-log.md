@@ -1291,3 +1291,14 @@ chatter. The modem edge's ~35 incoming signal pokes remain the outside half.
 Next levers, in measurability order: (1) does `wcn36xx` idle its CTRL
 traffic with WiFi down (rmmod/ip link down A/B); (2) icc vote coalescing is
 upstream work, not a device patch.
+
+## 2026-08-22 night: WiFi down erases the WLAN_CTRL chatter and a third of the vote churn
+
+Same-boot A/B ([`captures/2026-08-22_wifi-ab-sends.txt`](captures/2026-08-22_wifi-ab-sends.txt)),
+one 120 s window per arm: `ip link set wlan0 down` takes WLAN_CTRL from 32
+sends to zero and `rpm_requests` from 221 to 151 — the WiFi driver's control
+traffic is real wake load, and its wakeups carry icc/clk votes with them.
+A concrete lever for the sleeping current (a WiFi-down-on-suspend policy or
+wowlan tuning), priceable on the battery with the slope harness. Caveat: the
+WiFi link is also the USB-independent rescue path, so any policy must re-up
+the interface on resume.
