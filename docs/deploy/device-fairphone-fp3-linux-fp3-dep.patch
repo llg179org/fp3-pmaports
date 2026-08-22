@@ -1,0 +1,22 @@
+diff --git a/device/testing/device-fairphone-fp3/APKBUILD b/device/testing/device-fairphone-fp3/APKBUILD
+index 84d13792fd..c5c35af0b2 100644
+--- a/device/testing/device-fairphone-fp3/APKBUILD
++++ b/device/testing/device-fairphone-fp3/APKBUILD
+@@ -3,7 +3,7 @@ maintainer="Luca Weiss <luca@lucaweiss.eu>"
+ pkgname=device-fairphone-fp3
+ pkgdesc="Fairphone 3"
+ pkgver=9
+-pkgrel=0
++pkgrel=1
+ url="https://postmarketos.org"
+ license="MIT"
+ arch="aarch64"
+@@ -16,7 +16,7 @@ depends="
+ 	firmware-fairphone-fp3-venus
+ 	firmware-fairphone-fp3-wcnss
+ 	firmware-qcom-adreno-a530
+-	linux-postmarketos-qcom-msm8953
++	linux-fp3
+ 	lk2nd-msm8953
+ 	mkbootimg
+ 	msm-modem-uim-selection
