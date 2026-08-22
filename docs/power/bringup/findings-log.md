@@ -1274,3 +1274,20 @@ decides), but the arm-at-boot unit is a trade-off until the ring is named and
 quieted. Next probes: a caller-side census of `__qcom_smd_send` toward the
 modem edge during a window (is the AP kicking the loop?), and reading what
 the signal bits actually toggle (qcom_smd_channel_intr's early exits).
+
+## 2026-08-22 night: the send census names the AP-side producers
+
+Kprobe on `__qcom_smd_send` with channel-name decode plus stacktrace, one
+120 s disarmed window — [`captures/2026-08-22_send-census.txt`](captures/2026-08-22_send-census.txt):
+
+    276  rpm_requests  ← stack: sugov ctx → qcom_icc_rpm_set_bus_rate
+     31  WLAN_CTRL     ← wcn36xx control traffic, ~one per 4 s
+      2  IPCRTR        ← qmi-proxy recv-path acks only
+
+So the AP's own suspend-window traffic has two named producers: interconnect
+bus-rate votes cast on every cpufreq transition (the governor A/B showed the
+transitions themselves are wakeup-driven), and the WiFi driver's WLAN_CTRL
+chatter. The modem edge's ~35 incoming signal pokes remain the outside half.
+Next levers, in measurability order: (1) does `wcn36xx` idle its CTRL
+traffic with WiFi down (rmmod/ip link down A/B); (2) icc vote coalescing is
+upstream work, not a device patch.
