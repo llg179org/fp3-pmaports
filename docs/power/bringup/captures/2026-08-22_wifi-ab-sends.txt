@@ -1,0 +1,9 @@
+wifi iface: wlan0
+A-wifi-up: elapsed=122 success=6
+A-wifi-up     221 name="rpm_requests"
+A-wifi-up      32 name="WLAN_CTRL"
+B-wifi-down: elapsed=121 success=7
+B-wifi-down     151 name="rpm_requests"
+B-wifi-down       6 name="IPCRTR"
+restored: up
+DONE
