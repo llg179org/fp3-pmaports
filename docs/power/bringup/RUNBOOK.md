@@ -1548,6 +1548,39 @@ nothing — since the 2026-08-16 autologin the session user is fp3, and
 `systemctl disable --now` is the working form. A plain `blacklist` line
 does not stop dependency-loads by name — `install <mod> /bin/false` does.
 
+### ★★★ 2026-08-22 10:30: the SECOND latch is GONE — it was the missing disable_stream teardown
+
+Measured on the first ordinary boot of the r64 package kernel (`#65-fp3`,
+built 2026-08-21 18:29, the first *installed* kernel carrying both the mclk
+fix `4b09b2158dd8` **and** the SLIMbus `disable_stream` fix `dbb414e0be28`),
+full stack up — card, wcd9335, NGD, smgr, pipewire, pulseaudio, watchers,
+autologin session:
+
+* At 82 min uptime the LPASS sat in XO shutdown (last-enter > last-exit,
+  `Active cores bitmask: 0x0`), 66 XO shutdowns / 81 shutdowns taken, and a
+  45 s two-point sample showed the counters static **in the down state** —
+  the success signature, per the static-counter trap above.
+* Live trigger test: 5 s of `speaker-test` through the default path, then
+  one read 30 s later — **+3 XO shutdowns, back down** (enter > exit,
+  bitmask 0x0). Audio use no longer pins the ADSP.
+  cmd: `speaker-test -t sine -f 440 -l 1`, then
+  `grep -E 'count|enter|exit|Active' .../qcom_rpm_master_stats/LPASS`.
+
+So the "second latch" of 2026-08-21 12:10 needs its attribution corrected:
+that boot ran the *pre-r64* kernel with only the mclk fix hot-swapped as a
+`.ko` — its SLIMbus controller still dropped the stream-teardown messages,
+so the first PCM open over SLIMbus left the ADSP holding the channel and an
+XO vote forever. That is exactly the defect `dbb414e0be28` (and upstream's
+pending disable_stream patch, see `lkml-drafts/`) fixes, and with it in the
+booted kernel the latch is unreproducible. The open follow-up "find what the
+first audio-path use leaves behind in the ADSP" is **closed: a SLIMbus
+channel + XO vote, released by disable_stream**. The q6afe/q6adm/q6asm
+teardown-asymmetry candidates were never the culprit.
+
+Standing consequence for the ladder: with both latches fixed in the package
+kernel, the LPASS now duty-cycles on an ordinary boot with the full audio
+stack — the "LPASS never sleeps" lead is closed end-to-end.
+
 ## Next, in order
 
 **The instrument for it is written and unarmed:**
