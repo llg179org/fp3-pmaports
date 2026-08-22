@@ -3,6 +3,14 @@
 
 # The audio DSP never sleeps, and the vendor's does
 
+> **CLOSED 2026-08-22.** Two latches, both fixed and in the package kernel
+> since r64: the probe-time mclk hold in `msm8916-wcd-digital`
+> (`4b09b2158dd8`) and the dropped SLIMbus stream teardown in
+> `qcom-ngd-ctrl` (`dbb414e0be28`). On an ordinary full-stack boot the
+> LPASS now duty-cycles and re-enters XO shutdown within ~30 s of audio
+> use. Measurements and the corrected attribution of the "second latch":
+> RUNBOOK entries 2026-08-21 12:10 and 2026-08-22 10:30.
+
 ## The finding
 
 **LPASS shut down twice since boot, for 0.12 s in total.** On the vendor stack,
