@@ -99,18 +99,28 @@ the RPM; the audio DSP can be made to collapse for the whole of every suspend; a
 not sufficient**, which is a measured correction to a claim this project carried
 for several days.
 
-**What to measure next, in order:**
+**Measured 2026-08-22** (findings-log, `captures/2026-08-22_vlow-a1-systemd.txt`):
+`rpm_master_stats` across three real 120 s s2idle windows names the blocker —
+**the APSS has never once entered XO shutdown** (count 0 against ~50 000 power
+collapses), while MPSS/PRONTO toggle XO freely and LPASS sleeps for good. The
+standing sleep-set XO vote comes from the `bi_tcxo` holders in `clk_summary`
+(both remoteprocs, both mmc hosts, the codec ahbix path) plus the 08-17 LDO
+no-sleep-vote finding. And the modem's 36 % now has a rate: the modem smd-edge
+fires ~once per 2 s inside a suspend window (+64/124 s), each wake echoed by
+RPM request traffic (rpm edge +775) and 57–76 APSS collapses per window.
 
-1. **What else votes.** The regulator branch is closed and the master branch is
-   closed; what remains is another master (MPSS, PRONTO, TZ) or a standing
-   resource vote that the `qcom_rpm_smd_write` tracepoint cannot see because it
-   was cast once at boot and never changed. ☠️ That blind spot is real and has
-   already cost one investigation: `bi_tcxo` never appears in a trace for exactly
-   that reason. `clk_summary` is the instrument for standing votes, not the trace.
-2. **The modem's 36 %.** The only intervention that has ever moved the sleeping
-   slope, and its mechanism is unnamed. Wakeup accounting across a suspend
-   separates "the MPSS never idles" from "the MPSS keeps waking the AP", and those
-   have different fixes.
+**What to do next, in order:**
+
+1. **Drop the APSS sleep-set XO vote.** The named holders of `bi_tcxo` keep XO
+   in the sleep set for the life of the boot. Candidates, in rising order of
+   invasiveness: mmc (`MMC_CAP_AGGRESSIVE_PM` / dropping xo across runtime
+   suspend), remoteproc xo handling across suspend, and moving holders to
+   `bi_tcxo_a` where the firmware's own wake path does not need the AP's vote.
+   Each is separately measurable by the same three-window capture.
+2. **The modem's 36 % — now "the MPSS keeps waking the AP", measured.** The
+   next question is what rides those +64 edge interrupts per window (QMI
+   indications? IPA? diag?) and whether the traffic can be quieted at the
+   source rather than the edge.
 3. **Release the internal digital codec's LPASS clocks** —
    `msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` unconditionally and
    drops them only in `remove()`, which pins the ADSP awake for the life of the
