@@ -993,6 +993,29 @@ worth checking: the monotonic-clock trap while reading this journal —
 `short-monotonic` does not advance across suspend, so post-leg timestamps look
 hours old; compare against `/proc/uptime` (boottime) before dating any event.
 
+### The same night also strands PulseAudio with the card profile `off`
+
+Second symptom, same morning, found when a test call had no ringback and the
+volume control showed "Dummy output". The kernel card was fine and every
+profile probed as available (`HiFi (Speaker)` etc. `available: yes`), but the
+session's PulseAudio held `Active Profile: off`, had produced only the
+`auto_null` sink, and **silently ignored `pactl set-card-profile`** — no error
+returned, no line logged, no sink created. The instance was started the
+previous evening (socket dir timestamped 23:06) and had lived through the
+legs' ~5 h of suspends and two greeter/session cycles. `pulseaudio -k` fixed
+it outright: the respawned daemon came up with `HiFi (Speaker)` active and a
+real sink, confirmed audibly with a 1 kHz tone.
+
+Consequences worth spelling out: a call *rings* in this state (the modem side
+does not need the AP's audio card) but has no ringback, no speakerphone and no
+audible path — which is what the earlier "the speakerphone button did not
+work" report actually was. So the harness restore step has two jobs, not one:
+bring back the session (the autologin question above) *and* leave it with a
+freshly spawned audio stack — or at minimum the morning-after check should
+assert `pactl list sinks short` shows a real sink, which is a one-line probe
+the selftest battery could carry (the audio checks all talk to ALSA directly,
+so they stay green while every desktop application is deaf).
+
 ## `pd-mapper.service` is permanently failed, and the RTC cannot be set
 
 Two findings from one investigation, 2026-08-14. Neither is urgent; both are
