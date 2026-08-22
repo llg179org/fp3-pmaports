@@ -716,3 +716,58 @@ ordering makes it look otherwise.
     (item 33) the camera works, and the full readout works too. What remains
     open is only the *cost* — the full readout runs at about 5 fps, which is
     fine for a photo and not for a viewfinder.
+## `apcs-cpu0-pll` fails to lock, and it took the phone down — ✅ CLOSED 2026-08-22
+
+**Resolved by the v2 PLL fix (r65, `#66-fp3`).** Root cause measured: sugov
+changes the rate while the owning cluster is in power collapse and the SPM gates
+the PLL (A/B: power collapse off → 0 warnings). The v1 fix (per-CPU `dev_pm_qos`
+from the clk notifier) deadlocked ABBA against the GPU-devfreq QoS notifier on
+4/4 boots; the v2 uses a global `cpu_latency_qos` request (no notifier chain on
+`cpu_latency_constraints`, so safe under `clk_prepare_lock`) plus an
+`smp_call_function_any()` kick. Validation: 27 720 frequency transitions +
+24 916 power-collapse entries under burst load, **0 failures** (baseline
+predicted ~50), plus a 37-minute idle window at 0 (r64 predicted ~14). Full
+post-mortem in [`docs/power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md)
+(2026-08-22 entry). Not LKML-material: `apcs-msm8953.c` is
+msm8953-mainline-only. The history below is kept as the record of the hunt.
+
+`apcs-cpu0-pll failed to enable!` — `wait_for_pll()` returning `-ETIMEDOUT`
+from `alpha_pll_huayra_set_rate()` under `sugov_work`, 266 times in one boot on
+2026-08-15/16, ending in an unclean power cut with no shutdown sequence in the
+journal. Evidence and the analysis are in
+[`docs/power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md); the raw capture is
+[`docs/power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt`](power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
+
+Two reasons this outranks the power numbers it was found under. It makes the
+device **unreliable** — an unclean cut can corrupt the rootfs and did once
+already cost a boot to fsck elsewhere in this port. And `clk-alpha-pll.c` has
+no retry on this path, so a transient lock failure is fatal to that frequency
+transition rather than merely slow.
+
+Not yet known: whether it is voltage-dependent (it started at the lowest
+battery voltage of the session, but recurred while charging at 3.89 V), whether
+it is specific to the little cluster, and whether it predates the current base.
+The first test is a fixed cpufreq sweep at high and at low battery, counting
+failures — not another power leg, which would only measure this.
+
+Measured again 2026-08-16 on r56, and it narrows the question. 299 instances in
+one 85-minute boot, the first nine seconds in, arriving every 10–40s.
+
+☠️ An earlier version of this paragraph said it was **not load-driven**, on the
+strength of a 60s-idle-vs-30s-burn comparison. Withdraw that: the counts came
+from a `dmesg` that had already wrapped — noted as unreliable at the time and
+used anyway. On the clean r57 boot the picture is different and not yet
+explained: **zero** across the whole 27-check battery, which includes a 30s
+eight-core burn, then **24 in three minutes** during the three acoustic audio
+checks. Whatever drives it, it is not simply CPU load, and the audio path is
+now the first place to look. The cluster still reaches every operating point — `policy0`'s
+`time_in_state` shows residency at all seven, up to 1804800 — so each failure is
+a rate change that is retried, not a clock left stuck, which is why nothing else
+on the phone shows it. The battery was at 99–100% throughout, which weakens the
+voltage hypothesis without disproving it (this was the terminal voltage, not the
+rail the PLL sees).
+
+It is also, as of today, visible: `10-health` greps for `WARNING:` and prints
+this line with its count on every run, from `journalctl -k -b` rather than from
+a ring buffer these same warnings had been evicting.
+
