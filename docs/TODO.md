@@ -113,18 +113,45 @@ no-sleep-vote finding. And the modem's 36 % now has a rate: the modem smd-edge
 fires ~once per 2 s inside a suspend window (+64/124 s), each wake echoed by
 RPM request traffic (rpm edge +775) and 57–76 APSS collapses per window.
 
+**Measured further, 2026-08-22 night** (findings-log entries of that evening,
+captures `2026-08-22_vlow-xo-sleep-off.txt`, `_smd-channel-census.txt`,
+`_send-census.txt`, `_wifi-ab-sends.txt`):
+
+* **The XO lever works.** Booted with `clk_smd_rpm.xo_sleep_off=1` (the parked
+  patch, `postmarketOS-xo` extlinux entry) the APSS enters XO shutdown ~0.7/s
+  where it had never once — and `vlow` is *still* 0. So of the two named
+  blockers only the LDO sleep votes remain.
+* **The LDO driver side exists now**: `regulator: qcom_smd: cast sleep-set
+  votes for suspend states` on `wip/7.1.3/power` (`5fe5dba6`, all three
+  layers). No-op until a board opts in via `regulator-state-mem`; the opt-in
+  plan (start `smpa/3`, never `ldoa/7`/`ldoa/8`) is in
+  `power/bringup/leads/rpm-sleep-set.md`.
+* **The window traffic has names.** kprobe census: `rpm_requests` ~670 events
+  per 120 s window — our own interconnect/clk votes, cast per wakeup
+  (`qcom_icc_rpm_set_bus_rate`; a governor A/B *refuted* the cpufreq-vote
+  theory) — against IPCRTR 35 (signal-level pokes, ~zero qrtr payload) and
+  `WLAN_CTRL` 32 (wcn36xx). **`ip link set wlan0 down` takes WLAN_CTRL to
+  zero and the vote churn down a third** — a real, unpriced lever.
+* ☠️ **Call-wake and staying asleep are mutually exclusive today**: with the
+  modem edge armed (the r66 wake fix + the arm-at-boot unit) the signal ring
+  re-wakes the phone within seconds of every suspend — measured as the
+  99-suspend check failing armed and passing 3/3 disarmed. Quieting that ring
+  gates both automatic sleep and leaving call-wake armed.
+
 **What to do next, in order:**
 
-1. **Drop the APSS sleep-set XO vote.** The named holders of `bi_tcxo` keep XO
-   in the sleep set for the life of the boot. Candidates, in rising order of
-   invasiveness: mmc (`MMC_CAP_AGGRESSIVE_PM` / dropping xo across runtime
-   suspend), remoteproc xo handling across suspend, and moving holders to
-   `bi_tcxo_a` where the firmware's own wake path does not need the AP's vote.
-   Each is separately measurable by the same three-window capture.
-2. **The modem's 36 % — now "the MPSS keeps waking the AP", measured.** The
-   next question is what rides those +64 edge interrupts per window (QMI
-   indications? IPA? diag?) and whether the traffic can be quieted at the
-   source rather than the edge.
+1. **The LDO sleep votes — DT opt-in experiments.** The driver ops exist;
+   one rail per experiment per the lead's plan, combined with
+   `xo_sleep_off=1` since the two blockers are additive, three-window capture
+   as the instrument, vlow `Count` as the verdict.
+2. **Price the WiFi lever** (slope leg, wlan0 down vs up) and decide the
+   suspend policy for it — WiFi is also the USB-independent rescue link.
+3. **Name and quiet the modem edge's signal ring** (~one poke per 2 s,
+   payload-free). This is the gate to re-enabling automatic sleep with
+   call-wake armed.
+4. **Rerun the rail census with USB physically detached** (WiFi link) — the
+   three USB-PHY rails are confounded until then, and USBIN-suspend does not
+   help: it cuts charge current, not the data link.
 3. **Release the internal digital codec's LPASS clocks** —
    `msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` unconditionally and
    drops them only in `remove()`, which pins the ADSP awake for the life of the
