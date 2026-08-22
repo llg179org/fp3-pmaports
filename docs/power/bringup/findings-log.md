@@ -1259,3 +1259,18 @@ not messages. So "quiet the modem's QMI services" remains the wrong lever; the
 right question is what generates the signal-level ring at ~one per 2 s, and
 whether the AP's own sends are part of the loop (every local write earns a
 remote read-ack interrupt back).
+
+## 2026-08-22 night: call-wake and staying asleep are mutually exclusive today
+
+Measured as an A/B around the 99-suspend check on r67: with the modem edge
+wake-armed the check fails ("never suspended - woke at 30705, alarm was
+30707": the modem's signal-level ring ends the 6 s window early), disarmed it
+passes 3/3. Together with the census above this closes the loop: the same
+~one-per-2-s IPCRTR signal traffic that proves the wake path works also means
+an armed phone re-wakes within seconds of every suspend. **Silencing that
+signal ring is therefore the gate to both** re-enabling automatic sleep and
+leaving call-wake armed — the r66 patch stays correct (default off, userspace
+decides), but the arm-at-boot unit is a trade-off until the ring is named and
+quieted. Next probes: a caller-side census of `__qcom_smd_send` toward the
+modem edge during a window (is the AP kicking the loop?), and reading what
+the signal bits actually toggle (qcom_smd_channel_intr's early exits).
