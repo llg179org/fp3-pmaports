@@ -1,0 +1,250 @@
+edge disarmed: disabled
+enable
+filter
+qrtr_ns_message
+qrtr_ns_server_add
+qrtr_ns_service_announce_del
+qrtr_ns_service_announce_new
+--- irq pre
+ 24:      30759          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+140:        481          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+elapsed=122 success=1
+--- irq post
+ 24:      30980          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+140:        517          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+--- trace (qrtr+rpm, teljes)
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 221/221   #P:8
+#
+#                                _-----=> irqs-off/BH-disabled
+#                               / _----=> need-resched
+#                              | / _---=> hardirq/softirq
+#                              || / _--=> preempt-depth
+#                              ||| / _-=> migrate-disable
+#                              |||| /     delay
+#           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+#              | |         |   |||||     |         |
+         sugov:0-115     [000] .....   866.982834: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 68 89 09 00
+         sugov:0-115     [000] .....   866.984466: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 07 c6 05 00
+         sugov:4-116     [003] .....   866.987761: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 53 6c 04 00
+         sugov:4-116     [003] .....   866.990061: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 07 c6 05 00
+   kworker/u34:3-6431    [002] .....   866.990656: qcom_rpm_smd_write: active smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 01 00 00
+   kworker/u34:3-6431    [002] .....   866.991286: qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 01 00 00
+   kworker/u34:3-6431    [002] .....   866.991958: qcom_rpm_smd_write: active bmas/33 len=12 62 77 00 00 04 00 00 00 30 3a 95 0f
+   kworker/u34:3-6431    [005] .....   866.993095: qcom_rpm_smd_write: sleep bmas/33 len=12 62 77 00 00 04 00 00 00 30 3a 95 0f
+   kworker/u34:3-6431    [005] .....   866.993864: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.994526: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.995107: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.995543: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.995986: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:3-6431    [005] .....   866.996690: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:3-6431    [005] .....   866.997868: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.998541: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.999121: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   866.999556: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.000127: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.000957: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.002154: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:3-6431    [005] .....   867.002755: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:3-6431    [005] .....   867.003199: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.003764: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.004353: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 30 d6 67 3c
+   kworker/u34:3-6431    [005] .....   867.005219: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:3-6431    [005] .....   867.006163: qcom_rpm_smd_write: active bslv/2 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.006774: qcom_rpm_smd_write: active bmas/21 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.007270: qcom_rpm_smd_write: active bmas/100 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.007849: qcom_rpm_smd_write: active bslv/131 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.009764: qcom_rpm_smd_write: active bslv/28 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.010434: qcom_rpm_smd_write: active bmas/77 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.011010: qcom_rpm_smd_write: active bmas/124 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.011570: qcom_rpm_smd_write: active bslv/184 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:3-6431    [005] .....   867.012015: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 40 0d 03 00
+   kworker/u34:3-6431    [005] .....   867.012611: qcom_rpm_smd_write: active bmas/94 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+   kworker/u34:3-6431    [005] .....   867.013773: qcom_rpm_smd_write: active bslv/123 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+   kworker/u34:3-6431    [005] .....   867.014442: qcom_rpm_smd_write: active bslv/31 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+         sugov:4-116     [003] .....   867.015174: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 00 39 03 00
+         sugov:0-115     [000] .....   867.042700: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 48 1d 0e 00
+         sugov:0-115     [000] .....   867.044232: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 c8 02 08 00
+         sugov:4-116     [003] .....   867.049744: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 d7 2c 0b 00
+         sugov:4-116     [003] .....   867.051604: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 c8 02 08 00
+         sugov:0-115     [000] .....   867.059619: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 28 7c 06 00
+         sugov:0-115     [000] .....   867.063705: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 c8 02 08 00
+         sugov:0-115     [000] .....   867.066299: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 28 7c 06 00
+         sugov:0-115     [000] .....   867.083571: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 53 6c 04 00
+         sugov:4-116     [003] .....   867.089103: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 07 c6 05 00
+         sugov:0-115     [000] .....   867.089782: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 48 1d 0e 00
+         sugov:0-115     [000] .....   867.096672: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 a8 96 0c 00
+         sugov:0-115     [000] .....   867.109563: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 48 1d 0e 00
+         sugov:0-115     [000] .....   867.116658: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 d7 2c 0b 00
+   kworker/u33:3-527     [003] .....   867.133768: qcom_rpm_smd_write: active bmas/33 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.134239: qcom_rpm_smd_write: sleep bmas/33 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.134696: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.135162: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.135610: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.136050: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.136511: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+   kworker/u33:3-527     [003] .....   867.136852: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.137195: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.137952: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.138415: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.139184: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.139934: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.140331: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+   kworker/u33:3-527     [003] .....   867.141124: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.141943: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.142748: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 00 9c d2 2c
+   kworker/u33:3-527     [003] .....   867.143557: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:3-527     [003] .....   867.144042: qcom_rpm_smd_write: active bslv/2 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.144484: qcom_rpm_smd_write: active bmas/21 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.145301: qcom_rpm_smd_write: active bmas/100 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.146075: qcom_rpm_smd_write: active bslv/131 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.146896: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+   kworker/u33:3-527     [003] .....   867.147725: qcom_rpm_smd_write: active bslv/28 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.148567: qcom_rpm_smd_write: active bmas/77 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.149096: qcom_rpm_smd_write: active bmas/124 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.149600: qcom_rpm_smd_write: active bslv/184 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+   kworker/u33:3-527     [003] .....   867.150167: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+   kworker/u33:3-527     [003] .....   867.150897: qcom_rpm_smd_write: active bmas/94 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.151429: qcom_rpm_smd_write: active bslv/123 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.151899: qcom_rpm_smd_write: active bslv/31 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.152242: qcom_rpm_smd_write: active smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+   kworker/u33:3-527     [003] .....   867.152590: qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+         sugov:4-116     [003] .....   867.164275: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 6f 79 08 00
+         sugov:0-115     [000] .....   867.165975: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 48 1d 0e 00
+         sugov:0-115     [000] .....   867.167927: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 08 10 0b 00
+         sugov:0-115     [000] .....   867.169694: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 6f 79 08 00
+         rtcwake-11779   [004] .....   867.170194: qcom_rpm_smd_write: active clk1/2 len=12 4b 48 7a 00 04 00 00 00 a8 61 00 00
+         rtcwake-11779   [004] .....   867.170676: qcom_rpm_smd_write: sleep clk1/2 len=12 4b 48 7a 00 04 00 00 00 a8 61 00 00
+         rtcwake-11779   [004] .....   867.171684: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 c8 02 08 00
+         rtcwake-11779   [004] .....   867.172960: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 00 39 03 00
+   kworker/u34:1-11781   [004] .....   867.311545: qcom_rpm_smd_write: active smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 01 00 00
+   kworker/u34:1-11781   [004] .....   867.312131: qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 01 00 00
+   kworker/u34:1-11781   [004] .....   867.312683: qcom_rpm_smd_write: active bmas/33 len=12 62 77 00 00 04 00 00 00 30 3a 95 0f
+   kworker/u34:1-11781   [004] .....   867.313223: qcom_rpm_smd_write: sleep bmas/33 len=12 62 77 00 00 04 00 00 00 30 3a 95 0f
+   kworker/u34:1-11781   [004] .....   867.313759: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.314294: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.314833: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.315239: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.315656: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:1-11781   [004] .....   867.315928: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:1-11781   [004] .....   867.316315: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.316741: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.317133: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.317670: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.318059: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.318600: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.318998: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:1-11781   [004] .....   867.319394: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 a0 86 01 00
+   kworker/u34:1-11781   [004] .....   867.319779: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.320046: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.320541: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 30 d6 67 3c
+   kworker/u34:1-11781   [004] .....   867.320807: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 30 56 e3 1d
+   kworker/u34:1-11781   [004] .....   867.321155: qcom_rpm_smd_write: active bslv/2 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.321485: qcom_rpm_smd_write: active bmas/21 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.321955: qcom_rpm_smd_write: active bmas/100 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.322346: qcom_rpm_smd_write: active bslv/131 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.322737: qcom_rpm_smd_write: active bslv/28 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.323127: qcom_rpm_smd_write: active bmas/77 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.323395: qcom_rpm_smd_write: active bmas/124 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.323860: qcom_rpm_smd_write: active bslv/184 len=12 62 77 00 00 04 00 00 00 80 93 dc 14
+   kworker/u34:1-11781   [004] .....   867.324130: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 40 0d 03 00
+   kworker/u34:1-11781   [004] .....   867.324638: qcom_rpm_smd_write: active bmas/94 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+   kworker/u34:1-11781   [004] .....   867.325097: qcom_rpm_smd_write: active bslv/123 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+   kworker/u34:1-11781   [004] .....   867.325359: qcom_rpm_smd_write: active bslv/31 len=12 62 77 00 00 04 00 00 00 00 a3 e1 11
+ irq/42-7824900.-123     [000] .....   867.327730: qcom_rpm_smd_write: active ldoa/8 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+         rtcwake-11779   [001] .....   867.330002: qcom_rpm_smd_write: active bmas/33 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.330402: qcom_rpm_smd_write: sleep bmas/33 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.330934: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.331466: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.332002: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.332584: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.333122: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.333648: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.334058: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.334453: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.334852: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.335371: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.335904: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.336450: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.336976: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.337503: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.338029: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 00 9c d2 2c
+         rtcwake-11779   [007] .....   867.338433: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.338838: qcom_rpm_smd_write: active bslv/2 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.339238: qcom_rpm_smd_write: active bmas/21 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.339765: qcom_rpm_smd_write: active bmas/100 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.340220: qcom_rpm_smd_write: active bslv/131 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.340753: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.341293: qcom_rpm_smd_write: active bslv/28 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.341824: qcom_rpm_smd_write: active bmas/77 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.342357: qcom_rpm_smd_write: active bmas/124 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.342886: qcom_rpm_smd_write: active bslv/184 len=12 62 77 00 00 04 00 00 00 80 f0 fa 02
+         rtcwake-11779   [007] .....   867.343297: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.343873: qcom_rpm_smd_write: active bmas/94 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.344478: qcom_rpm_smd_write: active bslv/123 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.345021: qcom_rpm_smd_write: active bslv/31 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.345567: qcom_rpm_smd_write: active smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.346151: qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.352256: qcom_rpm_smd_write: active ldoa/13 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.352842: qcom_rpm_smd_write: active ldoa/7 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.353985: qcom_rpm_smd_write: active ldoa/3 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.354630: qcom_rpm_smd_write: active smpa/3 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.355206: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.355780: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.356353: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.356917: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.357483: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 24 f4 00 00
+         rtcwake-11779   [007] .....   867.358099: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.358557: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.359112: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.359530: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.360083: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.360636: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.361228: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.361830: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 24 f4 00 00
+         rtcwake-11779   [007] .....   867.362426: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.362884: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.363476: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.363937: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 00 80 84 1e
+         rtcwake-11779   [007] .....   867.364584: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.365956: qcom_rpm_smd_write: active clk1/2 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.366383: qcom_rpm_smd_write: sleep clk1/2 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+         rtcwake-11779   [007] .....   867.384973: qcom_rpm_smd_write: active smpa/7 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+         rtcwake-11779   [007] .....   867.385525: qcom_rpm_smd_write: active smpa/1 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+         rtcwake-11779   [007] .....   867.386216: qcom_rpm_smd_write: active smpa/7 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+         rtcwake-11779   [007] .....   867.388781: qcom_rpm_smd_write: active clk1/2 len=12 4b 48 7a 00 04 00 00 00 a8 61 00 00
+         rtcwake-11779   [007] .....   867.389483: qcom_rpm_smd_write: sleep clk1/2 len=12 4b 48 7a 00 04 00 00 00 a8 61 00 00
+         rtcwake-11779   [007] .....   867.391452: qcom_rpm_smd_write: active bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.392069: qcom_rpm_smd_write: active bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.392679: qcom_rpm_smd_write: sleep bmas/86 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.393199: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.393654: qcom_rpm_smd_write: active clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.394367: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.394821: qcom_rpm_smd_write: active bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.395441: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.396106: qcom_rpm_smd_write: active bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.396575: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.397197: qcom_rpm_smd_write: active bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.397825: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.398449: qcom_rpm_smd_write: active clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.399083: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+         rtcwake-11779   [007] .....   867.399545: qcom_rpm_smd_write: active bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.400005: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+         rtcwake-11779   [007] .....   867.400622: qcom_rpm_smd_write: active bslv/0 len=12 62 77 00 00 04 00 00 00 00 9c d2 2c
+         rtcwake-11779   [007] .....   867.401245: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u34:2-11782   [004] .....   867.404214: qcom_rpm_smd_write: active smpa/3 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+   kworker/u34:2-11782   [004] .....   867.404922: qcom_rpm_smd_write: active ldoa/3 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+   kworker/u34:3-6431    [006] .....   867.405769: qcom_rpm_smd_write: active ldoa/7 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+   kworker/u34:4-80      [007] .....   867.405894: qcom_rpm_smd_write: active ldoa/13 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+   kworker/u34:3-6431    [006] .....   867.602767: qcom_rpm_smd_write: active smpa/7 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+   kworker/u34:2-11782   [004] .....   867.604702: qcom_rpm_smd_write: active clk1/2 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+   kworker/u34:1-11781   [004] .....   867.604738: qcom_rpm_smd_write: active smpa/1 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+   kworker/u34:2-11782   [004] .....   867.606209: qcom_rpm_smd_write: sleep clk1/2 len=12 4b 48 7a 00 04 00 00 00 00 00 00 00
+   kworker/u34:0-56      [005] .....   867.607449: qcom_rpm_smd_write: active smpa/7 len=12 73 77 65 6e 04 00 00 00 00 00 00 00
+ irq/41-7864900.-119     [000] .....   867.608862: qcom_rpm_smd_write: active ldoa/11 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+         sugov:0-115     [000] .....   867.609428: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 48 1d 0e 00
+ irq/41-7864900.-119     [000] .....   867.609730: qcom_rpm_smd_write: active ldoa/12 len=12 73 77 65 6e 04 00 00 00 01 00 00 00
+         sugov:0-115     [000] .....   867.613113: qcom_rpm_smd_write: active clk2/0 len=12 4b 48 7a 00 04 00 00 00 d7 2c 0b 00
+edge re-armed: enabled
+DONE

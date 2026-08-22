@@ -1,0 +1,30 @@
+140:        769          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+elapsed=122 success=4
+140:        804          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+--- counts
+qcom_smd_edge_intr: 316
+qcom_smd_channel_intr: 702
+qcom_smd_qrtr_callback: 4
+qcom_smd_rpm_callback: 306
+__qcom_smd_send: 352
+qrtr_endpoint_post: 4
+--- sample (elso 40 sor)
+         sugov:4-116     [003] .....   984.965173: __qcom_smd_send <-qcom_smd_send
+          <idle>-0       [000] d.h1.   984.965676: qcom_smd_edge_intr <-__handle_irq_event_percpu
+          <idle>-0       [000] d.h3.   984.965680: qcom_smd_channel_intr <-qcom_smd_edge_intr
+          <idle>-0       [000] d.h3.   984.965686: qcom_smd_rpm_callback <-qcom_smd_channel_intr
+         sugov:4-116     [003] .....   984.970818: __qcom_smd_send <-qcom_smd_send
+          <idle>-0       [000] d.h1.   984.971553: qcom_smd_edge_intr <-__handle_irq_event_percpu
+          <idle>-0       [000] d.h3.   984.971557: qcom_smd_channel_intr <-qcom_smd_edge_intr
+          <idle>-0       [000] d.h3.   984.971564: qcom_smd_rpm_callback <-qcom_smd_channel_intr
+         sugov:4-116     [003] .....   984.973320: __qcom_smd_send <-qcom_smd_send
+          <idle>-0       [000] d.h1.   984.974233: qcom_smd_edge_intr <-__handle_irq_event_percpu
+          <idle>-0       [000] d.h3.   984.974240: qcom_smd_channel_intr <-qcom_smd_edge_intr
+          <idle>-0       [000] d.h3.   984.974247: qcom_smd_rpm_callback <-qcom_smd_channel_intr
+         sugov:4-116     [003] .....   984.978188: __qcom_smd_send <-qcom_smd_send
+          <idle>-0       [000] d.h1.   984.979000: qcom_smd_edge_intr <-__handle_irq_event_percpu
+          <idle>-0       [000] d.h3.   984.979004: qcom_smd_channel_intr <-qcom_smd_edge_intr
+          <idle>-0       [000] d.h3.   984.979010: qcom_smd_rpm_callback <-qcom_smd_channel_intr
+         sugov:4-116     [003] .....   984.986270: __qcom_smd_send <-qcom_smd_send
+          <idle>-0       [000] d.h1.   984.986766: qcom_smd_edge_intr <-__handle_irq_event_percpu
+          <idle>-0       [000] d.h3.   984.986770: qcom_smd_channel_intr <-qcom_smd_edge_intr

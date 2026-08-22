@@ -1197,3 +1197,29 @@ Operationally: the param survived a guard window plus three full windows plus
 a desktop session with zero anomalies. The `-xo` entry stays non-default; the
 next step that would make it worth pricing on the battery is a slope leg run
 under it, against the 79.1/83.4 mA baseline.
+
+## 2026-08-22 late: the suspend-window "modem chatter" is mostly our own RPM traffic; qrtr is silent
+
+Instrument: ftrace function tracer (kprobes and the function profiler are not
+in this kernel) on the smd/qrtr call chain across one 120 s disarmed window —
+[`captures/2026-08-22_modem-chatter-counts.txt`](captures/2026-08-22_modem-chatter-counts.txt).
+Counts: `__qcom_smd_send` **352**, `qcom_smd_edge_intr` **316**,
+`qcom_smd_rpm_callback` **306**, `qcom_smd_qrtr_callback` = `qrtr_endpoint_post`
+= **4**. The sample lines show the loop directly: `sugov` (the cpufreq
+governor) sends a clk vote → the RPM edge interrupts with the ack → repeat,
+~3/s through the whole window.
+
+Reading: (1) the dominant smd traffic during "sleep" is **self-inflicted** —
+schedutil freq transitions turning into RPM clk votes, which is the same
+churn the morning capture saw as rpm-edge +775; (2) the modem edge's ~35
+IRQs/window carry almost **no QMI/qrtr** (4 messages in 122 s) — whatever
+rides it is a non-qrtr channel (DIAG, DATA/rmnet, time) or channel-state
+toggles, so quieting QMI services would not touch it; (3) the wake fix arms
+exactly this line, and 35 events/window matches the armed windows ending in
+~4–65 s.
+
+Next instrument for naming the channel: a trace filter on
+`qcom_smd_channel_intr` cannot print the channel name without kprobe arg
+support — the cheap path is enabling `CONFIG_KPROBE_EVENTS` (+
+`CONFIG_FUNCTION_PROFILER`) in the next kernel build, which this session
+parked rather than building at night.
