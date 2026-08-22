@@ -1122,3 +1122,51 @@ is appended across nights and boots. `slope-fit.py` fits whatever it is given,
 and uptime resets between boots make a joint fit of two runs nonsense (it
 reported "45 samples over −20.14 h" before the blocks were separated). Cut the
 file to one run's block before fitting.
+
+---
+
+## 2026-08-22: what still blocks vlow — the APSS never XO-shutdowns, measured
+
+Capture: [`captures/2026-08-22_vlow-a1-systemd.txt`](captures/2026-08-22_vlow-a1-systemd.txt)
+— three 120 s `rtcwake` s2idle windows, `qcom_stats` (vlow/vmin) +
+`rpm_master_stats` + `/proc/interrupts` before and after each. Regime check:
+`suspend_stats/success` 4→7, one per window, `rtcwake_rc=0` each.
+
+**A1 — per-master picture across a real suspend window** (`rpm_master_stats`,
+mainline driver: the DT node and `CONFIG_QCOM_RPM_MASTER_STATS=m` were already
+there, only a `modprobe rpm_master_stats` was missing):
+
+| master | XO shutdown count | Shutdown count | during a 124 s window |
+|---|---|---|---|
+| APSS | **0, always** | ~50 000 | +57…76 collapses, **0 XO shutdowns** |
+| MPSS | ~8 000 | ~8 013 | +~300 XO shutdowns (toggles constantly) |
+| PRONTO | ~24 700 | ~24 706 | +~10 |
+| LPASS | 52, frozen | 68, frozen | 0 (ADSP asleep for good) |
+| TZ | 0 | 0 | inert on this platform |
+
+`vlow` needs every master in XO shutdown at once; **the one master that never
+gets there is the APSS**, even mid-suspend. vlow `Count` stayed 0 through all
+three windows (vmin too). This narrows the earlier LDO lead rather than
+replacing it: the APSS sleep set still says "XO on".
+
+**A2 — who holds XO in the sleep set.** `clk_summary`: `bi_tcxo` (the
+both-sets RPM vote, unlike active-only `bi_tcxo_a`) is held prepared+enabled by
+**c200000.remoteproc (WCNSS), 4080000.remoteproc (MSS), 7824900.mmc,
+7864900.mmc, and c0f0000.codec (ahbix-clk)** — 7 holders, constant across the
+run (8 by the end: +1 from the wcd9335 codec path). A lifetime `clk_prepare` on
+`bi_tcxo` translates to a sleep-set XO vote, so as long as remoteproc/mmc hold
+it, the APSS asks the RPM to keep XO on even while suspended. Together with the
+LDO no-sleep-vote finding of 08-17 these are the two named reasons vlow cannot
+happen today.
+
+**A3 — what keeps waking the AP inside the window** (window 1, 124 s):
+modem smd-edge IRQ **+64** (~one per 2 s), rpm smd-edge **+775** (the RPM
+request/ack traffic of the resulting wake/sleep churn), `qcom_mpm` +3, wcnss
+edge +1, no active `wakeup_sources` after any window. The modem's edge chatter
+is the wake driver; the APSS's 57–76 collapses per window are its echo. This is
+the mechanism behind the modem-36 % share, now with a rate.
+
+☠️ Instrument note: every ssh-launched capture (four of them: `setsid`,
+`nohup`, detached or not) died at the first `rtcwake` — logind kills the
+session cgroup when the USB link drops, and `setsid` does not leave the cgroup.
+`systemd-run --unit=… --collect` is the one launch that survives suspend.
