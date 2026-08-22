@@ -962,6 +962,37 @@ recovery two seconds later).
 
 </details>
 
+## The night harness parks the phone at the greeter, defeating the autologin
+
+Observed 2026-08-22, at the end of the overnight suspend legs. The measurement
+scripts (`suspend-leg.sh`, `suspend-slope.sh`) stop `greetd` for the window and
+restart it on exit. After that restart the phone sits at the **phrog greeter**
+(password screen), not in the auto-logged-in phosh session: the journal shows
+the restarted greetd opening the greeter session (`user greetd(uid=113)`)
+immediately, with no PAM activity for `fp3` — so `[initial_session]` in
+`/etc/phrog/greetd-config.toml` did not run on that start, only the
+`default_session`. Its own comment says "the session to be used on boot", and
+that is how it behaved.
+
+Consequences, both observed the same morning:
+
+* after every unattended night the phone waits at a password screen until a
+  human logs in — the selftest battery's autologin premise
+  (`03-autologin`) silently does not hold for the post-leg state;
+* an incoming call still rings there (gnome-calls runs in the greeter session
+  too, which is the desirable half), but answering/unlocking runs into the
+  ~80 s manual-login bring-up, which reads as a frozen GUI. A first PAM attempt
+  rejected during that window (`AUTH_ERR`, then the retry succeeded) is what a
+  2026-08-22 test call looked like from the outside.
+
+Open questions, in test order: does greetd re-run `[initial_session]` on a
+plain `systemctl restart greetd` on this version at all (if yes, what made this
+start different); if not, the legs' restore step should do whatever boot does —
+or the harness should stop stopping greetd and lock the session instead. Also
+worth checking: the monotonic-clock trap while reading this journal —
+`short-monotonic` does not advance across suspend, so post-leg timestamps look
+hours old; compare against `/proc/uptime` (boottime) before dating any event.
+
 ## `pd-mapper.service` is permanently failed, and the RTC cannot be set
 
 Two findings from one investigation, 2026-08-14. Neither is urgent; both are
