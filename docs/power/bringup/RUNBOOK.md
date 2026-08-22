@@ -1934,3 +1934,35 @@ bound rather than a figure.
 start, so its two phases land in the same two regions and the systematic
 cancels in the A-vs-control comparison even though it does not cancel inside
 either leg.
+
+## 2026-08-22 — the PLL enable-failure fix landed (v2), measured clean
+
+`apcs-cpu0/cpu4-pll failed to enable!` (35 warnings in a 94-minute r64 window;
+~18 per 10000 frequency transitions): sugov reprograms a cluster's PLL from the
+other cluster, and if the owner power-collapses mid-latch the SPM gates the PLL
+and the lock poll times out. Fix on all three fork layers
+(`wip/7.1.3/power` a05596e933a5 / `integration/7.1.3` 43711fd59d49 /
+`debug-int/7.1.3` c5a18f94965e): a clk-notifier holds a **global
+cpu_latency_qos** request at 0 (WFI only) across PRE→POST_RATE_CHANGE plus an
+`smp_call_function_any()` kick.
+
+☠️ **The first version used per-CPU dev_pm_qos and deadlocked on every boot** —
+sysrq-w caught the ABBA live: the notifier held `clk_prepare_lock` and wanted
+the CPU device's dev_pm_qos mutex, while the msm GPU devfreq's min_freq QoS
+notifier held that mutex and called back into `clk_set_rate`. Every clk op
+(sdhci runtime PM included) queued behind it and the wedge looked like storage
+death. Evidence: `/mnt/1TB/Fp3-Sailfish/pll-deadlock-20260822/`; the v1 tips
+are kept as `archive/pll-v1-deadlock-*`. cpu_latency_qos has no notifier chain
+(kernel/power/qos.c) — spinlock only — so it is safe under clk_prepare_lock.
+
+Validation on r65 (#66-fp3), power collapse enabled throughout:
+
+```
+30 min bursty load, both clusters (pll-v2-meas.sh):
+  27720 freq transitions (7965 c0 + 19755 c4), 24916 power-collapse entries
+  PLL enable failures: 0        (baseline predicts ~50 for this window)
+plus a 37-min idle window earlier the same boot: 0 failures (r64 idle: ~14)
+```
+
+cpuidle sanity: state1 usage kept climbing during and after the run — the QoS
+request does not stick outside the rate-change window.
