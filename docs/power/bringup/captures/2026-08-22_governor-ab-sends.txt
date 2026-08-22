@@ -1,0 +1,18 @@
+-- trans pre (A-schedutil)
+/sys/devices/system/cpu/cpufreq/policy0 15719 schedutil
+/sys/devices/system/cpu/cpufreq/policy4 19373 schedutil
+A-schedutil: elapsed=123 success=5
+-- trans post (A-schedutil)
+/sys/devices/system/cpu/cpufreq/policy0 15739 schedutil
+/sys/devices/system/cpu/cpufreq/policy4 19394 schedutil
+A-schedutil send=281 edge=325
+-- trans pre (B-performance)
+/sys/devices/system/cpu/cpufreq/policy0 15755 performance
+/sys/devices/system/cpu/cpufreq/policy4 19399 performance
+B-performance: elapsed=122 success=6
+-- trans post (B-performance)
+/sys/devices/system/cpu/cpufreq/policy0 15757 performance
+/sys/devices/system/cpu/cpufreq/policy4 19401 performance
+B-performance send=335 edge=362
+restored: schedutil
+DONE

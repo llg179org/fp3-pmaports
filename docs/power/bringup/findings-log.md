@@ -1223,3 +1223,17 @@ Next instrument for naming the channel: a trace filter on
 support — the cheap path is enabling `CONFIG_KPROBE_EVENTS` (+
 `CONFIG_FUNCTION_PROFILER`) in the next kernel build, which this session
 parked rather than building at night.
+
+## 2026-08-22 late: the vote storm is not schedutil's — governor A/B refutes it
+
+Same-boot A/B ([`captures/2026-08-22_governor-ab-sends.txt`](captures/2026-08-22_governor-ab-sends.txt)),
+one 120 s window per arm: pinning `performance` collapsed the cpufreq
+transitions (41 → 4 across both policies) while `__qcom_smd_send` did **not**
+fall (281 → 335). So the ~3/s RPM traffic during suspend is not
+frequency-transition votes; the morning payloads name the real producers —
+`bmas`/`bslv` (interconnect bandwidth) and `clk` votes issued per wakeup.
+The sugov task in the earlier sample was the messenger, not the cause. The
+storm rides *each AP wakeup* regardless of governor, which folds this lead
+back into "reduce the wakeups" (the modem edge's ~35/window) rather than
+"tune cpufreq". Next instrument for naming the modem-edge channel:
+`CONFIG_KPROBE_EVENTS` in the next kernel build.
