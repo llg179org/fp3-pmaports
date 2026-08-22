@@ -86,7 +86,11 @@ up so they need no re-investigation:
   workaround for an unreachable precondition, and the `S3_GOOD_OCV` path it
   substitutes for is already in the driver and merely starved;
 * automatic sleep — demonstrated working, then switched back off because an
-  incoming call cannot wake the phone. See the next section.
+  incoming call could not wake the phone. **The wake side is fixed and
+  call-proven as of 2026-08-22 (r66, see the next section)** — what remains
+  before switching automatic sleep back on is the second layer: something must
+  hold an inhibitor while ringing or the system re-suspends immediately, and a
+  persistent way to arm the modem edge at boot (the knob defaults to off).
 
 ## ☠️ Deep sleep: `vlow` has never once been reached
 
@@ -132,46 +136,42 @@ RPM request traffic (rpm edge +775) and 57–76 APSS collapses per window.
 ☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
 code that has not been written; it is blocked on not knowing which vote is left.
 
-## An incoming call cannot wake the phone from s2idle
+## ~~An incoming call cannot wake the phone from s2idle~~ — FIXED (r66, 2026-08-22)
 
-Measured 2026-08-14, and the reason automatic sleep is off. Across an 8 min 3 s
-sleep (wall-clock log gap, `suspend_stats/success` 3→4) a call reached the modem,
-the AP never woke, and on the button wake the queued event replayed — the dialer
-showed busy and closed.
+Measured 2026-08-14 (the reason automatic sleep went off): across an 8 min sleep
+a call reached the modem, the AP never woke, and the queued event replayed on
+the button wake. Root cause: `qcom_smd_parse_edge()` requested the edge IRQ with
+no wake registration at all, so `suspend_device_irqs()` masked it; the one knob
+that existed (smp2p, with its *"to not miss phone calls"* comment) was measured
+useless — the call travels the SMD data edge, not smp2p.
 
-Of 151 IRQs, **three** are wake-armed: `wcn36xx_rx` and two thermal sensors.
-Nothing modem-related is:
+**The fix shipped in r66** (`wip/7.1.3/power` `8c9b2568`, on all three layers):
+the smp2p pattern mirrored into `qcom_smd_parse_edge()` — every rpmsg edge is
+`device_set_wakeup_capable()` + `dev_pm_set_wake_irq()`, disabled by default,
+armable per edge from sysfs. Verified 2026-08-22 on the device, three ways:
 
-```
-140:  2379  GIC-0  57  Edge  smd-edge   →  wakeup=disabled     (DT: GIC_SPI 25, the modem edge)
- 15:     3  GIC-0  59  Edge  smp2p-modem →  wakeup=disabled
-```
+* **differential:** disarmed windows sleep to the alarm (30 s→32, 60 s→62);
+  with the modem edge armed the same windows end on modem traffic
+  (120 s→65 s, 180 s→64 s, 180 s→4 s);
+* **live call:** armed + 300 s window, an incoming call woke the phone 15 s in
+  (modem smd-edge +35 IRQs, `suspend_stats/success` advanced) and it rang;
+* **no storm:** arming does not produce an immediate wake loop, and the default
+  stays off so nothing changes for a board that does not opt in.
 
-`drivers/rpmsg/qcom_smd.c:1421` requests the edge IRQ with plain
-`IRQF_TRIGGER_RISING` and registers no wake IRQ at all, so there is not even a
-userspace knob. During s2idle `suspend_device_irqs()` masks it, the call
-interrupt waits, and it is replayed at resume.
+☠️ Attribution counters are blind here: the plain `enable_irq_wake` path bumps
+neither the device's `wakeup_count` nor `/sys/power/pm_wakeup_irq` in s2idle —
+the differential is the instrument, not the counter. The arm knob is
+`.../4080000.remoteproc/remoteproc/remoteproc0/remoteproc0:smd-edge/power/wakeup`.
 
-**The one knob that does exist was tried and is measured useless.** `smp2p.c:731`
-does `device_set_wakeup_capable()` + `dev_pm_set_wake_irq()`, disabled by default,
-with a comment citing *"to not miss phone calls"*. Enabling
-`/sys/devices/platform/smp2p-modem/power/wakeup` changed nothing: the `smp2p`
-counter did not move once across the whole sleep, which is what proves the call
-does not travel that line. It travels the SMD data edge.
+Upstream: the series is staged in `lkml-drafts/smd-wake-v1/` (Assisted-by
+trailer, checkpatch/get_maintainer steps in its NOTES.md); sending is in the
+user's hands.
 
-**The fix, when it is worth building:** mirror smp2p in `qcom_smd_parse_edge()`,
-after `edge->irq = irq`. `device_register()` happens first (`:1500` before
-`:1507`), so the sysfs attribute lands correctly, and it is off by default like
-its precedent:
-
-```c
-device_set_wakeup_capable(dev, true);
-ret = dev_pm_set_wake_irq(dev, irq);
-```
-
-`CONFIG_RPMSG_QCOM_SMD=y`, so this needs a full build and flash — no module
-hot-swap. A second layer is untested: even once the AP wakes, something must hold
-an inhibitor while ringing or the system re-suspends immediately.
+**Still open before automatic sleep returns:** (1) a persistent boot-time arm
+for the modem edge (udev rule or oneshot — the knob resets to `disabled` per
+boot by design); (2) the ringing inhibitor — even with the AP awake, something
+must hold suspend off while the dialer rings, untested because automatic sleep
+is currently off.
 
 **Open question, not decided:** this belongs to no branch category. It is not
 FP3-specific — `qcom_smd.c` is upstream and every SMD-era Qualcomm SoC is
