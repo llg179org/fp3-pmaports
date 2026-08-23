@@ -53,6 +53,65 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+## 🚨 THE PHONE IS DOWN AND NEEDS A BUTTON PRESS (2026-08-23 22:45)
+
+**r74 does not boot.** It was deployed, the phone was rebooted at 22:45:10 and
+it has not come back on USB or WiFi since. The host kernel log shows the
+`cdc_ncm` disconnect at 22:45:10 and **no re-enumeration at all** — not one
+retry. That absence is the informative part: `panic=10` is on every entry and
+the debug layer starts the watchdog at probe, so a *later* hang would produce a
+reboot **cycle**. There is no cycle, so the kernel stops **before the watchdog
+device probes** — very early.
+
+**Prime suspect: the change itself, `regulator-state-mem` on all 20 rails.**
+`suspend_set_initial_state()` runs inside `regulator_register()`, which for the
+RPM rails is one of the earliest things that happens, and it now sends 20 extra
+`qcom_rpm_smd_write()` calls into the RPM sleep set at that moment. If any of
+those blocks or does not complete, the boot stops exactly where it did. **This
+is a hypothesis, not a measurement** — nothing has been read off the device.
+
+**Recovery — needs a hand on the phone:**
+
+1. Hold **power** ~15 s to force it off.
+2. Hold **volume up** while powering on to reach the lk2nd boot menu.
+3. Pick the **third** entry, `postmarketOS-prev` — that is r73's kernel and DTB,
+   saved as `/boot/vmlinuz-r73` and `/boot/sdm632-fairphone-fp3.dtb-r73` before
+   the install, i.e. the exact configuration that was running an hour earlier.
+   If that also fails, the **fourth** entry, `postmarketOS-fallback`, is the
+   older 7.0.9 net.
+4. Once up, make r73 the default again:
+
+```sh
+sudo sed -i 's/^default .*/default postmarketOS-prev/' /boot/extlinux/extlinux.conf
+sudo sync
+```
+
+☠️ **The guardrail was followed in letter and missed in substance, and that is
+the lesson to keep.** "Put anything risky on the non-default label" was obeyed
+by putting the *tracing arguments* on a separate label — but the tracing
+arguments were never the risky part. The **device tree** was, and it is on
+`/boot/sdm632-fairphone-fp3.dtb`, which **both** r74 labels point at. Isolating
+a change means isolating the file that changed, not the flag that came with it.
+A `-sleepset` label whose only difference is `trace_event=` is not an isolated
+arm; it is the same arm twice.
+
+☠️ Second thing this cost: `apk add` ran `boot-deploy`, which **rewrote
+`extlinux.conf` from scratch** — dropping the fallback label, `panic=10` and the
+menu timeout, exactly as `docs/deploy/README.md` warns. The rewrite afterwards
+put all four labels back and `02-boot-fallback` confirmed them (4 of 4 entries
+carry `panic=`), so the net that now has to be used was verified *after* the
+install and before the reboot. The pre-install file is saved on the device as
+`/boot/extlinux/extlinux.conf.pre-r74`.
+
+**Where the change lives, so nothing is lost while the phone is down:**
+`wip/7.1.3/power` `e59893af`, `integration/7.1.3` `4cf51780`,
+`debug-int/7.1.3` `84241a07`, all pushed to `fork`. Package
+`linux-fp3-7.1.3-r74` is built at
+`/mnt/1TB/pmos/work/packages/edge/aarch64/linux-fp3-7.1.3-r74.apk`.
+☠️ **Do not roll `_commit` back in the APKBUILD before the cause is known** —
+the commit is not proven wrong yet, only the boot is proven broken.
+
+
 The state that is *not* in git, in one place. Everything else is recoverable
 from the repos.
 
