@@ -63,12 +63,33 @@ the debug layer starts the watchdog at probe, so a *later* hang would produce a
 reboot **cycle**. There is no cycle, so the kernel stops **before the watchdog
 device probes** — very early.
 
-**Prime suspect: the change itself, `regulator-state-mem` on all 20 rails.**
-`suspend_set_initial_state()` runs inside `regulator_register()`, which for the
-RPM rails is one of the earliest things that happens, and it now sends 20 extra
-`qcom_rpm_smd_write()` calls into the RPM sleep set at that moment. If any of
-those blocks or does not complete, the boot stops exactly where it did. **This
-is a hypothesis, not a measurement** — nothing has been read off the device.
+**Prime suspect: the change itself, `regulator-state-mem` on all 20 rails —
+and the mechanism is worse than "one rail misbehaves".** Read out of the source
+after the failure:
+
+- `suspend_set_initial_state()` runs inside `regulator_register()`
+  (`core.c:1497`), which for the RPM rails is one of the earliest things that
+  happens on this SoC. The change makes it send 20 extra
+  `qcom_rpm_smd_write()` calls into the RPM **sleep** set at that moment.
+- `qcom_rpm_smd_write()` (`soc/qcom/smd-rpm.c:139`) waits on the RPM's ack with
+  `RPM_REQUEST_TIMEOUT = 5 * HZ`, and returns `-ETIMEDOUT`, or whatever
+  `ack_status` the RPM sent back.
+- ☠️ **`regulator_register()` treats that as fatal**: `if (ret < 0) { rdev_err;
+  return ret; }`. `rpm_reg_probe()` in turn does `return ret` out of its
+  `for_each_available_child_of_node_scoped` loop.
+- So **a single rejected or timed-out sleep-set vote unregisters every rail on
+  the board** — not just its own. With no regulators there is no storage, no
+  USB and no display, which is exactly the silent early stop observed.
+- 20 rails × a 5 s timeout is also up to 100 s of blocked probe before that.
+
+☠️ **A NULL `smd_vreg_rpm` was checked and ruled out** — `rpm_reg_probe()`
+assigns it before the registration loop (`qcom_smd-regulator.c:1530`), so that
+tempting explanation is dead.
+
+**This is a hypothesis, not a measurement** — nothing has been read off the
+device. What it does say is that the next attempt must not be "all 20 rails
+again with a tweak": start from **one** rail, and read the boot before adding
+the second.
 
 **Recovery — needs a hand on the phone:**
 
