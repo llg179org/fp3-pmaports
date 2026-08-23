@@ -363,6 +363,12 @@ main() {
 
 	write_env_file
 
+	# Baseline for the reset check in summarise(). Empty when the device is
+	# not reachable, which makes that check skip rather than guess.
+	RUN_EPOCH_START=$(date +%s)
+	RUN_UPTIME_BEFORE=$(ssh_run 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
+	RESET_SEEN=0
+
 	_ok=0 _failed=0 _skipped=0 _covered="" _uncovered=""
 
 	for _check in "$TESTS_DIR"/checks/*-test.sh; do
@@ -508,12 +514,33 @@ summarise() {
 		_gaps="$_gaps $_cat"
 	done
 
+	# ☠️ Did the phone reboot under us? A rising uptime does not answer that.
+	# Measured 2026-08-23: a run started at uptime 951 and ended at 1242 - the
+	# number went up, and it had still been reset by the watchdog partway
+	# through, because the run itself took ~2000 s. The witness is uptime
+	# compared against the run's own elapsed wall time. 60 s of slack covers
+	# the sampling either side.
+	if [ -n "$RUN_UPTIME_BEFORE" ]; then
+		_now=$(ssh_run 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
+		_wall=$(( $(date +%s) - RUN_EPOCH_START ))
+		if [ -z "$_now" ]; then
+			log_line ""
+			log_line "WARNING: the device is unreachable at the end of this run, so whether it reset could not be established"
+		elif [ "$_now" -lt $(( RUN_UPTIME_BEFORE + _wall - 60 )) ]; then
+			log_line ""
+			log_line "DEVICE RESET DURING THIS RUN: uptime ${RUN_UPTIME_BEFORE}s -> ${_now}s across ${_wall}s of wall time"
+			log_line "      Every verdict after the reset point is meaningless. Check the watchdog:"
+			log_line "      journalctl -k -b -1 | tail -40"
+			RESET_SEEN=1
+		fi
+	fi
+
 	log_line ""
 	[ -n "$_gaps" ] && log_line "UNCOVERED CATEGORIES:$_gaps (pass --allow-uncovered CAT to accept)"
 	log_line "log: $RUN_LOG  (device copy: $RESULT_DIR/$RUN_ID.log)"
 
 	[ "$DRIFTED" -eq 1 ] && log_line "NOTE: the versioned recipe and the build workdir disagree - this run is not attributable"
-	if [ "$_failed" -gt 0 ] || [ -n "$_gaps" ] || [ "$DRIFTED" -eq 1 ]; then
+	if [ "$_failed" -gt 0 ] || [ -n "$_gaps" ] || [ "$DRIFTED" -eq 1 ] || [ "$RESET_SEEN" -eq 1 ]; then
 		log_line "FAIL - $_ok ok, $_failed failed, $_skipped skipped"
 		exit 1
 	fi

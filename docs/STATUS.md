@@ -258,8 +258,32 @@ list; do not stop at the end of an item to report.
    ★ The no-verdict guard added an hour earlier caught a **real** case here, not
    a synthetic one: `FAIL: 45-camera-af-windows-pipewire (74s) - no verdict: the
    device was unreachable`, where the old runner printed `ok:`.
-   Next: a clean camera-only run **from a fresh boot** (the only way to
-   un-confound it), then bisect by running the battery with growing prefixes
+   ★★★ **Step D settles it: the camera block alone resets the phone.** Run
+   `--only camera,suspend` from a boot verified clean beforehand (zero `TLB
+   SYNC` / `VFE halt` / `cci` / `rcu_preempt` lines in `dmesg`), and scored by
+   the new rule: `uptime_before=1444`, `uptime_after=1233`, elapsed **1922 s**,
+   so an un-reset device would have read ≥3366. **Reset.** The shape repeats
+   exactly across all three camera-containing runs: `43-camera-manual-focus`
+   fails, `44-camera-af-windows` passes after ~502 s, and the device goes away
+   during `45-camera-af-windows-pipewire`. So neither the audio checks, nor
+   `30-voice`/`35-pulse`, nor the charger/wifi/modem tail are needed — the
+   camera block is sufficient on its own, and the earlier "0 of 3 isolated runs"
+   result stands only because those runs were `--only camera-af-rail,suspend`,
+   i.e. checks 98 and 99 **without** 40–45.
+   ☠️☠️ **And there is no kernel evidence for it, because the journal was
+   vacuumed.** `journalctl -k -b -1` on the resulting boot answers `-- No
+   entries --`. Item 3b is therefore **blocking, not cosmetic**: the failure can
+   be reproduced at will and not characterised.
+   ★ **Fixed by moving the log off the device**, not by freeing space:
+   `docs/power/bringup/tools/kmsg-tap.sh` streams `dmesg -w` to a file on the
+   **host**, reattaching after a reset (and `dmesg -w` replays the ring, so the
+   new boot is captured from its start too). Shown working — 1092 lines captured
+   live — and shown failing — pointed at an unroutable address it writes
+   `=== detached ... link lost or device reset, retrying` rather than sitting
+   silently.
+   Next: rerun the camera-only run with the tap attached, to get the kernel
+   evidence this reproduction has so far denied; then bisect **within** the
+   camera block (44/45 are the prime suspects) rather than across the battery
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.
