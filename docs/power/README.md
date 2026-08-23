@@ -182,11 +182,17 @@ DSP power-collapsing for the *whole* of every suspend, `vlow` still read
 which never shuts down is a *sufficient* explanation for `vlow` — is half wrong.
 
 **pmOS does not suspend on its own here, because we asked it not to.** Automatic
-sleep works and was demonstrated on this base; it is switched back off because an
-incoming call cannot wake the phone, and a missed call costs more than 140 mA
-does. `sleep-inactive-battery-type` is `'nothing'`; neither kernel offers
-`/sys/power/autosleep`. The whole finding is in
-[Suspend works, and is switched off on purpose](#suspend-works-and-is-switched-off-on-purpose).
+sleep works and was demonstrated on this base. The original reason it went off —
+an incoming call could not wake the phone — is **fixed as of r66 (2026-08-22)
+and call-proven**: every rpmsg edge is an armable wakeup source, the
+`fp3-modem-wake-arm` unit arms the modem edge at boot, and a live call woke the
+phone 15 s into a 300 s suspend window. What keeps automatic sleep off now is
+the successor problem: with the edge armed, the modem's payload-free signal
+ring (~one poke per 2 s) re-wakes the phone within seconds of every suspend, so
+call-wake and staying asleep are mutually exclusive until that ring is quieted
+(measured as the 99-suspend check failing armed and passing disarmed).
+`sleep-inactive-battery-type` is `'nothing'`; neither kernel offers
+`/sys/power/autosleep`.
 
 **What answers "did it sleep?"**, in order of cost:
 
@@ -214,13 +220,14 @@ runs. The reasoning behind each is in
 | the `system_pc` affinity nibble | the PSCI parameter named affinity level 1, so TZ aggregated to a cluster and never performed the APSS handshake with the RPM. `0x42000353`, one hex digit | APSS `Shutdown count` 0 → +91 in 91 s |
 | the vMPM deadline cap | `MPM_MAX_SLEEP_NS = NSEC_PER_SEC` asked the RPM never to keep the AP down longer than a second | the AP stays down instead of waking once a second |
 | the MPM notification path | mainline msm8953 described no MPM at all, so nothing told the RPM a suspend had happened | the notification demonstrably runs |
+| the smd-edge wake IRQ (r66) | `qcom_smd_parse_edge()` requested the edge interrupt with no wake registration, so an incoming call slept through s2idle and replayed on the button | armed, a live call woke the phone 15 s into a 300 s window; disarmed (the default), windows sleep to the alarm |
 
 ## What is still open
 
 | question | where it is being worked |
 |---|---|
 | ★ **the modem stack costs ~36 mA asleep** — reproduced against a same-day control, and **the only intervention that has ever moved the sleeping slope**. The mechanism is still unnamed, and this is where the next measurement belongs | [`bringup/RUNBOOK.md`](bringup/RUNBOOK.md) |
-| **`vlow` has never once been reached** — not even with the audio DSP collapsing for the whole of every suspend. So a master being down is **necessary and not sufficient**, and what else votes is now the question | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
+| **`vlow` has never once been reached** — and as of 2026-08-23 the whole AP-side sleep-set family is closed, three measured negatives deep (XO released, every regulator voted in both sets, explicit icc sleep zeros — the three r68/r69 experiment knobs, default off). Simultaneity is not the gap (the APSS held one 121 s XO-shutdown spanning a whole suspend) and the TZ is acquitted (all-zero on the oracle too). ☠️ The decisive control is unrun: with a USB cable in, the oracle cannot sleep at all, so whether the working system ever reaches vlow is itself unmeasured | [`../TODO.md`](../TODO.md) deep-sleep next-steps; [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
 | ~~**LPASS never shuts down**~~ — **solved and priced, 2026-08-19/20.** It is held by upstream's internal digital codec (`msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` at probe and drops them only in `remove()`). Freeing it is worth **~4 %**, inside the instrument's own spread — a correctness fix, not a power one | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
 | ~~**the RPM sleep set**~~ — **closed, 2026-08-19.** Five enabled rails with no sleep vote became **one** with the USB controller unbound, and that one is the eMMC's. The mainline/vendor divergence is real in the code and costs nothing droppable here | [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
 | **the CPU0 PLL storm** — 7.3 failures per 10 000 frequency transitions, flat in voltage. It spoils absolute awake currents; it does not spoil slope ratios | [`bringup/findings-log.md`](bringup/findings-log.md) |

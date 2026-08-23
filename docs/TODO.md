@@ -138,21 +138,49 @@ captures `2026-08-22_vlow-xo-sleep-off.txt`, `_smd-channel-census.txt`,
   99-suspend check failing armed and passing 3/3 disarmed. Quieting that ring
   gates both automatic sleep and leaving call-wake armed.
 
+**Measured at dawn, 2026-08-23** (findings-log; captures
+`2026-08-23_vlow-both-sets.txt`, `_rail-census-both-sets.txt`,
+`_vlow-sleep-init.txt`, `_xo-simultaneity.txt`, `_icc-summary.txt`,
+`_oracle-vlow-control.txt`): **the whole AP-side sleep-set family is closed,
+three measured negatives deep.** A `both_sets=1` knob (r68) mirrors every
+regulator request into the sleep set — the vendor shape, all 23 downstream
+rails are `qcom,set = <3>` and none turn off in sleep, which killed the
+off-in-suspend idea; the census under it shows every PMIC rail voted, leaving
+only interconnect resources — and those turned out to be the GPU's
+ACTIVE-tagged config path (sleep-0 by design, just never *written* because
+`qcom_icc_rpm_set` elides no-change writes). An `icc_smd_rpm.sleep_init=1`
+knob (r69) writes the explicit sleep zeros at probe. **All three knobs
+together: vlow still 0** — across windows in which the APSS held one
+continuous 121 s XO-shutdown with every other master cycling inside it, so
+simultaneity is not the gap either. The TZ (all-zero master stats) is
+**acquitted**: the oracle shows the same zeros. And the decisive control is
+still unrun: **with a USB cable in, the oracle cannot sleep at all**
+(`7000000.ssusb` wakeup source held; `rtcwake` fails on UT), so whether the
+working system ever reaches vlow is itself unmeasured — the night's negatives
+may describe both slots equally.
+
 **What to do next, in order:**
 
-1. **The LDO sleep votes — DT opt-in experiments.** The driver ops exist;
-   one rail per experiment per the lead's plan, combined with
-   `xo_sleep_off=1` since the two blockers are additive, three-window capture
-   as the instrument, vlow `Count` as the verdict.
-2. **Price the WiFi lever** (slope leg, wlan0 down vs up) and decide the
-   suspend policy for it — WiFi is also the USB-independent rescue link.
-3. **Name and quiet the modem edge's signal ring** (~one poke per 2 s,
-   payload-free). This is the gate to re-enabling automatic sleep with
-   call-wake armed.
-4. **Rerun the rail census with USB physically detached** (WiFi link) — the
-   three USB-PHY rails are confounded until then, and USBIN-suspend does not
-   help: it cuts charge current, not the data link.
-3. **Release the internal digital codec's LPASS clocks** —
+1. **The oracle control with USB physically detached** (one session, WiFi
+   links both slots): does UT ever reach vlow while actually sleeping? This
+   decides whether vlow is a real target or a re-framing — everything below
+   is ordered by its answer. Same detached-cable session also reruns the
+   rail census (the three USB-PHY rails stay confounded until then;
+   USBIN-suspend does not help — it cuts charge current, not the data link).
+2. **Decode the vlow `Client Votes` mask** — samples and the bit-4
+   observation (a downstream-only vote component) are in
+   `power/bringup/leads/rpm-sleep-set.md`; the decode likely needs the RPM
+   firmware or a Qualcomm header, and it names what the RPM is waiting for.
+3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
+   a third of the vote churn) and decide the suspend policy — WiFi is also
+   the USB-independent rescue link.
+4. **Name and quiet the modem edge's signal ring** (~one poke per 2 s,
+   payload-free). This gates re-enabling automatic sleep with call-wake
+   armed.
+5. **The three experiment knobs stay default-off** (`clk_smd_rpm.
+   xo_sleep_off`, `qcom_smd_regulator.both_sets`, `icc_smd_rpm.sleep_init`,
+   all in r69); design their upstream forms only after a measured positive.
+6. **Release the internal digital codec's LPASS clocks** —
    `msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` unconditionally and
    drops them only in `remove()`, which pins the ADSP awake for the life of the
    boot. ☠️ **Upstream code, not ours**, and on this board that codec is not in the
