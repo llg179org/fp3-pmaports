@@ -37,9 +37,16 @@ The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 | branch | tip | note |
 |---|---|---|
 | `wip/7.1.3/audio` | `42b7e745` | + the three SSR fixes of 2026-08-23 |
-| `integration/7.1.3` | `204f1cc3` | cherry-pick sum, debug-free |
-| `debug-int/7.1.3` | `818d35f1` | **what the package builds** (r73) |
-| `wip/7.1.3/power` | `d0e738c1` | smd wakeup teardown fix |
+| `integration/7.1.3` | `4cf51780` | cherry-pick sum, debug-free |
+| `debug-int/7.1.3` | `84241a07` | **what the package builds** (r74, building) |
+| `wip/7.1.3/power` | `e59893af` | + the RPM sleep-set DT commit of 2026-08-23 |
+
+★ 2026-08-23: `arm64: dts: qcom: sdm632-fairphone-fp3: specify the RPM sleep set
+for every rail` is on all three, pushed to `fork`, tarball checked
+(`84241a07…` → 200, bogus hash → 404). `linux-fp3` bumped to `pkgrel=74`,
+`_commit=84241a07627b931bf6163792cbf611d8620231f2`, checksummed and building.
+☠️ Not yet deployed and not yet measured — the sleep votes have not been
+observed on the device, so nothing about `vlow` has changed yet.
 
 `fp3-pmaports` `origin/main` carries the docs and the APKBUILD; the kernel goes
 to remote `fork` only, over port 443, and never to `origin`.
