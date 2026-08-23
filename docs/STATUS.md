@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 18:20**.
+Last updated: **2026-08-23 20:40**.
 
 ## The device
 
@@ -85,19 +85,21 @@ list; do not stop at the end of an item to report.
    `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
    controller state is `DOWN`, and that window closes as soon as the controller
    unregisters. Widening it deliberately is the next move.
-3. **Find what pins the ADSP awake at ~46 s of uptime.** ★★★ Measured
-   2026-08-23 on the xo label over six real 30 s suspend windows (success
-   counter 6 → 12, APSS XO shutdown +1710): **LPASS `Shutdown count` is frozen
-   at 65 and its `Last shutdown @` decodes to 46.3 s of uptime.** The other
-   three masters cycle normally; `vlow`/`vmin` `Count` stayed 0 in all 58
-   samples. A master that never votes itself down is a sufficient reason for the
-   RPM never to enter a low-power set — so this is now the named blocker, and
-   the open question is *what* holds it. ☠️ ~46 s is near audio bring-up, which
-   makes q6/SLIMbus the hypothesis most likely to be believed without evidence;
-   bisect it by reading LPASS `Shutdown count` at a fixed early uptime against
-   what starts around it. ☠️ TZ is all-zero from boot in every field — treat it
-   as uninstrumented, not as a second stuck master.
-   Instrument: `docs/power/bringup/tools/votes-post-resume.sh`.
+3. **Price the pinned ADSP in mA.** ★★ Measured 2026-08-23: LPASS stops
+   shutting down at **~34 s of uptime** (not 46 — that was RPM ticks, which lead
+   `/proc/uptime` by the bootloader's ~13 s) on all three boots tested, and
+   re-pins within five seconds of being let go. The sensor stack is **acquitted**
+   (`smgr*` unloaded + `snsregd`/`iio-sensor-proxy` stopped: LPASS flat at 37 for
+   60 s while APSS did +1960). ☠️☠️ **And it is NOT the `vlow` gate** — with the
+   ADSP `remoteproc` stopped outright, `vlow`/`vmin` `Count` are still 0 across a
+   30 s window, same as the control. That retraction is written up in
+   `leads/rpm-sleep-set.md`; the earlier "LPASS is a name for what the RPM is
+   waiting for" line here was wrong. What is left is a real anomaly with an
+   unpriced cost: an ADSP that never sleeps after second 34. The measurement is a
+   median `current_now` over a suspend window with the ADSP running vs stopped —
+   the same instrument as the WiFi lever below, so run them together.
+   ☠️ One `current_now` read is ±138 mA; take medians.
+   Tools: `docs/power/bringup/tools/{lpass-trace,lpass-bisect,adsp-vlow}.sh`.
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
 5. **`99-suspend` fails inside the battery and passes outside it.** Measured

@@ -198,10 +198,22 @@ may describe both slots equally.
    low-power set cannot be entered while a master has not voted itself down.
    Instrument `docs/power/bringup/tools/votes-post-resume.sh`, capture
    `captures/2026-08-23_votes-post-resume-xo.txt`, write-up in
-   `leads/rpm-sleep-set.md`. **Next: find what pins it at ~46 s** — ☠️ that is
-   near audio bring-up, which makes q6/SLIMbus the hypothesis most likely to be
-   believed without evidence; bisect by reading LPASS `Shutdown count` at a
-   fixed early uptime against what starts around it.
+   `leads/rpm-sleep-set.md`.
+   ☠️ **Corrections, same evening, both in `leads/rpm-sleep-set.md`:** the
+   freeze is at **~34 s of Linux uptime**, not 46 — the RPM's 19.2 MHz counter
+   runs from SoC reset and leads `/proc/uptime` by the bootloader's ~13 s.
+   The sensor stack was the obvious suspect (`snsregd` starts at 33.6 s, SMGR
+   runs on the ADSP) and is **acquitted**: modules unloaded and both services
+   stopped, LPASS flat at 37 for 60 s while APSS did +1960; the `+2` at the
+   moment of teardown says the ADSP can still shut down and that the pin
+   re-establishes within five seconds.
+   ☠️☠️ **And the LPASS lead is NOT the `vlow` gate.** With the ADSP
+   `remoteproc` stopped by name, a 30 s suspend window leaves `vlow`/`vmin`
+   `Count` at 0, identical to the control with it running. "One master is not
+   voting" was a mechanism that explained the symptom, not evidence that it
+   caused it. Two investigations now, not one: the `vlow` gate is still
+   unidentified, and the never-sleeping ADSP is a separate anomaly whose cost
+   in mA is unmeasured.
 3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
    a third of the vote churn) and decide the suspend policy. ☠️ **The mask
    decode found the other side of this trade**: with `wlan0` down, PRONTO's
