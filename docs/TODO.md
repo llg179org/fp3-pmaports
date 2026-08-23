@@ -440,14 +440,20 @@ disagreement, and reading it as the latter costs an afternoon.
 
 **What each revision measured, on the same one-restart test:**
 
-| | r71 (`#72-fp3`) | r72 (`#73-fp3`) |
-|---|---|---|
-| `CODEC version detection fail!` | yes | **none** |
-| `Failed to bringup WCD9335` | yes | **none** |
-| `debugfs: … already exists` (the leak) | 2 per restart | **none** |
-| write storm | 78 lines, unbounded until re-register | 69 lines, bounded 37.50→38.98 s |
-| `remove_proc_entry` warning | n/a | **yes — fixed by commit 3, r73** |
-| playback afterwards | ok | ok |
+| | r71 (`#72-fp3`) | r72 (`#73-fp3`) | r73 (`#74-fp3`) |
+|---|---|---|---|
+| `CODEC version detection fail!` | yes | none | **none** |
+| `Failed to bringup WCD9335` | yes | none | **none** |
+| `debugfs: … already exists` (the leak) | 2 per restart | none | **none** |
+| `Flags mismatch` / `Failed to register IRQ chip` | on the non-recovering path | none | **none** |
+| `remove_proc_entry` warning | n/a | 5 lines, 1 `WARNING:` | **0** |
+| write storm | 78 lines, unbounded until re-register | 69 lines, bounded 37.50→38.98 s | 78 lines, bounded 36.46→38.10 s |
+| playback at +0 / +20 s / +90 s | ok | ok | **ok / ok / ok** |
+
+The r73 column was read twice from the same buffer by two different means -
+the check script's counters and a plain `dmesg | grep -cE "WARNING|BUG|Call
+trace"` - because the r72 round is exactly where one instrument said nothing
+was wrong and the other found a warning.
 
 ☠️ **Step 2 introduced a warning that step 3 fixes**, and it was found only
 because the reproduction script's own `dmesg` filter printed *nothing* while
@@ -455,8 +461,21 @@ because the reproduction script's own `dmesg` filter printed *nothing* while
 one that agreed with the hypothesis — the same trap as the `find`-on-ccache
 reading. Read `dmesg` directly.
 
-**r73 is built from `818d35f1` but not yet deployed or proven.** The acceptance
-test is in [`STATUS.md`](STATUS.md).
+**r73 (`818d35f1`, `#74-fp3`) is deployed and the acceptance test passes.**
+Every codec-side row above is zero, on a buffer whose sanity rows (22 remoteproc
+lines, 251 codec/SLIMbus lines) prove the restart really happened and the
+counter really read it.
+
+☠️ **What is *not* proven:** the non-recovering path. Every controlled restart
+run here - four on r71, one each on r72 and r73 - took the recovering path, so
+the `-EBUSY` case that costs audio until reboot has still never been entered on
+a fixed kernel. The fix removes its precondition by construction (the interrupt
+chip no longer outlives the bus session) and that is an argument, not a
+measurement. Provoking it needs two present notifications with no absent one
+between them; the second source is the `avs/audio` PDR lookup alongside the
+`lpass` SSR notifier, and `qcom_slim_ngd_ssr_pdr_notify()`'s UP branch has no
+state guard where its DOWN branch does. That asymmetry is the next thing to
+read.
 
 
 ## Open before anything is submitted

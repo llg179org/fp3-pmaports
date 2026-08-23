@@ -15,17 +15,17 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 15:05**.
+Last updated: **2026-08-23 16:00**.
 
 ## The device
 
 | what | value | how to check |
 |---|---|---|
-| kernel package | `linux-fp3-7.1.3-r72` **on the device**; the APKBUILD is already bumped to **r73** | `apk info -vv \| grep ^linux-fp3` |
-| build stamp | `#73-fp3` | `uname -v` |
-| pinned commit | `debug-int/7.1.3` `818d35f1` (r73, **not yet built/deployed**) | `grep _commit linux-fp3/APKBUILD` |
+| kernel package | `linux-fp3-7.1.3-r73` | `apk info -vv \| grep ^linux-fp3` |
+| build stamp | `#74-fp3` | `uname -v` |
+| pinned commit | `debug-int/7.1.3` `818d35f1` | `grep _commit linux-fp3/APKBUILD` |
 | boot config | 3 labels, md5 `863cdf20…`, `panic=10`, `timeout 3` | `md5sum /boot/extlinux/extlinux.conf` |
-| last full battery | **31 ok / 0 failed / 3 skipped** (2026-08-23 13:43, on r71) | `tests/fp3-selftest` |
+| last full battery | **30 ok / 1 failed / 3 skipped** (2026-08-23 15:47, r73). ☠️ The one failure is `99-suspend`, and it is the harness: it passes standalone on that same boot, twice - before and after the battery - and fails only when it runs directly after `98-camera-af-rail`, by one second (`woke at 98179, alarm was 98180`) | `tests/fp3-selftest` |
 
 The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 (an older kernel, kept as the safety net) and `postmarketOS-xo` (adds
@@ -45,60 +45,61 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
-The state that is *not* in git, in one place. Everything else below is
-recoverable from the repos.
+The state that is *not* in git, in one place. Everything else is recoverable
+from the repos.
 
 1. `wip/7.1.3/audio` `42b7e745`, `integration/7.1.3` `204f1cc3`,
-   `debug-int/7.1.3` `818d35f1` — **all three pushed to `fork`**, all three
-   carry the same three commits. Nothing is stranded locally.
-2. `linux-fp3/APKBUILD` is bumped to **r73** pinned at `818d35f1`, checksummed,
-   and **the build was interrupted mid-run** (a 10-minute tool timeout, not a
-   build error). Re-run it, then deploy:
-   ```sh
-   cd /mnt/1TB/pmos
-   cp fp3-pmaports/linux-fp3/{APKBUILD,config-fp3.aarch64} \
-      pmaports/device/testing/linux-fp3/
-   ./pmb build --arch aarch64 --force --lax linux-fp3     # ~8 min, run detached
-   ```
-   Deploy exactly as [`deploy/README.md`](deploy/README.md) says — and the
-   `extlinux.conf` re-arm afterwards is **not optional**: it was measured on
-   2026-08-23 stripping the fallback label, the xo label and `panic=10`.
-   Good md5 is `863cdf2001934d85c17d2ffad7c42fcb`.
-3. The phone is on **r72 / `#73-fp3`**, which has the first two fixes and the
-   irq leak. It is healthy and audio works; r73 is the one that closes the leak.
-4. The reproduction script is `/tmp/ssr-repro.sh` on the device (source in the
-   job tmp dir). ☠️ **Its `dmesg since MARK` section is broken** — its awk
-   filter printed nothing on r72 while `dmesg` itself had 225 codec lines
-   including a WARNING. Read `dmesg` directly; do not trust that section.
+   `debug-int/7.1.3` `818d35f1` — **all pushed to `fork`**, all carrying the
+   same three commits. Nothing is stranded locally, and r73 is built, deployed
+   and proven, so there is no half-finished step to pick up.
+2. The reproduction is `docs/audio/ssr-repro.sh` in this repo: one ADSP restart
+   addressed **by name**, health measured before and at +20 s / +90 s, then a
+   verdict table of named symptoms. Copy it to the device and run it under
+   `systemd-run --collect` so the ssh session cannot contaminate it.
+   ☠️ **An earlier version of it filtered `dmesg` by timestamp with awk and
+   printed nothing at all** while `dmesg` held 225 codec lines including a
+   `WARNING`. That silence read as a pass. The script now counts named patterns
+   over the whole buffer and prints sanity rows that must be **non-zero**; if
+   those are zero the instrument is blind, not the kernel clean.
 
 ## The work queue, in order
 
 Everything here is machine-doable unless the row says otherwise. Work down the
 list; do not stop at the end of an item to report.
 
-1. **Finish r73: build, deploy, and re-run the ADSP-restart reproduction.**
-   The acceptance test is the one in "Resume here": one `echo stop`/`echo start`
-   to the ADSP remoteproc *by name*, then `dmesg` must contain **no**
-   `remove_proc_entry` warning, no `CODEC version detection fail!`, no
-   `Failed to bringup WCD9335`, no `debugfs: '217:1a0:1:0' already exists`, and
-   playback must still work. Then a full `tests/fp3-selftest` battery.
-2. **The SSR write storm is still there and is now a `qcom-ngd-ctrl` question,
-   not a codec one.** On r72 it ran 37.50 s → 38.98 s (69 lines of
-   `Failed to write config eN` / `Failed to sync masks in 89`, all `-22`),
-   *starting before* the codec is told anything, right after
+1. **The SSR write storm is a `qcom-ngd-ctrl` question, not a codec one.**
+   Measured on r73: 78 lines of `Failed to write config eN` / `Failed to sync
+   masks in 89`, spanning 36.46 s → 38.10 s, every one of them `-22` or `-12`,
+   and they start *before* the codec is told anything — immediately after
    `HW wakeup attempt during SSR`. The controller accepts transfers while its
-   state is `DOWN` instead of failing them fast. Bounded and harmless now that
-   the teardown ends it; worth a look, and it is **`audio` category only if the
-   fix lands in the codec** — a fix in `drivers/slimbus/` has no category yet.
+   own state is `DOWN` instead of failing them fast. Bounded and harmless now
+   that the teardown ends it, so this is noise-removal, not a defect.
+   ☠️ A fix in `drivers/slimbus/` has **no category** in this port's branch
+   model — decide where it lands before committing it.
+2. **Provoke the non-recovering SSR path**, the one that costs audio until
+   reboot. It has never once been entered on a fixed kernel, so the third fix
+   is argued rather than measured. It needs two *present* notifications with no
+   *absent* one between them, and the asymmetry that allows it is visible in
+   `qcom_slim_ngd_ssr_pdr_notify()`: the `DOWN` branch is guarded by
+   `ctrl->state != QCOM_SLIM_NGD_CTRL_DOWN`, the `UP` branch is guarded by
+   nothing, and two sources feed it — the `lpass` SSR notifier and the
+   `avs/audio` PDR lookup. Read that first; it is also the likely mechanism.
 3. **Read the RPM `Client Votes` mask immediately after a suspend window**, from
    the `postmarketOS-xo` label — the one boot where the APSS actually goes down
    during the window. Last open leg of `TODO.md` item ②.
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
-5. **Housekeeping:** `linux-postmarketos-qcom-msm8953-7.1.3-r0` is installed,
+5. **`99-suspend` fails inside the battery and passes outside it.** Measured
+   2026-08-23 three times on r73: standalone before the battery **ok (15 s)**,
+   inside the battery **FAIL (12 s, one second short)**, standalone after the
+   battery **ok (15 s)**. `65-bluetooth` unblocks the controller a few checks
+   earlier and `98-camera-af-rail` restarts wireplumber immediately before it.
+   Either the check needs to settle the wake sources it inherits, or its alarm
+   margin is one second too tight. Fix the check, not the kernel.
+6. **Housekeeping:** `linux-postmarketos-qcom-msm8953-7.1.3-r0` is installed,
    owns no `/boot/vmlinuz`, and makes every `apk` run end with `only one kernel
    release/flavor is supported`.
-6. **Measure whether `base_dir` fixes the kernel ccache hit rate.** The source
+7. **Measure whether `base_dir` fixes the kernel ccache hit rate.** The source
    path carries the commit hash, so every bump is a new absolute path and
    direct-mode hits are expected to miss; `base_dir` is empty. The test is one
    file compiled from two directory names around a `ccache -z`, then the next
