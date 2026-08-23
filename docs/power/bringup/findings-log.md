@@ -1530,3 +1530,33 @@ bytes are the same field sampled four times, so the register is a short
 history ring — **read immediately after a suspend window it should carry
 values from inside that window**. That is the next reading to take, and it
 costs nothing beyond adding one mask read to the existing suspend recipe.
+
+## 2026-08-23 morning: reading the mask right after a suspend window — and why the ring is a weaker instrument than it looked
+
+Three 60 s `rtcwake` windows on an ordinary r69 boot, modem edge disarmed for
+the duration and re-armed after, mask read as the first statement after resume
+([`tools/vlow-ring.sh`](tools/vlow-ring.sh),
+[`captures/2026-08-23_vlow-ring-post-suspend.txt`](captures/2026-08-23_vlow-ring-post-suspend.txt)).
+All three windows were real — `suspend_stats/success` 0→3, 62 s elapsed each.
+
+Post-resume reads: `0x3010307`, `0x1050703`, `0x1030103`. **Bit 0 is set in
+every byte of every one of them**, which on this boot is exactly right and
+exactly useless: the APSS never enters XO shutdown here (count 0 throughout),
+so it was voting for the whole window and the mask says so. Bit 3 stayed
+clear, bit 4 stayed clear (no ADSP restart this boot).
+
+☠️ **The ring turns over faster than the instrument.** The second read, one
+second later, already shows different bytes every time (`0x5070507`,
+`0x1030105`, `0x3010301`). So the four-sample history spans well under a
+second of wall time, and even a read issued immediately after resume is
+mostly *post*-resume state. The idea that the ring preserves in-window values
+survives only if the resume path itself is quick enough, which this cannot
+establish.
+
+**Where that leaves it:** the reading worth taking is the same recipe under
+`clk_smd_rpm.xo_sleep_off=1`, the one configuration where the APSS actually
+goes down during the window. If bit 0 comes back clear there, the mask
+genuinely reflects in-window state and bit 3's silence becomes the whole
+question. If bit 0 still reads set, the mask is an awake-state register and
+cannot answer anything about the sleep decision at all — worth knowing before
+anyone builds on it.

@@ -1,0 +1,28 @@
+== vlow-ring Sun Aug 23 07:46:16 CEST 2026 uptime=143.93 secs=60 rounds=3
+== modem edge wakeup was: enabled -> disabling
+--- round 1
+pre  votes=0x1050105 count=0 success=0 xo: APSS=0 LPASS=48 MPSS=386 PRONTO=1041 TZ=0 
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Thu Jan  1 19:11:36 1970
+post votes=0x3010307 vmin_votes=0x0 count=0 success=1 elapsed=62 xo: APSS=0 LPASS=48 MPSS=535 PRONTO=1046 TZ=0 
+post+1s votes=0x5070507
+--- round 2
+pre  votes=0x5070507 count=0 success=1 xo: APSS=0 LPASS=48 MPSS=537 PRONTO=1046 TZ=0 
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Thu Jan  1 19:12:39 1970
+post votes=0x1050703 vmin_votes=0x0 count=0 success=2 elapsed=62 xo: APSS=0 LPASS=48 MPSS=687 PRONTO=1049 TZ=0 
+post+1s votes=0x1030105
+--- round 3
+pre  votes=0x1030105 count=0 success=2 xo: APSS=0 LPASS=48 MPSS=689 PRONTO=1049 TZ=0 
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Thu Jan  1 19:13:42 1970
+post votes=0x1030103 vmin_votes=0x0 count=0 success=3 elapsed=62 xo: APSS=0 LPASS=48 MPSS=843 PRONTO=1051 TZ=0 
+post+1s votes=0x3010301
+== vlow node after:
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x3010301
+== modem edge re-armed: enabled
+== done Sun Aug 23 07:49:24 CEST 2026
