@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 23:40**.
+Last updated: **2026-08-24 00:30**.
 
 ## The device
 
@@ -136,17 +136,28 @@ list; do not stop at the end of an item to report.
    ☠️ **One instance is confirmed, not two.** The earlier run rebooted at the
    same point but its boot is no longer retained (`--list-boots` holds only −1
    and 0), so it is a matching timing signature and nothing more.
-   Next: reproduce deliberately — `98-camera-af-rail` restarts wireplumber and
-   then a real suspend follows, so the suspect is the suspend/cpuidle path under
-   that specific load, on r73. Run the two checks alone, in a loop, with the
-   journal persisted, and get a second confirmed capture before theorising.
+   ☠️ **Tried, and it does not reproduce in isolation.** `--only
+   camera-af-rail,suspend`, three consecutive runs: **2 ok / 0 failed each time,
+   no reset** (uptime monotonic 1299 → 1331 → 1362 → 1398 s). So the hang is
+   **load-dependent** — it needs the rest of the battery ahead of it, not just
+   these two checks. Next: bisect by running the battery with growing prefixes
+   (`--skip` the tail, then progressively fewer), each time checking `uptime`
+   for a reset, until the smallest prefix that still hangs is known. Budget it
+   as a long unattended run; each iteration costs a reboot when it hits.
    ☠️ **Harness trap, mine:** never run two batteries overlapping — killing the
    first fires its cleanup trap, which deletes `/tmp/fp3-selftest` out from under
    the second and produces exactly this "vanished helper" signature for
    an unrelated reason.
-6. **Housekeeping:** `linux-postmarketos-qcom-msm8953-7.1.3-r0` is installed,
-   owns no `/boot/vmlinuz`, and makes every `apk` run end with `only one kernel
-   release/flavor is supported`.
+6. ☠️ **Housekeeping item withdrawn — its premise is false.**
+   `linux-postmarketos-qcom-msm8953` is **not installed**: `apk info` lists only
+   `linux-fp3`. What does exist is a second module tree,
+   `/lib/modules/7.0.9-postmarketos-qcom-msm8953`, and that one belongs to the
+   **`postmarketOS-fallback` boot label** — the brick-safety net. Do not delete
+   it. If `only one kernel release/flavor is supported` still appears on an
+   `apk` run, it comes from the two module trees and needs a fix that keeps the
+   fallback intact, not a package removal.
+   ☠️ `apk del` on a package that is not installed reports a bare `1 error` and
+   nothing else; `-v` is what makes it say why.
 7. **Measure whether `base_dir` fixes the kernel ccache hit rate.** The source
    path carries the commit hash, so every bump is a new absolute path and
    direct-mode hits are expected to miss; `base_dir` is empty. The test is one
