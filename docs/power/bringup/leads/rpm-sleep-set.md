@@ -284,3 +284,23 @@ The opt-in step, deliberately not rushed overnight:
 4. The failure mode to fear is a rail some active-but-unvoted consumer needs
    mid-suspend-entry: gate every such boot behind the fallback entry and the
    30 s guard window, exactly like the xo experiment.
+
+## 2026-08-23 dawn: the interconnect trail, where it stands
+
+The both_sets census left only icc resources without sleep votes; mapped via
+`drivers/interconnect/qcom/msm8953.c` they are the **bus bridge/internal
+nodes** (`mas/slv_bimc_snoc`, `mas/slv_snoc_pcnoc`, `pcnoc_int_2`,
+`pcnoc_s_6`, `snoc_int_1`) **plus `slv_sdcc_1`/`slv_sdcc_2`**, all at
+bw=50000000 or 0. `icc-rpm.c` mechanics read so far: `qcom_icc_rpm_set` loops
+BOTH rpm contexts per node, and an untagged consumer vote defaults to
+`RPM_ALWAYS_TAG` (both buckets) — so these nodes' votes must come from a
+consumer that explicitly tags `QCOM_ICC_TAG_ACTIVE_ONLY` (sleep bucket left
+at 0, so "no sleep write" = sleep bw genuinely 0... note that means the RPM
+*should* see sleep bw 0 for them — check whether "no vote ever written"
+differs from "sleep vote of 0" in RPM semantics: qcom_icc_rpm_set only sends
+when the value CHANGES from applied, and both start at 0, so a sleep bucket
+that stays 0 never gets a write — **the absent sleep vote may be a
+no-change-elision, not a tag issue at all**). Next: find who casts the 50 MB/s
+votes (sdcc paths suspect the mmc DT `interconnects`), and answer the
+elision question — if RPM treats "never written" as inherit-active, the fix
+is one explicit zero-write at probe, which is small and upstreamable.
