@@ -1,0 +1,36 @@
+== votes-decode2 Sun Aug 23 07:13:03 CEST 2026 uptime=4330.88
+== rproc states: 0=running 1=running 2=running
+--- LEG 5: control (ADSP already SSR'd, wifi up, modem up)
+L5 t=0 vlow_votes=0x13111511 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10236 PRONTO=41173 TZ=0
+L5 t=1 vlow_votes=0x15111511 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10239 PRONTO=41183 TZ=0
+L5 t=2 vlow_votes=0x11151115 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10242 PRONTO=41189 TZ=0
+L5 t=3 vlow_votes=0x13171317 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10243 PRONTO=41194 TZ=0
+L5 t=4 vlow_votes=0x11131715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10246 PRONTO=41198 TZ=0
+L5 t=5 vlow_votes=0x17131115 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10249 PRONTO=41202 TZ=0
+L5 t=6 vlow_votes=0x17131713 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10250 PRONTO=41209 TZ=0
+L5 t=7 vlow_votes=0x15111317 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10253 PRONTO=41218 TZ=0
+L5 t=8 vlow_votes=0x17131713 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10255 PRONTO=41229 TZ=0
+L5 t=9 vlow_votes=0x13171317 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10255 PRONTO=41239 TZ=0
+L5 t=10 vlow_votes=0x15111511 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10259 PRONTO=41249 TZ=0
+L5 t=11 vlow_votes=0x11151113 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10262 PRONTO=41259 TZ=0
+L5 t=12 vlow_votes=0x13171311 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10266 PRONTO=41269 TZ=0
+L5 t=13 vlow_votes=0x11131713 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10268 PRONTO=41280 TZ=0
+L5 t=14 vlow_votes=0x13111511 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10269 PRONTO=41291 TZ=0
+--- LEG 6: PRONTO down (wlan0 down, wcn36xx unloaded, remoteproc1 stopped)
+rproc1 state now: offline
+L6 t=0 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10289 PRONTO=41306 TZ=0
+L6 t=1 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10292 PRONTO=41306 TZ=0
+L6 t=2 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10295 PRONTO=41306 TZ=0
+L6 t=3 vlow_votes=0x15171517 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10297 PRONTO=41306 TZ=0
+L6 t=4 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10299 PRONTO=41306 TZ=0
+L6 t=5 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10302 PRONTO=41306 TZ=0
+L6 t=6 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10305 PRONTO=41306 TZ=0
+L6 t=7 vlow_votes=0x15171517 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10308 PRONTO=41306 TZ=0
+L6 t=8 vlow_votes=0x15171517 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10309 PRONTO=41306 TZ=0
+L6 t=9 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10310 PRONTO=41306 TZ=0
+L6 t=10 vlow_votes=0x15171517 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10313 PRONTO=41306 TZ=0
+L6 t=11 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10317 PRONTO=41306 TZ=0
+L6 t=12 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10320 PRONTO=41306 TZ=0
+L6 t=13 vlow_votes=0x15171517 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10320 PRONTO=41306 TZ=0
+L6 t=14 vlow_votes=0x17151715 vlow_count=0 xo: APSS=0 LPASS=54 MPSS=10321 PRONTO=41306 TZ=0
+--- LEG 7: MPSS down too (remoteproc0 stopped)

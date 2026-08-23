@@ -1400,3 +1400,133 @@ two belong in one detached-cable session (WiFi link, morning). Until that
 runs, "vlow has never been reached" describes both slots equally, and the
 night's three negatives may simply mean both systems idle in the same
 RPM state with the cable in.
+
+## 2026-08-23 morning: the Client Votes mask decodes by subtraction — a set bit means "released"
+
+The mask decode did not need the RPM firmware after all. Take one master's
+state away at a time and watch which bit leaves with it
+([`captures/2026-08-23_votes-decode.txt`](captures/2026-08-23_votes-decode.txt),
+[`_votes-decode2.txt`](captures/2026-08-23_votes-decode2.txt); awake sampling,
+1 Hz, `qcom_stats/vlow` read alongside `qcom_rpm_master_stats`):
+
+| leg | state | bytes seen |
+|---|---|---|
+| L0/L2 | everything up | `01 03 05 07` |
+| L1 | `wlan0` down, PRONTO still running | `01 03` |
+| L3 | ADSP stopped | `11 13 15 17` |
+| L4 | ADSP started again | `11 13 15 17` — **bit 4 stays set** |
+| L6 | PRONTO stopped outright | `15 17` |
+
+So each byte is the same 8-bit field sampled four times, not four clients —
+which is why the two 16-bit halves are so often equal, and why the halves
+sometimes appear byte-rotated. And **a set bit means that client has
+released**, not that it is voting: bit 4 appears when the ADSP is stopped and
+*stays* after it is restarted, matching the long-known fact that an ADSP
+restart frees LPASS for the rest of the boot; bit 2 is pinned set once PRONTO
+is stopped. Reading the bits that way:
+
+* **bit 0** — set in every sample ever taken, on this system and on the
+  oracle: a client that is always released. The TZ, whose master stats are
+  all-zero on both systems, fits.
+* **bit 1** — toggles continuously, at about the rate MPSS cycles XO
+  shutdown (~3/s). MPSS.
+* **bit 2** — PRONTO. Toggles while WiFi is up; **pinned clear with `wlan0`
+  down**, where PRONTO's XO shutdown count also freezes outright; pinned set
+  when PRONTO is stopped.
+* **bit 4** — LPASS. Clear until the ADSP is restarted, then set for good.
+  The oracle sets it natively — that is the "downstream-only" bit from the
+  earlier sample sheet, and it is not downstream-only, it is
+  *ADSP-has-released*.
+* **bit 3 — never observed set. Not once, on either system, under any knob
+  combination.** By elimination it is the APSS, and it is the one client
+  that never releases.
+
+☠️ **A caution for the WiFi lever.** `ip link set wlan0 down` was priced as a
+win because it erases the WLAN_CTRL chatter and a third of the vote churn.
+This capture shows the other side: with `wlan0` down, PRONTO's XO shutdown
+count stops advancing at all and bit 2 sits clear — the co-processor parks
+*holding* the XO rather than cycling it. Whatever the churn saving is worth,
+it is not obviously a deep-sleep win, and the slope leg has to price the
+whole thing, not the churn.
+
+**Next, and cheap:** boot with `clk_smd_rpm.xo_sleep_off=1` — the knob that
+makes the APSS actually enter XO shutdown — and sample the mask awake. If
+bit 3 starts toggling, the model is confirmed and the mask is not the whole
+gate (that boot still showed `vlow` 0). If bit 3 stays clear while the APSS
+demonstrably XO-shuts-down, then bit 3 is not the APSS and names a sixth
+client nobody has counted — which would be exactly what the RPM is waiting
+for.
+
+## 2026-08-23 morning: ☠️ the r66 wake patch oopses when an armed edge is torn down
+
+Found by accident, stopping remoteprocs during the mask decode above. On an
+edge whose wakeup source has been **armed**, `remoteproc stop` dies with a
+NULL dereference
+([`captures/2026-08-23_smd-wake-teardown-oops.txt`](captures/2026-08-23_smd-wake-teardown-oops.txt)):
+
+    pc : klist_put+0x28/0xf0
+     device_del / device_unregister
+     wakeup_source_sysfs_remove
+     device_wakeup_disable
+     device_pm_remove
+     device_del / device_unregister
+     qcom_smd_unregister_edge
+
+**Mechanism, read out of the source and confirmed in sysfs.** Arming an edge
+registers a wakeup source, and `wakeup_source_sysfs_add()` gives it a device
+parented to the edge — visible as a `wakeup` directory that exists only under
+an armed edge. `qcom_smd_unregister_edge()` then runs
+`device_for_each_child(&edge->dev, NULL, qcom_smd_remove_device)`, and that
+callback unregisters *every* child unconditionally, on the pre-existing
+assumption that an edge's only children are smd channels. The wakeup device
+goes with them — and then goes a second time when `device_del()` on the edge
+reaches `device_pm_remove()` → `device_wakeup_disable()`.
+
+Measured both ways: stopping the ADSP with its edge **disarmed** is clean
+(legs L3/L4 above did it twice), stopping it **armed** oopses; the modem edge,
+armed at boot by `fp3-modem-wake-arm.service`, oopsed the same way. So this is
+a regression our own patch introduced — upstream edges are never
+wakeup-capable, so they never gain a foreign child.
+
+**Fix:** `device_wakeup_disable(&edge->dev)` before the child walk
+(`wip/7.1.3/power` `d0e738c107e3`, all three layers). Making the walk
+selective instead is not available: `rpmsg_bus` is `static` in
+`rpmsg_core.c`, so a driver cannot test a child's bus. The LKML draft is
+regenerated as a single patch carrying both hunks — the second commit fixes a
+bug the first one introduced, so upstream should never see them apart.
+
+## 2026-08-23 morning: the mask under `xo_sleep_off` — bit 0 is the APSS, bit 3 is nobody we have named
+
+The experiment proposed above, run the same morning: boot the `postmarketOS-xo`
+label (`clk_smd_rpm.xo_sleep_off=1`, verified `Y` in
+`/sys/module/clk_smd_rpm/parameters/xo_sleep_off`), sample the mask awake at
+1 Hz while the APSS XO shutdown count climbs from 110 to 719 in 40 s
+([`captures/2026-08-23_votes-xo-sleep-off.txt`](captures/2026-08-23_votes-xo-sleep-off.txt)).
+
+**Bit 0 is the APSS.** On every ordinary boot it is set in every sample ever
+taken; here, as the APSS starts entering XO shutdown in earnest, bytes of
+`0x00`, `0x04` and `0x06` appear for the first time — bit 0 goes clear
+exactly when the APSS is down. That fixes the polarity for this bit as *set =
+that client is up and voting*.
+
+☠️ **And that contradicts the polarity bit 4 shows**, where the bit appears
+when the ADSP is *stopped* and stays set after it is restarted. Both
+observations are solid and repeated; what is not established is a single
+polarity rule covering both, so **the earlier entry's "a set bit means
+released" should be read as one candidate model, not a result.** What is
+measured is the correspondence — bit 0 ↔ APSS, bit 1 ↔ MPSS, bit 2 ↔ PRONTO,
+bit 4 ↔ LPASS — and the correspondence is what the mask is useful for.
+
+**Bit 3 is still never set.** Not on an ordinary boot, not under any of the
+three knobs, not on the oracle, and not here, where four of the five masters
+are demonstrably cycling. Every master we can name has now moved a bit; bit 3
+has not. Whatever it stands for is not one of the five masters the RPM's own
+stats enumerate.
+
+☠️ **A limit on all of this: these are awake samples.** The RPM only weighs
+vlow when the masters are actually down, so an awake reading cannot show the
+state at the decision point. The mask's own shape suggests the fix: the four
+bytes are the same field sampled four times, so the register is a short
+history ring — **read immediately after a suspend window it should carry
+values from inside that window**. That is the next reading to take, and it
+costs nothing beyond adding one mask read to the existing suspend recipe.

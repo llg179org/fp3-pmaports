@@ -1,0 +1,114 @@
+== votes-decode Sun Aug 23 07:10:03 CEST 2026 uptime=4151.35 N=20
+== masters present: APSS
+LPASS
+MPSS
+PRONTO
+TZ
+--- LEG 0: baseline (wlan0 up, adsp running, modem up)
+L0 t=0 vlow_votes=0x3010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9811 PRONTO=39764 TZ=0 APSS=0
+L0 t=1 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9814 PRONTO=39775 TZ=0 APSS=0
+L0 t=2 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9817 PRONTO=39785 TZ=0 APSS=0
+L0 t=3 vlow_votes=0x5010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9821 PRONTO=39795 TZ=0 APSS=0
+L0 t=4 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9822 PRONTO=39806 TZ=0 APSS=0
+L0 t=5 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9822 PRONTO=39816 TZ=0 APSS=0
+L0 t=6 vlow_votes=0x1050103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9824 PRONTO=39826 TZ=0 APSS=0
+L0 t=7 vlow_votes=0x3070301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9828 PRONTO=39836 TZ=0 APSS=0
+L0 t=8 vlow_votes=0x1050105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9831 PRONTO=39847 TZ=0 APSS=0
+L0 t=9 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9833 PRONTO=39857 TZ=0 APSS=0
+L0 t=10 vlow_votes=0x5070301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9835 PRONTO=39867 TZ=0 APSS=0
+L0 t=11 vlow_votes=0x3010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9838 PRONTO=39878 TZ=0 APSS=0
+L0 t=12 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9841 PRONTO=39888 TZ=0 APSS=0
+L0 t=13 vlow_votes=0x1050103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9844 PRONTO=39899 TZ=0 APSS=0
+L0 t=14 vlow_votes=0x5010507 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9847 PRONTO=39908 TZ=0 APSS=0
+L0 t=15 vlow_votes=0x7030105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9848 PRONTO=39913 TZ=0 APSS=0
+L0 t=16 vlow_votes=0x7050105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9851 PRONTO=39917 TZ=0 APSS=0
+L0 t=17 vlow_votes=0x1050705 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9855 PRONTO=39921 TZ=0 APSS=0
+L0 t=18 vlow_votes=0x1030705 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9858 PRONTO=39926 TZ=0 APSS=0
+L0 t=19 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9861 PRONTO=39936 TZ=0 APSS=0
+--- LEG 1: wlan0 down
+L1 t=0 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9872 PRONTO=39947 TZ=0 APSS=0
+L1 t=1 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9876 PRONTO=39947 TZ=0 APSS=0
+L1 t=2 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9876 PRONTO=39947 TZ=0 APSS=0
+L1 t=3 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9879 PRONTO=39947 TZ=0 APSS=0
+L1 t=4 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9883 PRONTO=39947 TZ=0 APSS=0
+L1 t=5 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9886 PRONTO=39947 TZ=0 APSS=0
+L1 t=6 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9889 PRONTO=39947 TZ=0 APSS=0
+L1 t=7 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9890 PRONTO=39947 TZ=0 APSS=0
+L1 t=8 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9893 PRONTO=39947 TZ=0 APSS=0
+L1 t=9 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9896 PRONTO=39947 TZ=0 APSS=0
+L1 t=10 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9899 PRONTO=39947 TZ=0 APSS=0
+L1 t=11 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9903 PRONTO=39947 TZ=0 APSS=0
+L1 t=12 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9903 PRONTO=39947 TZ=0 APSS=0
+L1 t=13 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9906 PRONTO=39947 TZ=0 APSS=0
+L1 t=14 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9909 PRONTO=39947 TZ=0 APSS=0
+L1 t=15 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9913 PRONTO=39947 TZ=0 APSS=0
+L1 t=16 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9916 PRONTO=39947 TZ=0 APSS=0
+L1 t=17 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9917 PRONTO=39947 TZ=0 APSS=0
+L1 t=18 vlow_votes=0x3010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9919 PRONTO=39947 TZ=0 APSS=0
+L1 t=19 vlow_votes=0x1030103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9922 PRONTO=39947 TZ=0 APSS=0
+--- LEG 2: wlan0 up again (recovery control)
+L2 t=0 vlow_votes=0x3070307 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9934 PRONTO=39967 TZ=0 APSS=0
+L2 t=1 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9936 PRONTO=39977 TZ=0 APSS=0
+L2 t=2 vlow_votes=0x5010307 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9939 PRONTO=39987 TZ=0 APSS=0
+L2 t=3 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9939 PRONTO=39996 TZ=0 APSS=0
+L2 t=4 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9943 PRONTO=40006 TZ=0 APSS=0
+L2 t=5 vlow_votes=0x1050103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9947 PRONTO=40016 TZ=0 APSS=0
+L2 t=6 vlow_votes=0x7030105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9950 PRONTO=40027 TZ=0 APSS=0
+L2 t=7 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9953 PRONTO=40038 TZ=0 APSS=0
+L2 t=8 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9953 PRONTO=40048 TZ=0 APSS=0
+L2 t=9 vlow_votes=0x5010301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9957 PRONTO=40058 TZ=0 APSS=0
+L2 t=10 vlow_votes=0x7030105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9958 PRONTO=40070 TZ=0 APSS=0
+L2 t=11 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9961 PRONTO=40080 TZ=0 APSS=0
+L2 t=12 vlow_votes=0x1050103 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9964 PRONTO=40090 TZ=0 APSS=0
+L2 t=13 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9965 PRONTO=40100 TZ=0 APSS=0
+L2 t=14 vlow_votes=0x7030105 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9966 PRONTO=40111 TZ=0 APSS=0
+L2 t=15 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9969 PRONTO=40121 TZ=0 APSS=0
+L2 t=16 vlow_votes=0x5070301 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9973 PRONTO=40131 TZ=0 APSS=0
+L2 t=17 vlow_votes=0x3010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9976 PRONTO=40142 TZ=0 APSS=0
+L2 t=18 vlow_votes=0x7030703 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9977 PRONTO=40152 TZ=0 APSS=0
+L2 t=19 vlow_votes=0x5010501 vmin_votes=0x0 vlow_count=0 xo: LPASS=51 MPSS=9979 PRONTO=40162 TZ=0 APSS=0
+--- LEG 3: ADSP stopped
+adsp state now: offline
+L3 t=0 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=9997 PRONTO=40231 TZ=0 APSS=0
+L3 t=1 vlow_votes=0x15111517 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10001 PRONTO=40234 TZ=0 APSS=0
+L3 t=2 vlow_votes=0x17131115 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10004 PRONTO=40237 TZ=0 APSS=0
+L3 t=3 vlow_votes=0x13171317 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10004 PRONTO=40241 TZ=0 APSS=0
+L3 t=4 vlow_votes=0x15111517 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10005 PRONTO=40245 TZ=0 APSS=0
+L3 t=5 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10009 PRONTO=40253 TZ=0 APSS=0
+L3 t=6 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10012 PRONTO=40263 TZ=0 APSS=0
+L3 t=7 vlow_votes=0x11151115 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10015 PRONTO=40274 TZ=0 APSS=0
+L3 t=8 vlow_votes=0x17131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10016 PRONTO=40284 TZ=0 APSS=0
+L3 t=9 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10019 PRONTO=40294 TZ=0 APSS=0
+L3 t=10 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10022 PRONTO=40304 TZ=0 APSS=0
+L3 t=11 vlow_votes=0x15111311 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10026 PRONTO=40315 TZ=0 APSS=0
+L3 t=12 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10029 PRONTO=40325 TZ=0 APSS=0
+L3 t=13 vlow_votes=0x17131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10030 PRONTO=40336 TZ=0 APSS=0
+L3 t=14 vlow_votes=0x11151113 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10031 PRONTO=40348 TZ=0 APSS=0
+L3 t=15 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10035 PRONTO=40358 TZ=0 APSS=0
+L3 t=16 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10038 PRONTO=40368 TZ=0 APSS=0
+L3 t=17 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10041 PRONTO=40378 TZ=0 APSS=0
+L3 t=18 vlow_votes=0x17131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10043 PRONTO=40389 TZ=0 APSS=0
+L3 t=19 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10045 PRONTO=40399 TZ=0 APSS=0
+--- LEG 4: ADSP started again
+adsp state now: running
+L4 t=0 vlow_votes=0x11151113 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10061 PRONTO=40472 TZ=0 APSS=0
+L4 t=1 vlow_votes=0x13171311 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10062 PRONTO=40482 TZ=0 APSS=0
+L4 t=2 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10065 PRONTO=40492 TZ=0 APSS=0
+L4 t=3 vlow_votes=0x13171317 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10067 PRONTO=40503 TZ=0 APSS=0
+L4 t=4 vlow_votes=0x11131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10069 PRONTO=40513 TZ=0 APSS=0
+L4 t=5 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10072 PRONTO=40523 TZ=0 APSS=0
+L4 t=6 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10075 PRONTO=40534 TZ=0 APSS=0
+L4 t=7 vlow_votes=0x11151115 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10078 PRONTO=40544 TZ=0 APSS=0
+L4 t=8 vlow_votes=0x17131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10079 PRONTO=40554 TZ=0 APSS=0
+L4 t=9 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10081 PRONTO=40559 TZ=0 APSS=0
+L4 t=10 vlow_votes=0x15171511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10084 PRONTO=40563 TZ=0 APSS=0
+L4 t=11 vlow_votes=0x15111317 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10088 PRONTO=40567 TZ=0 APSS=0
+L4 t=12 vlow_votes=0x11151115 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10091 PRONTO=40572 TZ=0 APSS=0
+L4 t=13 vlow_votes=0x17131713 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10093 PRONTO=40580 TZ=0 APSS=0
+L4 t=14 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10094 PRONTO=40590 TZ=0 APSS=0
+L4 t=15 vlow_votes=0x11131115 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10098 PRONTO=40601 TZ=0 APSS=0
+L4 t=16 vlow_votes=0x13111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10101 PRONTO=40611 TZ=0 APSS=0
+L4 t=17 vlow_votes=0x15111511 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10104 PRONTO=40622 TZ=0 APSS=0
+L4 t=18 vlow_votes=0x11151113 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10105 PRONTO=40632 TZ=0 APSS=0
+L4 t=19 vlow_votes=0x13171311 vmin_votes=0x0 vlow_count=0 xo: LPASS=54 MPSS=10106 PRONTO=40643 TZ=0 APSS=0
+== done Sun Aug 23 07:12:08 CEST 2026

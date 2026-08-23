@@ -167,12 +167,22 @@ may describe both slots equally.
    is ordered by its answer. Same detached-cable session also reruns the
    rail census (the three USB-PHY rails stay confounded until then;
    USBIN-suspend does not help — it cuts charge current, not the data link).
-2. **Decode the vlow `Client Votes` mask** — samples and the bit-4
-   observation (a downstream-only vote component) are in
-   `power/bringup/leads/rpm-sleep-set.md`; the decode likely needs the RPM
-   firmware or a Qualcomm header, and it names what the RPM is waiting for.
+2. ~~**Decode the vlow `Client Votes` mask**~~ — **done by subtraction on
+   2026-08-23, no RPM firmware needed** (findings-log). Take one master away
+   at a time and watch which bit moves: **bit 0 ↔ APSS, bit 1 ↔ MPSS,
+   bit 2 ↔ PRONTO, bit 4 ↔ LPASS**, and the four bytes are the same field
+   sampled four times, not four clients. ☠️ **Bit 3 has never once been set**
+   — not under any knob, not on the oracle — so the standing vote belongs to
+   something outside the five masters the RPM's own stats enumerate. Two
+   follow-ups: read the mask **immediately after a suspend window** (the ring
+   should carry values from inside it, where an awake read cannot), and name
+   bit 3.
 3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
-   a third of the vote churn) and decide the suspend policy — WiFi is also
+   a third of the vote churn) and decide the suspend policy. ☠️ **The mask
+   decode found the other side of this trade**: with `wlan0` down, PRONTO's
+   XO shutdown count stops advancing at all and its mask bit sits pinned —
+   the co-processor parks holding the XO instead of cycling it. Price the
+   whole leg in mA, not the churn. WiFi is also
    the USB-independent rescue link.
 4. **Name and quiet the modem edge's signal ring** (~one poke per 2 s,
    payload-free). This gates re-enabling automatic sleep with call-wake
@@ -212,6 +222,15 @@ armable per edge from sysfs. Verified 2026-08-22 on the device, three ways:
   (modem smd-edge +35 IRQs, `suspend_stats/success` advanced) and it rang;
 * **no storm:** arming does not produce an immediate wake loop, and the default
   stays off so nothing changes for a board that does not opt in.
+
+☠️ **The r66 patch had a teardown bug, fixed 2026-08-23 (`d0e738c107e3`, all
+three layers).** Stopping a remoteproc whose edge was **armed** oopsed on a NULL
+klist: an armed edge owns a wakeup-class child device, and
+`qcom_smd_unregister_edge()`'s child walk unregisters every child as if it were
+an smd channel, so the wakeup device was torn down twice. Disarmed edges were
+never affected. The fix drops the wakeup source before the walk; the LKML draft
+is regenerated as one patch carrying both hunks. **The kernel on the device
+carries the bug until the next package build.**
 
 ☠️ Attribution counters are blind here: the plain `enable_irq_wake` path bumps
 neither the device's `wakeup_count` nor `/sys/power/pm_wakeup_irq` in s2idle —

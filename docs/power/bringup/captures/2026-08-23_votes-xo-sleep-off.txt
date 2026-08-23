@@ -1,0 +1,39 @@
+== votes under clk_smd_rpm.xo_sleep_off=1, awake, 1 Hz (r69, normal userspace)
+== xo_sleep_off=Y uptime=124.67 863.23
+t=0 votes=0x1050705 vlow_count=0 xo: APSS=2996 LPASS=49 MPSS=316 PRONTO=886 TZ=0
+t=1 votes=0x4050405 vlow_count=0 xo: APSS=3032 LPASS=49 MPSS=319 PRONTO=889 TZ=0
+t=2 votes=0x4050405 vlow_count=0 xo: APSS=3075 LPASS=49 MPSS=322 PRONTO=893 TZ=0
+t=3 votes=0x4050405 vlow_count=0 xo: APSS=3119 LPASS=49 MPSS=325 PRONTO=896 TZ=0
+t=4 votes=0x2030703 vlow_count=0 xo: APSS=3162 LPASS=49 MPSS=328 PRONTO=906 TZ=0
+t=5 votes=0x2060703 vlow_count=0 xo: APSS=3209 LPASS=49 MPSS=328 PRONTO=916 TZ=0
+t=6 votes=0x40501 vlow_count=0 xo: APSS=3253 LPASS=49 MPSS=330 PRONTO=926 TZ=0
+t=7 votes=0x5010501 vlow_count=0 xo: APSS=3290 LPASS=49 MPSS=333 PRONTO=936 TZ=0
+t=8 votes=0x20301 vlow_count=0 xo: APSS=3337 LPASS=49 MPSS=337 PRONTO=946 TZ=0
+t=9 votes=0x1000105 vlow_count=0 xo: APSS=3387 LPASS=49 MPSS=340 PRONTO=956 TZ=0
+t=10 votes=0x3020307 vlow_count=0 xo: APSS=3432 LPASS=49 MPSS=340 PRONTO=967 TZ=0
+t=11 votes=0x1000105 vlow_count=0 xo: APSS=3482 LPASS=49 MPSS=343 PRONTO=977 TZ=0
+t=12 votes=0x3070301 vlow_count=0 xo: APSS=3517 LPASS=49 MPSS=347 PRONTO=987 TZ=0
+t=13 votes=0x3010501 vlow_count=0 xo: APSS=3553 LPASS=49 MPSS=350 PRONTO=998 TZ=0
+t=14 votes=0x10501 vlow_count=0 xo: APSS=3597 LPASS=49 MPSS=353 PRONTO=1008 TZ=0
+t=15 votes=0x2030703 vlow_count=0 xo: APSS=3637 LPASS=49 MPSS=354 PRONTO=1018 TZ=0
+t=16 votes=0x5010301 vlow_count=0 xo: APSS=3678 LPASS=49 MPSS=357 PRONTO=1029 TZ=0
+t=17 votes=0x3010501 vlow_count=0 xo: APSS=3710 LPASS=49 MPSS=360 PRONTO=1039 TZ=0
+t=18 votes=0x5040001 vlow_count=0 xo: APSS=3749 LPASS=49 MPSS=363 PRONTO=1049 TZ=0
+t=19 votes=0x10001 vlow_count=0 xo: APSS=3783 LPASS=49 MPSS=366 PRONTO=1058 TZ=0
+t=20 votes=0x2030203 vlow_count=0 xo: APSS=3828 LPASS=49 MPSS=368 PRONTO=1068 TZ=0
+t=21 votes=0x10001 vlow_count=0 xo: APSS=3876 LPASS=49 MPSS=370 PRONTO=1078 TZ=0
+t=22 votes=0x10001 vlow_count=0 xo: APSS=3912 LPASS=49 MPSS=373 PRONTO=1089 TZ=0
+t=23 votes=0x40501 vlow_count=0 xo: APSS=3956 LPASS=49 MPSS=376 PRONTO=1099 TZ=0
+t=24 votes=0x2060703 vlow_count=0 xo: APSS=3988 LPASS=49 MPSS=377 PRONTO=1109 TZ=0
+== vlow node:
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x7030203
+== vmin node:
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
