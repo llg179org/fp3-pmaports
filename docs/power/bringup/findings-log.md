@@ -1729,3 +1729,51 @@ probe, reachable any time before audio starts" from "only reachable once the
 DSP has gone away". The fix is the same either way — initialise the heads in
 `wcd9335_codec_probe()` beside the `memcpy` — but the commit message and the
 upstream framing depend on the answer.
+
+### The timeline says the modem did it, not the ADSP — and the codec was already broken
+
+The previous boot's journal settles the attribution, and it is not the one the
+entry above assumed:
+
+```
+09:48:14  remoteproc0 (modem) stopped        <- armed-edge test, clean
+09:48:30  modem is now up
+09:48:55  qcom,slim-ngd-ctrl: HW wakeup attempt during SSR
+          wcd9335-slim: WCD9335 CODEC version detection fail!
+          wcd9335-slim: Failed to bringup WCD9335        (85 wcd9335 lines)
+09:48:57  remoteproc2 (adsp) stopped         <- ADSP test, clean
+09:49:02  adsp is now up
+09:51:00  amixer -> slim_rx_mux_put -> Oops
+```
+
+**Restarting the modem takes the SLIMbus link through an SSR, and the WCD9335
+does not survive it**: the re-bringup fails outright on version detection. The
+codec is then left with a fresh, zeroed `rx_chs[]` — while the machine
+driver's `pdata->slim_port_setup` latch is still `true` from the first
+successful init and is never cleared, so nothing will call
+`set_channel_map()` again. Two minutes later the selftest's amixer writes a
+`SLIM RXn Mux` and the zeroed list head does the rest.
+
+So both edge tests really were clean — the oops arrived from a codec that had
+already been broken for two minutes when they ran, and the `dmesg -C` window
+around each of them honestly contained nothing. What was wrong was the claim
+that the *boot* was oops-free, which the narrow grep could not have seen.
+
+**Three separable defects, in increasing depth:**
+
+1. `slim_rx_mux_put()` will deref a zeroed list head — userspace should not be
+   able to oops the kernel through `snd_ctl` in any driver state.
+   `INIT_LIST_HEAD` beside the `memcpy` in `wcd9335_codec_probe()` closes it,
+   and is upstream-shaped.
+2. `slim_port_setup` latches for the life of the card but guards state that
+   lives in the codec, which can be re-probed underneath it. Clearing it when
+   the codec goes away (or simply letting the idempotent `set_channel_map()`
+   run every `dai_init`) closes that. ☠️ The latch is inherited from
+   `sdm845.c`, so the same hole is upstream.
+3. The WCD9335 does not come back after a SLIMbus SSR at all. That is the
+   functional bug behind the other two, and the only one that costs audio
+   until a reboot.
+
+☠️ **A modem restart therefore costs audio on this board.** Any measurement
+that stops `remoteproc0` should be assumed to have taken the codec with it,
+and audio checks after one are measuring the wreckage.
