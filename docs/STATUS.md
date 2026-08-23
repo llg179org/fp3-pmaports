@@ -354,6 +354,13 @@ list; do not stop at the end of an item to report.
 
 ## Guardrails that have each cost a day
 
+- **`pkill -f` / `pgrep -f` match your own command line — and this bit again on
+  2026-08-23.** A cleanup `pkill -f 'kmsg-tap.sh'` was written at the front of
+  the same command that then started the tap and ran the battery; the pattern
+  matched that command line, so the job killed itself before doing anything
+  (exit 144) and the measurement had to be repeated. This guardrail was already
+  written down. Kill by **explicit PID** from `ps -eo pid,args`, or give the
+  pattern something the killer's own line does not contain.
 - **A reboot's witness is `uptime` compared against elapsed time, not `uptime`
   alone.** Measured 2026-08-23: a run started at uptime 951 and ended at 1242, so
   the number rose and I called it "no reset" — but the run itself took ~2000 s,
