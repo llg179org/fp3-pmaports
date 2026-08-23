@@ -172,11 +172,18 @@ may describe both slots equally.
    at a time and watch which bit moves: **bit 0 ↔ APSS, bit 1 ↔ MPSS,
    bit 2 ↔ PRONTO, bit 4 ↔ LPASS**, and the four bytes are the same field
    sampled four times, not four clients. ☠️ **Bit 3 has never once been set**
-   — not under any knob, not on the oracle — so the standing vote belongs to
-   something outside the five masters the RPM's own stats enumerate. Two
-   follow-ups: read the mask **immediately after a suspend window** (the ring
-   should carry values from inside it, where an awake read cannot), and name
-   bit 3.
+   — not under any knob, not on the oracle. ☠️ **Named the same day, and it
+   is not an outside client:** the RPM message RAM gives each master a 4 KB
+   slot (`0x150`, `0x1150`, `0x2150`, `0x3150`, `0x4150` in `msm8953.dtsi`),
+   so the master index is `offset >> 12` — APSS 0, MPSS 1, PRONTO 2, **TZ 3**,
+   LPASS 4, which is exactly where the four measured bits fall. **Bit 3 is the
+   TZ**, silent for the same reason its stats block is all zeros: it does not
+   participate. The earlier "vote from outside the five masters" reading is
+   retracted; stop looking for a sixth client. One follow-up is left: read the
+   mask **immediately after a suspend window** (the ring should carry values
+   from inside it, where an awake read cannot) — and it has to be run from the
+   `postmarketOS-xo` entry, the one boot where the APSS actually goes down
+   during the window.
 3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
    a third of the vote churn) and decide the suspend policy. ☠️ **The mask
    decode found the other side of this trade**: with `wlan0` down, PRONTO's

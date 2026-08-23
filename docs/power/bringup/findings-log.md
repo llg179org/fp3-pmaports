@@ -1628,3 +1628,37 @@ not an identification of a client, and this log should not have called it one.
 only with the XO knob and is unassigned; **bit 3 has never been set in any
 sample from either system.** Two clients' worth of the field are therefore
 still unexplained, and one of them never releases.
+
+## 2026-08-23: bit 3 is the TZ — the mask is indexed by the RPM's own master slots
+
+Naming bit 3 did not need another measurement, only reading where the RPM
+keeps its per-master state. In `msm8953.dtsi` the master-stats blocks sit in
+the RPM message RAM one 4 KB slot apart:
+
+| offset | `offset >> 12` | master |
+|---|---|---|
+| `0x150`  | 0 | APSS |
+| `0x1150` | 1 | MPSS |
+| `0x2150` | 2 | PRONTO |
+| `0x3150` | 3 | **TZ** |
+| `0x4150` | 4 | LPASS |
+
+That is the RPM's own indexing, not a DT authoring order — the addresses are
+fixed by the firmware's memory layout. And the four bits this port measured by
+subtraction land on exactly those indices: **0 ↔ APSS, 1 ↔ MPSS, 2 ↔ PRONTO,
+4 ↔ LPASS**. Four of five slots agree, and the one left over is slot 3.
+
+**So bit 3 is the TZ, and the reason it has never been set in any sample is
+the reason its master-stats block is all zeros: the TZ does not participate in
+this accounting at all.** The oracle shows the same zeros, so this is not
+something the port is missing.
+
+☠️ **This retracts the framing that has been carried since the decode**: the
+standing unexplained vote was never "something outside the five masters the
+RPM enumerates". It is the fifth master, silent. The mask holds five bits for
+five masters and nothing else, and the search for a sixth client should stop.
+
+Note the strength of the claim honestly: bits 0, 1, 2 and 4 are identified by
+direct subtraction, bit 3 only by elimination against a structural layout.
+Nothing on the AP side can make the TZ vote, so there is no experiment
+available that would promote it to a measured identification.
