@@ -10,14 +10,24 @@
 # census cannot see them and its silence would look exactly like a lever that
 # did not work.
 #
-# The only witness available that early is boot-time ftrace printing into the
-# kernel ring buffer, armed from the kernel command line:
+# The witness is boot-time ftrace, armed from the kernel command line:
 #
-#     trace_event=qcom_smd_rpm:qcom_rpm_smd_write tp_printk
+#     trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M
 #
-# This script does not add that - editing extlinux is a deploy step with its own
-# re-arm and md5 gates. It reports whether the current boot was armed, and if so
-# what the probe-time votes were.
+# ☠️ Do NOT add tp_printk to that. The cmdline on this device carries
+# console=ttyMSM0,115200, and tp_printk routes every tracepoint hit through
+# printk. At ~100 characters a line and 115200 baud that is ~9 ms per line of
+# blocked boot; a boot's worth of RPM writes would run past the 20 s watchdog
+# and boot-loop the phone. The trace buffer needs no console and costs nothing.
+#
+# This script does not edit extlinux - that is a deploy step with its own re-arm
+# and md5 gates. It reports whether this boot was armed, and if so what the
+# probe-time votes were.
+#
+# ☠️ Read it EARLY. The trace buffer is a ring: at a few dozen RPM writes a
+# second, a long uptime overwrites the boot window. If the oldest timestamp in
+# the buffer is not near zero, the probe-time votes are already gone and the
+# answer is "unknown", not "none" - this script says so rather than guessing.
 #
 # Usage: sleepset-witness.sh
 set -u
@@ -28,26 +38,48 @@ echo
 
 CMDLINE=$(cat /proc/cmdline)
 case "$CMDLINE" in
-*tp_printk*qcom_rpm_smd_write*|*qcom_rpm_smd_write*tp_printk*)
+*trace_event=*qcom_rpm_smd_write*)
 	echo "armed: yes" ;;
 *)
 	echo "armed: no"
-	echo "FAIL: this boot was not armed, so the probe-time votes were never printed."
+	echo "FAIL: this boot was not armed, so the probe-time votes were never traced."
 	echo "      Add to the kernel command line and reboot:"
-	echo "        trace_event=qcom_smd_rpm:qcom_rpm_smd_write tp_printk"
+	echo "        trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M"
 	echo "      An unarmed boot proves nothing either way - do not read its"
 	echo "      silence as 'no sleep votes'."
 	exit 0 ;;
 esac
 echo
 
-DM=$(dmesg 2>/dev/null) || { echo "FAIL: dmesg needs root"; exit 0; }
+TR=/sys/kernel/tracing
+[ -d "$TR" ] || TR=/sys/kernel/debug/tracing
+if [ ! -r "$TR/trace" ]; then
+	echo "FAIL: cannot read $TR/trace (needs root, or no tracefs)"
+	exit 0
+fi
+DM=$(grep -v '^#' "$TR/trace")
+
+# Is the boot window still in the ring, or has it been overwritten?
+FIRST=$(printf '%s\n' "$DM" | head -1 | sed -n 's/.* \([0-9]*\)\.[0-9]*: .*/\1/p')
+if [ -z "$FIRST" ]; then
+	echo "FAIL: the trace buffer is empty - the event never fired, or something"
+	echo "      cleared it. Check $TR/events/qcom_smd_rpm/qcom_rpm_smd_write/enable."
+	exit 0
+fi
+echo "oldest event in the ring: ${FIRST}s after boot (uptime now $(cut -d. -f1 /proc/uptime)s)"
+if [ "$FIRST" -gt 30 ]; then
+	echo "FAIL: the ring no longer reaches the boot window - the probe-time votes"
+	echo "      have been overwritten. This is UNKNOWN, not 'no votes'. Reboot and"
+	echo "      read within the first minutes, or raise trace_buf_size."
+	exit 0
+fi
+echo
 
 TOTAL=$(printf '%s\n' "$DM" | grep -c 'qcom_rpm_smd_write')
 SLEEP=$(printf '%s\n' "$DM" | grep 'qcom_rpm_smd_write' | grep -c 'sleep')
 LDOSLEEP=$(printf '%s\n' "$DM" | grep 'qcom_rpm_smd_write' | grep 'sleep' | grep -cE 'ldoa|smpa')
 
-echo "qcom_rpm_smd_write lines in this boot's ring buffer: $TOTAL"
+echo "qcom_rpm_smd_write lines in the trace ring:       $TOTAL"
 echo "  of them sleep-context:                            $SLEEP"
 echo "  of those, ldoa/smpa (the regulators):             $LDOSLEEP"
 echo
@@ -63,7 +95,7 @@ if [ "$LDOSLEEP" -gt 0 ]; then
 else
 	echo "FAIL: zero ldoa/smpa sleep-set votes in an armed boot."
 	echo "      The regulator-state-mem nodes did not produce votes. Check for"
-	echo "      'No configuration' warnings, which mean the node was parsed but"
-	echo "      discarded for lacking regulator-on-in-suspend:"
-	printf '%s\n' "$DM" | grep -i "No configuration" | head -5
+	echo "      'No configuration' warnings in dmesg, which mean the node was"
+	echo "      parsed but discarded for lacking regulator-on-in-suspend:"
+	dmesg 2>/dev/null | grep -i "No configuration" | head -5
 fi
