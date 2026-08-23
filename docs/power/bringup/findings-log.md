@@ -1382,3 +1382,21 @@ block) that no master-stats view shows. Next instruments: the downstream
 master list and TZ sleep configuration (vendor tree), and the PMIC's clk
 buffer request state (`regmap` dump of the pm8953 clk buffers) during a
 window.
+
+## 2026-08-23 morning: the oracle control — half an answer, and the TZ acquitted
+
+Slot switch to UT (4.9.218 downstream), reads in
+[`captures/2026-08-23_oracle-vlow-control.txt`](captures/2026-08-23_oracle-vlow-control.txt):
+**the TZ's master stats are all-zero on the oracle too** — so the TZ never
+XO-shutting is normal platform behaviour, not our blocker; the last-master
+theory dies with it. The decisive half stays open: UT's own vlow count was 0
+through the visit, but UT **never suspended** — `rtcwake -m mem` fails
+outright on it (fail:1, its sleep path is autosleep/wakelocks), and the
+`7000000.ssusb` wakeup source is held for as long as a USB cable is in, so
+with our only measurement link plugged the oracle cannot sleep at all.
+**Whether the working system ever reaches vlow is measurable only with USB
+physically detached** — the same physical gate as the rail census, so the
+two belong in one detached-cable session (WiFi link, morning). Until that
+runs, "vlow has never been reached" describes both slots equally, and the
+night's three negatives may simply mean both systems idle in the same
+RPM state with the cable in.

@@ -1,0 +1,14 @@
+RPM Mode:vlow
+	 count:0
+time in last mode(msec):0
+time since last mode(sec):495
+actual last sleep(msec):0
+client votes: 0x11150501
+
+RPM Mode:vmin
+	 count:0
+time in last mode(msec):0
+time since last mode(sec):495
+actual last sleep(msec):0
+client votes: 0x00000000
+--- TZ (master stats): shutdown_req/wakeup_ind/bringup_req mind 0x0; suspend success=0 (ssusb wakeup-forrás kábellel folyton aktív)
