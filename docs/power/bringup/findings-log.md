@@ -1662,3 +1662,24 @@ Note the strength of the claim honestly: bits 0, 1, 2 and 4 are identified by
 direct subtraction, bit 3 only by elimination against a structural layout.
 Nothing on the AP side can make the TZ vote, so there is no experiment
 available that would promote it to a measured identification.
+
+## 2026-08-23: the wakeup teardown fix, verified on the device
+
+r70 (`debug-int/7.1.3` @`1afd8034`) is on the phone. The test the unfixed
+kernel failed, run again on both edges that failed it:
+
+| edge | armed | `wakeup` child | stop | oops |
+|---|---|---|---|---|
+| modem (`4080000`, rproc0) | `enabled` | present | `rc=0`, `offline` | **0** |
+| ADSP (`c200000`, rproc2) | `enabled` | present | `rc=0`, `offline` | **0** |
+
+Both restart cleanly with a `start` write afterwards, and the boot ends with
+`dmesg | grep -c 'Unable to handle kernel'` = 0. On r69 each of these stops
+killed the writing shell and left a NULL-deref oops behind.
+
+☠️ **The remoteproc numbers move between boots.** On the boot where this was
+first measured the ADSP was `remoteproc1`; on this one `remoteproc1` is the
+WCNSS and the ADSP is `remoteproc2`. Address the node by its platform address
+(`c200000.remoteproc` for the ADSP, `4080000.remoteproc` for the modem) or read
+`/sys/class/remoteproc/*/name` — an index copied from an older capture will
+quietly act on a different co-processor.
