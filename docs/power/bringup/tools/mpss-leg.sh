@@ -7,7 +7,8 @@
 # 2. The MPSS subtraction leg the oops cost us: with the modem actually down,
 #    which bit of the Client Votes mask moves?
 #
-# ☠️ Stopping the modem needs a reboot to undo.
+# ☠️ Stopping the modem is undone by writing "start" back to the same node
+#    (as root) and restarting ModemManager -- a reboot is not needed.
 
 OUT=/run/mpss-leg.txt
 S=/sys/kernel/debug/qcom_stats
@@ -59,4 +60,4 @@ sample M2 20
 
 log "== dmesg tail"
 dmesg | tail -15 >> $OUT
-log "== done $(date) — REBOOT to restore the modem"
+log "== done $(date) — restore with: echo start > /sys/class/remoteproc/remoteproc0/state; systemctl restart ModemManager"
