@@ -1813,3 +1813,34 @@ the ring-instrument caveat already described.
 correctness, not for vlow (already answered), and it must be applied one rail
 at a time because `regulator_register()` treats a failed probe-time sleep vote
 as fatal for every rail on the board (the r74 failure).
+
+## 2026-08-24 night — oracle vlow differential: pmOS control leg (in flight)
+
+Running the pmOS-side control for the oracle `vlow` differential (STATUS queue
+item 1, live thread A). Cable IN, no discharge — the only question is whether the
+RPM aggregate ever enters `vlow`/`vmin` while the AP idles with the display
+**genuinely DPMS-off**. Instrument:
+[`tools/`](tools/) `vlow-idle.sh` (new tonight), run under
+`systemd-run --collect --unit=vlow-idle` so an ssh drop cannot end it. It stops
+greetd, pins `card0-DSI-1` `dpms=Off` (verified, not backlight=0), confirms
+`msm_mdss` stopped counting, then samples `qcom_stats/{vlow,vmin}` Count +
+Client Votes every 30 s for 90 min, restoring greetd on exit.
+
+★ **This build's `qcom_stats` exposes only `vlow` and `vmin` — no
+`rpm_master_stats`.** The APSS master record that earlier legs differenced
+(`numshutdowns`, XO counts) is not present under `/sys/kernel/debug/qcom_stats/`
+on r73. Noted so a future leg does not assume it. `vlow`/`vmin` Count is the
+signal the oracle question actually turns on.
+
+Early samples (fresh r73 boot, uptime 178–238 s): `vlow` **0**, `vmin` **0**,
+Client Votes fluctuating (`0x1030105`, `0x1050103`, `0x7030703`) — the mask
+moves, so the instrument is live. As expected so far.
+
+☠️ **Method trap, measured tonight: a recursive read of debugfs trips the
+watchdog and reboots the phone.** `grep -rl -i shutdown /sys/kernel/debug/` (and
+`find /sys/kernel/debug -iname '*stat*'`) hung — some debugfs file blocks the
+reading task — and the debug layer's watchdog (20 s hardware timeout, started at
+probe) reset the device while it was wedged. Confirmed by the `boot_id` changing
+under the session and a fresh ~90 s uptime with no panic line. Never sweep the
+whole of `/sys/kernel/debug/` on this device; name the exact file. The `boot_id`
+check is what caught it, exactly as the runner guard intends.
