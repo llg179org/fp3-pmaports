@@ -485,6 +485,645 @@ and the one failure is a loudspeaker that does not work.
 
 Open, and not diagnosed further than the 2026-07-31 measurement.
 
+### Corrected the same day: it is not permanently dead
+
+Everything above was measured on a boot that had been up about three hours. On a
+**fresh boot** the amplifier is healthy: `RX Volume` reads and writes at 255, the
+1 s silent playback draws no clock complaint at all, and the speaker is properly
+loud — the same 1 kHz tone that moved the handset mic's peak to 95 before the
+reboot moved it to **1466** (RMS 765.7 against 3.2 in silence) after it. The
+`24-speaker-amp` check passed in the battery on that boot: 28 ok, 0 failed.
+
+So the fault is a **transition during a session**, not a constant, and the open
+question is what causes it. The 2026-07-31 measurement said the same thing in
+other words — a cold boot heals it until the first failed playback attempt —
+and the driver's error path (`aw8898_set_power(false)` after the PLL wait times
+out) is the mechanism that would make one failure permanent for the rest of the
+boot.
+
+☠️ **What I wrote this morning — "the loudspeaker is silent", "this check has
+never been seen to PASS" — was a state of one boot stated as a property of the
+phone.** Everything measured was real; the generalisation was not, and it took
+one reboot to break it. The corrected claims are in the check headers.
+
+### And the acoustic check is now failing for a third reason
+
+On the healthy boot `21-audio-acoustic` still fails, but the numbers changed
+completely: alsabat reports **peak 6000.00 Hz at 22.21 dB, total 35.3 dB in a
+5 Hz band** — a real, strong acoustic signal, at the sixth harmonic of the 1 kHz
+it played. That is distortion, not silence.
+
+`23-audio-slimbus` passes on exactly this shape, because it judges whether the
+target frequency was detected rather than trusting alsabat's exit code (it
+records `rc=21 from sidebands above the fundamental`). `21-audio-acoustic` still
+requires `rc == 0`, so it calls a working speaker broken. Open: judge it the way
+23 does, and separately find out why 1 kHz comes back with its sixth harmonic
+dominant — the amp runs at 0 dB (`RX Volume` 255) by default, so clipping is the
+first thing to rule out.
+
+### The transition reproduced on one boot, and what it costs to measure it
+
+Measured 2026-08-16, evening, with the jack plugged in. The whole day's
+uncertainty came from comparing states across boots; a before/after pair on a
+**single** boot settles it. Both halves used the same validated instrument, the
+mixer round-trip in `24-speaker-amp`:
+
+```sh
+fp3-selftest --only speaker-amp                     # before
+fp3-selftest --acoustic --only audio-acoustic,audio-headset
+fp3-selftest --only speaker-amp                     # after
+```
+
+| | `RX Volume` | |
+|---|---|---|
+| before the acoustic run | readable and writable at **255** | the amp answers |
+| after the acoustic run | reads **0**, writing it back fails | gone for the rest of the boot |
+
+So an acoustic run is what flips it, the flip is one-way, and only a reboot
+restores it. A rebind does not: unbinding warns three times at
+`_regulator_put+0x5c` and the re-probe then fails with `Chip ID check failed,
+-EIO`, so the driver cannot talk to the chip it just reset either.
+
+The `0` is a **failed read**, not a written value: `aw8898_mute()` uses
+`PWMCTRL`'s hard-mute bit, not the volume register, so nothing in the driver
+writes 0 to `HAGCCFG7`. `amixer` prints 0 because the read returned `-EIO`, and
+the kernel logs `ASoC error (-5)` from `soc_component_read_no_lock()` at the
+same moment.
+
+Still open: which operation inside the acoustic run does it. The suspect is the
+end of the stream — the only surviving `aw8898_set_power(aw8898, false)` is on
+`SND_SOC_DAPM_POST_PMD`, and a chip in power-down cannot be woken by a write
+that has to cross the bus it just stopped answering. The startup path no longer
+powers down on a clock miss (it warns `playing anyway` and returns 0), so that
+earlier one-way door is already closed and is not this one.
+
+☠️ **Two instruments lied for most of an hour, and both were unvalidated.**
+
+- A hand-rolled raw-I²C read through `/dev/i2c-N` reported the chip NAKing while
+  the driver's own `regmap_read_poll_timeout()` was succeeding in the same
+  second. It had never once been shown returning a chip ID.
+- Reading `/sys/kernel/debug/regmap/<dev>/registers` with `cache_bypass=1`
+  reported every register as `XXXX` on a chip that was answering fine. That dump
+  walks all 256 addresses live, and this chip implements a handful, so a
+  wholesale `XXXX` is the normal reading for a *healthy* part — it says nothing
+  about whether the device is on the bus.
+
+The mixer round-trip was the only path with a known positive behind it, and it
+is the one that gave the answer. Same rule as everywhere else in this file: a
+check that has never been seen succeeding cannot be read as a failure.
+
+☠️ And the i2c bus number moved again mid-investigation — `4-0034` on one boot,
+`2-0034` on the next, `4-0034` on the one after. Two scripts written that
+evening hardcoded bus 4 and spent several minutes measuring an empty address on
+a boot that had it on bus 2. Resolve it from the device `name`, the way
+`24-speaker-amp` does.
+
+### The headset mic hears it too, so the capture path is not the problem
+
+Measured 2026-08-16 with a headset plugged in, on a fresh boot. Both acoustic
+checks fail with the same shape rather than with silence: `21-audio-acoustic`
+(handset DMIC0) reports peaks at 5500 Hz / 15.7 dB and 6000 Hz / 22.0 dB, and
+`22-audio-headset` (analogue headset mic) reports 5500 Hz / 20.5 dB and
+6000 Hz / 21.7 dB — for a 1 kHz tone whose fundamental is not the peak in
+either. Two independent microphones on two different paths agree, so neither
+microphone is at fault and the headset ADC path is alive; what reaches them is a
+badly distorted version of what was played. The open question is the amplifier's
+output, not the capture side.
+
+☠️ Check order matters here: `21` and `22` sort before `24`, so a battery that
+selects all three kills the amplifier in the acoustic checks and then reports
+the I²C failure from `24` — which reads as three failures with one cause. To
+learn the amp's state *before* an acoustic run, ask for it on its own first.
+
+### Retracting the retraction: the cache was the liar, and here is why
+
+Measured 2026-08-16, later the same evening. The two probes retracted above were
+right, and the mixer round-trip that overruled them was wrong. Three probes run
+within a second of each other on a fresh boot, at 28.8 s uptime:
+
+| probe | says |
+|---|---|
+| raw chip-ID read through `/dev/i2c-N` | NAK |
+| `cache_bypass=1` regmap dump | `00: XXXX` |
+| **a real write** — `cset 'RX Volume' 254` | `-EIO`, refused |
+| a `cget` of the same control | `255`, cheerfully |
+
+The `cget` is the odd one out because it never reaches the chip. The driver's
+`regmap_config` is:
+
+```c
+static const struct regmap_config aw8898_regmap = {
+	.reg_bits = 8,
+	.val_bits = 16,
+	.max_register = AW8898_MAX_REGISTER,
+	.cache_type = REGCACHE_MAPLE,
+};
+```
+
+`cache_type` with **no `volatile_reg` callback at all**, so every register is
+cacheable. Three consequences, in rising order of seriousness:
+
+1. **A read of any register can be served from the cache**, which is why `RX
+   Volume` reads 255 on an amplifier that is not on the bus.
+2. **A write of the value already cached is skipped entirely** — regmap elides
+   it — so a "write it back to itself" probe can succeed without a single bus
+   transaction. That was the flaw in `24-speaker-amp`'s first I²C arm, now
+   fixed: it moves the control by one step (0.5 dB) and puts it back, which
+   forces the transaction.
+3. **`SYSST` (0x01) is cacheable too**, and that is the register
+   `aw8898_prepare()` polls for the PLL-lock bit. After the first read of the
+   boot, `regmap_read_poll_timeout()` is polling a cached word that cannot
+   change, so a PLL that locks late can never be observed to lock. That is a
+   candidate root cause for the entire "the PLL never locks" finding of
+   2026-07-31 - not yet confirmed by a patched kernel, and stated here as a
+   hypothesis with a source basis, not as a measurement.
+
+The fix is a `volatile_reg` marking at least the status registers volatile.
+Kernel change, `audio` category.
+
+What this does **not** explain is why a real write is refused at all. That is
+still open, and the earlier claim that "the acoustic run flips it" rests on a
+before/after pair whose "before" was a cache read - so it is withdrawn too. Two
+things survive the withdrawal, because both used a real write: an `RX Volume`
+write is refused on every boot measured tonight, whether or not a stream is
+running, and it is refused equally at 254 and at 231, so the level is not the
+variable.
+
+☠️ The lesson is one level up from "validate your probe". All three of the
+evening's probes were *validated against each other* and agreed - and the
+agreement was worthless, because two of them shared a cache. **Two instruments
+that share a layer are one instrument.** The write was the only probe that had
+to touch the wire, and it was the one worth trusting.
+
+### The `volatile_reg` fix is in, and it turned -110 into -5
+
+*2026-08-16 evening, `linux-fp3-7.1.3-r58` (`#59-fp3`,
+`_commit=5db94248edcf39f7b0d1a0aabd77c09173d78813`). The kernel change is
+`ASoC: aw8898: mark SYSST volatile so the PLL poll can see it change` on
+`wip/7.1.3/audio`, cherry-picked to `integration/7.1.3` and `debug-int/7.1.3`.*
+
+The patch does what it was written to do, and the proof is in the error code.
+Before it, `.prepare` logged
+
+```
+aw8898 4-0034: iis clock not detected (-110), playing anyway
+```
+
+`-110` is `-ETIMEDOUT`: the poll ran its full second without the condition ever
+becoming true — which is exactly what a loop spinning on one cached sample
+looks like. On the first boot of r58 the same line reads
+
+```
+aw8898 4-0034: iis clock not detected (-5), playing anyway
+```
+
+`-5` is `-EIO`: `regmap_read_poll_timeout()` now performs a real bus read on
+every iteration, and that read **fails**. The timing says the same thing
+independently — the eleven lines this boot are spread over 24.81 s to 25.43 s,
+a few tens of milliseconds apart, where a one-second timeout would have put
+them a second apart.
+
+So the PLL hypothesis is settled in a way that was not on the list of expected
+answers. It was never "the PLL fails to lock"; the driver could not read the
+register that would have told it either way. **What is actually wrong is one
+layer lower: the amplifier does not answer on I²C at all.**
+
+☠️ **And this cold boot had a dead amplifier from the start**, which the
+2026-08-16 morning boot did not. `fp3-selftest --only speaker-amp` fails both
+arms minutes after boot: the `RX Volume` write (255 → 254) is refused, and the
+clock complaint is there. Yesterday's cold boot passed both. So "cold boot
+heals it" is not reliable either — the state the phone comes up in varies, and
+that variation is now the thing to chase.
+
+What that makes the next question. Not the PLL, and not the poll: **why does a
+register access to 0x34 return -EIO on a bus whose controller probed cleanly?**
+The driver's own probe succeeded on this boot — there is no `Chip ID check
+failed` line, so the very first `regmap_read` of `AW8898_ID` went through — and
+the failures start only at 24.8 s, when DAPM first powers the widget. Between
+those two points something makes the chip stop answering, and the candidates
+worth separating are its supplies, its reset GPIO, and `SND_SOC_DAPM_POST_PMD`
+having powered it down earlier in the boot than anyone assumed.
+
+### Narrowed the same evening: it is dead before anything plays
+
+Two more boots of r58, and they move the fault well away from the stream:
+
+| boot | first `iis clock` line | amp answers? |
+|---|---|---|
+| 18:43 | 24.81 s (eleven of them) | no — both arms of `24-speaker-amp` fail |
+| 18:52 | **none at all** until the check's own `aplay` | no — the `RX Volume` write fails **before** that `aplay` |
+
+The second boot is the informative one. Nothing had played, the kernel had said
+nothing about the amplifier, and the very first thing anyone asked of it — a
+one-step `RX Volume` write — was refused. A raw I²C transaction to `0x34`,
+independent of the driver and its cache, **NAKs**. So this is not the stream, not
+DAPM's teardown of a stream, and not a regmap artefact: by the time userspace can
+ask, the chip is not on the bus.
+
+Yet the driver's own probe succeeded. There is no `Chip ID check failed` line on
+either boot, which means the first `regmap_read` of `AW8898_ID` — issued straight
+after `aw8898_reset()` toggles the reset GPIO — went through. The chip therefore
+answers at probe and stops answering somewhere between probe and userspace, with
+no audio anywhere in that window.
+
+Checked and cleared as causes:
+
+* **the supplies.** All three consumers are enabled: `4-0034-vdd` off `vph_pwr`,
+  `4-0034-dvdd` and `4-0034-vddio` off `pm8953_l5` at 1.8 V.
+* **the reset polarity**, which looked like a promising discrepancy and is not.
+  The vendor tree declares `reset-gpio = <&tlmm 21 0>` — flags `0`, active-high —
+  where ours declares `GPIO_ACTIVE_LOW`. But the vendor driver uses the legacy
+  API and ignores the flag: `aw8898_hw_reset()` drives the line **raw low, then
+  raw high**. Ours asks for logical 1 then 0 through `gpiod_`, and with
+  `GPIO_ACTIVE_LOW` that is raw low then raw high — the same waveform. The two
+  descriptions disagree and the two behaviours agree, which is the only thing
+  that matters here.
+
+**The hypothesis worth testing next**, and the one experiment that decides it:
+`SND_SOC_DAPM_POST_PMD` calls `aw8898_set_power(aw8898, false)`, which writes
+`SYSCTRL.PW = PDN`. DAPM powers widgets down when the card's widgets are first
+brought up, not only at the end of a stream — so that write plausibly lands
+during card registration, long before anything plays. If the chip stops
+acknowledging its address in PDN, then the first power-down is permanent: every
+later access fails, `aw8898_set_power(true)` included, because it is itself an
+I²C write. That fits every observation on both boots.
+
+☠️ The one thing it does not fit is the rebind, and that has to be explained
+before the hypothesis is believed: unbinding and re-probing re-runs
+`aw8898_reset()`, and a reset should bring any chip back — but it fails at
+`Chip ID check failed, -EIO`. Either PDN survives the reset pulse, or the reset
+line is not reaching the chip. Deciding between those two is what the experiment
+has to do, so it needs to be run with the reset toggled by hand as well.
+
+### The POST_PMD hypothesis is dead, and `aw8898_cfg.bin` is not on the phone
+
+*Measured on the throwaway branch `wip/7.1.3/audio-debug` (`afad60700184`),
+deployed as a module hot-swap over r58 and reverted afterwards.*
+
+The experiment answered cleanly and in the negative:
+
+```
+[   15.909845] aw8898 4-0034: component_probe: live chip id read -> 0 (0x1702)
+[   24.000970] aw8898 4-0034: iis clock not detected (-5), playing anyway
+```
+
+and `POST_PMD` was logged **zero** times on that boot. So the widget was never
+powered down, and the chip still died — the power-down write is not what takes
+it off the bus. The first line also does what it was added for: a
+**cache-bypassed** read at 15.91 s returns the real chip ID, `0x1702`, so the
+part is alive on the bus when the card binds the component, and dead eight
+seconds later.
+
+That narrows the window to what happens between card bind and the first stream,
+and there is exactly one substantial thing in it — `SND_SOC_DAPM_PRE_PMU` calls
+`aw8898_cold_start()`, which asks for the amplifier's configuration blob and,
+on the callback, writes **arbitrary register addresses out of the file**:
+
+```c
+regmap_write(aw8898->regmap, addr, val);	/* addr comes from the blob */
+```
+
+☠️ **And the blob is not installed.** `/lib/firmware/aw8898_cfg.bin` does not
+exist on this device. So `cfg_loaded` never becomes true, every widget power-up
+re-issues the request, and — much more to the point — **the amplifier has never
+been given its initialisation registers at all.** It is running on whatever the
+part powers up with, which is a perfectly good explanation for an I²S interface
+that never comes alive, and a candidate one for a chip that stops answering.
+
+Two things follow, in this order, and neither is a kernel patch:
+
+1. **Find out what the blob is and where it comes from.** The vendor tree
+   (`hadk22/kernel/fairphone/sdm632`, `sound/soc/codecs/aw/aw8898.c`) loads the
+   same file, so the vendor image should carry it — that is the thing to look
+   for, along with its licence, before anything is copied anywhere.
+2. **Only then decide what the driver should do without one.** Right now a
+   missing file is silent past a single `dev_err` and the part is left
+   uninitialised; whether that should be a probe failure, a warning, or a set of
+   built-in defaults is a real question for the upstream series, not for us
+   alone.
+
+☠️ Note what this costs the earlier write-ups: "the amplifier stops answering
+mid-session" was measured, and stays measured, but every explanation offered for
+it so far was reasoning about a chip that had never been configured. Re-measure
+the variability once the blob is in place; the boot-to-boot difference may
+simply be a race with a firmware request that can never succeed.
+
+### The blob was on the phone all along, and installing it changed nothing
+
+Both halves of item 1 above are now answered, and the answer to the second half
+made the first half cost nothing.
+
+**Where it comes from.** `aw8898_cfg.bin` is a Fairphone stock vendor file. It
+is in the extracted vendor tree at
+`hadk22/vendor/fairphone/FP3/proprietary/vendor/firmware/aw8898_cfg.bin`, from a
+`FP3-6.A.040.2-gms` stock build — and, decisively, it is **also on this phone's
+own `vendor` partition, on both slots**, byte-identical:
+
+```sh
+mount -o ro /dev/disk/by-partlabel/vendor_a /mnt/vend
+md5sum /mnt/vend/firmware/aw8898_cfg.bin	# bbcda305cedb3a26f5c29b48ae80b3ec
+```
+
+so the file never has to be redistributed to reach `/lib/firmware`: it is copied
+from the device's own stock partition to the device's own rootfs.
+
+☠️ **The licence question has a tempting wrong answer.** The AOSP build tree
+carries a `.meta_lic` next to the blob reading
+`license_kinds: "SPDX-license-identifier-Apache-2.0"`. That is soong's *default*
+for a `raw` prebuilt with no licence of its own, not a grant from Awinic or
+Fairphone — the same file names `build/soong/licenses/LICENSE` as its licence
+text, which is the build system's, not the blob's. Treat it as proprietary
+vendor content with no stated licence: fine to use on the device it shipped
+with, not something to commit to a public repository.
+
+**It is 96 bytes of register writes**, 24 entries of `(le16 addr, le16 val)`, and
+the mainline driver's parser matches the vendor's byte-for-byte — vendor
+`aw8898_container_update()` does `data[i+1]<<8 | data[i+0]` for the address and
+the same for the value, which is exactly `struct { __le16 addr; __le16 val; }`.
+The last two entries are `0x04 = 0x0044` (SYSCTRL) and `0x08 = 0x0ea0`
+(PWMCTRL), i.e. a plausible real init tail.
+
+**And with it installed, the amplifier still dies.** Measured on the boot after
+installing it: the cached register dump shows `04: 0044` and `05: 0c08`, which
+are the blob's own values, so the file loaded and the driver ran its writes;
+every live (cache-bypassed) read still returns `XXXX`.
+
+☠️ **The cached values are not evidence that the writes reached the chip.**
+`_regmap_write()` updates the cache *before* it touches the bus and returns the
+bus error afterwards, so a failed write leaves the cache looking exactly like a
+successful one. Two instruments that share a layer are one instrument.
+
+### The death window, measured to 220 ms
+
+A boot-armed poller (`/usr/local/bin/aw-poll.sh`, a `Type=simple` unit ordered
+`After=sysinit.target`) reads `AW8898_ID` through `cache_bypass` every 200 ms
+from the moment the driver's regmap appears. One boot, no playback of ours:
+
+```
+regmap appeared at 15.12
+15.23 00: 1702      <- alive
+...                    (44 consecutive samples, 9 seconds)
+24.19 00: 1702      <- last live sample
+24.41 00: XXXX      <- gone
+```
+
+and the first `iis clock not detected (-5)` follows at 24.45. Filtering the
+charger's own log spam away, **there is no other kernel event in the window** —
+no regulator change, no SSR, no pinctrl message, nothing but the first audio
+stream starting.
+
+So the chip is alive for nine uninterrupted seconds and dies within ~220 ms of
+the first stream. That also clears the poller itself of suspicion: 44 bypassed
+reads in a row did no harm.
+
+**Two hypotheses died cheaply on the way:**
+
+- *The pinmux collides.* It does not. The amplifier's I²C is `gpio22`/`gpio23`
+  (`i2c_6_default`), reset is `gpio21`, its IRQ `gpio20`, and QUIN MI2S is
+  `gpio88`/`91`/`92`/`93`. No pin is in both groups.
+- *A reset revives it.* It does not. A full unbind/rebind — which re-runs probe,
+  including the reset-GPIO pulse — fails at the very first step:
+  `Failed to read register AW8898_ID: -5`, `Chip ID check failed`,
+  `probe with driver aw8898 failed with error -5`. Once it is gone it stays gone
+  until a reboot.
+
+Next instrument, because three indirect exclusions have not separated the cases:
+a throwaway driver that does a cache-bypassed ID read at *every* step the stream
+makes — `hw_params` around each of its two `I2SCTRL` read-modify-writes,
+`.prepare` before the PLL poll, the DAPM power-up before and after
+`aw8898_set_power()`, the config write before and after, and the mute — so the
+death can be attributed to one register access instead of to "the stream".
+
+### The death has nothing to do with audio, and the kernel never says a word
+
+Every explanation offered above rested on the death coinciding with the first
+audio stream. **It does not.** The control that settles it: boot with no audio
+server at all (pulseaudio's autospawn off and its xdg autostart masked,
+pipewire and wireplumber masked), and with `systemctl set-default
+multi-user.target` so there is no graphical session either. On that boot there
+is not a single `aw8898` line in `dmesg` — no stream was ever prepared — and the
+amplifier still stops answering at 23.87 s.
+
+☠️ The earlier reading was a coincidence of timing: userspace comes up at about
+the same second on every boot, so "it dies when the first stream starts" and "it
+dies about 25 s in" are indistinguishable until you remove the stream.
+
+**What has been excluded, each by its own A/B boot** (all with the death still
+occurring):
+
+| suspect | how it was excluded |
+|---|---|
+| the audio stream | no audio server, no session, no `aw8898` log line — still dies |
+| WLAN (`iris` shares `pm8953_l5`) | `blacklist wcn36xx qcom_wcnss_pil wcnss_ctrl` — still dies |
+| our own `spkwatch` diagnostic | `systemctl disable --now spkwatch` — still dies |
+| our own liveness poller | poller disabled entirely; a single first read at 60 s already reads `XXXX` |
+| ModemManager bringing the modem up | `systemctl disable --now ModemManager` — still dies |
+| the i2c controller runtime-suspending | `power/control = on` pinned from boot — still dies |
+| the i2c pinmux going to its sleep state | `pin 22/23: device 7af6000.i2c function blsp_i2c6` while dead |
+| the reset line being asserted | `gpio21: out high` (`GPIO_ACTIVE_LOW`, so de-asserted) while dead |
+| the supplies dropping out | `vdd=1 vddio=1 dvdd=1` in the driver's own sample, taken *at* the transition |
+
+**The instrument that settles the layer.** A driver-side `delayed_work` samples
+`AW8898_ID` through `regcache_cache_bypass` every 250 ms and logs the moment the
+error code changes, so the death lands on the kernel's own timeline next to
+every other message:
+
+```
+[   17.047332] aw8898 4-0034: LIVE[cfg_write-exit]: err=0 id=0x1702
+[   24.993011] aw8898 4-0034: WATCH: id read 0 -> -5 (id=0xffff0000) reset=0 vdd=1 vddio=1 dvdd=1
+```
+
+and **there is nothing else in `dmesg` between 23.5 s and 26.5 s** — not one
+line, charger spam included.
+
+**It is the chip, not the bus.** Probing the same adapter through `/dev/i2c-N`:
+a nonexistent address (`0x20`, `0x35`) returns `EIO`, which is what this
+controller reports for a NAK, so `EIO` from the amplifier means the part is not
+acknowledging rather than that the bus is broken. A full `0x03`–`0x77` scan with
+the chip dead answers **nothing at all**.
+
+**The blob does load and every write succeeds.** With `aw8898_cfg.bin` in place
+the log shows `EXP: loaded aw8898_cfg.bin - size: 96` and all 24 writes
+returning `0`, ending `reg 0x0004 = 0x0044`, `reg 0x0008 = 0xa00e`. So the
+amplifier *is* initialised now — the missing blob was a real defect, and fixing
+it did not fix the silence.
+
+**Death times measured so far** (uptime seconds, various boots and
+configurations): 23.92, 24.41, 24.55, 24.99, 25.04, 25.25, 25.51 — and one
+outlier at 34.16. Tightly clustered around 25 s and anchored to boot, not to any
+event we have been able to name.
+
+Open lead being tested next: the kernel's own late regulator cleanup
+(`regulator_init_complete_work_function`, 30 s after `late_initcall_sync`) or
+another boot-anchored timer turning off a rail the amplifier needs but our
+device tree does not describe — which would explain a chip that is powered
+according to the framework, out of reset, and electrically absent.
+
+#### 2026-08-17: four arms, one oracle, and `sync_state()` ruled out
+
+All of this was measured with a new instrument that talks to the chip **straight
+on the i2c bus** (`/dev/i2c-N` with `I2C_SLAVE_FORCE`, bus resolved from the
+`*-0034` device name because the adapter number moves between boots). That
+matters: the driver's `regmap_config` caches and declares no `volatile_reg`, so
+anything read through the driver can report a plausible value for a chip that is
+not on the bus at all. The tool was first pointed at an already-dead chip and
+returned 21 failures out of 21 reads — a verifier that has not been shown failing
+proves nothing, so that came first.
+
+It ran from a `Type=simple` unit ordered `After=sysinit.target`, because the
+death is earlier than sshd and cannot be caught from the host. Both instruments
+are in [`docs/audio/tools/`](audio/tools/): `awpoke.py` for one-shot reads and writes,
+`awwatch.py` for the boot-window A/B (`control` / `pdn` / `vendor` / `cp` arms).
+
+**The death is invariant.** Four boots, four arms:
+
+| arm | what it wrote at ~15 s | last good read | died |
+|---|---|---|---|
+| control | nothing | 23.90 | 24.16 |
+| pdn | `SYSCTRL = 0x0007` (as found) | 24.07 | 24.32 |
+| vendor | `SYSCTRL = 0x0045` — accepted, read back | 24.12 | 24.37 |
+| control, `multi-user.target`, no session | nothing | 24.32 | 24.58 |
+
+So it is not the chip's register state, and it is not the graphical session or
+the sound server: the last row had **no `aw8898` line in dmesg at all** and died
+on schedule. ⚠️ In an earlier boot the driver's `iis clock not detected (-5)`
+messages started at 24.46 s, a fifth of a second *after* the chip had already
+stopped answering — those messages are a consequence of the session opening the
+sink into a dead chip, not the cause. The window is ±0.3 s across every boot,
+which is the signature of a kernel timer rather than of anything userspace does.
+
+**`sync_state()` is ruled out.** The `syncstate-snap.sh` sampler shows **no
+`state_synced` flag changing anywhere** — not across the death window, not across
+the whole run (14.9 s → 84.5 s). Exactly one device is still unsynced,
+`soc@0/1800000.clock-controller`, and it is still unsynced at the end, so its
+callback has not run at all.
+
+☠️ The first run of that sampler was worthless and looked clean: its three-level
+glob under `/sys/devices/platform` reached **13 of the 39** `state_synced` files
+and none of the i2c devices, so it could not have seen the amplifier's own
+supplier sync even if that had been the cause. The script now walks the tree with
+`find`; the verdict above is the run with 39/39 coverage.
+
+**The Ubuntu Touch oracle, read the same night.** On the vendor 4.9 kernel the
+amplifier sits at `6-0034` and **answers every register at 9 minutes of uptime**
+— same silicon, so the death is ours, not a property of the part. Two things came
+out of the comparison:
+
+* **The vendor device tree gives the aw8898 no supply at all.** Its probe reports
+  only `reset gpio provided ok` and `irq gpio provided ok`, and no regulator in
+  `regulator_summary` lists it as a consumer. So the mainline `l5` choice is our
+  invention, and the `l10` that drifts 2850→2800 mV is consumerless on the oracle
+  too. Both directions of the earlier plan are answered: the rail we are looking
+  for is not described on either side, which points at an always-on rail or an
+  external switch rather than at a PMIC regulator the kernel manages.
+* The vendor idles at `SYSCTRL = 0x0045` (charge pump active, I2S enabled) where
+  we idle at `0x0007` (both powered down). Writing the vendor's value changed
+  nothing — see the table — so this is a difference, not the lever.
+
+Vendor register semantics confirmed from
+`hadk22/kernel/fairphone/sdm632/sound/soc/codecs/aw/aw8898_reg.h`: `SYSCTRL`
+bit 0 is `PW_PDN` (1 = powered down), which is the polarity our driver already
+uses. The golden trace is `docs/audio/` material; the vendor blob stays out of
+the repo.
+
+What is left, in order: something un-logged in the kernel at ~24 s takes the
+chip's power or reset away. The reset line and the pinmux were excluded earlier
+with instruments that read through the driver's cache, so those exclusions are
+worth re-running with the bus-direct tool before looking further.
+
+## ~~The phone was stuck at a hang and needed a button press~~ — recovered 2026-08-17
+
+**Resolved.** The way back in was not any of the host-side attempts below: it was
+the **UBports recovery**, reached with a button press, whose adb shell can mount
+the pmOS filesystems directly. `system_b` (`mmcblk0p31`) carries an embedded
+msdos table — `/boot` at offset 1048576, root at 511705088 — so
+`losetup -o <offset>` plus `mount` gives read-write access to `extlinux.conf`
+without booting pmOS at all. That is worth remembering as the general recovery:
+**anything on disk can be fixed from the recovery, no matter how badly the
+default boot entry is broken.** The clean `append` line was restored from
+`extlinux.conf.bak-aw`, `panic=10` was added to both labels (neither had it), and
+`fp3-selftest --only boot-fallback` is green. Full battery afterwards: 29 ok,
+1 failed, 3 skipped — the one failure being the open `24-speaker-amp` case.
+
+☠️ The recovery reboot leaves **slot `a`** active (the Ubuntu Touch side), so
+`fastboot set_active b` is needed before pmOS will boot again.
+
+The original state, kept because the attempts below are the useful part:
+
+**State, 2026-08-16 ~21:00.** The device does not boot and does not enumerate on
+USB at all. The last good boot was 20:54:15; the reboot at 20:57:23 never came
+back, and 25 minutes of polling saw nothing on `lsusb`.
+
+**What did it.** I added `fw_devlink=off` to the kernel command line, in
+`/boot/extlinux/extlinux.conf`, to test whether a `sync_state()` callback was
+turning off a rail the amplifier needs. It hangs before the USB gadget comes up,
+so there is no console, no ssh and no fastboot — and the parameter is on disk, so
+every reboot repeats it. The watchdog does not save it either, which places the
+hang before the watchdog driver probes.
+
+☠️ **The rule this broke is already written down**: *a kernel experiment must
+never block boot*. A command-line change is exactly that class of change, and I
+made it with no armed fallback — on a device whose only two channels (ssh over
+USB and ssh over WiFi) both need userspace to be running. The cost is not the
+experiment, which was a fair one, but that it was staged in the one place that
+cannot be undone from the outside.
+
+**Recovery, needs a hand on the phone:**
+
+1. Hold **power** for ~15 s to force it off.
+2. Hold **volume up** while powering on to reach the lk2nd boot menu, and pick
+   the second entry (`postmarketOS-fallback`) — its `append` line was never
+   touched and still has the clean command line.
+3. Once up, undo the change; the untouched original is already saved next to it:
+
+```sh
+sudo cp /boot/extlinux/extlinux.conf.bak-aw /boot/extlinux/extlinux.conf
+grep append /boot/extlinux/extlinux.conf	# no fw_devlink=off, no regulator_ignore_unused
+```
+
+**What was tried from the host, 2026-08-16 23:00–00:00, and what it settled.**
+The phone reached fastboot (ABL, `version-bootloader 6.A.039`, `unlocked: yes`,
+`secure: no`), which made it worth asking whether the hang could be undone
+without a hand on the phone at all. It cannot, and the attempts are worth
+recording because each one looked promising:
+
+| attempt | result |
+|---|---|
+| `fastboot flash boot_b <our boot image>`, then reboot | flash OKAY, phone returns to fastboot, `slot-retry-count:b` still **6** — never attempted, so the image is rejected by validation |
+| same, with the boot header's `id` (SHA1) field filled in | same rejection; the empty `id` was not the difference |
+| `fastboot boot` with the gzip `vmlinuz` + appended dtb | `FAILED (remote: 'dtb not found')` |
+| `fastboot boot` with the raw `Image` + appended dtb | `FAILED (remote: 'unknown reason')` — so the appended dtb is only found on an uncompressed kernel |
+| same, with the ramdisk moved to `0x82000000` (the 28 MB kernel at `0x80008000` overlapped `0x81000000`) | unchanged: `unknown reason` |
+| **`fastboot boot lk2nd.img`** — the image that boots perfectly when flashed | `FAILED (remote: 'unknown reason')` |
+
+The last row is the one that matters: **`fastboot boot` fails identically for a
+known-good image**, so it is broken on this bootloader for every input, and the
+whole dtb / `id` / load-address investigation above was chasing a message that
+was never about the image. The lesson is now rule 22 in `fp3-kernel-test`, and
+the procedure lives in [`../deploy/README.md`](deploy/README.md) under *If the
+phone does not boot at all*. `lk2nd.img` was flashed back to `boot_b` afterwards,
+so the normal boot chain is intact and the button press is all that is missing.
+
+☠️ The fastboot USB link freezes if a command is interrupted (an outer `timeout`
+firing mid-transfer is enough) and every later command then hangs; a
+`USBDEVFS_RESET` on the device node clears it immediately.
+
+**Also left on the device, all deliberate and all reversible from a shell:**
+
+| change | undo |
+|---|---|
+| `graphical.target` → `multi-user.target` | `systemctl set-default graphical.target` |
+| pulseaudio autospawn off, xdg autostart masked | `sed -i 's/^autospawn = no/; autospawn = yes/' /etc/pulse/client.conf`; `rm ~/.config/systemd/user/app-pulseaudio@autostart.service` |
+| pipewire/wireplumber masked | `systemctl --user unmask pipewire.service pipewire.socket wireplumber.service` |
+| WLAN blacklisted | `rm /etc/modprobe.d/zz-fp3-wlan-off.conf` |
+| `spkwatch`, `ModemManager`, `aw-poll` disabled | `systemctl enable --now spkwatch ModemManager` |
+| `regsnap.service` (per-second regulator snapshots) | `systemctl disable --now regsnap` |
+| the instrumented `snd-soc-aw8898.ko` | `cp /root/aw8898.ko.r58 /lib/modules/$(uname -r)/kernel/sound/soc/codecs/snd-soc-aw8898.ko && depmod -a` |
+| `/lib/firmware/aw8898_cfg.bin` | **keep it** — it is stock content from the phone's own vendor partition and it is what the driver has always been asking for |
+
+The experiment kernel is preserved on the fork as `wip/7.1.3/audio-debug`, tagged
+`archive/wip-7.1.3-audio-debug-watch`; nothing on any shipping branch changed.
+
 ## ~~The lock screen went black~~ — settled 2026-08-16: it points at a wallpaper that is not installed
 
 phosh draws the lock screen from `org.gnome.desktop.screensaver picture-uri`,
