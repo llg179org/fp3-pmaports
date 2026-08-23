@@ -484,6 +484,28 @@ the power path.
     zero RCU stalls. Two failure modes, one watchdog — do not merge them until
     something links them.
 
+33f-4. ★ **The CCI timeout also happens at boot, before anything touches the
+    camera.** Observed 2026-08-23 on a deliberately fresh boot of r73, 13 s in:
+
+    ```
+    [ 12.958088] qcom,apr remoteproc1:...apr_audio_svc...: Adding APR/GPR dev: aprsvc:service:4:b
+    [ 13.159624] i2c-qcom-cci 1b0c000.cci: master 0 queue 0 timeout
+    [ 13.160110] imx363 0-001a: Error reading reg 0x0016: -110
+    [ 13.169992] remoteproc remoteproc2: remote processor a204000.remoteproc is now up
+    ```
+
+    So the sensor's first register read fails, at probe, wedged between the APR
+    audio service registering and the second remoteproc finishing its
+    bring-up — with no camera client in existence. That matters for 33f-2 and
+    33f-3, both of which explain the same timeout by a *client* colliding with a
+    teardown: here there is no client and no teardown. Whatever arbitration is
+    missing on this bus is missing at probe too.
+    ☠️ **One observation, not a rate.** It has been seen on exactly one boot so
+    far, because the phone retains only two boots of journal (see the rootfs
+    item in [`STATUS.md`](STATUS.md)) and the earlier ones are gone. Confirm the
+    rate with `docs/power/bringup/tools/kmsg-tap.sh`, which keeps the log on the
+    host across reboots, before treating it as deterministic.
+
 33g. **Focusing on demand works; focusing on a *point* still stops in
     PipeWire.** The zones and the `AfMetering`/`AfWindows` controls a tapped
     point needs are implemented in the IPA, but PipeWire's libcamera plugin maps
