@@ -339,13 +339,19 @@ is now item 4.
    9.0/s, MPSS 2.5/s vs 3.1/s, APSS 0 both) — read via `modprobe
    rpm_master_stats` → `/sys/kernel/debug/qcom_rpm_master_stats/` (module is
    `=m`, not auto-loaded; that is the dir name). So the gate is **not** the
-   co-processors and **not** a missing instrument — it is the **RPM aggregate**:
-   `vlow`'s `Client Votes` mask is never 0 on pmOS, so some client always holds
-   it up. **Next step (no build): decode which client never releases, and the
-   mystery bit 3.** Details + captures in `power/bringup/findings-log.md`
-   (2026-08-24 correction) + `captures/2026-08-24_pmos-master-stats-windowed.txt`.
-   This retires live-thread 2a (runtime-idle oracle); the **USB-detached
-   suspend-region** oracle run still needs a physical unplug.
+   co-processors and **not** a missing instrument. ☠️ The `Client Votes` mask
+   decode is already CLOSED (2026-08-23: 5 bits/5 masters, bit 3 = TZ inert, no
+   mystery holder) — the STATUS item-1 "bit 3" thread below is **stale, mark it
+   closed**. **Synthesis: `vlow`=0 is uncorroborated by any per-master deficit.**
+   Both `rpm_master_stats` readers are the same ported driver on the same RPM
+   message-RAM, and on it pmOS matches the oracle. So `vlow`=0 most likely
+   reflects a counter that does not increment on this RPM the way mainline names
+   it, not a power defect; the real metric is absolute draw (already measured:
+   suspend ≈ halves it, ~79–83 mA baseline). Details + captures in
+   `power/bringup/findings-log.md` (2026-08-24 correction + synthesis) +
+   `captures/2026-08-24_pmos-master-stats-windowed.txt`. This retires
+   live-thread 2a (runtime-idle oracle) **and** the bit-3 thread; the
+   **USB-detached suspend-region** oracle run still needs a physical unplug.
 
    ☠️☠️ **The regulator candidate for `vlow` is KILLED — stated as loudly as a
    positive result would be, per this item's own rule.** The runtime equivalent
@@ -377,12 +383,15 @@ is now item 4.
         is answerable only over the WiFi link with USB physically detached. If
         the oracle never reaches `vlow` either, "vlow has never been reached"
         may just be how both slots idle, and the target itself needs rethinking.
-      - **bit 3 of the `Client Votes` mask** — the one bit no named master
-        (APSS=0, MPSS=1, PRONTO=2, LPASS=4) ever sets, on either slot, under any
-        knob. Whatever it stands for is not one of the five masters the RPM's
-        own stats enumerate, and it may be the thing the RPM waits on. Next
-        instrument for it is the same recipe under `xo_sleep_off=1` read
-        in-window (see `findings-log.md`, the ring-instrument caveat).
+      - ~~bit 3 of the `Client Votes` mask~~ ☠️ **CLOSED 2026-08-23 — bit 3 is
+        the TZ, not a mystery sixth client.** The mask is 5 bits indexed by the
+        RPM message-RAM slot layout (bit 3 = TZ, whose master-stats are all-zero
+        on both systems, so it never participates). The search for a sixth client
+        stopped. And 2026-08-24 showed pmOS's co-processors vote XO at
+        oracle-equivalent rates — so this thread is fully retired; what remains
+        is the USB-detached oracle (above) and, more to the point, that `vlow`=0
+        is uncorroborated by any per-master deficit (see findings-log 2026-08-24
+        synthesis).
    3. Both live threads are **cross-processor / physical** — the levers may live
       in the modem/wcnss firmware's own sleep config, not in Linux. Treat "full
       `vlow`" as no longer purely machine-doable from this side; the

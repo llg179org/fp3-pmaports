@@ -48,11 +48,16 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    9.1/s XO (oracle 9.0/s), MPSS 2.5/s (oracle 3.1/s), APSS 0 (both), LPASS
    asleep-and-staying-down. So "restore rpm_master_stats" was a **wrong** next
    lever — it already exists, and it shows the co-processors sleeping fine while
-   `vlow` stays 0. **The real next step is to decode the vlow `Client Votes`
-   mask** (never 0 on pmOS: `0x7030703`, `0x15171317`, …) — which client always
-   holds the aggregate up, and what is the STATUS item-1 mystery **bit 3** — with
-   no build needed. Full write-up + captures in `findings-log.md` (2026-08-24
-   correction) and `captures/2026-08-24_pmos-master-stats-windowed.txt`.
+   `vlow` stays 0. ☠️ **And the mask decode is already CLOSED (2026-08-23): five
+   bits for five masters, bit 3 = TZ (inert), no mystery holder** — do not
+   re-open it. **The synthesis: `vlow`=0 is uncorroborated by any per-master
+   deficit** — both `rpm_master_stats` readers are the same ported driver on the
+   same RPM message-RAM, and on it pmOS matches the oracle (co-procs vote XO, AP
+   does not, on both). So `vlow`=0 most likely reflects a counter that does not
+   increment on this RPM the way mainline names it, not a power defect; the real
+   metric is absolute draw (slope legs: suspend ≈ halves it, ~79–83 mA baseline).
+   Full write-up + captures in `findings-log.md` (2026-08-24 correction +
+   synthesis) and `captures/2026-08-24_pmos-master-stats-windowed.txt`.
 
 ## The LPASS question is CLOSED (2026-08-21), and here is where it went
 

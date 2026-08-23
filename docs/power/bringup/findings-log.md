@@ -1958,21 +1958,42 @@ on the oracle also vote XO on pmOS.
 
 ### What that leaves as the real gate
 
-1. **The RPM aggregate, not the masters.** `vlow`'s `Client Votes` mask on pmOS
-   is **never 0** through the whole idle window (`0x7030703`, `0x5010307`,
-   `0x15171317`, …) — something is always voting the aggregate up even while
-   MPSS and PRONTO are cycling their XO down. Decoding *which* client never
-   releases (and the STATUS item-1 mystery **bit 3**) is now the direct next
-   step, and the instrument for it — `qcom_rpm_master_stats` **and** the vlow
-   `Client Votes` field — is on the device with no build needed.
+1. ☠️ **The `Client Votes` mask is NOT where the holder hides — that decode is
+   already closed (2026-08-23) and I nearly re-ran it.** The mask is five bits
+   for the five RPM masters, indexed by the message-RAM slot layout: bit 0 APSS,
+   1 MPSS, 2 PRONTO, **3 TZ**, 4 LPASS. Bit 3 is never set because the TZ does
+   not participate (its master-stats block is all-zero on both systems) — it is
+   **not** an unexplained sixth client; "the search for a sixth client should
+   stop" (see the 2026-08-23 decode entries below and
+   [`leads/rpm-sleep-set.md`](leads/rpm-sleep-set.md)). So the mask being
+   "never 0" just reflects the masters' up/down churn, and it names no standing
+   holder. My proposing to "decode which client never releases" was re-opening a
+   closed thread — recorded here as the correction.
 2. **The one behavioural difference is LPASS.** On the oracle LPASS cycles
    (XO count climbing 11.9/s); on pmOS LPASS takes one shutdown at ~34 s and
    **stays down** (XO count frozen), which is the LPASS-CLOSED steady state and
-   is if anything *deeper*, not shallower. So LPASS is unlikely to be the vlow
-   gate, but it is the only master whose behaviour differs and is worth a second
-   look once the Client Votes decode names the holder.
+   is if anything *deeper*, not shallower. Unlikely to be the gate.
 
-☠️ **Discipline note.** The retracted entry was written and committed before the
-instrument was tried — it reasoned from `qcom_stats.c` source ("RPMh-only") to
-"pmOS can't show this" and stopped, when a one-line `modprobe` would have shown
-it. Read the device before concluding what the device cannot do.
+### ★★★ The synthesis: `vlow` = 0 is uncorroborated by any per-master deficit
+
+Both `rpm_master_stats` readers — pmOS's and UT's — are the **same** ported
+downstream driver reading the **same** RPM message-RAM, so this is a true
+apples-to-apples comparison, not two different instruments. On it, **pmOS matches
+the working oracle**: co-processors vote XO down at the same rates, the AP votes
+XO on neither, the mask holds no unexplained vote. The mainline `vlow`/`vmin`
+aggregate counter reading 0 on pmOS is therefore **not corroborated by any
+per-master sleep deficit** — every master we can read is sleeping as it does on
+the slot that works. The most likely reading is that `vlow` is a
+counter/firmware-record that does not increment on this SoC's RPM the way the
+mainline driver names it, **not** evidence of a power defect. The real
+power metric was never this counter — it is absolute draw, already measured (the
+slope legs: suspend roughly halves the drain, sleep baseline ~79–83 mA), and
+that is where an actual regression would show.
+
+☠️ **Two disciplines this cost, both worth keeping.** (a) The retracted entry
+reasoned from `qcom_stats.c` source ("RPMh-only") to "pmOS can't show this" and
+stopped, when one `modprobe` showed it — read the device before concluding what
+it cannot do. (b) I then proposed decoding the mask as the next step without
+first reading the closed 2026-08-23 decode — the same "closed in a lead,
+invisible from the resume page" trap the runbook warns about. Read the prior
+findings before proposing a next measurement.
