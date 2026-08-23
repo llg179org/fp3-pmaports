@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 00:30**.
+Last updated: **2026-08-24 01:10**.
 
 ## The device
 
@@ -158,11 +158,34 @@ list; do not stop at the end of an item to report.
    fallback intact, not a package removal.
    ☠️ `apk del` on a package that is not installed reports a bare `1 error` and
    nothing else; `-v` is what makes it say why.
-7. **Measure whether `base_dir` fixes the kernel ccache hit rate.** The source
-   path carries the commit hash, so every bump is a new absolute path and
-   direct-mode hits are expected to miss; `base_dir` is empty. The test is one
-   file compiled from two directory names around a `ccache -z`, then the next
-   real bump's wall-clock.
+7. ★ **`base_dir` measured, and it was set on the wrong cache. Applied; the
+   real verification is the next kernel bump.**
+   Measured 2026-08-23 in the native chroot with a synthetic harness (same
+   source, two absolute paths, `-g` and a differing `-I`), control shown hitting
+   first so the harness is not blind:
+
+   | configuration | hits |
+   |---|---|
+   | control, same path twice | **1 / 2** — harness works |
+   | `hash_dir=true`, no `base_dir` | 0 / 2 |
+   | `hash_dir=true`, `base_dir` set | 0 / 2 |
+   | `hash_dir=false`, no `base_dir` | **0 / 2** |
+   | `hash_dir=false`, `base_dir` set | **1 / 2** |
+
+   So the changed absolute path really is what costs the hit, and `base_dir`
+   recovers it — **but only together with `hash_dir=false`**, which the kernel
+   cache already had. ☠️ **And `base_dir` was already present — on
+   `cache_ccache_aarch64`, which the kernel build does not use.** The kernel
+   compiles with x86_64-hosted cross tools, so its cache is
+   `cache_ccache_x86_64`, and that one had `max_size`/`hash_dir` and no
+   `base_dir`. Added `base_dir = /home/pmos` there (`builddir` is
+   `$srcdir/linux-$_commit`, so `/home/pmos/build/src/linux-<hash>` changes
+   every bump); the previous file is kept as `ccache.conf.bak-20260824`.
+   ☠️ **Not yet verified on a real build** — a synthetic two-file harness is not
+   a kernel. The measurement that settles it is `ccache -z` before the next
+   `_commit` bump and `ccache -s` plus wall-clock after it. Until then this is
+   "the mechanism is confirmed and the config now matches it", not "the hit rate
+   improved".
 
 **Waiting on a human, skip over them:**
 
