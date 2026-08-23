@@ -1683,3 +1683,49 @@ WCNSS and the ADSP is `remoteproc2`. Address the node by its platform address
 (`c200000.remoteproc` for the ADSP, `4080000.remoteproc` for the modem) or read
 `/sys/class/remoteproc/*/name` — an index copied from an older capture will
 quietly act on a different co-processor.
+
+## 2026-08-23: an amixer write can NULL-deref the WCD9335, and the source says why
+
+The oops that ended the r70 battery was not the smd teardown. Its trace names
+one function:
+
+```
+pc : slim_rx_mux_put+0x74/0x188 [snd_soc_wcd9335]
+     snd_ctl_elem_write -> snd_ctl_ioctl -> __arm64_sys_ioctl
+CPU 4  PID 6745  Comm: amixer     WnR = 1, addr 0x0000000000000008
+```
+
+`slim_rx_mux_put()` begins, after a same-value early return, with an
+unconditional
+
+```c
+list_del_init(&wcd->rx_chs[port_id].list);
+```
+
+and `wcd->rx_chs[]` is only ever a `memcpy` of the const `wcd9335_rx_chs`
+table in `wcd9335_codec_probe()` — whose `list` members are **zero**. The
+heads are initialised in exactly one place, `wcd9335_set_channel_map()`, which
+runs when the machine driver sets up the DAI, not at probe. Until then
+`__list_del()` does `next->prev = prev` with `next == NULL`, which is a write
+to offset 8 of NULL: **the faulting address, with `WnR = 1`, exactly.**
+
+So the guard that normally hides this is nothing more than the order things
+usually happen in — audio comes up, `set_channel_map` runs, the heads become
+valid. Write the mux before that, or in a state where it never ran, and
+userspace takes the kernel down through an ordinary `snd_ctl` ioctl.
+
+☠️ **How it was found is worth as much as the finding.** Two mistakes had to
+land together. The verification grep for the teardown fix was
+`grep -c 'Unable to handle kernel'`, which is a *subset* of what an arm64 oops
+prints — the reliable marker is `Internal error: Oops:`, which is what the
+`10-health` check looks for and what caught this. And the ADSP was stopped out
+from under a selftest battery that was already running, so two destructive
+measurements overlapped on one device. The narrow grep is why "zero oopses"
+was reported for a boot that contained one.
+
+**Not yet measured:** whether a clean boot reproduces it without stopping the
+ADSP first. That is the leg that separates "a missing `INIT_LIST_HEAD` at
+probe, reachable any time before audio starts" from "only reachable once the
+DSP has gone away". The fix is the same either way — initialise the heads in
+`wcd9335_codec_probe()` beside the `memcpy` — but the commit message and the
+upstream framing depend on the answer.
