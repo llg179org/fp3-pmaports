@@ -1,0 +1,13 @@
+adsp is /sys/class/remoteproc/remoteproc2 (state: running)
+== control window, ADSP running
+  CONTROL: pre  LPASS=47 vlow=0 vmin=0
+  CONTROL: post LPASS=47 vlow=0 vmin=0
+== stopping the ADSP
+   state now: offline
+== test window, ADSP offline
+  TEST: pre  LPASS=52 vlow=0 vmin=0
+  TEST: post LPASS=52 vlow=0 vmin=0
+== restarting the ADSP
+   state now: running
+   LPASS after restart: 52
+== DONE

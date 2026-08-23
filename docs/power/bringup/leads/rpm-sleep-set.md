@@ -497,3 +497,47 @@ q6/APR over SLIMbus, up from bring-up and never torn down. That is the next
 subtraction, run the same way, with the same BEFORE premise check. ☠️ It is also
 the next hypothesis attractive enough to be believed without the experiment;
 the sensors were exactly that an hour ago.
+
+## ☠️☠️ 2026-08-23, same evening: the ADSP is not the gate either — retraction
+
+Earlier today this page and `STATUS.md` called LPASS **"a name for what the RPM
+is waiting for"**, on the strength of it being the one master that stops voting
+itself down. That framing is **withdrawn**, and it was withdrawn by the obvious
+control, which took eleven minutes to run and should have been run before the
+claim was written.
+
+[`../tools/adsp-vlow.sh`](../tools/adsp-vlow.sh) removes the *master*, not its
+clients: `remoteproc` stopped by name (`grep -l '^adsp$'
+/sys/class/remoteproc/*/name` — indices move between boots), one 30 s suspend
+window before and one after. Raw:
+[`../captures/2026-08-23_adsp-offline-vlow.txt`](../captures/2026-08-23_adsp-offline-vlow.txt).
+
+| window | ADSP | LPASS `Shutdown count` | `vlow Count` | `vmin Count` |
+|---|---|---|---|---|
+| CONTROL | running | 47 → 47 | **0 → 0** | 0 → 0 |
+| — stop — | 47 → 52 during teardown | | |
+| TEST | **offline** | 52 → 52 | **0 → 0** | 0 → 0 |
+
+**With the ADSP powered off entirely, the RPM still does not reach `vlow`.** A
+master that is not running cannot be the one withholding a sleep vote, so
+whatever gates `vlow` here is not the ADSP. The restart at the end brought the
+whole audio path back — APR services re-added, SLIMbus controller re-registered,
+the jack input re-created — which is r73's SSR fix working, and incidental here.
+
+**What survives the retraction**, stated no more strongly than it was measured:
+
+- The ADSP really does stop shutting down at ~34 s of uptime, on every boot
+  measured, and re-pins within five seconds of being let go. That is a genuine
+  anomaly and plausibly a genuine current cost.
+- It is **not** the `vlow` gate.
+
+Those are now two separate investigations that were briefly one. `vlow` has
+resisted the whole AP-side sleep-set family, the `xo_sleep_off` knob,
+`both_sets`, `sleep_init`, and now a powered-off ADSP — which raises the prior on
+the one control still unrun, the oracle with USB detached: whether a *working*
+system ever reaches `vlow` on this SoC at all.
+
+☠️ The lesson is the same one this page keeps re-learning. "One master is not
+voting" is a mechanism, and a mechanism that explains the symptom is not evidence
+that it causes it. The distinguishing experiment was cheap and available the
+whole time.
