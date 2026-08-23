@@ -190,13 +190,19 @@ may describe both slots equally.
 5. **The three experiment knobs stay default-off** (`clk_smd_rpm.
    xo_sleep_off`, `qcom_smd_regulator.both_sets`, `icc_smd_rpm.sleep_init`,
    all in r69); design their upstream forms only after a measured positive.
-6. **Release the internal digital codec's LPASS clocks** —
-   `msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` unconditionally and
-   drops them only in `remove()`, which pins the ADSP awake for the life of the
-   boot. ☠️ **Upstream code, not ours**, and on this board that codec is not in the
-   audio path. Worth doing for correctness and upstreamable; it is **not** a power
-   fix, because the leg prices the whole mechanism at ~4 %. Detail in the audio
-   section above.
+6. **Release the internal digital codec's LPASS clocks** — ☠️ **half of this is
+   already done and the entry was stale until 2026-08-23.** In the tree the
+   package builds, `mclk` is requested per stream (`.startup`/`.shutdown`, with
+   a comment naming the ADSP); the upstream base has no such code, so that half
+   is ours. What is still held for the life of the boot is **`ahbix-clk` alone**,
+   enabled in `msm8916_wcd_digital_probe()` and dropped only in `remove()`.
+   ☠️ It cannot simply be moved per-stream the way `mclk` was: it is the AHB
+   interface clock behind the codec's MMIO regmap, so every register access
+   outside a stream — DAPM widgets, mixer controls — needs it. The honest fix is
+   runtime PM around register access, which is a real piece of work, not a
+   one-liner. On this board the codec is not in the audio path, and the leg
+   prices the whole mechanism at ~4 %, so this stays correctness-and-upstream
+   work rather than a power fix. Detail in the audio section above.
 
 ☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
 code that has not been written; it is blocked on not knowing which vote is left.

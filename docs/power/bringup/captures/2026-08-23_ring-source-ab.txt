@@ -1,0 +1,31 @@
+== ring-source Sun Aug 23 07:52:55 CEST 2026 uptime=543.49 window=60s
+== irq lines:
+ 24:      21972          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+136:        715          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        466          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        338          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+== services: active active 
+--- A: baseline (everything running)
+A window=60s
+  before: 24 21989;136 715;140 466;141 338;
+  after:  24 23883;136 715;140 490;141 340;
+  delta:  irq24=+1894 irq136=+0 irq140=+24 irq141=+2 
+--- B: ModemManager stopped
+B window=60s
+  before: 24 24048;136 715;140 490;141 340;
+  after:  24 26053;136 715;140 523;141 340;
+  delta:  irq24=+2005 irq136=+0 irq140=+33 irq141=+0 
+--- C: rmtfs stopped as well
+  rmtfs now: failed
+C window=60s
+  before: 24 28858;136 717;140 568;141 341;
+  after:  24 30702;136 717;140 588;141 341;
+  delta:  irq24=+1844 irq136=+0 irq140=+20 irq141=+0 
+--- D: both started again (recovery control)
+A dependency job for ModemManager.service failed. See 'journalctl -xe' for details.
+D window=60s
+  before: 24 33288;136 717;140 614;141 341;
+  after:  24 35276;136 717;140 645;141 341;
+  delta:  irq24=+1988 irq136=+0 irq140=+31 irq141=+0 
+== services at the end: inactive active 
+== done Sun Aug 23 07:59:29 CEST 2026

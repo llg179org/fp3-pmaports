@@ -1560,3 +1560,37 @@ genuinely reflects in-window state and bit 3's silence becomes the whole
 question. If bit 0 still reads set, the mask is an awake-state register and
 cannot answer anything about the sleep decision at all — worth knowing before
 anyone builds on it.
+
+## 2026-08-23 morning: the modem's signal ring is not ours — taking the AP-side QMI clients away changes nothing
+
+The remaining suspicion about the ~one-per-2-s modem-edge poke was that an
+AP-side client holding an open channel earns flow-control interrupts back even
+without sending messages. Tested directly: four 60 s awake windows counting
+the modem edge's IRQ line (GIC 174), taking the userspace qrtr consumers away
+one at a time ([`tools/ring-source.sh`](tools/ring-source.sh),
+[`captures/2026-08-23_ring-source-ab.txt`](captures/2026-08-23_ring-source-ab.txt)):
+
+| leg | state | modem edge (GIC 174) | rpm edge (GIC 200) |
+|---|---|---|---|
+| A | everything running | +24 | +1894 |
+| B | ModemManager stopped | +33 | +2005 |
+| C | rmtfs stopped as well | +20 | +1844 |
+| D | started again | +31 | +1988 |
+
+**The ring does not care.** With both `ModemManager` and `rmtfs` gone the poke
+rate sits inside the same spread as the baseline — if anything B is the
+busiest leg. So the modem produces this traffic on its own, and no userspace
+policy on our side will quiet it. That closes the "quiet the QMI services"
+branch for good; what remains is the modem firmware's own behaviour or the SMD
+channel state machine, neither of which is reachable from a device patch.
+
+Practical consequence unchanged and now better founded: **leaving the modem
+edge armed costs every suspend window**, and the trade between call-wake and
+staying asleep has to be resolved somewhere other than by silencing the modem
+— an inhibitor while ringing, or arming the edge only while the screen is off
+and no long sleep is wanted.
+
+☠️ Housekeeping from this run: stopping `rmtfs` leaves it `failed` and
+`ModemManager` cannot start again without a reboot (leg D ran with the modem
+stack down, which is why its numbers are still normal — the ring is the
+modem's, not the stack's). Reboot to restore.
