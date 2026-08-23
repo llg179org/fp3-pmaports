@@ -1777,3 +1777,39 @@ that the *boot* was oops-free, which the narrow grep could not have seen.
 ☠️ **A modem restart therefore costs audio on this board.** Any measurement
 that stops `remoteproc0` should be assumed to have taken the codec with it,
 and audio checks after one are measuring the wreckage.
+
+## 2026-08-23 night: both_sets re-measured after the r74 recovery — a reproduction, not a new result
+
+After recovering the phone from the r74 no-boot (the `regulator-state-mem`
+DTB, see `TODO.md`), `both_sets=1` was booted again on the r73 kernel and run
+through three 60 s `rtcwake` windows
+([`captures/2026-08-23_bothsets-reproduction.txt`](captures/2026-08-23_bothsets-reproduction.txt),
+`tools`-style probe under `systemd-run --collect`). Result: the regulator
+rails cast their sleep votes as designed (61 `sleep ldoa`, 1151 `sleep smpa`,
+20 `sleep clka` writes at boot), all three suspends succeeded
+(`suspend_stats/success` 0→3), and **`vlow Count` stayed 0** throughout.
+
+☠️ **This adds nothing the 2026-08-23 dawn entry did not already establish**
+("with both_sets the suspect list collapses to the interconnect"). It is
+recorded only as a same-night reproduction and as a discipline note: coming
+back to the deep-sleep item after the recovery, the obvious next move —
+"apply the regulator sleep set and read vlow" — had already been run in its
+runtime-knob form and answered. The AP-side sleep-set family (XO, regulators,
+interconnect) remains exhausted; the two live threads are unchanged and both
+need a physical or cross-processor step, not another AP-side knob:
+
+- the **USB-detached oracle measurement** — does the working downstream system
+  ever reach vlow with the cable out (the cable holds `7000000.ssusb` awake on
+  UT, so it cannot be answered on the wire); and
+- **bit 3 of the Client Votes mask**, the one bit no named master ever sets.
+
+The post-suspend mask reads this run (`0x5010501`, `0x5010501`, `0x7030703`)
+carry bit 0 set throughout, consistent with the APSS never entering XO
+shutdown without `xo_sleep_off` — i.e. exactly the awake-register behaviour
+the ring-instrument caveat already described.
+
+**The DTB `regulator-state-mem` form still has standing value** — it is the
+*upstreamable* mechanism that both_sets fakes — but purely for mainline
+correctness, not for vlow (already answered), and it must be applied one rail
+at a time because `regulator_register()` treats a failed probe-time sleep vote
+as fatal for every rail on the board (the r74 failure).

@@ -327,25 +327,49 @@ is now item 4.
    (item 3), so a WiFi-attached measurement is not the 79.1 mA baseline — state
    which link was up in every capture.
 
-   ### Next, in order
+   ### Next, in order — updated 2026-08-23 night
 
-   1. **Add `regulator-state-mem` to the FP3 rails** and measure `vlow`. This is
-      a `power`-category DT change (`wip/7.1.3/power` + `integration/7.1.3` +
-      `debug-int/7.1.3`). Start with the rails downstream marks sleep-capable
-      rather than all ~20 at once, and include the mandatory
-      `regulator-on-in-suspend` / `regulator-off-in-suspend` boolean.
-      ☠️ Before believing a null result, prove the votes were actually cast: the
-      `qcom_rpm_smd_write` tracepoint must show sleep-context writes with
-      `type=ldoa/smpa`, and the vote mask must move. A DT property that parsed
-      into nothing looks identical to a lever that did not work.
-   2. If `vlow` still reads 0 with sleep votes demonstrably cast, that **kills**
-      the regulator candidate — say so as loudly as a positive result — and the
-      USB one is next: over WiFi with USB detached, `control=auto` on both
-      nodes, confirm `runtime_status` actually reaches `suspended` and
-      `runtime_suspended_time` leaves 0. Until that is seen the lever has been
-      described, not pulled.
-   3. Either way the regulator work is **upstreamable** — a DT addition plus an
-      already-written driver commit, both in `submit/7.1.3/power` territory.
+   ☠️☠️ **The regulator candidate for `vlow` is KILLED — stated as loudly as a
+   positive result would be, per this item's own rule.** The runtime equivalent
+   of the DT change (`qcom_smd_regulator.both_sets=1`, r68's knob) was booted on
+   r73 and measured: the sleep votes were **demonstrably cast** — 61 `sleep
+   ldoa`, 1151 `sleep smpa`, 20 `sleep clka` writes at boot, in the
+   `qcom_rpm_smd_write` trace — and across three successful `rtcwake` suspends
+   (`suspend_stats/success` 0→3) `vlow Count` stayed **0**
+   ([`captures/2026-08-23_bothsets-reproduction.txt`](power/bringup/captures/2026-08-23_bothsets-reproduction.txt)).
+   This reproduces the 2026-08-23 dawn finding; a fully-specified regulator
+   sleep set is **not** what the RPM is waiting on. The whole AP-side sleep-set
+   family (XO / regulators / interconnect) is now exhausted.
+
+   What that leaves:
+
+   1. **The DTB `regulator-state-mem` change is now upstream-correctness work,
+      not a power lever.** It is the proper (upstreamable) mechanism that
+      `both_sets` fakes, so `submit/7.1.3/power` still wants it — but it will not
+      move `vlow`, and it must be applied **one rail at a time**: r74 put it on
+      all 20 at once and the phone did not boot, because `regulator_register()`
+      treats a failed probe-time sleep vote as fatal for *every* rail on the
+      board (see the ✅ RECOVERED block and `TODO.md`). Prove each rail boots and
+      casts its vote before adding the next.
+   2. **The real `vlow` blocker is off-AP, and the two live threads both need a
+      step this processor cannot take on the wire:**
+      - the **USB-detached oracle measurement** — does the working downstream
+        system (UT, 4.9) ever reach `vlow` with the cable **out**? On UT the
+        cable holds `7000000.ssusb` awake so it never suspends with USB in; this
+        is answerable only over the WiFi link with USB physically detached. If
+        the oracle never reaches `vlow` either, "vlow has never been reached"
+        may just be how both slots idle, and the target itself needs rethinking.
+      - **bit 3 of the `Client Votes` mask** — the one bit no named master
+        (APSS=0, MPSS=1, PRONTO=2, LPASS=4) ever sets, on either slot, under any
+        knob. Whatever it stands for is not one of the five masters the RPM's
+        own stats enumerate, and it may be the thing the RPM waits on. Next
+        instrument for it is the same recipe under `xo_sleep_off=1` read
+        in-window (see `findings-log.md`, the ring-instrument caveat).
+   3. Both live threads are **cross-processor / physical** — the levers may live
+      in the modem/wcnss firmware's own sleep config, not in Linux. Treat "full
+      `vlow`" as no longer purely machine-doable from this side; the
+      upstreamable *deliverables* here are the regulator DT + the already-written
+      driver commit, and the `smd-wake` teardown fix (`d0e738c107e3`).
 
    ☠️ Read [`power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md) before opening
    any LPASS question: it was closed on 2026-08-21 and the closure was invisible

@@ -1,0 +1,15 @@
+===== both_sets reproduction, r73 kernel + qcom_smd_regulator.both_sets=1 =====
+cmdline: quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10 qcom_smd_regulator.both_sets=1 trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M
+
+== regulator sleep writes cast at boot ==
+     20 sleep clka/
+     61 sleep ldoa/
+   1151 sleep smpa/
+
+== probe log ==
+bothsets param both_sets=Y cmdline=qcom_smd_regulator.both_sets=1
+bothsets baseline up=126 vlow_cnt=0 vlow_votes=0x3010501 vlow_dur=0 vmin_cnt=0 susp_ok=0 susp_fail=0
+bothsets after-1 up=188 vlow_cnt=0 vlow_votes=0x5010501 vlow_dur=0 vmin_cnt=0 susp_ok=1 susp_fail=0
+bothsets after-2 up=217 vlow_cnt=0 vlow_votes=0x5010501 vlow_dur=0 vmin_cnt=0 susp_ok=2 susp_fail=0
+bothsets after-3 up=235 vlow_cnt=0 vlow_votes=0x7030703 vlow_dur=0 vmin_cnt=0 susp_ok=3 susp_fail=0
+bothsets done
