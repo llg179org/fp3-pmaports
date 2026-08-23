@@ -53,6 +53,32 @@ git for-each-ref --format='%(refname:short) %(objectname:short=12)' \
 # note: there is no wip/<base>/debug - see "The `debug` layer" below
 ```
 
+☠️ **The category list has grown past the five this file has sections for, and
+the documented model has not caught up.** Measured 2026-08-24 against
+`fork/7.1.3/main`, two more categories carry real commits:
+
+| category | what it carries | why it is not one of the five |
+|---|---|---|
+| `power` | `wip/7.1.3/power` — 8 commits: the RPM sleep-set work (`regulator: qcom_smd` sleep-set votes plus the `both_sets`/`sleep_init` experiment knobs), `rpmsg: qcom_smd` wakeup-source and edge-interrupt-wake fixes, the APCS PLL-retune fix, and the SLIMbus `disable_stream` pair | it is the deep-sleep track, which started after the five were named |
+| `i2c` | `submit/7.1.3/i2c` — the QUP runtime-PM pinctrl fix (the speaker-amp death) plus one adopted upstream cleanup | it began as a charger/audio symptom and ended as an i2c-core change |
+
+Neither appears in the branch table in `~/.claude/CLAUDE.md` or in this file's
+per-branch sections below. Treat the table there as **incomplete, not
+authoritative**, until it is updated; re-derive the live list with the
+`for-each-ref` above rather than from any prose list, including this one.
+
+**And the category is decided by *why* the change is being made, not by which
+directory it touches.** `drivers/slimbus/qcom-ngd-ctrl.c` is the worked example,
+and it is split across two categories on purpose:
+
+- `wip/7.1.3/audio` carries the QDSP6SS framer-bit commit and its revert — those
+  were made to get the codec working.
+- `wip/7.1.3/power` carries `implement disable_stream so the ADSP releases the
+  channel` — the same file, chased because LPASS would not sleep.
+
+So "a fix in `drivers/slimbus/` has no category" is **false**; ask what the
+change is for.
+
 ---
 
 ## Where the work can go at all

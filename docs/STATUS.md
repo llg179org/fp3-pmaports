@@ -81,8 +81,21 @@ list; do not stop at the end of an item to report.
    `HW wakeup attempt during SSR`. The controller accepts transfers while its
    own state is `DOWN` instead of failing them fast. Bounded and harmless now
    that the teardown ends it, so this is noise-removal, not a defect.
-   ☠️ A fix in `drivers/slimbus/` has **no category** in this port's branch
-   model — decide where it lands before committing it.
+   ☠️ **The "no category" worry is retracted — it was wrong, and measured so.**
+   `drivers/slimbus/qcom-ngd-ctrl.c` is *already* carried by two categories at
+   once, on purpose: `wip/7.1.3/audio` has the QDSP6SS framer-bit commit and its
+   revert (made to get the codec working), and `wip/7.1.3/power` has `implement
+   disable_stream so the ADSP releases the channel` (same file, chased because
+   LPASS would not sleep). The category follows **why** the change is made, not
+   which directory it touches. This storm is SSR bring-up on the codec path, so
+   it lands on **`wip/7.1.3/audio`** + `integration/7.1.3` + `debug-int/7.1.3`.
+   ☠️ Found while checking that: **the branch table in `~/.claude/CLAUDE.md`
+   lists five upstream-bound categories and there are seven.** `power` (8
+   commits) and `i2c` (the QUP runtime-PM pinctrl fix) both carry real work and
+   appear in neither that table nor `FP3-TODO.md`'s per-branch sections. Written
+   up in [`FP3-TODO.md`](FP3-TODO.md); the table is incomplete, not
+   authoritative — re-derive with `git for-each-ref`.
+   The fix itself is still unwritten; the placement question is what is closed.
 2. **Provoke the non-recovering SSR path** — needs a kernel-side hook now, so
    this is the one item here that is not a quick measurement. ☠️ Two dead ends
    are already recorded in [`TODO.md`](TODO.md), do not re-walk them: the
