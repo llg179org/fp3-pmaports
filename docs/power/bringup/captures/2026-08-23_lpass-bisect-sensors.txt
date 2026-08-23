@@ -1,0 +1,34 @@
+== uptime 142
+-- BEFORE (premise check: LPASS must be flat)
+  BEFORE +5s LPASS=35 APSS=3601
+  BEFORE +10s LPASS=35 APSS=3786
+  BEFORE +15s LPASS=35 APSS=3951
+  BEFORE +20s LPASS=35 APSS=4150
+  BEFORE +25s LPASS=35 APSS=4304
+  BEFORE +30s LPASS=35 APSS=4483
+BEFORE: LPASS 35 -> 35   APSS 3455 -> 4483
+-- removing the sensor stack
+   rmmod smgr_accel ok
+   rmmod smgr_prox ok
+   rmmod smgr_gyro ok
+   rmmod smgr_mag ok
+   rmmod smgr ok
+   rmmod sns_smgr ok
+   remaining: 0
+-- AFTER
+  AFTER +5s LPASS=37 APSS=4632
+  AFTER +10s LPASS=37 APSS=4797
+  AFTER +15s LPASS=37 APSS=4939
+  AFTER +20s LPASS=37 APSS=5137
+  AFTER +25s LPASS=37 APSS=5325
+  AFTER +30s LPASS=37 APSS=5501
+  AFTER +35s LPASS=37 APSS=5623
+  AFTER +40s LPASS=37 APSS=5804
+  AFTER +45s LPASS=37 APSS=5986
+  AFTER +50s LPASS=37 APSS=6149
+  AFTER +55s LPASS=37 APSS=6287
+  AFTER +60s LPASS=37 APSS=6443
+AFTER: LPASS 37 -> 37   APSS 4483 -> 6443
+-- restoring
+   iio devices back: 6
+== DONE

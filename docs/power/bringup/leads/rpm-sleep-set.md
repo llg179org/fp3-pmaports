@@ -429,3 +429,71 @@ the cmdline. All four were shown aborting before any row was believed — and th
 suspend-counter gate fired for real, on a bug of mine:
 `/sys/power/suspend_stats` is a **directory** on this kernel, so reading it as a
 file returned nothing.
+
+## ★★ 2026-08-23, later: the freeze is at ~34 s of *uptime*, and it is not the sensors
+
+Two corrections and one acquittal, all measured the same evening.
+
+### ☠️ Correction: "46.3 s of uptime" was 46.3 s of *RPM* time
+
+The section above decodes LPASS `Last shutdown @` as 46.3 s and calls it uptime.
+**It is not.** The RPM's 19.2 MHz counter runs from SoC reset, so it leads
+`/proc/uptime` by the bootloader's share — measured three times at **+13 to
++14 s** (APSS `Last shutdown @` 16557043975 ÷ 19.2e6 = 862 s against an uptime of
+849 s at the same read). The freeze is at **~34 s of Linux uptime**.
+
+That was not fixed by better arithmetic but by removing it:
+[`../tools/lpass-trace.sh`](../tools/lpass-trace.sh) now writes every sample to
+`/dev/kmsg` as well, so the counter lands in the journal beside whatever else
+happened in that second and no clock has to be converted into another. It runs as
+a boot unit because ssh is not reachable before 34 s.
+
+☠️ **And the first attempt to read that journal window lied by omission.** The
+filter was `awk '{gsub(/[][]/,"",$1); if ($1+0>=32 ...)}'` — but
+`[   34.583754]` splits into `[` and `34.583754]`, so `$1` was a bracket and
+**nothing ever matched**. It printed an empty window and read as "no kernel
+events there". Same shape of failure as the `dmesg`-by-timestamp filter in
+`docs/audio/ssr-repro.sh`: a filter that silently matches nothing is
+indistinguishable from a clean result. Match on `$0` against `^\[ *3[0-9]\.`.
+
+Three boots, three freezes, all at the same place:
+
+| boot | last LPASS shutdown | `Shutdown count` it froze at |
+|---|---|---|
+| xo label | ~33 s uptime (RPM 46.3 s) | 65 |
+| default #1 | 34 s uptime (RPM 48.0 s) | 33 |
+| default #2 | 34.6 s uptime (RPM 47.5 s) | 35 |
+
+The *count* varies boot to boot; the *moment* does not.
+
+### The sensor stack is acquitted
+
+`snsregd` starts at 33.6 s and SMGR runs on the ADSP, which made it the obvious
+suspect — and therefore the one to test rather than assume.
+[`../tools/lpass-bisect.sh`](../tools/lpass-bisect.sh) takes it away and watches,
+with a BEFORE window that has to show the counter flat or there is nothing to
+bisect. Raw:
+[`../captures/2026-08-23_lpass-bisect-sensors.txt`](../captures/2026-08-23_lpass-bisect-sensors.txt).
+
+| window | LPASS | APSS |
+|---|---|---|
+| BEFORE, 30 s, stack running | **35 → 35** | 3455 → 4483 |
+| AFTER, 60 s, `smgr*`/`sns_smgr` unloaded, `snsregd` + `iio-sensor-proxy` stopped | **37 → 37** | 4483 → 6443 |
+
+The premise held (flat for the whole BEFORE window) and the answer is **no**.
+The `+2` arrived inside the first five seconds — the teardown itself — and then
+the counter froze again for the remaining 55 s. Restore verified in the same run:
+six iio devices, both services active, modules loaded.
+
+★ **That `+2` is worth more than the acquittal.** It says the ADSP is still
+*able* to shut down at any point in the boot, and that whatever pins it
+re-establishes within five seconds of being briefly let go. This is not a
+one-time latch at 34 s; it is a continuously held vote.
+
+### What is still open
+
+The remaining always-present ADSP client on this device is the **audio path** —
+q6/APR over SLIMbus, up from bring-up and never torn down. That is the next
+subtraction, run the same way, with the same BEFORE premise check. ☠️ It is also
+the next hypothesis attractive enough to be believed without the experiment;
+the sensors were exactly that an hour ago.

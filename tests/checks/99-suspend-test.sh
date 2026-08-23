@@ -14,7 +14,9 @@
 # Three separate properties, in increasing order of what they cost to break:
 #
 #   1. the sleep-state menu (/sys/power/mem_sleep) is what we recorded;
-#   2. suspend happens and the RTC brings it back;
+#   2. suspend happens and the RTC brings it back - and if something else
+#      brings it back first, that is said in those words rather than reported
+#      as "never suspended";
 #   3. the SoC actually collapsed while it was down.
 #
 # (3) is the one worth having. A suspend that freezes userspace, holds a wakeup
@@ -104,11 +106,38 @@ sync
 echo mem >/sys/power/state
 
 after=$(cat /sys/class/rtc/rtc0/since_epoch)
-if [ "$after" -lt "$target" ]; then
-	echo "FAIL: the system never suspended (woke at $after, alarm was $target)"
+elapsed=$((after - before))
+
+# Two very different things used to be reported as one. "Woke before the alarm"
+# was printed as "the system never suspended", which is false whenever the
+# device suspended and something else brought it back early - and that is what
+# actually happens inside the battery, where earlier checks leave wake sources
+# armed. The discriminator is the alarm file itself: the RTC clears it when it
+# fires, so an alarm that is still armed after resume means the wake came from
+# somewhere else.
+alarm_left=$(cat /sys/class/rtc/rtc0/wakealarm 2>/dev/null)
+wake_irq=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)
+
+if [ "$elapsed" -le 0 ]; then
+	echo "FAIL: the system never suspended (elapsed ${elapsed}s, alarm was ${SLEEP_TIME}s out)"
+	echo "      cmd: cat /sys/kernel/debug/wakeup_sources"
 	exit 1
+elif [ "$after" -lt "$target" ]; then
+	# Still a suspend, so the depth measurement below is valid and worth
+	# taking. Named, not swallowed: a device that cannot stay down for six
+	# seconds is a real finding, just not this line's finding.
+	echo "PASS: suspended for ${elapsed}s of ${SLEEP_TIME}s"
+	echo "WARN: woke $((target - after))s early, not on the RTC alarm"
+	[ -n "$alarm_left" ] && echo "      the alarm was still armed at $alarm_left"
+	[ -n "$wake_irq" ] && echo "      last wakeup IRQ: $wake_irq" \
+		"($(awk -v i="$wake_irq" '$1 ~ "^"i":" {for (j = NF; j > 0; j--) if ($j !~ /^[0-9]+$/) { print $j; break }}' /proc/interrupts 2>/dev/null))"
+	echo "      cmd: grep -v '\s0\s*$' /sys/kernel/debug/wakeup_sources"
+else
+	echo "PASS: suspended and resumed on the RTC alarm after ${SLEEP_TIME}s"
 fi
-echo "PASS: suspended and resumed on the RTC alarm after ${SLEEP_TIME}s"
+
+# Leave no armed alarm behind for the next check to trip over.
+echo 0 >/sys/class/rtc/rtc0/wakealarm 2>/dev/null
 
 # The other failure mode is not coming back at all, which shows up as the
 # runner failing to reconnect rather than as a line here.
