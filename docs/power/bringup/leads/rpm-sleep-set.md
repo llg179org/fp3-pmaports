@@ -543,10 +543,19 @@ the jack input re-created — which is r73's SSR fix working, and incidental her
 
 **What survives the retraction**, stated no more strongly than it was measured:
 
-- The ADSP really does stop shutting down at ~34 s of uptime, on every boot
+> ☠️☠️ **This list is itself half-superseded — read the final section of this
+> page before believing the first bullet.** Written earlier the same evening,
+> it still treats the flat `Shutdown count` as evidence that something pins the
+> ADSP. It is not: a flat count reads the same whether a master is held awake or
+> is **asleep and staying down**, and it was the latter. Kept here unedited
+> because the sequence of the mistake is the useful part.
+
+- ~~The ADSP really does stop shutting down at ~34 s of uptime, on every boot
   measured, and re-pins within five seconds of being let go. That is a genuine
-  anomaly and plausibly a genuine current cost.
-- It is **not** the `vlow` gate.
+  anomaly and plausibly a genuine current cost.~~ **False** — it stops *waking*,
+  not shutting down. There is no anomaly and no pinned-ADSP current cost.
+- It is **not** the `vlow` gate. **This one stands** — it was measured directly,
+  by powering the ADSP off and seeing `vlow` sit at 0 regardless.
 
 Those are now two separate investigations that were briefly one. `vlow` has
 resisted the whole AP-side sleep-set family, the `xo_sleep_off` knob,
