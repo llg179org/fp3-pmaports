@@ -460,6 +460,30 @@ the power path.
     uvcvideo pipeline handler already delays opening `/dev/video#` for power
     reasons. It would put the lens inside the exclusivity that already exists
     rather than inventing new arbitration.
+33f-3. **The same CCI timeout can take the whole phone down, not just the
+    lens.** Measured 2026-08-23 on r73 during a `fp3-selftest` battery: a
+    `i2c-qcom-cci 1b0c000.cci: master 0 queue 0 timeout` was followed 2 ms later
+    by `imx363 0-001a: Error reading reg 0x0016: -110`, then 60 s later
+    `qcom-camss 1b00020.camss: VFE halt timeout`, then **60** `qcom-iommu-ctx
+    1e34000/1e35000.iommu-ctx: timeout waiting for TLB SYNC` at 5 s intervals
+    over 518 s, and finally `watchdog0: pretimeout event` — the debug layer
+    resetting a phone that could not tear the camera down. Capture:
+    [`docs/power/bringup/captures/2026-08-23_camss-iommu-wedge-watchdog.txt`](power/bringup/captures/).
+    ☠️ **Do not assume 33f-2's fix covers this.** 33f-2's `-110` is on the
+    **ak7375 lens**, and its proposed remedy is to open the lens lazily on
+    `acquire()`. This `-110` is on the **imx363 sensor**, on a register read, so
+    a lazy *lens* open would not obviously prevent it. What the two share is the
+    shape — a CCI transfer colliding with a camera teardown — not the victim.
+    Reproduced twice at battery scale (2 of 2 runs that include the camera
+    block); a battery with `--skip camera` completed without a reset, and one
+    with the first half of the pre-camera checks dropped still reset. Not yet
+    reduced to a minimal reproducer, and not yet known whether the sensor `-110`
+    causes the VFE halt timeout or both are downstream of the same stuck bus.
+    ☠️ Two earlier resets in the same investigation were RCU stalls in
+    `cpuidle_enter_state` with **no** camss or IOMMU line at all; that boot had
+    zero RCU stalls. Two failure modes, one watchdog — do not merge them until
+    something links them.
+
 33g. **Focusing on demand works; focusing on a *point* still stops in
     PipeWire.** The zones and the `AfMetering`/`AfWindows` controls a tapped
     point needs are implemented in the IPA, but PipeWire's libcamera plugin maps
