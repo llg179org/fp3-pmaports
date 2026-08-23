@@ -34,29 +34,43 @@ The source tarball is ~250 MB straight from GitHub, so the first fetch takes a
 minute or two. A warm ccache rebuild is around four minutes; a new `_commit`
 means a new source directory and therefore a cold ccache, which is 20–35.
 
-☠️ **But keeping the ccache is not the same as using it.** Measured 2026-08-23,
-mid-build: `chroot_native/etc/abuild.conf` still carried Alpine's default
-`#USE_CCACHE=1`, commented out, so `abuild` never put the compiler wrapper in
-front of `gcc` — nothing was written into the cache dir during a 30-minute
-kernel build, while the cache itself sat there at 572 MB looking healthy. The
-"four-minute warm rebuild" above is what the chroot is capable of, not what it
-had been doing. Two lines fix it, and both live inside the chroot:
+☠️ **The cache is full, and that is what a slow rebuild actually costs.** Ask
+ccache itself rather than guessing:
 
 ```sh
-sudo sed -i 's|^#USE_CCACHE=1|USE_CCACHE=1|' \
-  <work>/chroot_native/etc/abuild.conf
-echo 'hash_dir = false' | sudo tee -a \
-  <work>/chroot_native/mnt/pmbootstrap/ccache/ccache.conf
+sudo chroot <work>/chroot_native /bin/sh -c 'HOME=/home/pmos ccache -s'
+```
+
+Measured 2026-08-23: 1 122 523 calls, **59.8 % hits** — and `Cache size (GB):
+5.0 / 5.0 (99.98%)` with **4988 cleanups**. The cache had been running against
+its own ceiling for a long time, evicting objects to make room for the next
+ones, so a "warm" rebuild kept finding half its work already thrown away. Two
+settings in `<work>/chroot_native/mnt/pmbootstrap/ccache/ccache.conf` are
+worth having:
+
+```
+max_size = 25G
+hash_dir = false
 ```
 
 `hash_dir = false` matters because each `_commit` unpacks into a differently
-named source directory; with the directory hashed in, every new commit misses
-on every object even when the file content is unchanged.
+named source directory; with the directory hashed into the key, a new commit
+misses on every object even where the file content is identical. (It also
+means paths baked into debug info follow the first compilation rather than
+the current directory — fine here, worth knowing.)
 
-☠️ Both edits live in the chroot, so a `--force` **without** `--lax` zaps them
-along with everything else and silently restores the bypass. Check the
-`USE_CCACHE` line, not the size of the cache directory — a stale cache from
-months ago is indistinguishable from a working one by size alone.
+☠️ **These live inside the chroot, so a `--force` without `--lax` zaps them.**
+
+☠️ **And do not measure the cache with an unprivileged `find`.** The tree is
+owned by the build uid, so `find <ccache> -newermt '-5 minutes'` returns `0`
+whether or not anything is being written — it cannot descend and says so
+nowhere. The same query under `sudo` returned **1438**. Run 2026-08-23, that
+zero was briefly written up here as proof that `abuild.conf`'s commented-out
+`USE_CCACHE=1` had disabled ccache entirely. It had not: pmbootstrap puts
+`/usr/lib/ccache/bin` at the front of `PATH` itself, so the wrapper is in
+place regardless of what `abuild.conf` says, and `ccache -s` shows six hundred
+thousand hits to prove it. **Two instruments, one of them blind, and the blind
+one was the one that agreed with the hypothesis.**
 
 ⚠️ **Push `debug-int/<base>` before you bump `_commit`.** The package fetches
 the tarball from GitHub, so a commit that only exists locally gives a 404 during
