@@ -1,0 +1,15 @@
+[ 2398.834698] fp3 kernel: rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+[ 2398.835405] fp3 kernel: rcu:         4-...0: (1 GPs behind) idle=9b94/1/0x4000000000000000 softirq=64281/64281 fqs=2563
+[ 2398.834786] fp3 rtkit-daemon[798]: The canary thread is apparently starving. Taking action.
+[ 2398.837877] fp3 kernel: rcu:         (detected by 0, t=5252 jiffies, g=213625, q=2286 ncpus=8)
+[ 2398.834799] fp3 rtkit-daemon[798]: Demoting known real-time threads.
+[ 2398.838638] fp3 kernel: Sending NMI from CPU 0 to CPUs 4:
+[ 2398.834977] fp3 rtkit-daemon[798]: Successfully demoted thread 34600 of process 34583.
+[ 2398.835052] fp3 rtkit-daemon[798]: Successfully demoted thread 34583 of process 34583.
+[ 2398.835120] fp3 rtkit-daemon[798]: Successfully demoted thread 34588 of process 34582.
+[ 2398.835267] fp3 rtkit-daemon[798]: Successfully demoted thread 34582 of process 34582.
+[ 2398.835335] fp3 rtkit-daemon[798]: Successfully demoted thread 1359 of process 1359.
+[ 2398.835343] fp3 rtkit-daemon[798]: Demoted 5 threads.
+[ 2404.884060] fp3 kernel: qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=inhibit st1=0x40 st2=0x28 temp=0x00 rt=00/a8/00/10/08 vbat=4359285uV ibat=0uA
+[ 2404.892408] fp3 kernel: qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=inhibit st1=0x40 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4359285uV ibat=0uA
+[ 2417.844577] fp3 kernel: watchdog0: pretimeout event

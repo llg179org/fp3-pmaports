@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 01:10**.
+Last updated: **2026-08-24 02:00**.
 
 ## The device
 
@@ -133,9 +133,19 @@ list; do not stop at the end of an item to report.
    ☠️ **Also retracted:** this page previously explained the same 606 s hang away
    as "a boot that had had an ADSP restart, did not reproduce on a clean boot".
    It has now reproduced on a boot with no manual ADSP restart.
-   ☠️ **One instance is confirmed, not two.** The earlier run rebooted at the
-   same point but its boot is no longer retained (`--list-boots` holds only −1
-   and 0), so it is a matching timing signature and nothing more.
+   ★★ **Two instances confirmed now.** A second full battery, run alone, reset
+   the device again — uptime 1667 s before, 356 s after — and its dead boot ends
+   the same way: `rcu: INFO: rcu_preempt detected stalls` at monotonic 2398.8 s
+   (`t=5252 jiffies, g=213625, q=2286 ncpus=8`), then `watchdog0: pretimeout
+   event` at 2417.8 s, with nothing logged in between. Capture:
+   `captures/2026-08-23_rcu-stall-second-instance.txt`. So it reproduces on the
+   full battery and not on the two checks alone — **2 of 2 full runs, 0 of 3
+   isolated runs**.
+   ☠️ **Localisation, and a wrong reading of mine corrected:** the interleaved
+   `ssh: Connection refused` lines start next to `60-wifi`, which looked like an
+   early reset. It is not — those are the detached check's own polling. The
+   monotonic timestamps put the stall ~750 s into the run, i.e. inside
+   `98-camera-af-rail`'s detached phase, matching the first instance.
    ☠️ **Tried, and it does not reproduce in isolation.** `--only
    camera-af-rail,suspend`, three consecutive runs: **2 ok / 0 failed each time,
    no reset** (uptime monotonic 1299 → 1331 → 1362 → 1398 s). So the hang is
