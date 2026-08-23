@@ -144,6 +144,53 @@ provably reset left `journalctl -k -b -1` answering `-- No entries --`.
 The single open item behind every idle-current number on this page, stated
 separately because the section above is a status summary and this is a task.
 
+★★★ **This is the project's top priority as of 2026-08-23**, and on that day the
+AP-side gate stopped being unidentified. Full derivation and the next steps are
+in [`STATUS.md`](STATUS.md) queue item 1; the short form:
+
+- The RPM's own entry threshold is **not** readable from any source we hold.
+  `qcom_stats.c` (mainline) and the vendor 4.9 `rpm_stats.c` are both *readers*
+  of an RPM-maintained counter — the vendor binding says so in as many words —
+  and a word-boundary grep for `vlow|vmin` across the entire vendor tree returns
+  no RPM hit at all. ☠️ It returns plenty of `VMIN` from `termbits.h` and `vmin`
+  regulator properties from dtsi files; an unanchored grep here lies.
+- What the AP *votes* is fully readable, and that is where the hole is. Four
+  subsystems write `QCOM_SMD_RPM_SLEEP_STATE`: `clk-smd-rpm`, `rpmpd`,
+  `icc-rpm`, `qcom_smd-regulator`. The first three vote sleep; the LDOs measured
+  14 active / 0 sleep.
+- ☠️ **The reason is a device-tree gap, not a driver gap.**
+  `qcom_smd-regulator.c` already has `rpm_reg_write_sleep()` behind
+  `.set_suspend_enable/disable/voltage` — **our** commit `0be43747a1d2`. Those
+  ops are reached from `regulator/core.c:__suspend_set_state()`, which needs a
+  `regulator_state` that only a DT `regulator-state-mem` child node can create
+  (`of_regulator.c`, which also sets `constraints->initial_state =
+  PM_SUSPEND_MEM` at line 327, making `regulator_register()` cast the sleep vote
+  **at probe**). **No DT in the tree has that node** — not
+  `sdm632-fairphone-fp3.dts:741`, not any of the ~616 qcom arm64 DTs. The ops
+  have never been called.
+- ☠️ **Two traps before anyone writes the DT.** (1) A `regulator-state-mem` node
+  without `regulator-on-in-suspend` or `regulator-off-in-suspend` is silently
+  ignored (`regulator_get_suspend_state_check()`); a suspend voltage alone only
+  earns a `No configuration` warning. (2) The phone suspends via **s2idle**
+  (`/sys/power/mem_sleep` = `[s2idle]`, no `deep`), and
+  `regulator_get_suspend_state()` returns NULL for `PM_SUSPEND_TO_IDLE` — so the
+  *runtime* `regulator_suspend()` path is dead here regardless. Only the
+  probe-time `initial_state` path can work on this device.
+- **Next:** add `regulator-state-mem` to the FP3 rails (`power` category: `wip/
+  7.1.3/power` + `integration/7.1.3` + `debug-int/7.1.3`) and measure. ☠️ Prove
+  the votes were cast before believing a null result — the `qcom_rpm_smd_write`
+  tracepoint must show sleep-context writes for `ldoa`/`smpa`. A property that
+  parsed into nothing is indistinguishable from a lever that did not work.
+- A second, lower-ranked candidate found the same day: the USB controller
+  `7000000.usb` and its PHY `79000.phy` are the only 2 of 45 `soc@0` children
+  with `power/control = on`, and neither has ever runtime-suspended
+  (`runtime_suspended_time = 0`). That is dwc3's unconditional
+  `pm_runtime_forbid()` at probe (`core.c:2321`, never followed by
+  `pm_runtime_allow()` on the success path) — **not** the cable. ☠️ So unplugging
+  the cable on its own tests nothing; the experiment is `control=auto` on both
+  nodes **and then** detach, over the WiFi link (`fp3@192.168.100.17`, verified
+  live 2026-08-23).
+
 **What is known.** The application processor collapses constantly and says so to
 the RPM; the audio DSP can be made to collapse for the whole of every suspend; and
 `vlow` and `vmin` still read `Count: 0`. So a master being down is **necessary and
@@ -263,9 +310,11 @@ may describe both slots equally.
    `remoteproc` stopped by name, a 30 s suspend window leaves `vlow`/`vmin`
    `Count` at 0, identical to the control with it running. "One master is not
    voting" was a mechanism that explained the symptom, not evidence that it
-   caused it. Two investigations now, not one: the `vlow` gate is still
-   unidentified, and the never-sleeping ADSP is a separate anomaly whose cost
-   in mA is unmeasured.
+   caused it. Two investigations now, not one: the `vlow` gate and the ADSP.
+   ★ **Updated 2026-08-23: the `vlow` gate is no longer "unidentified" on the
+   AP side** — the regulator sleep-set votes are never cast because no DT
+   describes a suspend state (top of this section). The never-sleeping ADSP
+   remains a separate anomaly whose cost in mA is unmeasured.
 3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
    a third of the vote churn) and decide the suspend policy. ☠️ **The mask
    decode found the other side of this trade**: with `wlan0` down, PRONTO's
@@ -285,6 +334,13 @@ may describe both slots equally.
 5. **The three experiment knobs stay default-off** (`clk_smd_rpm.
    xo_sleep_off`, `qcom_smd_regulator.both_sets`, `icc_smd_rpm.sleep_init`,
    all in r69); design their upstream forms only after a measured positive.
+   ☠️ **`both_sets` is now understood to be the wrong shape, which is part of
+   why it measured nothing.** It mirrors each *active*-set request verbatim into
+   the sleep set, i.e. it votes every rail **on** in sleep — the opposite of
+   what a sleep vote should say. The correct mechanism is the DT
+   `regulator-state-mem` path at the top of this section, which lets each rail
+   state its own suspend enable/voltage. Do not resurrect `both_sets` as the
+   upstream form.
 6. **Release the internal digital codec's LPASS clocks** — ☠️ **half of this is
    already done and the entry was stale until 2026-08-23.** In the tree the
    package builds, `mclk` is requested per stream (`.startup`/`.shutdown`, with

@@ -1,0 +1,72 @@
+2026-08-23 — Is a plugged-in, non-charging cable a limit? And does the USB
+controller ever runtime-suspend?  Device: FP3, linux-fp3 7.1.3-r73, #74-fp3.
+Link: USB NCM for the first block, WiFi (192.168.100.17) for the control-write
+block, so the write could not cost us the link it was testing.
+
+--- cable state at the time of measurement -----------------------------------
+/sys/class/power_supply/pmi632-charger/type   = USB
+/sys/class/power_supply/pmi632-charger/online = 1
+/sys/class/power_supply/pmi632-charger/status = Not charging
+/sys/class/power_supply/pmi632-battery/status = Not charging
+  => exactly the case asked about: cable in, no charge current.
+
+--- wakeup sources (root, /sys/kernel/debug/wakeup_sources), uptime 1586 s ----
+rows with active_count>0:
+name                                        active_count ... active_since prevent_suspend_time
+tcpm-source-psy-200f000.spmi:pmic@2:typec@1500   6              0            0
+pmi632-charger                                   2              0            0
+pmi632-battery                                   2              0            0
+rows currently ACTIVE (active_since>0):   (none)
+
+  => Nothing is holding the system awake. prevent_suspend_time is 0 for all
+     three USB/charger sources, i.e. none of them has ever blocked a suspend.
+     This DIFFERS from the Ubuntu Touch oracle, where 7000000.ssusb was held.
+
+devices with power/wakeup = enabled:
+  /sys/devices/platform/soc@0/7000000.usb/power/wakeup
+  /sys/devices/platform/soc@0/c200000.remoteproc/power/wakeup
+
+--- runtime PM census over soc@0 ---------------------------------------------
+control=on   -> 2   : 7000000.usb , 79000.phy
+control=auto -> 43
+  => the USB controller and its HS PHY are the ONLY two children of soc@0 with
+     runtime PM disabled.
+
+7000000.usb/power:   runtime_status=active  runtime_active_time=1605052
+                     runtime_suspended_time=0  control=on  wakeup=enabled
+/sys/class/udc/7000000.usb/state = configured
+usb gadget configfs: g1
+  => never runtime-suspended once in 1605 s of uptime.
+
+--- control=auto experiment (over WiFi, cable still attached) ----------------
+BEFORE usb: status=active susp_time=0 control=on   | phy: status=active susp_time=0 control=on
+T+5s   usb: status=active susp_time=0 control=auto | phy: status=active susp_time=0 control=auto
+T+15s  usb: status=active susp_time=0 control=auto | phy: status=active susp_time=0 control=auto
+       udc state: configured
+AFTER  usb: status=active susp_time=0 control=on   | phy: status=active susp_time=0 control=on
+  => with runtime PM allowed the controller STILL stays active, because the
+     gadget is enumerated and configured. An attached, enumerated cable holds it
+     up once control=auto; control=on holds it up regardless.
+
+--- source, drivers/usb/dwc3/core.c ------------------------------------------
+dwc3_core_probe():
+  2315  pm_runtime_get_noresume(dev);
+  2316  pm_runtime_set_active(dev);
+  2317  pm_runtime_use_autosuspend(dev);
+  2319  pm_runtime_enable(dev);
+  2321  pm_runtime_forbid(dev);          <-- unconditional
+  ...
+  2355  pm_runtime_put(dev);             <-- success path returns here
+  2370  pm_runtime_allow(dev);           <-- err_allow_rpm: ERROR path only
+  2423  pm_runtime_allow(dwc->dev);      <-- dwc3_core_remove() only
+  => control=on is the driver's own default, NOT a consequence of the cable.
+
+--- conclusions --------------------------------------------------------------
+1. A plugged-in, non-charging cable does NOT block system suspend on pmOS.
+2. It CAN hold the USB controller active, but only once control=auto; today the
+   controller is pinned active by dwc3's own pm_runtime_forbid() anyway.
+3. Therefore unplugging the cable ALONE changes nothing measurable. The
+   experiment is: control=auto on 7000000.usb AND 79000.phy, then detach, with
+   the session on WiFi.
+4. NOT MEASURED, and must not be assumed: whether a runtime-suspended USB
+   controller changes vlow/vmin at all. It is a candidate only.

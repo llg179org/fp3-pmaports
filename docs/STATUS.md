@@ -25,7 +25,7 @@ Last updated: **2026-08-24 04:10**.
 | build stamp | `#74-fp3` | `uname -v` |
 | pinned commit | `debug-int/7.1.3` `818d35f1` | `grep _commit linux-fp3/APKBUILD` |
 | boot config | 3 labels, md5 `863cdf20…`, `panic=10`, `timeout 3` | `md5sum /boot/extlinux/extlinux.conf` |
-| last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Read that number with care: the failures were `98-camera-af-rail` and `99-suspend`, and neither is a check defect — **the camera wedged and the watchdog reset the phone mid-run** (queue item 5). ☠️ It also predates the runner fixes of 2026-08-23, so its `ok` count includes checks scored green after the reset | `tests/fp3-selftest` |
+| last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Read that number with care: the failures were `98-camera-af-rail` and `99-suspend`, and neither is a check defect — **the camera wedged and the watchdog reset the phone mid-run** (queue item 4). ☠️ It also predates the runner fixes of 2026-08-23, so its `ok` count includes checks scored green after the reset | `tests/fp3-selftest` |
 | last camera-block run | **8 ok / 0 failed** on a fresh boot (2026-08-23 late, r73), and the same block wedged the phone earlier the same evening — the fault is intermittent, ~1 run in 2 | `tests/fp3-selftest --only camera,suspend` |
 
 The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
@@ -92,55 +92,164 @@ the runbook in the same commit.
 Everything here is machine-doable unless the row says otherwise. Work down the
 list; do not stop at the end of an item to report.
 
-1. **The SSR write storm is a `qcom-ngd-ctrl` question, not a codec one.**
-   Measured on r73: 78 lines of `Failed to write config eN` / `Failed to sync
-   masks in 89`, spanning 36.46 s → 38.10 s, every one of them `-22` or `-12`,
-   and they start *before* the codec is told anything — immediately after
-   `HW wakeup attempt during SSR`. The controller accepts transfers while its
-   own state is `DOWN` instead of failing them fast. Bounded and harmless now
-   that the teardown ends it, so this is noise-removal, not a defect.
-   ☠️ **The "no category" worry is retracted — it was wrong, and measured so.**
-   `drivers/slimbus/qcom-ngd-ctrl.c` is *already* carried by two categories at
-   once, on purpose: `wip/7.1.3/audio` has the QDSP6SS framer-bit commit and its
-   revert (made to get the codec working), and `wip/7.1.3/power` has `implement
-   disable_stream so the ADSP releases the channel` (same file, chased because
-   LPASS would not sleep). The category follows **why** the change is made, not
-   which directory it touches. This storm is SSR bring-up on the codec path, so
-   it lands on **`wip/7.1.3/audio`** + `integration/7.1.3` + `debug-int/7.1.3`.
-   ☠️ Found while checking that: **the branch table in `~/.claude/CLAUDE.md`
-   lists five upstream-bound categories and there are seven.** `power` (8
-   commits) and `i2c` (the QUP runtime-PM pinctrl fix) both carry real work and
-   appear in neither that table nor `FP3-TODO.md`'s per-branch sections. Written
-   up in [`FP3-TODO.md`](FP3-TODO.md); the table is incomplete, not
-   authoritative — re-derive with `git for-each-ref`.
-   The fix itself is still unwritten; the placement question is what is closed.
-2. **Provoke the non-recovering SSR path** — needs a kernel-side hook now, so
-   this is the one item here that is not a quick measurement. ☠️ Two dead ends
-   are already recorded in [`TODO.md`](TODO.md), do not re-walk them: the
-   `avs/audio` PDR route does not exist on msm8953 (`PDM: no support for the
-   platform`), and holding audio traffic across a whole restart cycle moved the
-   bring-up count by exactly one, not two. The reachable second source is
-   `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
-   controller state is `DOWN`, and that window closes as soon as the controller
-   unregisters. Widening it deliberately is the next move.
-3. **The `vlow` gate is still unidentified, and the ADSP is not it.**
-   ☠️☠️ Everything this queue said today about LPASS being pinned is
+**Re-ordered 2026-08-23: full deep sleep is the top priority.** Items 2 and 3
+are directly under it (evidence retention, and the WiFi lever the same
+measurement has to account for); the camera wedge, which led this list yesterday,
+is now item 4.
+
+1. ★★★ **TOP PRIORITY — full deep sleep (`vlow`/`vmin`). The AP-side gate IS
+   identifiable from source, and it was identified on 2026-08-23: the
+   sleep-set regulator votes are never cast because no device tree describes a
+   suspend state.**
+
+   The standing fact is unchanged: `vlow` and `vmin` `Count` have **never** left
+   0 in any capture we hold, and that survives the AP-side sleep-set family,
+   `xo_sleep_off`, `both_sets`, `sleep_init`, and a powered-off ADSP. System
+   suspend itself works (12 successes in the last votes run); what has never
+   happened is the RPM entering an aggregate low-power set.
+
+   ☠️☠️ Everything this queue once said about LPASS being pinned is
    **retracted** — a flat `Shutdown count` reads the same whether the ADSP is
    held awake or asleep and staying down, and it was the latter. `enter > exit`
-   with `cores 0x0` is asleep; re-measured on a clean r73 boot, LPASS reads
-   `ASLEEP cores=0x0` from ~34 s onward. That is the goal state the NGD
-   `disable_stream` fix produced in r63, still working. Full retraction and the
-   three mistakes behind it in `leads/rpm-sleep-set.md`.
-   What is actually open is what it was before: `vlow`/`vmin` `Count` have never
-   left 0, and that survives the AP-side sleep-set family, `xo_sleep_off`,
-   `both_sets`, `sleep_init`, and a powered-off ADSP. The one control still
-   unrun is the oracle with USB detached — **which is a human item**, so the
-   machine-side move is to stop attacking `vlow` blind and take the mA
-   measurements below instead.
-   ☠️ Read `docs/power/bringup/RUNBOOK.md` before opening any LPASS question:
-   it was closed on 2026-08-21 and the closure was invisible from here, which is
-   what cost a day's re-run.
-3b. ☠️ **The rootfs is 93% full and it is eating this investigation's
+   with `cores 0x0` is asleep; on a clean r73 boot LPASS reads `ASLEEP
+   cores=0x0` from ~34 s onward. Full retraction in
+   [`leads/rpm-sleep-set.md`](power/bringup/leads/rpm-sleep-set.md).
+
+   ### Can `vlow`'s preconditions be read out of the source?
+
+   **The RPM's own entry rule: no, and that is settled rather than assumed.**
+   - mainline `drivers/soc/qcom/qcom_stats.c` names "vmin"/"vlow" exactly once,
+     in a comment at line 273. The code reads the mode name out of the RPM's own
+     memory (`type = readl(d[i].base)`) and makes a debugfs file per record. It
+     is a **reader**, and can hold no preconditions.
+   - the vendor 4.9 tree
+     (`/mnt/1TB/Fp3-Sailfish/hadk22/kernel/fairphone/sdm632`) carries the
+     downstream counterpart `drivers/soc/qcom/rpm_stats.c`, whose binding doc
+     says it outright: *"RPM maintains a counter of the number of times the SoC
+     entered a deeper sleep mode involving lowering or powering down the
+     backbone rails - Cx and Mx and the oscillator clock, XO."* Also a reader.
+   - a word-boundary grep for `vlow|vmin` across the whole vendor tree returns
+     **no RPM hit at all** — every match is `VMIN` in `termbits.h` / `termios.h`
+     / `tty.h`, or a `vmin` regulator property in a dtsi. ☠️ Those look like hits
+     in an unanchored grep; they are not.
+
+   So the RPM's threshold lives in closed firmware. **But the thing that feeds
+   it — what the AP votes — is entirely readable, and it is where the answer
+   turned out to be.**
+
+   ### ★★★ The chain, read end to end (2026-08-23)
+
+   Exactly four subsystems ever write `QCOM_SMD_RPM_SLEEP_STATE` in mainline:
+   `clk/qcom/clk-smd-rpm.c`, `pmdomain/qcom/rpmpd.c`,
+   `interconnect/qcom/icc-rpm.c`, and `regulator/qcom_smd-regulator.c`. Three of
+   them vote sleep; the measured hole was always the LDOs (14 active / 0 sleep).
+   That hole now has a cause:
+
+   1. `qcom_smd-regulator.c` **does** have a sleep-vote path —
+      `rpm_reg_write_sleep()`, wired to `.set_suspend_enable` /
+      `.set_suspend_disable` / `.set_suspend_voltage` on every rpm-regulator ops
+      struct. ☠️ That is **our own commit** `0be43747a1d2` *"regulator: qcom_smd:
+      cast sleep-set votes for suspend states"*, so the driver side was already
+      done and the lead was mis-stated as a missing driver path.
+   2. Those ops are reached from `__suspend_set_state()` in
+      `regulator/core.c:1078`, which needs a non-NULL `struct regulator_state`.
+   3. That state comes from DT and only from DT:
+      `of_regulator.c` looks for a `regulator-state-mem` (or `-standby`,
+      `-disk`) child node, fills `constraints->state_mem`, and — line 327 —
+      sets `constraints->initial_state = PM_SUSPEND_MEM`.
+   4. `regulator_register()` (`core.c:1497`) then calls
+      `suspend_set_initial_state()` **at probe**, casting the RPM sleep-set vote
+      once, for good. That is exactly the shape downstream gets from
+      `qcom,set = <3>`, reached through a purely upstream mechanism.
+   5. ☠️ **No device tree in the tree has that node.** `grep -rl
+      regulator-state-mem arch/arm64/boot/dts/qcom/` returns **nothing** — not
+      the FP3's `sdm632-fairphone-fp3.dts`, not any of the ~616 qcom arm64 DTs.
+      So `suspend_set_initial_state()` has never run for a single rail, and the
+      ops we added have never once been called.
+
+   The FP3 node is `qcom,rpm-pm8953-regulators` at
+   `arch/arm64/boot/dts/qcom/sdm632-fairphone-fp3.dts:741`, ~20 rails, none of
+   them carrying a suspend state.
+
+   ☠️ **Trap, read straight out of `regulator_get_suspend_state_check()`
+   (`core.c:583`):** a `regulator-state-mem` node is ignored unless it contains
+   `regulator-on-in-suspend` **or** `regulator-off-in-suspend`. A suspend
+   voltage on its own produces a `No configuration` warning and no vote. Adding
+   voltages without the boolean would look like the experiment ran when it did
+   not.
+
+   ☠️ **Second trap, and the reason step 4 is the one that matters:** the phone
+   suspends via **s2idle** — `/sys/power/mem_sleep` reads `[s2idle]` with no
+   `deep` offered. `pm_suspend_target_state` is then `PM_SUSPEND_TO_IDLE`, and
+   `regulator_get_suspend_state()` (`core.c:565`) returns **NULL** for it
+   (`default:` case; `of_regulator.c` explicitly `continue`s past
+   `PM_SUSPEND_TO_IDLE` too). So the *runtime* `regulator_suspend()` path is
+   dead on this device no matter what the DT says. The probe-time
+   `initial_state` path is not — it is the only one that can work here.
+
+   ### The other AP-side candidate, also new today
+
+   Of the 45 `soc@0` children, exactly **two** have runtime PM disabled: the USB
+   controller `7000000.usb` and its HS PHY `79000.phy` are `power/control = on`;
+   the other 43 are `auto`. `runtime_suspended_time` for both is **0** after
+   1605 s of uptime — they have never once runtime-suspended. Read out of
+   `drivers/usb/dwc3/core.c`: `dwc3_core_probe()` calls `pm_runtime_forbid(dev)`
+   unconditionally (line 2321) and the **success path never calls
+   `pm_runtime_allow()`** — only the error path and `dwc3_core_remove()` do. So
+   `control=on` is dwc3's own default and would hold with no cable attached at
+   all. Whether a permanently active USB controller keeps the RPM out of `vlow`
+   is **not established** — it is a candidate, ranked below the regulator one.
+
+   ### The two cable questions, answered from measurement
+
+   - *Can a plugged-in, non-charging cable be a limit?* **Not for system
+     suspend.** Measured with the cable in and `status = Not charging`:
+     `active_since = 0` for every wakeup source, and `prevent_suspend_time = 0`
+     for all three USB/charger sources (`tcpm-source-psy…typec@1500`,
+     `pmi632-charger`, `pmi632-battery`). Nothing holds the system awake — which
+     differs from the UT oracle, where `7000000.ssusb` *was* held. It **can** be
+     a limit one layer down: with `control` forced to `auto`, the controller
+     still stayed `active`, because the gadget is `configured` — an enumerated
+     cable holds it up once runtime PM is allowed at all.
+   - *Should the cable be unplugged for the overnight run?* ☠️ **Unplugging
+     alone changes nothing** — `control=on` pins the controller active with or
+     without a cable, so detaching it without also writing `auto` tests nothing
+     and costs the USB link. The pair is the experiment: `echo auto >
+     /sys/devices/platform/soc@0/7000000.usb/power/control` **and** the same for
+     `79000.phy`, **then** unplug. And note this is now the *second*-ranked
+     candidate: the regulator DT change above does not need the cable out at all.
+
+   ★ The run no longer needs the cable to stay reachable: the WiFi path is live
+   and verified today (`fp3@192.168.100.17`, key auth, `WIFI_OK`), so the phone
+   can be logged into with USB detached. ☠️ WiFi is itself a power lever
+   (item 3), so a WiFi-attached measurement is not the 79.1 mA baseline — state
+   which link was up in every capture.
+
+   ### Next, in order
+
+   1. **Add `regulator-state-mem` to the FP3 rails** and measure `vlow`. This is
+      a `power`-category DT change (`wip/7.1.3/power` + `integration/7.1.3` +
+      `debug-int/7.1.3`). Start with the rails downstream marks sleep-capable
+      rather than all ~20 at once, and include the mandatory
+      `regulator-on-in-suspend` / `regulator-off-in-suspend` boolean.
+      ☠️ Before believing a null result, prove the votes were actually cast: the
+      `qcom_rpm_smd_write` tracepoint must show sleep-context writes with
+      `type=ldoa/smpa`, and the vote mask must move. A DT property that parsed
+      into nothing looks identical to a lever that did not work.
+   2. If `vlow` still reads 0 with sleep votes demonstrably cast, that **kills**
+      the regulator candidate — say so as loudly as a positive result — and the
+      USB one is next: over WiFi with USB detached, `control=auto` on both
+      nodes, confirm `runtime_status` actually reaches `suspended` and
+      `runtime_suspended_time` leaves 0. Until that is seen the lever has been
+      described, not pulled.
+   3. Either way the regulator work is **upstreamable** — a DT addition plus an
+      already-written driver commit, both in `submit/7.1.3/power` territory.
+
+   ☠️ Read [`power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md) before opening
+   any LPASS question: it was closed on 2026-08-21 and the closure was invisible
+   from here, which is what cost a day's re-run.
+
+2. ☠️ **The rootfs is 93% full and it is eating this investigation's
    evidence.** `/var/log/journal` is persistent (22.4 MB) but only the current
    and previous boot survive: 153 MB free on a 2.4 G rootfs puts journald
    permanently against its free-space guard, so **every reset destroys the boot
@@ -153,9 +262,10 @@ list; do not stop at the end of an item to report.
    before. Until then, capture full boot logs to the host at the moment of a
    reset rather than expecting to read them later.
 
-4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
+3. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
-5. ☠️☠️ **The camera wedges the phone and the watchdog resets it — and the
+
+4. ☠️☠️ **The camera wedges the phone and the watchdog resets it — and the
    fault is INTERMITTENT, about one camera-touching run in two.** This is not
    `99-suspend` failing, and it is not a `cpuidle` bug: the phone reaches
    `watchdog0: pretimeout event` because the camera cannot be torn down.
@@ -205,11 +315,44 @@ list; do not stop at the end of an item to report.
    camera block from a fresh reboot, with `kmsg-tap.sh` streaming the kernel log
    to the **host**, and stop at the first fault, so the onset is finally captured.
    It has to go to the host because the phone's rootfs is 93% full and journald
-   vacuums the boot before last (item 3b): a reset destroys its own evidence.
+   vacuums the boot before last (queue item 2): a reset destroys its own evidence.
    Full day-by-day account, including the three instrument errors it exposed:
    [`power/bringup/leads/camera-wedge-2026-08-23.md`](power/bringup/leads/camera-wedge-2026-08-23.md).
 
-6. ☠️ **Housekeeping item withdrawn — its premise is false.**
+5. **The SSR write storm is a `qcom-ngd-ctrl` question, not a codec one.**
+   Measured on r73: 78 lines of `Failed to write config eN` / `Failed to sync
+   masks in 89`, spanning 36.46 s → 38.10 s, every one of them `-22` or `-12`,
+   and they start *before* the codec is told anything — immediately after
+   `HW wakeup attempt during SSR`. The controller accepts transfers while its
+   own state is `DOWN` instead of failing them fast. Bounded and harmless now
+   that the teardown ends it, so this is noise-removal, not a defect.
+   ☠️ **The "no category" worry is retracted — it was wrong, and measured so.**
+   `drivers/slimbus/qcom-ngd-ctrl.c` is *already* carried by two categories at
+   once, on purpose: `wip/7.1.3/audio` has the QDSP6SS framer-bit commit and its
+   revert (made to get the codec working), and `wip/7.1.3/power` has `implement
+   disable_stream so the ADSP releases the channel` (same file, chased because
+   LPASS would not sleep). The category follows **why** the change is made, not
+   which directory it touches. This storm is SSR bring-up on the codec path, so
+   it lands on **`wip/7.1.3/audio`** + `integration/7.1.3` + `debug-int/7.1.3`.
+   ☠️ Found while checking that: **the branch table in `~/.claude/CLAUDE.md`
+   lists five upstream-bound categories and there are seven.** `power` (8
+   commits) and `i2c` (the QUP runtime-PM pinctrl fix) both carry real work and
+   appear in neither that table nor `FP3-TODO.md`'s per-branch sections. Written
+   up in [`FP3-TODO.md`](FP3-TODO.md); the table is incomplete, not
+   authoritative — re-derive with `git for-each-ref`.
+   The fix itself is still unwritten; the placement question is what is closed.
+
+6. **Provoke the non-recovering SSR path** — needs a kernel-side hook now, so
+   this is the one item here that is not a quick measurement. ☠️ Two dead ends
+   are already recorded in [`TODO.md`](TODO.md), do not re-walk them: the
+   `avs/audio` PDR route does not exist on msm8953 (`PDM: no support for the
+   platform`), and holding audio traffic across a whole restart cycle moved the
+   bring-up count by exactly one, not two. The reachable second source is
+   `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
+   controller state is `DOWN`, and that window closes as soon as the controller
+   unregisters. Widening it deliberately is the next move.
+
+7. ☠️ **Housekeeping item withdrawn — its premise is false.**
    `linux-postmarketos-qcom-msm8953` is **not installed**: `apk info` lists only
    `linux-fp3`. What does exist is a second module tree,
    `/lib/modules/7.0.9-postmarketos-qcom-msm8953`, and that one belongs to the
@@ -219,7 +362,8 @@ list; do not stop at the end of an item to report.
    fallback intact, not a package removal.
    ☠️ `apk del` on a package that is not installed reports a bare `1 error` and
    nothing else; `-v` is what makes it say why.
-7. ★ **`base_dir` measured, and it was set on the wrong cache. Applied; the
+
+8. ★ **`base_dir` measured, and it was set on the wrong cache. Applied; the
    real verification is the next kernel bump.**
    Measured 2026-08-23 in the native chroot with a synthetic harness (same
    source, two absolute paths, `-g` and a differing `-I`), control shown hitting
