@@ -219,12 +219,30 @@ the gaps are here and only here:
     change. Belongs in the cover letter, with a Cc to maintainers who have the
     hardware.
 
-41. **The WCD9335 does not survive an ADSP restart.** The SLIMbus NGD master is
-    on the ADSP, so an ADSP SSR takes the codec's bus out from under it:
-    `CODEC version detection fail!`, `Failed to bringup WCD9335`, ~80 log lines.
-    Measured 2026-08-23 on r71 — six modem restarts do **not** do this, the first
-    ADSP restart does. Undiagnosed, and the functional root cause of the two
-    items below. Not upstream-shaped yet: nobody knows whose recovery this is.
+41. **The WCD9335 does not survive an ADSP restart — diagnosed and fixed
+    2026-08-23.** The SLIMbus NGD master is on the ADSP, so an ADSP SSR takes
+    the codec's bus out from under it. The cause is not the bus going away, it
+    is that `wcd9335_slim_status()` **ignored its `status` argument** and ran
+    the whole bring-up on the *absent* notification, over a bus that was
+    already down — leaking a register-map pair per restart and leaving the
+    previous interrupt chip installed. Full account, with the before/after
+    capture, in [`TODO.md`](TODO.md#-defect-3-diagnosed-the-codec-ran-its-bring-up-on-the-absent-notification).
+
+    Three commits on this branch: `aba7e40c` (check the version-detect reads,
+    which were testing uninitialised locals), `1d3ae998` (dispatch on the
+    status and tear down on the way down; the irq chip and the ASoC component
+    move off `devm` because their lifetime is the bus session, not the driver
+    binding), `42b7e745` (free the per-function interrupts, which were `devm`
+    on a device that never unbinds).
+
+    **All three are upstream-shaped** — `wcd934x` already dispatches on the
+    status, so this is wcd9335 catching up rather than an invention, and none
+    of it touches anything out of tree. ☠️ `wcd934x` still has the sibling half
+    of the same hole: it leaks its register map and re-adds its irq chip on a
+    second present notification. Worth saying so in the cover letter; fixing it
+    blind is not, since nobody here has that hardware.
+    Proven to `#73-fp3` (r72); r73 carries commit three and is not yet
+    deployed.
 42. **`slim_rx_mux_put()` could NULL-deref from a mixer write** — fixed on this
     branch (`647cb5a1`) by initialising the channel list heads in
     `wcd9335_codec_probe()` instead of only in `wcd9335_set_channel_map()`.

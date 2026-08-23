@@ -296,7 +296,7 @@ separable defects, deepest last:
 |---|---|---|
 | 1 | `slim_rx_mux_put()` dereferences a list head that was never initialised — `list_del_init(&wcd->rx_chs[port_id].list)` on memory that only ever saw a `memcpy`. A single `amixer` write to `SLIM RX0 Mux` is enough to NULL-deref the kernel from userspace. | `INIT_LIST_HEAD()` beside the `memcpy` in `wcd9335_codec_probe()` — small, upstream-shaped, **audio** category |
 | 2 | `pdata->slim_port_setup` in the machine driver latches `true` for the life of the card, but it guards state that lives in the **codec** and is wiped when the codec re-probes. `snd_soc_dai_set_channel_map()` is then never called again. | clear it on codec re-probe, or drop the latch and let the idempotent `set_channel_map` run on every `dai_init`. Inherited from `sdm845.c`, so upstream has the same hole |
-| 3 | the WCD9335 does not survive a SLIMbus SSR at all: `qcom,slim-ngd-ctrl: HW wakeup attempt during SSR`, then `WCD9335 CODEC version detection fail!` and `Failed to bringup WCD9335` (85 lines). This is the functional root cause and the only one that costs audio. | not diagnosed |
+| 3 | the WCD9335 does not survive a SLIMbus SSR at all: `qcom,slim-ngd-ctrl: HW wakeup attempt during SSR`, then `WCD9335 CODEC version detection fail!` and `Failed to bringup WCD9335` (85 lines). This is the functional root cause and the only one that costs audio. | **diagnosed and fixed 2026-08-23** — see the section below |
 
 The measured chain, from one boot's journal:
 
@@ -366,6 +366,97 @@ Not yet attempted, and worth asking before it is: write `SLIM RX0 Mux` on a
 clean boot with no remoteproc restart at all, to see whether defect 1 fires on
 its own. If it does, it is reportable to the LKML without any of this port's
 context.
+
+
+## ☠️ Defect 3, diagnosed: the codec ran its bring-up on the *absent* notification
+
+**Measured 2026-08-23 on r71 (`#72-fp3`), clean boot, one `echo stop` to the
+ADSP remoteproc addressed by name.** The device was rebooted first, because the
+previous session's log held a 64-second restart loop whose phases could be read
+two ways; that ambiguity is what a clean single restart removed.
+
+The controller reports the codec absent before the restart and present again
+afterwards, and calls `.device_status` for **both** edges
+(`slim_report_absent()` → `slim_device_update_status()` →
+`sbdrv->device_status`). `wcd9335_slim_status()` **never looked at the `status`
+argument**, so the absent notification ran the entire bring-up against a bus
+that was already down. From the capture, 1.0 s after the stop:
+
+```
+[74.809] qcom,slim-ngd-ctrl: HW wakeup attempt during SSR
+[74.819] debugfs: '217:1a0:1:0' already exists in 'regmap'
+[74.822] debugfs: '217:1a0:0:0' already exists in 'regmap'
+[74.855] wcd9335-slim: WCD9335 CODEC version detection fail!
+[74.862] wcd9335-slim: Failed to bringup WCD9335
+         ... 78 lines of "Failed to write config eN" / "Failed to sync masks"
+[82.05 ] wcd9335-slim: WCD9335 CODEC version is v2.0     <- the *present* edge
+```
+
+Three separate consequences, all from that one omission:
+
+* **a register-map leak, once per restart.** The debugfs collision is the
+  evidence: `regmap_init_slimbus()` runs again while the previous pair is still
+  allocated, and nothing ever frees either. The boot-time bring-up has no such
+  line; every bring-up after it does.
+* **a bring-up that cannot succeed**, because the reads it needs return `-22`.
+  ☠️ And `wcd9335_bring_up()` was testing *uninitialised locals* for a negative
+  value — `regmap_read()` reports failure in its return code and leaves its
+  output untouched — so the "version detection fail" message was firing by luck,
+  not by detection.
+* **no teardown at all**, so the interrupt chip from the previous bring-up stays
+  installed and keeps retrying its mask writes into the dead bus.
+
+**Why it sometimes recovers and sometimes does not.** When the absent edge is
+followed by the controller unregistering, the codec device is unbound, the devm
+resources are released, and the next present edge builds cleanly — that is the
+recovering case, and it is what a single restart does. When a *second* present
+notification arrives with no absent one in between, the retained interrupt chip
+makes the next `request_irq()` fail and the codec never comes back:
+
+```
+genirq: Flags mismatch irq 142. 00002004 (wcd9335_pin1_irq) vs. 00002004 (...)
+wcd9335-slim: Failed to request IRQ 142 for wcd9335_pin1_irq: -16
+wcd9335-slim: error -EBUSY: Failed to register IRQ chip
+```
+
+☠️ Note the flags in that message are **identical** on both sides. That is the
+signature of the same interrupt being requested twice, not of a flags
+disagreement, and reading it as the latter costs an afternoon.
+
+**The fix**, three commits on `wip/7.1.3/audio` (`aba7e40c`, `1d3ae998`,
+`42b7e745`), cherry-picked to `integration/7.1.3` and carried to
+`debug-int/7.1.3` `818d35f1`:
+
+1. check the two `regmap_read()`s in `wcd9335_bring_up()` and propagate the
+   error, instead of reading uninitialised stack;
+2. split the callback the way `wcd934x` already does — bring up on
+   `SLIM_DEVICE_STATUS_UP`, tear down on `SLIM_DEVICE_STATUS_DOWN`. The
+   interrupt chip and the ASoC component move off `devm` so the teardown can
+   release them: their lifetime is the **bus session**, not the driver binding.
+   A `.remove` covers unbind without a preceding absent notification;
+3. free the per-function interrupts in `wcd9335_teardown_irqs()`. They were
+   `devm_request_threaded_irq()` on a device that never unbinds, and the
+   teardown only wrote the port enable registers.
+
+**What each revision measured, on the same one-restart test:**
+
+| | r71 (`#72-fp3`) | r72 (`#73-fp3`) |
+|---|---|---|
+| `CODEC version detection fail!` | yes | **none** |
+| `Failed to bringup WCD9335` | yes | **none** |
+| `debugfs: … already exists` (the leak) | 2 per restart | **none** |
+| write storm | 78 lines, unbounded until re-register | 69 lines, bounded 37.50→38.98 s |
+| `remove_proc_entry` warning | n/a | **yes — fixed by commit 3, r73** |
+| playback afterwards | ok | ok |
+
+☠️ **Step 2 introduced a warning that step 3 fixes**, and it was found only
+because the reproduction script's own `dmesg` filter printed *nothing* while
+`dmesg` itself held 225 codec lines. Two instruments, and the quiet one was the
+one that agreed with the hypothesis — the same trap as the `find`-on-ccache
+reading. Read `dmesg` directly.
+
+**r73 is built from `818d35f1` but not yet deployed or proven.** The acceptance
+test is in [`STATUS.md`](STATUS.md).
 
 
 ## Open before anything is submitted
