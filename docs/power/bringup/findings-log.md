@@ -1916,3 +1916,63 @@ Either way the AP-side search is closed by measurement, and the next instrument
 is a DT change we can make and read ourselves. ☠️ Until that node exists, do not
 quote a pmOS "co-processors don't sleep" claim — it is untested, because the
 instrument for it is absent.
+
+## 2026-08-24 (same night, correction) — pmOS DOES have per-master XO votes, and its co-processors sleep like the oracle's
+
+☠️☠️ **Retraction of the entry just above.** It claimed pmOS is "blind to
+per-master XO votes" and that reading them needs a DT change to restore
+`rpm_master_stats`. **Both are wrong, measured wrong within the hour.** The
+mainline `qcom_stats.c` per-subsystem path is RPMh-only
+(`subsystem_stats_in_smem = true` only for RPMh configs; the FP3's
+`qcom,rpm-stats` → `rpm_data` has it `false`) — but that was never the FP3's
+instrument. The fork already carries the downstream-style
+`drivers/soc/qcom/rpm_master_stats.c` (`CONFIG_QCOM_RPM_MASTER_STATS=m`) with a
+`qcom,rpm-master-stats` DT node in `msm8953.dtsi`. It was simply **not
+auto-loaded**, and it creates its debugfs dir as **`qcom_rpm_master_stats`**, not
+`rpm_master_stats` — so the earlier "no rpm_master_stats on this build" was
+looking at the wrong path for an unloaded module.
+
+**Zero-build fix:** `modprobe rpm_master_stats` → `/sys/kernel/debug/qcom_rpm_master_stats/{APSS,MPSS,PRONTO,TZ,LPASS}`
+appear immediately (the platform device binds; the module is just not in any
+autoload set). ☠️ Make it persistent with a `modules-load.d` entry or
+`CONFIG_...=y` on the next build, or it is gone on the next boot.
+
+### ★★★ The measured result overturns the co-processor hypothesis
+
+pmOS r73 idle, per-master XO shutdowns
+([capture](captures/2026-08-24_pmos-master-stats-windowed.txt)), against the UT
+oracle rates:
+
+| master | pmOS XO rate | oracle XO rate |
+|---|---|---|
+| APSS   | **0/s** | **0/s** |
+| MPSS   | 2.5/s | 3.1/s |
+| PRONTO | **9.1/s** | **9.0/s** |
+| LPASS  | frozen (asleep since ~34 s, staying down) | 11.9/s (cycling) |
+
+**pmOS's co-processors vote the XO down at essentially oracle-equivalent rates**
+(PRONTO is within 1 %; MPSS is close; APSS votes XO on neither). And yet pmOS
+`vlow` Count stays **0**. So the gate is **not** "our co-processors don't
+sleep" — the hypothesis the retracted entry set up. All the masters that vote XO
+on the oracle also vote XO on pmOS.
+
+### What that leaves as the real gate
+
+1. **The RPM aggregate, not the masters.** `vlow`'s `Client Votes` mask on pmOS
+   is **never 0** through the whole idle window (`0x7030703`, `0x5010307`,
+   `0x15171317`, …) — something is always voting the aggregate up even while
+   MPSS and PRONTO are cycling their XO down. Decoding *which* client never
+   releases (and the STATUS item-1 mystery **bit 3**) is now the direct next
+   step, and the instrument for it — `qcom_rpm_master_stats` **and** the vlow
+   `Client Votes` field — is on the device with no build needed.
+2. **The one behavioural difference is LPASS.** On the oracle LPASS cycles
+   (XO count climbing 11.9/s); on pmOS LPASS takes one shutdown at ~34 s and
+   **stays down** (XO count frozen), which is the LPASS-CLOSED steady state and
+   is if anything *deeper*, not shallower. So LPASS is unlikely to be the vlow
+   gate, but it is the only master whose behaviour differs and is worth a second
+   look once the Client Votes decode names the holder.
+
+☠️ **Discipline note.** The retracted entry was written and committed before the
+instrument was tried — it reasoned from `qcom_stats.c` source ("RPMh-only") to
+"pmOS can't show this" and stopped, when a one-line `modprobe` would have shown
+it. Read the device before concluding what the device cannot do.

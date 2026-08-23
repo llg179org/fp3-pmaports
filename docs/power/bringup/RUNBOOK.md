@@ -38,15 +38,21 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    (MPSS/PRONTO/LPASS) vote the XO down thousands of times/window and `system-pc`
    collapses ~18/s — the working slot reaches deep sleep continuously. Decisive
    detail: **APSS `xo_count` is 0 on *both* systems** — the AP never votes the
-   crystal down on the oracle either, so the AP is not the differentiator; the XO
-   votes that matter are the co-processors'. ☠️ The two builds expose **disjoint
-   instruments** (pmOS: `vlow`/`vmin` only; UT: `rpm_master_stats`+`lpm_stats`,
-   no vlow file), so a same-counter diff is impossible. **Next lever, AP-side and
-   readable: restore `rpm_master_stats` on pmOS** (the FP3 soc-stats DT node
-   describes only the aggregate record; mainline `qcom_stats` can expose the
-   per-master one) — then pmOS's own co-processor XO votes can be read and
-   compared. Full write-up + captures in `findings-log.md` (2026-08-24) and
-   `captures/2026-08-24_vlow-idle-*`.
+   crystal down on the oracle either, so the AP is not the differentiator.
+
+   ★★★ **Correction, same night: pmOS's co-processors DO vote XO down, at
+   oracle-equivalent rates — the gate is the RPM aggregate, not the masters.**
+   The per-master instrument was there all along: `modprobe rpm_master_stats`
+   (module is `=m`, not auto-loaded) → `/sys/kernel/debug/qcom_rpm_master_stats/`
+   (that dir name, not `rpm_master_stats`). Measured on pmOS r73 idle: PRONTO
+   9.1/s XO (oracle 9.0/s), MPSS 2.5/s (oracle 3.1/s), APSS 0 (both), LPASS
+   asleep-and-staying-down. So "restore rpm_master_stats" was a **wrong** next
+   lever — it already exists, and it shows the co-processors sleeping fine while
+   `vlow` stays 0. **The real next step is to decode the vlow `Client Votes`
+   mask** (never 0 on pmOS: `0x7030703`, `0x15171317`, …) — which client always
+   holds the aggregate up, and what is the STATUS item-1 mystery **bit 3** — with
+   no build needed. Full write-up + captures in `findings-log.md` (2026-08-24
+   correction) and `captures/2026-08-24_pmos-master-stats-windowed.txt`.
 
 ## The LPASS question is CLOSED (2026-08-21), and here is where it went
 

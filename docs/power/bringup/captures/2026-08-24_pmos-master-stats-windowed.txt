@@ -1,0 +1,21 @@
+# pmOS r73 (#74-fp3) per-master XO-vote windowed diff, 2026-08-24, cable in.
+# Instrument: /sys/kernel/debug/qcom_rpm_master_stats/<MASTER> after
+#   modprobe rpm_master_stats   (module is CONFIG_QCOM_RPM_MASTER_STATS=m, NOT auto-loaded).
+# The debugfs dir is "qcom_rpm_master_stats" (created by the driver), NOT "rpm_master_stats".
+
+## Snapshot at boot 5ccc86b1, ~uptime 300s:
+# APSS   Shutdown 16024  XO shutdown 0
+# MPSS   Shutdown 1320   XO shutdown 1313
+# PRONTO Shutdown 4650   XO shutdown 4648
+# TZ     Shutdown 0      XO shutdown 0
+# LPASS  Shutdown 67     XO shutdown 51
+
+## 180 s idle window (session up), T0 up=592.36 -> T1 up=772.42:
+# APSS   Shutdown +2642  XO +0      (0/s)
+# MPSS   Shutdown +445   XO +444    (2.5/s)
+# PRONTO Shutdown +1638  XO +1637   (9.1/s)
+# LPASS  Shutdown +0     XO +0      (frozen: asleep since ~34s, staying down)
+# vlow Count 0 -> 0 ; Client Votes 0x7030703 -> 0x5010307 (never 0)
+
+## For comparison, UT oracle 21 min idle (2026-08-24_vlow-idle-ut-oracle.txt):
+# APSS   XO 0/s     MPSS XO 3.1/s   PRONTO XO 9.0/s   LPASS XO 11.9/s

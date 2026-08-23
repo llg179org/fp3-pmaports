@@ -334,14 +334,18 @@ is now item 4.
    Count **0**. UT oracle idle 21 min: MPSS/PRONTO/LPASS each vote XO down
    thousands of times/window, `system-pc` collapses ~18/s — the working slot
    reaches deep sleep continuously. **APSS `xo_count` is 0 on *both* systems**, so
-   the AP is not the differentiator; the co-processor XO votes are. ☠️ The builds
-   expose **disjoint instruments** (pmOS has only `vlow`/`vmin`; UT has
-   `rpm_master_stats`+`lpm_stats`, no vlow file), so the next lever is a DT change
-   we can make and read: **restore `rpm_master_stats` on pmOS** to read our own
-   co-processor XO votes and finish the comparison. Details + captures in
-   `power/bringup/findings-log.md` (2026-08-24). This retires live-thread 2a
-   (the runtime-idle oracle question); the **USB-detached suspend-region** oracle
-   run (below) still needs a physical unplug and is the remaining oracle step.
+   the AP is not the differentiator. ★★★ **Correction, same night: pmOS's
+   co-processors DO vote XO down at oracle-equivalent rates** (PRONTO 9.1/s vs
+   9.0/s, MPSS 2.5/s vs 3.1/s, APSS 0 both) — read via `modprobe
+   rpm_master_stats` → `/sys/kernel/debug/qcom_rpm_master_stats/` (module is
+   `=m`, not auto-loaded; that is the dir name). So the gate is **not** the
+   co-processors and **not** a missing instrument — it is the **RPM aggregate**:
+   `vlow`'s `Client Votes` mask is never 0 on pmOS, so some client always holds
+   it up. **Next step (no build): decode which client never releases, and the
+   mystery bit 3.** Details + captures in `power/bringup/findings-log.md`
+   (2026-08-24 correction) + `captures/2026-08-24_pmos-master-stats-windowed.txt`.
+   This retires live-thread 2a (runtime-idle oracle); the **USB-detached
+   suspend-region** oracle run still needs a physical unplug.
 
    ☠️☠️ **The regulator candidate for `vlow` is KILLED — stated as loudly as a
    positive result would be, per this item's own rule.** The runtime equivalent
