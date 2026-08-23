@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 22:15**.
+Last updated: **2026-08-23 23:40**.
 
 ## The device
 
@@ -25,7 +25,7 @@ Last updated: **2026-08-23 22:15**.
 | build stamp | `#74-fp3` | `uname -v` |
 | pinned commit | `debug-int/7.1.3` `818d35f1` | `grep _commit linux-fp3/APKBUILD` |
 | boot config | 3 labels, md5 `863cdf20…`, `panic=10`, `timeout 3` | `md5sum /boot/extlinux/extlinux.conf` |
-| last full battery | **30 ok / 1 failed / 3 skipped** (2026-08-23 15:47, r73). ☠️ The one failure is `99-suspend`, and it is the harness: it passes standalone on that same boot, twice - before and after the battery - and fails only when it runs directly after `98-camera-af-rail`, by one second (`woke at 98179, alarm was 98180`) | `tests/fp3-selftest` |
+| last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Both failures are `98-camera-af-rail` and `99-suspend`, and neither is a check defect: **the device hung in `cpuidle_enter_state` and the watchdog reset it mid-run** — see queue item 5 | `tests/fp3-selftest` |
 
 The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 (an older kernel, kept as the safety net) and `postmarketOS-xo` (adds
@@ -111,13 +111,39 @@ list; do not stop at the end of an item to report.
    what cost a day's re-run.
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
-5. **`99-suspend` fails inside the battery and passes outside it.** Measured
-   2026-08-23 three times on r73: standalone before the battery **ok (15 s)**,
-   inside the battery **FAIL (12 s, one second short)**, standalone after the
-   battery **ok (15 s)**. `65-bluetooth` unblocks the controller a few checks
-   earlier and `98-camera-af-rail` restarts wireplumber immediately before it.
-   Either the check needs to settle the wake sources it inherits, or its alarm
-   margin is one second too tight. Fix the check, not the kernel.
+5. ☠️☠️ **The phone HANGS and the watchdog resets it — `99-suspend` was never
+   the problem.** This item used to read "fix the check, not the kernel". That is
+   **retracted**: measured 2026-08-23 on r73, the battery's detached tail
+   (`98-camera-af-rail`, `99-suspend`) does not fail, it **dies with the
+   device**. The boot before the current one ends with
+
+   ```
+   rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+   ...  pc : cpuidle_enter_state+0xb8/0x740
+        cpuidle_enter / do_idle / cpu_startup_entry / secondary_start_kernel
+   watchdog0: pretimeout event
+   ```
+
+   — the RCU grace-period kthread's CPU stuck inside `cpuidle_enter_state`, and
+   then the debug layer's watchdog resetting the phone. `journalctl
+   --list-boots` shows the reboot landing mid-run. **The safety net worked;** the
+   check's "no verdict was written" and the `run-detached.sh: no such file` that
+   follows are both just `/tmp` being tmpfs on a machine that rebooted.
+   Capture: `docs/power/bringup/captures/2026-08-23_rcu-stall-cpuidle-watchdog.txt`.
+   ☠️ **Also retracted:** this page previously explained the same 606 s hang away
+   as "a boot that had had an ADSP restart, did not reproduce on a clean boot".
+   It has now reproduced on a boot with no manual ADSP restart.
+   ☠️ **One instance is confirmed, not two.** The earlier run rebooted at the
+   same point but its boot is no longer retained (`--list-boots` holds only −1
+   and 0), so it is a matching timing signature and nothing more.
+   Next: reproduce deliberately — `98-camera-af-rail` restarts wireplumber and
+   then a real suspend follows, so the suspect is the suspend/cpuidle path under
+   that specific load, on r73. Run the two checks alone, in a loop, with the
+   journal persisted, and get a second confirmed capture before theorising.
+   ☠️ **Harness trap, mine:** never run two batteries overlapping — killing the
+   first fires its cleanup trap, which deletes `/tmp/fp3-selftest` out from under
+   the second and produces exactly this "vanished helper" signature for
+   an unrelated reason.
 6. **Housekeeping:** `linux-postmarketos-qcom-msm8953-7.1.3-r0` is installed,
    owns no `/boot/vmlinuz`, and makes every `apk` run end with `only one kernel
    release/flavor is supported`.

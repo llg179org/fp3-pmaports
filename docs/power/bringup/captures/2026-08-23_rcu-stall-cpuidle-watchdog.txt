@@ -1,0 +1,48 @@
+[ 2102.410461] fp3 rtkit-daemon[805]: Successfully made thread 31522 of process 31522 owned by '10000' high priority at nice level -11.
+[ 2102.429308] fp3 rtkit-daemon[805]: Successfully made thread 31532 of process 31522 owned by '10000' RT at priority 20.
+[ 2106.361204] fp3 su[31575]: (to fp3) root on none
+[ 2106.363593] fp3 su[31575]: pam_unix(su:session): session opened for user fp3(uid=10000) by root(uid=0)
+[ 2133.926197] fp3 kernel: rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+[ 2133.940405] fp3 kernel: rcu:         7-...0: (1 GPs behind) idle=69f4/1/0x4000000000000000 softirq=57255/57255 fqs=2578
+[ 2133.940622] fp3 kernel: rcu:         (detected by 6, t=5252 jiffies, g=189941, q=1896 ncpus=8)
+[ 2133.940775] fp3 kernel: Sending NMI from CPU 6 to CPUs 7:
+[ 2133.940926] fp3 kernel: rcu: rcu_preempt kthread timer wakeup didn't happen for 2500 jiffies! g189941 f0x0 RCU_GP_WAIT_FQS(5) ->state=0x402
+[ 2133.941054] fp3 kernel: rcu:         Possible timer handling issue on cpu=6 timer-softirq=20940
+[ 2133.941194] fp3 kernel: rcu: rcu_preempt kthread starved for 2506 jiffies! g189941 f0x0 RCU_GP_WAIT_FQS(5) ->state=0x402 ->cpu=6
+[ 2133.941316] fp3 kernel: rcu:         Unless rcu_preempt kthread gets sufficient CPU time, OOM is now expected behavior.
+[ 2133.941444] fp3 kernel: rcu: RCU grace-period kthread stack dump:
+[ 2133.941563] fp3 kernel: task:rcu_preempt     state:I stack:0     pid:15    tgid:15    ppid:2      task_flags:0x208040 flags:0x00000010
+[ 2133.941693] fp3 kernel: Call trace:
+[ 2133.941820] fp3 kernel:  __switch_to+0xf8/0x1e8 (T)
+[ 2133.941945] fp3 kernel:  __schedule+0x38c/0xfe8
+[ 2133.942052] fp3 kernel:  schedule+0x3c/0xe8
+[ 2133.942172] fp3 kernel:  schedule_timeout+0x7c/0x120
+[ 2133.942276] fp3 kernel:  rcu_gp_fqs_loop+0x108/0x7e0
+[ 2133.942396] fp3 kernel:  rcu_gp_kthread+0x2dc/0x308
+[ 2133.942515] fp3 kernel:  kthread+0x134/0x148
+[ 2133.942643] fp3 kernel:  ret_from_fork+0x10/0x20
+[ 2133.942753] fp3 kernel: rcu: Stack dump where RCU GP kthread last ran:
+[ 2133.942841] fp3 kernel: CPU: 6 UID: 0 PID: 0 Comm: swapper/6 Not tainted 7.1.3-postmarketos-qcom-msm8953 #74-fp3 PREEMPT 
+[ 2133.942966] fp3 kernel: Hardware name: Fairphone 3 (DT)
+[ 2133.943087] fp3 kernel: pstate: 00000005 (nzcv daif -PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+[ 2133.943216] fp3 kernel: pc : cpuidle_enter_state+0xb8/0x740
+[ 2133.943345] fp3 kernel: lr : cpuidle_enter_state+0x480/0x740
+[ 2133.943451] fp3 kernel: sp : ffff800081c93d90
+[ 2133.943560] fp3 kernel: x29: ffff800081c93d90 x28: 0000000000000000 x27: 0000000000000000
+[ 2133.943669] fp3 kernel: x26: 0000000000000000 x25: 0000000000000001 x24: 000001ee7f0e77c8
+[ 2133.943771] fp3 kernel: x23: ffff000015aa7880 x22: 0000000000000001 x21: ffff0000f9bd0238
+[ 2133.943872] fp3 kernel: x20: 000001ee7f4b89f0 x19: 0000000000000001 x18: ffff8000783f0000
+[ 2133.943982] fp3 kernel: x17: 000000040044ffff x16: 04500072b5503510 x15: 0000000000000000
+[ 2133.944144] fp3 kernel: x14: ffff000011f1bf00 x13: ffff8000783f0000 x12: 0000000034d4d91d
+[ 2133.944248] fp3 kernel: x11: 0000000000000000 x10: 0000000000001000 x9 : ffff8000801da01c
+[ 2133.944390] fp3 kernel: x8 : 00000072b5503510 x7 : ffff8000783f0000 x6 : 000000001006e581
+[ 2133.944508] fp3 kernel: x5 : 00ffffffffffffff x4 : 000000000000000a x3 : 0000000000000000
+[ 2133.944635] fp3 kernel: x2 : 000000000000000f x1 : ffff000011f1bf00 x0 : 0000000000000000
+[ 2133.944739] fp3 kernel: Call trace:
+[ 2133.944839] fp3 kernel:  cpuidle_enter_state+0xb8/0x740 (P)
+[ 2133.944953] fp3 kernel:  cpuidle_enter+0x3c/0x60
+[ 2133.945067] fp3 kernel:  do_idle+0x158/0x2c8
+[ 2133.945193] fp3 kernel:  cpu_startup_entry+0x40/0x50
+[ 2133.945281] fp3 kernel:  secondary_start_kernel+0x120/0x148
+[ 2133.945378] fp3 kernel:  __secondary_switched+0xc0/0xc8
+[ 2151.880973] fp3 kernel: watchdog0: pretimeout event

@@ -128,7 +128,9 @@ elif [ "$after" -lt "$target" ]; then
 	# seconds is a real finding, just not this line's finding.
 	echo "PASS: suspended for ${elapsed}s of ${SLEEP_TIME}s"
 	echo "WARN: woke $((target - after))s early, not on the RTC alarm"
-	[ -n "$alarm_left" ] && echo "      the alarm was still armed at $alarm_left"
+	# A cleared alarm reads "0", not empty, so test the value not the length.
+	[ -n "$alarm_left" ] && [ "$alarm_left" != "0" ] && \
+		echo "      the alarm was still armed at $alarm_left"
 	[ -n "$wake_irq" ] && echo "      last wakeup IRQ: $wake_irq" \
 		"($(awk -v i="$wake_irq" '$1 ~ "^"i":" {for (j = NF; j > 0; j--) if ($j !~ /^[0-9]+$/) { print $j; break }}' /proc/interrupts 2>/dev/null))"
 	echo "      cmd: grep -v '\s0\s*$' /sys/kernel/debug/wakeup_sources"
