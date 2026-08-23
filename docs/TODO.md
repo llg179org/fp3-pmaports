@@ -248,8 +248,13 @@ klist: an armed edge owns a wakeup-class child device, and
 `qcom_smd_unregister_edge()`'s child walk unregisters every child as if it were
 an smd channel, so the wakeup device was torn down twice. Disarmed edges were
 never affected. The fix drops the wakeup source before the walk; the LKML draft
-is regenerated as one patch carrying both hunks. **The kernel on the device
-carries the bug until the next package build.**
+is regenerated as one patch carrying both hunks. **Deployed as r70 and verified
+on the device the same day**: with the edge armed, stopping the modem and then
+the ADSP remoteproc each returns 0, leaves the node `offline`, restarts on a
+`start` write, and the boot ends with zero `Unable to handle kernel` lines —
+the two edges that oopsed on r69. ☠️ Address a remoteproc by platform address
+or `name`, not by index: the numbering moves between boots (the ADSP was
+`remoteproc1` on one boot, `remoteproc2` on the next).
 
 ☠️ Attribution counters are blind here: the plain `enable_irq_wake` path bumps
 neither the device's `wakeup_count` nor `/sys/power/pm_wakeup_irq` in s2idle —
