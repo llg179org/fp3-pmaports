@@ -314,6 +314,27 @@ costs audio on this board.** Any audio check run after one is measuring
 wreckage, not the audio path. The ADSP stop was blamed for this at first; the
 journal timestamps put the damage two minutes earlier, on the modem's return.
 
+**Deployed as r71 (`#72-fp3`) and the device is healthy, but the crash itself
+was not reproduced on the fixed kernel** — so the fixes are *not* proven, only
+not-regressing. What the 2026-08-23 13:40 run measured:
+
+| step | result |
+|---|---|
+| `SLIM RX0 MUX` written on a clean boot | no oops (would also have worked on r70) |
+| modem stopped and restarted (`remoteproc0`, t=53.5 s / 57.4 s) | **no wcd9335 bringup failure at all this time** |
+| mux written again afterwards | no oops, codec still answers |
+| full battery | **31 ok / 0 failed / 3 skipped** — `24-speaker-amp` and `50-charger` green too |
+
+☠️ The middle row is the problem: this modem restart did not damage the codec,
+so the state that oopses was never entered. One clean pass is not evidence that
+the fix works; it is evidence that the fault is intermittent, which was already
+known. An attempt to force the state by unbinding and rebinding the codec
+(`/sys/bus/slimbus/drivers/wcd9335-slim/{unbind,bind}`) does **not** reproduce
+it either: the card disappears entirely, taking the mixer controls with it, so
+there is nothing left to write. The oops needs the controls still exposed over a
+codec whose channel map is gone, and that only happens on the SSR path. ☠️ That
+unbind/rebind also costs audio until reboot.
+
 **Defects 1 and 2 are written and pushed** (2026-08-23): `wip/7.1.3/audio`
 `647cb5a1` + `2f4ea47a`, cherry-picked to `integration/7.1.3` and carried to
 `debug-int/7.1.3` (`b5ae3e0f`), pinned as r71. Both compile clean; **neither is
