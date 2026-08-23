@@ -15,30 +15,48 @@ context to pick up later. Each entry says what was measured, not what was
 guessed. Items that are already written up elsewhere are linked rather than
 repeated.
 
-## 🚨 THE PHONE IS DOWN — r74 does not boot, and it is now in EDL (2026-08-23 23:00)
+## ✅ RECOVERED — r74 does not boot; back on r73, phone is up (2026-08-23 23:22)
 
-Read this before anything else on this page. Nothing below can be worked on
-until the device boots again.
+The device is booting again on the r73 kernel and DTB and answers on both SSH
+links. r74 is still on `/boot` untouched for later diagnosis; the boot default
+was moved off it. What follows is kept because the *cause* is not yet fixed —
+only the boot is recovered.
 
-**State right now.** The phone enumerates as `05c6:900e` *QUSB__BULK*,
-"Qualcomm CDMA Technologies MSM", one vendor-specific interface, and answers
-neither `fastboot devices` nor `adb devices`. That is the Qualcomm
-emergency-download family, not Linux and not lk2nd. It appeared at 23:00:32,
-dropped at 23:00:50 and came back at 23:00:59, so something is power-cycling it.
-☠️ On this phone **volume-down + power reaches EDL and volume-up + power reaches
-the lk2nd menu** — the mode it is in is the one a volume-*down* hold produces.
+**How it was recovered (the route that worked, in order):**
 
-**What to do:** hold **power ~15 s** to force it off, then hold **volume UP**
-(not down) while powering on, and pick the **third** menu entry,
-`postmarketOS-prev`. That is r73's kernel and DTB, saved as `/boot/vmlinuz-r73`
-and `/boot/sdm632-fairphone-fp3.dtb-r73` immediately before the r74 install —
-the exact configuration that had been running for the previous hour. The
-**fourth** entry, `postmarketOS-fallback`, is the older 7.0.9 net.
-☠️ **Do not reach for EDL tooling to fix this.** Nothing has been proven
-unbootable except one DTB, three intact alternatives are already on `/boot`, and
-a firehose flash is a far bigger operation than the fault justifies. This page
-carries no EDL procedure at all, which is itself a gap worth closing later —
-but calmly, not now.
+1. The phone was in **stock ABL fastboot** (`fastboot devices` →
+   `A209H47E0202`, `version-bootloader 6.A.039`, unlocked, slot `b`). ☠️ A
+   prior `fastboot getvar` had been interrupted by an outer `timeout`, which
+   froze the link exactly as `docs/deploy/README.md` warns; a `USBDEVFS_RESET`
+   on the device node (`ioctl 'U'<<8|20`) cleared it in one shot.
+2. `fastboot set_active a` → `fastboot reboot`. Slot `a` is the **Ubuntu Touch**
+   side and it boots on its own; adb came up at ~60 s as user `phablet`
+   (`sudo` password `<pw>`; `adb root` is refused, plain sudo is the way).
+3. From UT, mounted pmOS's embedded `/boot` off `system_b` (`mmcblk0p31`):
+   `losetup -o 1048576 <loop> /dev/mmcblk0p31` then `mount <loop> /tmp/pmboot`.
+   This is read-write; the msdos `/boot` is at offset 1048576.
+4. Edited `extlinux.conf`: `default postmarketOS-sleepset` → `default
+   postmarketOS-prev` (r73's `/boot/vmlinuz-r73` + `/boot/sdm632-fairphone-fp3.dtb-r73`,
+   the exact config that had run the previous hour). Backed the broken file up
+   as `extlinux.conf.pre-r73revert`. `sync`, `umount`, `losetup -d`.
+5. `adb ... sudo reboot bootloader` → `fastboot set_active b` → `fastboot
+   reboot`. pmOS came up on r73 in ~15 s; `02-boot-fallback` passes (default
+   `postmarketOS-prev`, watchdog active, 4/4 entries carry `panic=`), and the
+   running tree has **zero** `regulator-state-mem` nodes — proof it is r73, not
+   the broken r74.
+
+☠️ **Button-mapping correction, measured by the user (the earlier note here was
+inverted).** On this phone **volume-UP + power reaches EDL** (`05c6:900e`
+QUSB__BULK) and **volume-DOWN + power starts fastboot**. The lk2nd graphical
+boot menu is **not usable blind**: the screen stays black in these modes, so
+picking a menu entry by sight is not an option — recovery goes through fastboot
++ the UT-slot route above, not through the on-screen menu. The prior claim that
+volume-down reached EDL and volume-up reached the lk2nd menu was wrong.
+
+☠️ **EDL was never needed and should not be reached for.** Only one DTB was ever
+proven unbootable; three intact alternatives sat on `/boot` the whole time, and
+the slot-swap-to-UT route edits the boot config with ordinary tools. A firehose
+flash is a far bigger operation than this fault ever justified.
 
 **What broke.** The `regulator-state-mem` device-tree change (r74,
 `debug-int/7.1.3` `84241a07`) was deployed and the phone rebooted at 22:45:10.
@@ -255,7 +273,7 @@ in [`STATUS.md`](STATUS.md) queue item 1; the short form:
   `regulator_get_suspend_state()` returns NULL for `PM_SUSPEND_TO_IDLE` — so the
   *runtime* `regulator_suspend()` path is dead here regardless. Only the
   probe-time `initial_state` path can work on this device.
-- ☠️☠️ **DONE, DEPLOYED, AND IT DOES NOT BOOT — see the 🚨 section at the top of
+- ☠️☠️ **DEPLOYED AS r74 AND IT DID NOT BOOT (now recovered to r73) — see the ✅ RECOVERED section at the top of
   this page.** `regulator-state-mem { regulator-on-in-suspend; }` went onto all
   20 rails (`wip/7.1.3/power` `e59893af`, cherry-picked to `integration/7.1.3`
   and `debug-int/7.1.3` `84241a07`, shipped as r74). The DTB compiles, the
@@ -268,8 +286,8 @@ in [`STATUS.md`](STATUS.md) queue item 1; the short form:
   `suspend_set_initial_state()` as fatal and `rpm_reg_probe()` returns out of
   its loop, so **one rejected or timed-out sleep vote unregisters every rail on
   the board**. Full derivation, recovery steps and the guardrail post-mortem are
-  in the 🚨 section.
-- **Next, once the phone is back on r73:** repeat with **one** rail, not twenty,
+  in the ✅ RECOVERED section.
+- **Next (the phone is back on r73 now):** repeat with **one** rail, not twenty,
   and read the boot before adding a second. ☠️ Prove the votes were cast before
   believing a null result — the `qcom_rpm_smd_write` tracepoint must show
   sleep-context writes for `ldoa`/`smpa`. A property that parsed into nothing is

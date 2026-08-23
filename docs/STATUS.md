@@ -53,59 +53,52 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
-## 🚨 THE PHONE IS DOWN AND NEEDS A BUTTON PRESS (2026-08-23 22:45)
+## ✅ RECOVERED — r74 does not boot; back on r73 (2026-08-23 23:22)
 
-**r74 does not boot.** It was deployed, the phone was rebooted at 22:45:10 and
-it has not come back on USB or WiFi since. The host kernel log shows the
-`cdc_ncm` disconnect at 22:45:10 and **no re-enumeration at all** — not one
-retry. That absence is the informative part: `panic=10` is on every entry and
-the debug layer starts the watchdog at probe, so a *later* hang would produce a
-reboot **cycle**. There is no cycle, so the kernel stops **before the watchdog
-device probes** — very early.
+The device is up again on the r73 kernel/DTB and answers on SSH. r74 stays on
+`/boot` untouched for diagnosis; the boot default was moved off it. Kept below
+because only the boot is recovered — the *cause* is not fixed.
 
-**Prime suspect: the change itself, `regulator-state-mem` on all 20 rails —
-and the mechanism is worse than "one rail misbehaves".** Read out of the source
-after the failure:
+**r74 does not boot.** Deployed, rebooted 22:45:10, never re-enumerated on USB or
+WiFi. The host log shows the `cdc_ncm` disconnect and **no re-enumeration** — and
+that absence is the informative part: `panic=10` is on every entry and the debug
+layer starts the watchdog at probe, so a *later* hang would produce a reboot
+**cycle**. There was none, so the kernel stops **before the watchdog probes**.
+
+**Prime suspect: the change itself, `regulator-state-mem` on all 20 rails.**
+Read out of the source after the failure:
 
 - `suspend_set_initial_state()` runs inside `regulator_register()`
-  (`core.c:1497`), which for the RPM rails is one of the earliest things that
-  happens on this SoC. The change makes it send 20 extra
-  `qcom_rpm_smd_write()` calls into the RPM **sleep** set at that moment.
-- `qcom_rpm_smd_write()` (`soc/qcom/smd-rpm.c:139`) waits on the RPM's ack with
-  `RPM_REQUEST_TIMEOUT = 5 * HZ`, and returns `-ETIMEDOUT`, or whatever
-  `ack_status` the RPM sent back.
-- ☠️ **`regulator_register()` treats that as fatal**: `if (ret < 0) { rdev_err;
-  return ret; }`. `rpm_reg_probe()` in turn does `return ret` out of its
-  `for_each_available_child_of_node_scoped` loop.
-- So **a single rejected or timed-out sleep-set vote unregisters every rail on
-  the board** — not just its own. With no regulators there is no storage, no
-  USB and no display, which is exactly the silent early stop observed.
-- 20 rails × a 5 s timeout is also up to 100 s of blocked probe before that.
+  (`core.c:1497`), one of the earliest things on this SoC for the RPM rails; the
+  change makes it send 20 extra `qcom_rpm_smd_write()` calls into the RPM
+  **sleep** set right there.
+- `qcom_rpm_smd_write()` (`soc/qcom/smd-rpm.c:139`) waits on the ack with
+  `RPM_REQUEST_TIMEOUT = 5 * HZ`, returning `-ETIMEDOUT` or the RPM `ack_status`.
+- ☠️ **`regulator_register()` treats that as fatal** (`if (ret < 0) return ret`),
+  and `rpm_reg_probe()` returns out of its child loop — so **one rejected or
+  timed-out sleep vote unregisters every rail on the board**. No regulators →
+  no storage, USB or display: the silent early stop observed. 20 rails × 5 s is
+  also up to 100 s of blocked probe.
+- ☠️ A NULL `smd_vreg_rpm` was checked and **ruled out** (assigned before the
+  loop, `qcom_smd-regulator.c:1530`).
 
-☠️ **A NULL `smd_vreg_rpm` was checked and ruled out** — `rpm_reg_probe()`
-assigns it before the registration loop (`qcom_smd-regulator.c:1530`), so that
-tempting explanation is dead.
+**Hypothesis, not measurement.** The next attempt must not be "all 20 rails
+again with a tweak": start from **one** rail and read the boot before the second.
 
-**This is a hypothesis, not a measurement** — nothing has been read off the
-device. What it does say is that the next attempt must not be "all 20 rails
-again with a tweak": start from **one** rail, and read the boot before adding
-the second.
+**How it was recovered (the route that worked):** stock ABL fastboot →
+`set_active a` → UT boots (adb as `phablet`, sudo `<pw>`) → mount pmOS's
+embedded `/boot` off `system_b` (`losetup -o 1048576 <loop> /dev/mmcblk0p31`;
+mount RW) → edit `extlinux.conf` default to `postmarketOS-prev` (r73) → sync,
+umount, `losetup -d` → `sudo reboot bootloader` → `set_active b` → `reboot`.
+pmOS came up on r73 in ~15 s; `02-boot-fallback` passes and the running tree has
+**zero** `regulator-state-mem` nodes (proof it is r73). Full step-by-step in
+`docs/TODO.md` (the ✅ RECOVERED block).
 
-**Recovery — needs a hand on the phone:**
-
-1. Hold **power** ~15 s to force it off.
-2. Hold **volume up** while powering on to reach the lk2nd boot menu.
-3. Pick the **third** entry, `postmarketOS-prev` — that is r73's kernel and DTB,
-   saved as `/boot/vmlinuz-r73` and `/boot/sdm632-fairphone-fp3.dtb-r73` before
-   the install, i.e. the exact configuration that was running an hour earlier.
-   If that also fails, the **fourth** entry, `postmarketOS-fallback`, is the
-   older 7.0.9 net.
-4. Once up, make r73 the default again:
-
-```sh
-sudo sed -i 's/^default .*/default postmarketOS-prev/' /boot/extlinux/extlinux.conf
-sudo sync
-```
+☠️ **Button-mapping correction, measured by the user.** **Volume-UP + power
+reaches EDL** (`05c6:900e`); **volume-DOWN + power starts fastboot**. The lk2nd
+menu is **not usable blind** — the screen stays black — so recovery goes through
+fastboot + the UT-slot route above, never by picking an on-screen menu entry.
+The earlier note (down→EDL, up→lk2nd menu) was inverted and is retracted.
 
 ☠️ **The guardrail was followed in letter and missed in substance, and that is
 the lesson to keep.** "Put anything risky on the non-default label" was obeyed

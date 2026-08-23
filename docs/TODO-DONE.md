@@ -1074,6 +1074,14 @@ cannot be undone from the outside.
 2. Hold **volume up** while powering on to reach the lk2nd boot menu, and pick
    the second entry (`postmarketOS-fallback`) — its `append` line was never
    touched and still has the clean command line.
+
+> ☠️ **Later correction (2026-08-23, measured by the user):** the button
+> mapping recorded in step 2 is inverted for this device — **volume-UP + power
+> reaches EDL, volume-DOWN + power starts fastboot**, and the lk2nd menu is not
+> usable blind because the screen stays black. The reliable recovery on this
+> phone is fastboot → `set_active a` (boot Ubuntu Touch) → mount `system_b`'s
+> embedded `/boot` with `losetup -o 1048576 /dev/mmcblk0p31` → edit
+> `extlinux.conf` → `set_active b`. See the ✅ RECOVERED block in `TODO.md`.
 3. Once up, undo the change; the untouched original is already saved next to it:
 
 ```sh
