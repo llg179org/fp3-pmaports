@@ -1,0 +1,193 @@
+ node                                  tag          avg         peak
+--------------------------------------------------------------------
+mas_apps_proc                                    562000      3735000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+  cpu4                                   1            0      3735000
+  cpu0                                   1       512000       806400
+mas_oxili                                             0      1689600
+  1c00000.gpu                            3            0      1689600
+mas_snoc_bimc_0                                       0            0
+  1b00020.camss                          1            0            0
+  1b00020.camss                          1            0            0
+  1a00000.display-subsystem              3            0            0
+  1a00000.display-subsystem              3            0            0
+mas_snoc_bimc_2                                       0            0
+  1d00000.venus                          1            0            0
+mas_snoc_bimc_1                                  240000       700000
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000
+mas_tcu_0                                             0            0
+slv_ebi                                          752000      3735000
+  1b00020.camss                          1            0            0
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              3            0            0
+  1a00000.display-subsystem              3            0            0
+  1c00000.gpu                            3            0      1689600
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000
+  cpu4                                   1            0      3735000
+  cpu0                                   1       512000       806400
+slv_bimc_snoc                                     50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+mas_qdss_bam                                          0            0
+mas_bimc_snoc                                     50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+mas_pcnoc_snoc                                   240000       700000
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000
+mas_ipa                                               0            0
+mas_qdss_etr                                          0            0
+qdss_int                                              0            0
+snoc_int_0                                            0            0
+snoc_int_1                                        50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+snoc_int_2                                            0            0
+slv_kpss_ahb                                          0            0
+slv_wcss                                              0            0
+slv_snoc_bimc_1                                  240000       700000
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000
+slv_imem                                              0            0
+slv_snoc_pcnoc                                    50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+slv_qdss_stm                                          0            0
+slv_cats_1                                            0            0
+slv_lpass                                             0            0
+mas_jpeg                                              0            0
+mas_mdp                                               0            0
+  1a00000.display-subsystem              3            0            0
+  1a00000.display-subsystem              3            0            0
+mas_venus                                             0            0
+  1d00000.venus                          1            0            0
+mas_vfe0                                              0            0
+  1b00020.camss                          1            0            0
+mas_vfe1                                              0            0
+  1b00020.camss                          1            0            0
+mas_cpp                                               0            0
+slv_snoc_bimc_0                                       0            0
+  1b00020.camss                          1            0            0
+  1b00020.camss                          1            0            0
+  1a00000.display-subsystem              3            0            0
+  1a00000.display-subsystem              3            0            0
+slv_snoc_bimc_2                                       0            0
+  1d00000.venus                          1            0            0
+slv_cats_0                                            0            0
+cci_bimc_master                                       0       583200
+  cpu4                                   0            0       583200
+  cpu0                                   0            0       307200
+cci_bimc_slave                                        0       583200
+  cpu4                                   0            0       583200
+  cpu0                                   0            0       307200
+mas_spdm                                              0            0
+mas_blsp_1                                            0            0
+mas_blsp_2                                            0            0
+mas_usb3                                         240000       700000
+  7000000.usb                            3       240000       700000
+mas_crypto                                            0            0
+mas_sdcc_1                                            0            0
+  7824900.mmc                            3            0            0
+mas_sdcc_2                                            0            0
+  7864900.mmc                            3            0            0
+mas_snoc_pcnoc                                    50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+pcnoc_m_0                                             0            0
+pcnoc_m_1                                             0            0
+pcnoc_int_1                                      240000       700000
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000
+pcnoc_int_2                                       50000       500000
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+  1c00000.gpu                            1        50000       500000
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+  7000000.usb                            1            0        40000
+pcnoc_s_0                                             0            0
+pcnoc_s_1                                             0            0
+pcnoc_s_2                                             0            0
+pcnoc_s_3                                             0            0
+pcnoc_s_4                                             0            0
+  1b00020.camss                          1            0            0
+  1d00000.venus                          1            0            0
+  1a00000.display-subsystem              1            0            0
+pcnoc_s_6                                             0            0
+  7864900.mmc                            1            0            0
+  7824900.mmc                            1            0            0
+pcnoc_s_7                                             0            0
+pcnoc_s_8                                             0        40000
+  7000000.usb                            1            0        40000
+pcnoc_s_9                                             0            0
+slv_spdm                                              0            0
+slv_pdm                                               0            0
+slv_tcsr                                              0            0
+slv_snoc_cfg                                          0            0
+slv_tlmm                                              0            0
+slv_message_ram                                       0            0
+slv_blsp_1                                            0            0
+slv_blsp_2                                            0            0
+slv_prng                                              0            0
+slv_camera_ss_cfg                                     0            0
+  1b00020.camss                          1            0            0
+slv_disp_ss_cfg                                       0            0
+  1a00000.display-subsystem              1            0            0
+slv_venus_cfg                                         0            0
+  1d00000.venus                          1            0            0
+slv_gpu_cfg                                       50000       500000
+  1c00000.gpu                            1        50000       500000
+slv_sdcc_1                                            0            0
+  7824900.mmc                            1            0            0
+slv_sdcc_2                                            0            0
+  7864900.mmc                            1            0            0
+slv_crypto_0_cfg                                      0            0
+slv_pmic_arb                                          0            0
+slv_usb3                                              0        40000
+  7000000.usb                            1            0        40000
+slv_ipa_cfg                                           0            0
+slv_tcu                                               0            0
+slv_pcnoc_snoc                                   240000       700000
+  7864900.mmc                            3            0            0
+  7824900.mmc                            3            0            0
+  7000000.usb                            3       240000       700000

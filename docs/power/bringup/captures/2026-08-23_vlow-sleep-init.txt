@@ -1,0 +1,444 @@
+== START windows=3 secs=120 kernel=7.1.3-postmarketos-qcom-msm8953 uptime=50
+--- rpm clk state (pre)
+ gcc_mss_q6_bimc_axi_clk             1       1        0        0           0          0     50000      Y   4080000.remoteproc              bus                      
+ gcc_bimc_gpu_clk                    1       1        0        0           0          0     50000      Y   gpu@1c00000                     no_connection_id         
+ gcc_bimc_gfx_clk                    2       2        0        0           0          0     50000      Y   gpu@1c00000                     no_connection_id         
+ xo                                  7       7        0        19200000    0          0     50000      Y   c0f0000.codec                   ahbix-clk                
+    bi_tcxo_a                        1       1        0        19200000    0          0     50000      Y      deviceless                      no_connection_id         
+    bi_tcxo                          10      10       0        19200000    0          0     50000      Y      c200000.remoteproc              xo                       
+                                                                                                              4080000.remoteproc              xo                       
+                                                                                                              7864900.mmc                     xo                       
+                                                                                                              7824900.mmc                     xo                       
+                gcc_pcnoc_usb3_axi_clk 2       2        0        79999980    0          0     50000      Y                  usb@7000000                     no_connection_id         
+                                                                                                                          500000.interconnect             pcnoc_usb3_axi           
+--- genpd (pre)
+domain                          status          children        performance
+    /device                         runtime status                  managed by
+------------------------------------------------------------------------------
+vfe1_gdsc                       off-0                           0
+    genpd:1:1b00020.camss           suspended                   0           SW
+vfe0_gdsc                       off-0                           0
+    genpd:0:1b00020.camss           suspended                   0           SW
+venus_gdsc                      off-0                           0
+    1d00000.venus                   suspended                   0           SW
+venus_core0                     off-0                           0
+    1d00000.venus:video-decoder     suspended                   0           SW
+    1d00000.venus:video-encoder     suspended                   0           SW
+usb30_gdsc                      on                              0
+    7000000.usb                     active                      0           SW
+oxili_gx_gdsc                   on                              384
+    1c00000.gpu                     active                      384         SW
+oxili_cx_gdsc                   on                              0
+    soc@0:iommu@1c48000             active                      0           SW
+mdss_gdsc                       on                              0
+    1a00000.display-subsystem       active                      0           SW
+    1a01000.display-controller      active                      0           SW
+    1a94000.dsi                     active                      0           SW
+jpeg_gdsc                       off-0                           0
+cpp_gdsc                        off-0                           0
+mx_ao                           off-0                           0
+    genpd:1:4080000.remoteproc      suspended                   0           SW
+mx                              off-0                           0
+    genpd:1:a204000.remoteproc      suspended                   0           SW
+cx_vfl                          off-0                           0
+cx_ao                           off-0                           0
+cx                              on                              384
+                                                cpp_gdsc, jpeg_gdsc, mdss_gdsc, oxili_cx_gdsc, oxili_gx_gdsc, usb30_gdsc, venus_core0, venus_gdsc, vfe0_gdsc, vfe1_gdsc
+    1800000.clock-controller        unsupported                 0           SW
+    7824900.mmc                     suspended                   0           SW
+    7864900.mmc                     suspended                   0           SW
+    genpd:0:4080000.remoteproc      suspended                   0           SW
+    genpd:0:a204000.remoteproc      suspended                   0           SW
+    c200000.remoteproc              suspended                   0           SW
+md                              off-0                           0
+    genpd:2:4080000.remoteproc      suspended                   0           SW
+cpr_pd_perf                     on                              18048
+    genpd:1:cpu4                    active                      0           SW
+    genpd:1:cpu5                    active                      0           SW
+    genpd:1:cpu6                    active                      0           SW
+    genpd:1:cpu7                    active                      18048       SW
+cpr_pd_pwr                      on                              18048
+    b011050.clock-controller        unsupported                 18048       SW
+    genpd:1:cpu0                    active                      0           SW
+    genpd:1:cpu1                    active                      0           SW
+    genpd:1:cpu2                    active                      0           SW
+    genpd:1:cpu3                    active                      18048       SW
+power-domain-system             on                              0
+                                                power-domain-cluster0, power-domain-cluster1
+power-domain-cluster1           on                              0
+                                                power-domain-cpu4, power-domain-cpu5, power-domain-cpu6, power-domain-cpu7
+power-domain-cluster0           on                              0
+                                                power-domain-cpu0, power-domain-cpu1, power-domain-cpu2, power-domain-cpu3
+power-domain-cpu7               off-0                           0
+    genpd:0:cpu7                    suspended                   0           SW
+power-domain-cpu6               on                              0
+    genpd:0:cpu6                    active                      0           SW
+power-domain-cpu5               off-0                           0
+    genpd:0:cpu5                    suspended                   0           SW
+power-domain-cpu4               off-0                           0
+    genpd:0:cpu4                    suspended                   0           SW
+power-domain-cpu3               off-0                           0
+    genpd:0:cpu3                    suspended                   0           SW
+power-domain-cpu2               off-0                           0
+    genpd:0:cpu2                    suspended                   0           SW
+power-domain-cpu1               on                              0
+    genpd:0:cpu1                    active                      0           SW
+power-domain-cpu0               off-0                           0
+    genpd:0:cpu0                    suspended                   0           SW
+interrupt-controller            on                              0
+                                                power-domain-system
+--- wakeup_sources aktiv (pre)
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+== PRE-window-1 uptime=50
+success=1 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x5010501
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 114
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 206
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 110
+MPSS 	Wakeup reason: 0x0
+MPSS 	Shutdown count: 115
+MPSS 	Active cores bitmask: 0x0
+PRONTO 	XO shutdown count: 177
+PRONTO 	Wakeup reason: 0x0
+PRONTO 	Shutdown count: 178
+PRONTO 	Active cores bitmask: 0x0
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      10250          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        223          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        297          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+== POST-window-1 rtcwake_rc=0 uptime=175
+success=2 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x3070607
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 119
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 211
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 437
+MPSS 	Wakeup reason: 0x1
+MPSS 	Shutdown count: 442
+MPSS 	Active cores bitmask: 0x1
+PRONTO 	XO shutdown count: 190
+PRONTO 	Wakeup reason: 0x0
+PRONTO 	Shutdown count: 191
+PRONTO 	Active cores bitmask: 0x1
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      11242          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        285          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        301          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+--- wakeup_sources aktiv (post-1)
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+== PRE-window-2 uptime=180
+success=2 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x7030203
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 162
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 262
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 451
+MPSS 	Wakeup reason: 0x1
+MPSS 	Shutdown count: 456
+MPSS 	Active cores bitmask: 0x1
+PRONTO 	XO shutdown count: 239
+PRONTO 	Wakeup reason: 0x1
+PRONTO 	Shutdown count: 240
+PRONTO 	Active cores bitmask: 0x1
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      11355          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        290          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        301          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+== POST-window-2 rtcwake_rc=0 uptime=305
+success=3 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x7030105
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 245
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 357
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 756
+MPSS 	Wakeup reason: 0x0
+MPSS 	Shutdown count: 761
+MPSS 	Active cores bitmask: 0x0
+PRONTO 	XO shutdown count: 251
+PRONTO 	Wakeup reason: 0x0
+PRONTO 	Shutdown count: 252
+PRONTO 	Active cores bitmask: 0x1
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      12306          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        349          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        302          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+--- wakeup_sources aktiv (post-2)
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+== PRE-window-3 uptime=310
+success=3 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x7060703
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 456
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 593
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 769
+MPSS 	Wakeup reason: 0x1
+MPSS 	Shutdown count: 774
+MPSS 	Active cores bitmask: 0x1
+PRONTO 	XO shutdown count: 295
+PRONTO 	Wakeup reason: 0x0
+PRONTO 	Shutdown count: 296
+PRONTO 	Active cores bitmask: 0x0
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      12504          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        363          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        302          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+== POST-window-3 rtcwake_rc=0 uptime=435
+success=4 fail=0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x7060203
+--- vmin
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+--- masters
+APSS 	XO shutdown count: 543
+APSS 	Wakeup reason: 0x0
+APSS 	Shutdown count: 695
+APSS 	Active cores bitmask: 0x1
+LPASS 	XO shutdown count: 48
+LPASS 	Wakeup reason: 0x0
+LPASS 	Shutdown count: 64
+LPASS 	Active cores bitmask: 0x0
+MPSS 	XO shutdown count: 1068
+MPSS 	Wakeup reason: 0x1
+MPSS 	Shutdown count: 1073
+MPSS 	Active cores bitmask: 0x1
+PRONTO 	XO shutdown count: 307
+PRONTO 	Wakeup reason: 0x0
+PRONTO 	Shutdown count: 308
+PRONTO 	Active cores bitmask: 0x0
+TZ 	XO shutdown count: 0
+TZ 	Wakeup reason: 0x0
+TZ 	Shutdown count: 0
+TZ 	Active cores bitmask: 0x0
+--- irq
+ 13:          0          0          0          0          0          0          0          0 GIC-0 203 Edge      qcom_mpm
+ 14:          5          0          0          0          0          0          0          0 GIC-0 323 Edge      smp2p-adsp
+ 15:          3          0          0          0          0          0          0          0 GIC-0  59 Edge      smp2p-modem
+ 16:          4          0          0          0          0          0          0          0 GIC-0 175 Edge      smp2p-wcnss
+ 24:      13503          0          0          0          0          0          0          0 GIC-0 200 Edge      smd-edge
+ 56:          0          0          0          0          0          0          0          0 smp2p-modem   0 Edge      q6v5 fatal
+ 57:          1          0          0          0          0          0          0          0 smp2p-modem   1 Edge      q6v5 ready
+ 58:          2          0          0          0          0          0          0          0 smp2p-modem   2 Edge      q6v5 handover
+ 60:          0          0          0          0          0          0          0          0 smp2p-modem   3 Edge      q6v5 stop
+ 71:          0          0          0          0          0          0          0          0 smp2p-wcnss   0 Edge      wcnss
+ 72:          1          0          0          0          0          0          0          0 smp2p-wcnss   1 Edge      wcnss
+ 73:          2          0          0          0          0          0          0          0 smp2p-wcnss   2 Edge      wcnss
+ 74:          0          0          0          0          0          0          0          0 smp2p-wcnss   3 Edge      wcnss
+ 85:          0          0          0          0          0          0          0          0 smp2p-adsp   0 Edge      q6v5 fatal
+ 86:          3          0          0          0          0          0          0          0 smp2p-adsp   1 Edge      q6v5 ready
+ 87:          3          0          0          0          0          0          0          0 smp2p-adsp   2 Edge      q6v5 handover
+ 89:          0          0          0          0          0          0          0          0 smp2p-adsp   3 Edge      q6v5 stop
+136:        722          0          0          0          0          0          0          0 GIC-0 321 Edge      smd-edge
+140:        421          0          0          0          0          0          0          0 GIC-0 174 Edge      smd-edge
+141:        305          0          0          0          0          0          0          0 GIC-0  57 Edge      smd-edge
+--- wakeup_sources aktiv (post-3)
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+--- rpm clk state (final)
+ gcc_mss_q6_bimc_axi_clk             1       1        0        0           0          0     50000      Y   4080000.remoteproc              bus                      
+ xo                                  7       7        0        19200000    0          0     50000      Y   c0f0000.codec                   ahbix-clk                
+    bi_tcxo_a                        1       1        0        19200000    0          0     50000      Y      deviceless                      no_connection_id         
+    bi_tcxo                          10      10       0        19200000    0          0     50000      Y      c200000.remoteproc              xo                       
+                                                                                                              4080000.remoteproc              xo                       
+                                                                                                              7864900.mmc                     xo                       
+                                                                                                              7824900.mmc                     xo                       
+                gcc_pcnoc_usb3_axi_clk 2       2        0        79999980    0          0     50000      Y                  usb@7000000                     no_connection_id         
+                                                                                                                          500000.interconnect             pcnoc_usb3_axi           
+== DONE uptime=440

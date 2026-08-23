@@ -1344,3 +1344,23 @@ generic `drivers/interconnect/qcom/icc-rpm.c` territory, i.e. upstreamable.
 Next instrument: read icc-rpm's bucket handling against these eight resource
 ids, name which paths they are (`interconnect_graph` debugfs), and test a
 sleep-set write for them the same way both_sets did for the regulators.
+
+## 2026-08-23 morning: explicit icc sleep-set zeros do not unlock vlow either — the AP-side space is exhausted
+
+r69 adds an `icc_smd_rpm.sleep_init=1` knob (one explicit sleep-set zero for
+every RPM-owned interconnect node at probe — the answer to the elision
+question of the icc trail: now the RPM has *seen* a sleep vote for every
+resource the AP ever votes). Booted with all three knobs
+(`xo_sleep_off` + `both_sets` + `sleep_init`), three full 120 s windows
+([`captures/2026-08-23_vlow-sleep-init.txt`](captures/2026-08-23_vlow-sleep-init.txt)):
+**vlow `Count` stays 0.** Three measured negatives in one night close the
+whole AP-sleep-set family: XO released, every regulator voted in both sets,
+every interconnect resource explicitly zeroed for sleep — and the RPM still
+never enters vlow. What remains is not on this processor: vlow plausibly
+requires every master's XO-shutdown *simultaneously* (MPSS/PRONTO toggle
+constantly, so the intersection may simply never happen), or an RPM-firmware
+precondition the Client Votes mask encodes. Both are cross-master/RPM-fw
+questions — the next instruments are a simultaneity measurement (do the
+masters' XO-shutdown windows ever overlap?) and the mask decode, and the
+levers may live in the modem/wcnss firmware's own sleep configuration, not
+in Linux.
