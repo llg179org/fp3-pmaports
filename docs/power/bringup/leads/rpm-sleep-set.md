@@ -304,3 +304,18 @@ no-change-elision, not a tag issue at all**). Next: find who casts the 50 MB/s
 votes (sdcc paths suspect the mmc DT `interconnects`), and answer the
 elision question — if RPM treats "never written" as inherit-active, the fix
 is one explicit zero-write at probe, which is small and upstreamable.
+
+## 2026-08-23: the Client Votes mask — raw material for a decode
+
+Samples collected across the night (pmOS, various knob combinations):
+`0x7030703 0x3070307 0x5010501 0x10001 0x5040001 0x10501 0x1000105 0x3070607
+0x7030203 0x7030105 0x7060703` — and from the oracle (UT 4.9): `0x11011101
+0x11010501 0x07051505`. Observations, not conclusions: four bytes; the two
+16-bit halves are often equal on pmOS; pmOS bytes stay within {0,1,3,4,5,6,7}
+(low three bits only), UT bytes also show 0x11/0x15 (bit 4 set) — a bit the
+mainline side never sets. If each byte is one voting client's bitfield (four
+clients — plausibly APSS/MPSS/PRONTO/LPASS, the TZ casting nothing), then
+bit 4 is a downstream-only vote component and a candidate name for what the
+RPM is waiting for. Decode needs the RPM firmware or a Qualcomm header;
+empirically, the next lever would be finding what downstream action toggles
+bit 4 (a sleep-driver handshake? the vMPM?).
