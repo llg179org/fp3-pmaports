@@ -76,14 +76,15 @@ list; do not stop at the end of an item to report.
    that the teardown ends it, so this is noise-removal, not a defect.
    ☠️ A fix in `drivers/slimbus/` has **no category** in this port's branch
    model — decide where it lands before committing it.
-2. **Provoke the non-recovering SSR path**, the one that costs audio until
-   reboot. It has never once been entered on a fixed kernel, so the third fix
-   is argued rather than measured. It needs two *present* notifications with no
-   *absent* one between them, and the asymmetry that allows it is visible in
-   `qcom_slim_ngd_ssr_pdr_notify()`: the `DOWN` branch is guarded by
-   `ctrl->state != QCOM_SLIM_NGD_CTRL_DOWN`, the `UP` branch is guarded by
-   nothing, and two sources feed it — the `lpass` SSR notifier and the
-   `avs/audio` PDR lookup. Read that first; it is also the likely mechanism.
+2. **Provoke the non-recovering SSR path** — needs a kernel-side hook now, so
+   this is the one item here that is not a quick measurement. ☠️ Two dead ends
+   are already recorded in [`TODO.md`](TODO.md), do not re-walk them: the
+   `avs/audio` PDR route does not exist on msm8953 (`PDM: no support for the
+   platform`), and holding audio traffic across a whole restart cycle moved the
+   bring-up count by exactly one, not two. The reachable second source is
+   `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
+   controller state is `DOWN`, and that window closes as soon as the controller
+   unregisters. Widening it deliberately is the next move.
 3. **Read the RPM `Client Votes` mask immediately after a suspend window**, from
    the `postmarketOS-xo` label — the one boot where the APSS actually goes down
    during the window. Last open leg of `TODO.md` item ②.

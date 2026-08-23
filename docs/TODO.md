@@ -466,6 +466,35 @@ Every codec-side row above is zero, on a buffer whose sanity rows (22 remoteproc
 lines, 251 codec/SLIMbus lines) prove the restart really happened and the
 counter really read it.
 
+**The register-map leak is directly measured as fixed, not just absent.**
+2026-08-23 on r73: a second bring-up was driven in the same boot (`WCD9335
+CODEC version is` went 1 → 2 across a restart cycle) and
+`debugfs: '217:1a0:1:0' already exists in 'regmap'` stayed at **0**. On r71
+every bring-up after the boot-time one printed that pair; the boot-time one
+never did. A second bring-up that does not collide is the leak being released.
+
+☠️ **The `avs/audio` PDR route is ruled out as the trigger on this device.**
+It was written up here as the likely second notification source and that was
+wrong: `dmesg` says `PDM: no support for the platform, userspace daemon might
+be required.` twice per boot, so the in-kernel pd-mapper does not serve
+msm8953, `pdr_add_lookup(ctrl->pdr, "avs/audio", "msm/adsp/audio_pd")` never
+resolves, and that branch of `qcom_slim_ngd_ssr_pdr_notify()` never fires here.
+The reachable second source is narrower: `qcom_slim_ngd_notify_slaves()` runs
+from the master worker whenever the controller is resumed while its state is
+`DOWN`, and `slim_get_logical_addr()` → `slim_device_alloc_laddr()` ends in
+`slim_device_update_status(sbdev, SLIM_DEVICE_STATUS_UP)`. A **runtime-PM
+resume**, not only an SSR, can therefore re-report the codec present.
+
+☠️ **An attempt to provoke that failed, and is recorded so it is not repeated
+blind.** Audio traffic was held across a whole restart cycle (60 rounds of
+playback plus a mixer read, spanning stop → +60 s) precisely to force resumes
+in the window. The bring-up count still moved by exactly **one**. The window
+between `ctrl->state = QCOM_SLIM_NGD_CTRL_DOWN` and the controller
+unregistering is evidently too narrow to hit from userspace: once the
+controller is unregistered there are no children for `notify_slaves()` to find.
+Provoking it will need a kernel-side delay or a fault injection, not a busier
+userspace.
+
 ☠️ **What is *not* proven:** the non-recovering path. Every controlled restart
 run here - four on r71, one each on r72 and r73 - took the recovering path, so
 the `-EBUSY` case that costs audio until reboot has still never been entered on
