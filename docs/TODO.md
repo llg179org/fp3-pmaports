@@ -309,10 +309,30 @@ The measured chain, from one boot's journal:
 09:51:00  amixer -> slim_rx_mux_put -> Oops (WnR=1, addr 0x8)
 ```
 
-☠️ **Practical consequence for every other measurement here: a modem restart
-costs audio on this board.** Any audio check run after one is measuring
-wreckage, not the audio path. The ADSP stop was blamed for this at first; the
-journal timestamps put the damage two minutes earlier, on the modem's return.
+☠️ **Retracted 2026-08-23 14:20, measured: the modem is not the trigger.** Six
+modem restarts on r71 - five bare, one with a playback stream open across the
+restart - produced **zero** codec failures. The first **ADSP** restart produced
+the burst immediately (`CODEC version detection fail!`, `Failed to bringup
+WCD9335`, 81 wcd9335 lines), which fits: the SLIMbus NGD master lives on the
+ADSP, not on the modem. The earlier attribution came from reading one journal's
+timestamps, where the modem's return happened to be the nearest preceding
+event; it did not survive a controlled repeat. What stands is narrower and
+still worth knowing: **an audio check run right after an ADSP restart may be
+measuring wreckage.**
+
+The same run is the first positive evidence for defect 1. The r70 crash
+sequence - restart, then write `SLIM RX0 MUX` - has now run **four times on
+r71**, once of them straight through the failure burst, with:
+
+| round | codec-fail lines | mux write | oops | playback |
+|---|---|---|---|---|
+| 1 (with the burst) | 0 -> 2 | rc=0 | 0 | rc=0 |
+| 2-4 | 2 -> 2 (no new burst) | rc=0 | 0 | rc=0 |
+
+☠️ Still not proof: the damaged state was entered **once**, so n=1 for the path
+that actually oopsed on r70. And the codec *recovered* here (version v2.0 read
+back, card alive, playback fine) where on r70 it stayed down until reboot -
+which is a difference neither fix explains, so it may simply be variance.
 
 **Deployed as r71 (`#72-fp3`) and the device is healthy, but the crash itself
 was not reproduced on the fixed kernel** — so the fixes are *not* proven, only
