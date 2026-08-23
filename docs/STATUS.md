@@ -281,9 +281,21 @@ list; do not stop at the end of an item to report.
    live — and shown failing — pointed at an unroutable address it writes
    `=== detached ... link lost or device reset, retrying` rather than sitting
    silently.
-   Next: rerun the camera-only run with the tap attached, to get the kernel
-   evidence this reproduction has so far denied; then bisect **within** the
-   camera block (44/45 are the prime suspects) rather than across the battery
+   ★★ **Step E clears the prime suspects and moves the blame earlier.** Ran
+   `--only camera-af-windows` (checks 44 and 45 **alone**) from a fresh reboot,
+   with `kmsg-tap.sh` attached: **PASS — 2 ok, 0 failed**, no reset (uptime 45 →
+   84 across exactly 39 s of wall time), and **zero** `TLB SYNC`, `VFE halt` or
+   `rcu_preempt` lines in the tapped kernel log. So 44/45 are not the cause.
+   ★ **And the timing gives the mechanism away:** `44-camera-af-windows` ran in
+   **6 s** here against **502 s** every time it ran inside the full camera
+   block. It is not slow by nature — it is slow because something before it has
+   already damaged the camera. The 502 s was a symptom being read as a duration.
+   That points at checks **40–43** (enumeration, focus, flash, manual focus) as
+   the ones that do the damage, which is consistent with `43-camera-manual-focus`
+   failing in every camera-block run and passing in the one run where it went
+   first.
+   Next: step F runs 40–43 alone with the tap, to see whether they wedge the
+   camera without 44/45 present at all
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.
