@@ -15,6 +15,85 @@ context to pick up later. Each entry says what was measured, not what was
 guessed. Items that are already written up elsewhere are linked rather than
 repeated.
 
+## 🚨 THE PHONE IS DOWN — r74 does not boot, and it is now in EDL (2026-08-23 23:00)
+
+Read this before anything else on this page. Nothing below can be worked on
+until the device boots again.
+
+**State right now.** The phone enumerates as `05c6:900e` *QUSB__BULK*,
+"Qualcomm CDMA Technologies MSM", one vendor-specific interface, and answers
+neither `fastboot devices` nor `adb devices`. That is the Qualcomm
+emergency-download family, not Linux and not lk2nd. It appeared at 23:00:32,
+dropped at 23:00:50 and came back at 23:00:59, so something is power-cycling it.
+☠️ On this phone **volume-down + power reaches EDL and volume-up + power reaches
+the lk2nd menu** — the mode it is in is the one a volume-*down* hold produces.
+
+**What to do:** hold **power ~15 s** to force it off, then hold **volume UP**
+(not down) while powering on, and pick the **third** menu entry,
+`postmarketOS-prev`. That is r73's kernel and DTB, saved as `/boot/vmlinuz-r73`
+and `/boot/sdm632-fairphone-fp3.dtb-r73` immediately before the r74 install —
+the exact configuration that had been running for the previous hour. The
+**fourth** entry, `postmarketOS-fallback`, is the older 7.0.9 net.
+☠️ **Do not reach for EDL tooling to fix this.** Nothing has been proven
+unbootable except one DTB, three intact alternatives are already on `/boot`, and
+a firehose flash is a far bigger operation than the fault justifies. This page
+carries no EDL procedure at all, which is itself a gap worth closing later —
+but calmly, not now.
+
+**What broke.** The `regulator-state-mem` device-tree change (r74,
+`debug-int/7.1.3` `84241a07`) was deployed and the phone rebooted at 22:45:10.
+It never came back on USB or WiFi. The host log shows the `cdc_ncm` disconnect
+and **no re-enumeration for fifteen minutes** — and that absence is the
+informative part: `panic=10` is on all four entries and the debug layer starts
+the watchdog at probe, so a *later* hang would have produced a reboot **cycle**.
+There was no cycle, so the kernel stopped **before the watchdog device probed**.
+
+**Why, read from source after the fact — a hypothesis, not a measurement:**
+
+- `suspend_set_initial_state()` runs inside `regulator_register()`
+  (`regulator/core.c:1497`), and on this SoC the RPM rails register very early.
+  The change makes it issue 20 extra `qcom_rpm_smd_write()` calls into the RPM
+  **sleep** set right there.
+- `qcom_rpm_smd_write()` (`soc/qcom/smd-rpm.c:139`) waits on the RPM ack with
+  `RPM_REQUEST_TIMEOUT = 5 * HZ` and returns `-ETIMEDOUT`, or the RPM's own
+  `ack_status`.
+- ☠️ **`regulator_register()` treats that as fatal** — `if (ret < 0) { rdev_err;
+  return ret; }` — and `rpm_reg_probe()` returns straight out of its
+  `for_each_available_child_of_node_scoped` loop. So **one rejected or
+  timed-out sleep vote leaves every rail on the board unregistered**, not just
+  its own. No regulators means no storage, no USB and no display: exactly the
+  silent early stop that was observed. 20 rails × 5 s is also up to 100 s of
+  blocked probe before that.
+- ☠️ A NULL `smd_vreg_rpm` was checked and **ruled out**: it is assigned before
+  the registration loop (`qcom_smd-regulator.c:1530`).
+
+**What this changes about the plan.** The next attempt starts from **one** rail
+and reads the boot before adding a second. Twenty at once was the mistake, and
+the `regulator_register()` all-or-nothing behaviour is a genuine upstream
+robustness point worth writing up separately.
+
+☠️ **The isolation guardrail was followed in letter and missed in substance.**
+"Put anything risky on the non-default label" was obeyed by giving the *tracing
+arguments* their own label — but the tracing arguments were never the risk. The
+**device tree** was, and both r74 labels point at the same
+`/boot/sdm632-fairphone-fp3.dtb`. A second arm that differs only in a kernel
+flag is not an isolated arm; it is the same arm twice. Isolating a change means
+isolating **the file that changed**.
+
+☠️ Second cost, exactly as `docs/deploy/README.md` warns: `apk add` ran
+`boot-deploy`, which **rewrote `extlinux.conf` from scratch**, dropping the
+fallback label, `panic=10` and the menu timeout. It was rebuilt by hand with
+four labels and `02-boot-fallback` confirmed them (4 of 4 entries carry
+`panic=`) *after* the install and *before* the reboot — which is why three
+working alternatives exist to boot into. The pre-install file is on the device
+as `/boot/extlinux/extlinux.conf.pre-r74`.
+
+**Nothing is stranded.** `wip/7.1.3/power` `e59893af`, `integration/7.1.3`
+`4cf51780`, `debug-int/7.1.3` `84241a07`, all pushed to `fork`; the package is
+at `/mnt/1TB/pmos/work/packages/edge/aarch64/linux-fp3-7.1.3-r74.apk`.
+☠️ **Do not roll `_commit` back before the cause is known** — the commit is not
+proven wrong, only the boot is proven broken.
+
 ## Where this stopped, 2026-08-23 — read this first after a long gap
 
 ☠️ **The version of this section dated 2026-08-14 was still here on 2026-08-20 and
@@ -176,11 +255,29 @@ in [`STATUS.md`](STATUS.md) queue item 1; the short form:
   `regulator_get_suspend_state()` returns NULL for `PM_SUSPEND_TO_IDLE` — so the
   *runtime* `regulator_suspend()` path is dead here regardless. Only the
   probe-time `initial_state` path can work on this device.
-- **Next:** add `regulator-state-mem` to the FP3 rails (`power` category: `wip/
-  7.1.3/power` + `integration/7.1.3` + `debug-int/7.1.3`) and measure. ☠️ Prove
-  the votes were cast before believing a null result — the `qcom_rpm_smd_write`
-  tracepoint must show sleep-context writes for `ldoa`/`smpa`. A property that
-  parsed into nothing is indistinguishable from a lever that did not work.
+- ☠️☠️ **DONE, DEPLOYED, AND IT DOES NOT BOOT — see the 🚨 section at the top of
+  this page.** `regulator-state-mem { regulator-on-in-suspend; }` went onto all
+  20 rails (`wip/7.1.3/power` `e59893af`, cherry-picked to `integration/7.1.3`
+  and `debug-int/7.1.3` `84241a07`, shipped as r74). The DTB compiles, the
+  binding schema allows the node (`regulator.yaml`
+  `^regulator-state-(standby|mem|disk)$`, inherited by
+  `qcom,smd-rpm-regulator.yaml` through `$ref`), and 20 of 20 nodes are present
+  in the deployed DTB. The phone then stopped booting, silently and before the
+  watchdog probed.
+  The likely mechanism, read from source: `regulator_register()` treats a failed
+  `suspend_set_initial_state()` as fatal and `rpm_reg_probe()` returns out of
+  its loop, so **one rejected or timed-out sleep vote unregisters every rail on
+  the board**. Full derivation, recovery steps and the guardrail post-mortem are
+  in the 🚨 section.
+- **Next, once the phone is back on r73:** repeat with **one** rail, not twenty,
+  and read the boot before adding a second. ☠️ Prove the votes were cast before
+  believing a null result — the `qcom_rpm_smd_write` tracepoint must show
+  sleep-context writes for `ldoa`/`smpa`. A property that parsed into nothing is
+  indistinguishable from a lever that did not work, and the witness for
+  probe-time votes is `tools/sleepset-witness.sh` on a boot armed with
+  `trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=4M`
+  (☠️ never `tp_printk` — see that script's header for why it would boot-loop
+  the phone).
 - A second, lower-ranked candidate found the same day: the USB controller
   `7000000.usb` and its PHY `79000.phy` are the only 2 of 45 `soc@0` children
   with `power/control = on`, and neither has ever runtime-suspended
