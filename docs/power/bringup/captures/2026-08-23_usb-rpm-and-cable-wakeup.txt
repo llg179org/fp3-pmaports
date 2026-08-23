@@ -70,3 +70,41 @@ dwc3_core_probe():
    the session on WiFi.
 4. NOT MEASURED, and must not be assumed: whether a runtime-suspended USB
    controller changes vlow/vmin at all. It is a candidate only.
+
+===============================================================================
+APPENDIX, same day: who actually casts sleep-set votes today (r73, pre-change)
+===============================================================================
+20 s of tracing on an idle phone, distinct state + resource type:
+
+    375 active clk2      80 active bslv      72 active bmas
+     32 sleep  bslv      32 sleep  bmas      20 active clk1
+     16 sleep  clk1       8 sleep  smpa       8 active smpa
+
+☠️ The 8 sleep smpa lines were a surprise and could have been read as "the
+regulator driver does vote sleep after all". It does not. With stacktrace on:
+
+  qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c ... ("lvlv" = level)
+   => qcom_rpm_smd_write
+   => rpmpd_aggregate_corner
+   => rpmpd_set_performance
+   => _genpd_set_performance_state
+   ...
+   => sdhci_msm_runtime_resume
+
+So those are rpmpd voting a corner on a rail that happens to share the smpa
+resource type. qcom_smd-regulator casts none. ldoa does not appear at all in an
+idle window, which is expected: an LDO only writes when a consumer enables,
+disables or re-votes it.
+
+☠️ And a trap for the change now in flight: the regulator-state-mem votes are
+cast from suspend_set_initial_state() inside regulator_register(), at PROBE.
+A userspace tracepoint capture starts far too late to see them, and its silence
+would look identical to a lever that did nothing. The witness has to be
+boot-time ftrace armed from the kernel command line:
+
+    trace_event=qcom_smd_rpm:qcom_rpm_smd_write tp_printk
+
+tools/sleepset-witness.sh reads that boot's ring buffer and refuses to give a
+verdict on an unarmed boot. Shown failing on the unarmed boot of 2026-08-23:
+"armed: no / FAIL: this boot was not armed, so the probe-time votes were never
+printed."
