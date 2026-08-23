@@ -1,0 +1,163 @@
+== votes-pr-v2 xo-r73-v2  N=6 sleep=30s  uptime=579s
+gates: votes=ok masterstats=ok suspend_stats=ok xo=ok
+suspend success at start: 6
+xo at start: APSS=15298 LPASS=65 MPSS=1452 PRONTO=3302 TZ=0 
+-- CONTROL (awake, no suspend)
+CTRL j=0 votes=0x5070501 vlow=0 vmin=0
+CTRL j=1 votes=0x40501 vlow=0 vmin=0
+CTRL j=2 votes=0x40001 vlow=0 vmin=0
+CTRL j=3 votes=0x2060703 vlow=0 vmin=0
+CTRL j=4 votes=0x40501 vlow=0 vmin=0
+CTRL j=5 votes=0x1000105 vlow=0 vmin=0
+CTRL j=6 votes=0x40501 vlow=0 vmin=0
+CTRL j=7 votes=0x1000405 vlow=0 vmin=0
+CTRL j=8 votes=0x3020607 vlow=0 vmin=0
+CTRL j=9 votes=0x1000405 vlow=0 vmin=0
+xo after control: APSS=15449 LPASS=65 MPSS=1478 PRONTO=3394 TZ=0 
+-- WINDOW 1: suspending 30s
+w1-pre  xo: APSS=15449 LPASS=65 MPSS=1478 PRONTO=3395 TZ=0 
+POST1 j=0 votes=0x7050405 vlow=0 vmin=0
+POST1 j=1 votes=0x7030705 vlow=0 vmin=0
+POST1 j=2 votes=0x7050105 vlow=0 vmin=0
+POST1 j=3 votes=0x6070607 vlow=0 vmin=0
+POST1 j=4 votes=0x2030105 vlow=0 vmin=0
+POST1 j=5 votes=0x7050105 vlow=0 vmin=0
+POST1 j=6 votes=0x10501 vlow=0 vmin=0
+POST1 j=7 votes=0x1050405 vlow=0 vmin=0
+w1-post xo: APSS=15680 LPASS=65 MPSS=1575 PRONTO=3436 TZ=0 
+-- WINDOW 2: suspending 30s
+w2-pre  xo: APSS=15680 LPASS=65 MPSS=1575 PRONTO=3436 TZ=0 
+POST2 j=0 votes=0x4050405 vlow=0 vmin=0
+POST2 j=1 votes=0x6070607 vlow=0 vmin=0
+POST2 j=2 votes=0x7050705 vlow=0 vmin=0
+POST2 j=3 votes=0x7060705 vlow=0 vmin=0
+POST2 j=4 votes=0x5070501 vlow=0 vmin=0
+POST2 j=5 votes=0x4050405 vlow=0 vmin=0
+POST2 j=6 votes=0x10501 vlow=0 vmin=0
+POST2 j=7 votes=0x2030703 vlow=0 vmin=0
+w2-post xo: APSS=15923 LPASS=65 MPSS=1673 PRONTO=3482 TZ=0 
+-- WINDOW 3: suspending 30s
+w3-pre  xo: APSS=15923 LPASS=65 MPSS=1673 PRONTO=3483 TZ=0 
+POST3 j=0 votes=0x7050405 vlow=0 vmin=0
+POST3 j=1 votes=0x7050705 vlow=0 vmin=0
+POST3 j=2 votes=0x1050705 vlow=0 vmin=0
+POST3 j=3 votes=0x1000105 vlow=0 vmin=0
+POST3 j=4 votes=0x6070307 vlow=0 vmin=0
+POST3 j=5 votes=0x4050705 vlow=0 vmin=0
+POST3 j=6 votes=0x6070501 vlow=0 vmin=0
+POST3 j=7 votes=0x10501 vlow=0 vmin=0
+w3-post xo: APSS=16193 LPASS=65 MPSS=1779 PRONTO=3525 TZ=0 
+-- WINDOW 4: suspending 30s
+w4-pre  xo: APSS=16193 LPASS=65 MPSS=1779 PRONTO=3525 TZ=0 
+POST4 j=0 votes=0x7050405 vlow=0 vmin=0
+POST4 j=1 votes=0x7050705 vlow=0 vmin=0
+POST4 j=2 votes=0x5040507 vlow=0 vmin=0
+POST4 j=3 votes=0x4050405 vlow=0 vmin=0
+POST4 j=4 votes=0x7030705 vlow=0 vmin=0
+POST4 j=5 votes=0x4050705 vlow=0 vmin=0
+POST4 j=6 votes=0x5040501 vlow=0 vmin=0
+POST4 j=7 votes=0x2030703 vlow=0 vmin=0
+w4-post xo: APSS=16475 LPASS=65 MPSS=1880 PRONTO=3565 TZ=0 
+-- WINDOW 5: suspending 30s
+w5-pre  xo: APSS=16475 LPASS=65 MPSS=1880 PRONTO=3565 TZ=0 
+POST5 j=0 votes=0x6070607 vlow=0 vmin=0
+POST5 j=1 votes=0x7060405 vlow=0 vmin=0
+POST5 j=2 votes=0x3070507 vlow=0 vmin=0
+POST5 j=3 votes=0x4050705 vlow=0 vmin=0
+POST5 j=4 votes=0x4050405 vlow=0 vmin=0
+POST5 j=5 votes=0x3070607 vlow=0 vmin=0
+POST5 j=6 votes=0x6070607 vlow=0 vmin=0
+POST5 j=7 votes=0x5040501 vlow=0 vmin=0
+w5-post xo: APSS=16733 LPASS=65 MPSS=1979 PRONTO=3611 TZ=0 
+-- WINDOW 6: suspending 30s
+w6-pre  xo: APSS=16733 LPASS=65 MPSS=1979 PRONTO=3611 TZ=0 
+POST6 j=0 votes=0x4050405 vlow=0 vmin=0
+POST6 j=1 votes=0x1050705 vlow=0 vmin=0
+POST6 j=2 votes=0x5070507 vlow=0 vmin=0
+POST6 j=3 votes=0x6020307 vlow=0 vmin=0
+POST6 j=4 votes=0x4050405 vlow=0 vmin=0
+POST6 j=5 votes=0x4050405 vlow=0 vmin=0
+POST6 j=6 votes=0x4000105 vlow=0 vmin=0
+POST6 j=7 votes=0x4050103 vlow=0 vmin=0
+w6-post xo: APSS=17008 LPASS=65 MPSS=2086 PRONTO=3659 TZ=0 
+-- SANITY
+suspend success 6 -> 12 (delta 6, expected 6)
+xo at end: APSS=17008 LPASS=65 MPSS=2086 PRONTO=3659 TZ=0 
+== DONE
+### APSS
+APSS:
+	Last shutdown @ 16997311906
+	Last bringup req @ 16997506980
+	Last bringup ack @ 16997528521
+	Last wakeup idx: 16235422324
+	Last XO shutdown enter @ 16997327241
+	Last XO shutdown exit @ 16997518199
+	XO total duration: 10541498814
+	Last sleep transition duration: 18867
+	Last wake transition duration: 18971
+	XO shutdown count: 17412
+	Wakeup reason: 0x0
+	Shutdown count: 18780
+	Active cores bitmask: 0x1
+### LPASS
+LPASS:
+	Last shutdown @ 889662089
+	Last bringup req @ 889564238
+	Last bringup ack @ 889564348
+	Last wakeup idx: 889537571
+	Last XO shutdown enter @ 889669562
+	Last XO shutdown exit @ 889532186
+	XO total duration: 180457220
+	Last sleep transition duration: 7556
+	Last wake transition duration: 7739
+	XO shutdown count: 47
+	Wakeup reason: 0x0
+	Shutdown count: 65
+	Active cores bitmask: 0x0
+### MPSS
+MPSS:
+	Last shutdown @ 16997387623
+	Last bringup req @ 17002056922
+	Last bringup ack @ 17002057035
+	Last wakeup idx: 17002055930
+	Last XO shutdown enter @ 16997401800
+	Last XO shutdown exit @ 17002042017
+	XO total duration: 10783318575
+	Last sleep transition duration: 18966
+	Last wake transition duration: 19016
+	XO shutdown count: 2157
+	Wakeup reason: 0x1
+	Shutdown count: 2184
+	Active cores bitmask: 0x1
+### PRONTO
+PRONTO:
+	Last shutdown @ 17002012315
+	Last bringup req @ 17001788718
+	Last bringup ack @ 17001788829
+	Last wakeup idx: 17001788394
+	Last XO shutdown enter @ 17002023398
+	Last XO shutdown exit @ 17001781167
+	XO total duration: 12741479745
+	Last sleep transition duration: 12009
+	Last wake transition duration: 13451
+	XO shutdown count: 4014
+	Wakeup reason: 0x0
+	Shutdown count: 4025
+	Active cores bitmask: 0x0
+### TZ
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+### uptime
+871

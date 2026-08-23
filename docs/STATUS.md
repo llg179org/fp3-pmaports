@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 16:00**.
+Last updated: **2026-08-23 18:20**.
 
 ## The device
 
@@ -85,9 +85,19 @@ list; do not stop at the end of an item to report.
    `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
    controller state is `DOWN`, and that window closes as soon as the controller
    unregisters. Widening it deliberately is the next move.
-3. **Read the RPM `Client Votes` mask immediately after a suspend window**, from
-   the `postmarketOS-xo` label — the one boot where the APSS actually goes down
-   during the window. Last open leg of `TODO.md` item ②.
+3. **Find what pins the ADSP awake at ~46 s of uptime.** ★★★ Measured
+   2026-08-23 on the xo label over six real 30 s suspend windows (success
+   counter 6 → 12, APSS XO shutdown +1710): **LPASS `Shutdown count` is frozen
+   at 65 and its `Last shutdown @` decodes to 46.3 s of uptime.** The other
+   three masters cycle normally; `vlow`/`vmin` `Count` stayed 0 in all 58
+   samples. A master that never votes itself down is a sufficient reason for the
+   RPM never to enter a low-power set — so this is now the named blocker, and
+   the open question is *what* holds it. ☠️ ~46 s is near audio bring-up, which
+   makes q6/SLIMbus the hypothesis most likely to be believed without evidence;
+   bisect it by reading LPASS `Shutdown count` at a fixed early uptime against
+   what starts around it. ☠️ TZ is all-zero from boot in every field — treat it
+   as uninstrumented, not as a second stuck master.
+   Instrument: `docs/power/bringup/tools/votes-post-resume.sh`.
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
 5. **`99-suspend` fails inside the battery and passes outside it.** Measured
@@ -138,5 +148,10 @@ list; do not stop at the end of an item to report.
   it answers it for the bogus hash too. Measured 2026-08-23. A `429/429` pair is
   **not** a pass and not a fail — it is the check refusing to answer. Retry
   until the bogus hash reads `404` again, and only then read the real one.
+- ☠️ **A blank row is not a zero.** A debugfs sampler that runs as the user
+  prints *empty* lines for `/sys/kernel/debug/qcom_rpm_master_stats` — root-only
+  — and they read as "nothing to see" next to lines that do print. Gate every
+  sampler on being able to read each of its sources, and show each gate aborting
+  before believing any row.
 - ☠️ **`./pmb build` outlives a 10-minute tool timeout badly.** Run it detached
   and poll, rather than letting the harness kill the shell mid-compile.

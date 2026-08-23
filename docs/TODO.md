@@ -184,11 +184,24 @@ may describe both slots equally.
    LPASS 4, which is exactly where the four measured bits fall. **Bit 3 is the
    TZ**, silent for the same reason its stats block is all zeros: it does not
    participate. The earlier "vote from outside the five masters" reading is
-   retracted; stop looking for a sixth client. One follow-up is left: read the
-   mask **immediately after a suspend window** (the ring should carry values
-   from inside it, where an awake read cannot) — and it has to be run from the
-   `postmarketOS-xo` entry, the one boot where the APSS actually goes down
-   during the window.
+   retracted; stop looking for a sixth client. ★★★ **The last follow-up — read
+   the mask immediately after a suspend window, from the `postmarketOS-xo`
+   entry — is done, 2026-08-23, and it named the blocker.** Six real 30 s
+   windows (`/sys/power/suspend_stats/success` 6 → 12, APSS XO shutdown
+   +1710, so the windows suspended and the APSS collapsed inside them):
+   `vlow`/`vmin` `Count` **0 in all 58 samples**, and the master stats show
+   **LPASS `Shutdown count` frozen at 65 with `Last shutdown @` decoding to
+   46.3 s of uptime** (19.2 MHz ticks). APSS/MPSS/PRONTO cycle normally.
+   Bit 4 was set in exactly 1 of 58 mask samples — the same fact seen by the
+   other instrument, since bit 4 is LPASS. **The ADSP slept 65 times in the
+   first ~46 s of the boot and has not slept since**, and an aggregate
+   low-power set cannot be entered while a master has not voted itself down.
+   Instrument `docs/power/bringup/tools/votes-post-resume.sh`, capture
+   `captures/2026-08-23_votes-post-resume-xo.txt`, write-up in
+   `leads/rpm-sleep-set.md`. **Next: find what pins it at ~46 s** — ☠️ that is
+   near audio bring-up, which makes q6/SLIMbus the hypothesis most likely to be
+   believed without evidence; bisect by reading LPASS `Shutdown count` at a
+   fixed early uptime against what starts around it.
 3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
    a third of the vote churn) and decide the suspend policy. ☠️ **The mask
    decode found the other side of this trade**: with `wlan0` down, PRONTO's

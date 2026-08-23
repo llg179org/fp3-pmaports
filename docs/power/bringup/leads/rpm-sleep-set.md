@@ -307,6 +307,11 @@ is one explicit zero-write at probe, which is small and upstreamable.
 
 ## 2026-08-23: the Client Votes mask — raw material for a decode
 
+> ☠️ **Superseded and partly retracted.** The mask was decoded later the same
+> day (bit 0 APSS, 1 MPSS, 2 PRONTO, 3 TZ, 4 LPASS), and the "bit 4 is a bit
+> the mainline side never sets" claim below is **false** — see the retraction in
+> the 2026-08-23 section at the end of this page. Kept for the raw samples only.
+
 Samples collected across the night (pmOS, various knob combinations):
 `0x7030703 0x3070307 0x5010501 0x10001 0x5040001 0x10501 0x1000105 0x3070607
 0x7030203 0x7030105 0x7060703` — and from the oracle (UT 4.9): `0x11011101
@@ -319,3 +324,108 @@ bit 4 is a downstream-only vote component and a candidate name for what the
 RPM is waiting for. Decode needs the RPM firmware or a Qualcomm header;
 empirically, the next lever would be finding what downstream action toggles
 bit 4 (a sleep-driver handshake? the vMPM?).
+
+## ★★★ 2026-08-23: measured after six real suspend windows — the ADSP is the master that stopped sleeping
+
+Queue item ③ (*read the `Client Votes` mask immediately after a suspend window,
+from the `postmarketOS-xo` label*) is closed, and it answered a bigger question
+than it asked.
+
+Instrument: [`../tools/votes-post-resume.sh`](../tools/votes-post-resume.sh).
+Raw: [`../captures/2026-08-23_votes-post-resume-xo.txt`](../captures/2026-08-23_votes-post-resume-xo.txt).
+Boot: r73 on the `postmarketOS-xo` label (`clk_smd_rpm.xo_sleep_off=1`), 10 awake
+control samples then 6 × 30 s `wakealarm` suspend windows, each followed by an
+8-sample burst.
+
+**Sanity rows first, because both of them nearly did not exist:**
+
+| row | value |
+|---|---|
+| `/sys/power/suspend_stats/success` | 6 → 12, **delta 6, expected 6** |
+| APSS XO shutdown count | 15298 → 17008 (**+1710**) |
+
+So the windows really suspended, and the APSS really power-collapsed inside them.
+
+**The readout:**
+
+| master | at start | at end | delta over six windows |
+|---|---|---|---|
+| APSS | 15298 | 17008 | **+1710** |
+| MPSS | 1452 | 2086 | +634 |
+| PRONTO | 3302 | 3659 | +357 |
+| **LPASS** | **65** | **65** | **0** |
+| TZ | 0 | 0 | 0 |
+
+`vlow Count` and `vmin Count` read **0 in all 58 samples** — control and
+post-resume alike, on the one label where the APSS demonstrably goes down.
+
+**And LPASS's own file says when it stopped.** RPM timestamps are 19.2 MHz ticks
+(checked: APSS `Last shutdown @ 16557043975` ÷ 19.2e6 = 862 s, against an uptime
+of 849 s at the same read):
+
+```
+LPASS:
+	Last shutdown @ 889662089        ->  46.3 s of uptime
+	XO shutdown count: 47
+	Shutdown count: 65
+	Active cores bitmask: 0x0
+```
+
+**The ADSP slept 65 times in the first ~46 seconds of the boot and has not slept
+once since** — not in the ten minutes of this run, not in any of the six windows.
+Every other master is still cycling normally.
+
+That is a name for what the RPM is waiting for. `vlow`/`vmin` are aggregate
+low-power sets: they cannot be entered while a master has not voted itself down.
+Four masters vote; one has been pinned awake since second 46 of the boot.
+
+☠️ **TZ is all zeros from boot** — every field, not just the counts. This is not
+news and not a second stuck master: the oracle shows the same zeros, and the mask
+decode already acquitted it (bit 3, never set anywhere).
+
+### What this does *not* say
+
+- It does **not** identify what pins the ADSP at ~46 s. That timestamp is in the
+  neighbourhood of audio bring-up, which makes q6/SLIMbus the obvious suspect and
+  therefore exactly the hypothesis most likely to be believed without evidence.
+  The measurement is: read LPASS `Shutdown count` at a fixed early uptime, then
+  bisect against the things that start around it.
+- It does **not** prove LPASS is the *only* blocker. It proves it is *a* blocker
+  and the only one currently visible.
+- It does **not** connect to any milliamp figure yet.
+
+### ☠️ Retraction: bit 4 is not downstream-only — and it is the same finding
+
+The 2026-08-23 section above says of the vote mask that pmOS bytes stay within
+`{0,1,3,4,5,6,7}` and that UT's `0x11`/`0x15` show "bit 4 set — a bit the
+mainline side never sets", then builds on it: "bit 4 is a downstream-only vote
+component and a candidate name for what the RPM is waiting for."
+
+**That is false.** Measured on this pmOS boot, 1 sample out of 58:
+`0x15050105` — top byte `0x15`, bit 4 set. Mainline does set it. The
+"downstream-only" reading, and the lever it suggested (find what downstream
+action toggles bit 4), are withdrawn.
+
+★ **And the correction lands on the same conclusion from the other side.** The
+mask was decoded by subtraction later that day (`TODO.md`, deep-sleep item 2):
+the master index is the RPM message-RAM slot, `offset >> 12`, giving **bit 0 ↔
+APSS, bit 1 ↔ MPSS, bit 2 ↔ PRONTO, bit 3 ↔ TZ, bit 4 ↔ LPASS**. So "bit 4 set
+in 1 of 58 samples" *is* "LPASS almost never votes itself down" — the vote mask
+and the master-stats counter are two independent instruments and they agree.
+That is also why the ☠️ TZ note above only repeats what the decode already
+established: bit 3 has never been set anywhere, oracle included.
+
+### ☠️ Instrument defect: a blank row is not a zero
+
+The first version of this sampler printed **empty** `xo:` rows for an entire
+six-window run. The cause was not a missing module — `rpm_master_stats` was
+loaded the whole time — it was that `/sys/kernel/debug/qcom_rpm_master_stats` is
+root-only and the sampler ran as the user. Blank rows read as "nothing to see"
+next to lines that did print.
+
+`votes-post-resume.sh` therefore refuses to start unless it can read the vote
+file, the master stats, the suspend counter, and `clk_smd_rpm.xo_sleep_off=1` on
+the cmdline. All four were shown aborting before any row was believed — and the
+suspend-counter gate fired for real, on a bug of mine:
+`/sys/power/suspend_stats` is a **directory** on this kernel, so reading it as a
+file returned nothing.
