@@ -314,6 +314,13 @@ costs audio on this board.** Any audio check run after one is measuring
 wreckage, not the audio path. The ADSP stop was blamed for this at first; the
 journal timestamps put the damage two minutes earlier, on the modem's return.
 
+**Defects 1 and 2 are written and pushed** (2026-08-23): `wip/7.1.3/audio`
+`647cb5a1` + `2f4ea47a`, cherry-picked to `integration/7.1.3` and carried to
+`debug-int/7.1.3` (`b5ae3e0f`), pinned as r71. Both compile clean; **neither is
+verified on the device yet** — the proof is a modem restart followed by a mixer
+write that does not oops, and a codec that still plays afterwards. Defect 3 is
+untouched, so the second half of that test is expected to fail.
+
 Not yet attempted, and worth asking before it is: write `SLIM RX0 Mux` on a
 clean boot with no remoteproc restart at all, to see whether defect 1 fires on
 its own. If it does, it is reportable to the LKML without any of this port's
