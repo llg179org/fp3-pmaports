@@ -63,7 +63,12 @@ the documented model has not caught up.** Measured 2026-08-24 against
 | `i2c` | `submit/7.1.3/i2c` — the QUP runtime-PM pinctrl fix (the speaker-amp death) plus one adopted upstream cleanup | it began as a charger/audio symptom and ended as an i2c-core change |
 
 Neither appears in the branch table in `~/.claude/CLAUDE.md` or in this file's
-per-branch sections below. Treat the table there as **incomplete, not
+per-branch sections below. ★ **The test harness already knew about one of
+them:** `tests/checks/CATEGORIES` lists six — `audio voice camera charger sensor
+power` — and the runner enforces that every `wip/<base>/*` branch appears there.
+So the harness and the prose disagree, and on `power` the harness is right.
+`i2c` is in neither, which is consistent: it has a `submit/` branch but no `wip`
+one. Treat the table there as **incomplete, not
 authoritative**, until it is updated; re-derive the live list with the
 `for-each-ref` above rather than from any prose list, including this one.
 

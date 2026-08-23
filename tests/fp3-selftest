@@ -384,6 +384,7 @@ main() {
 		fi
 
 		_start=$(date +%s)
+		_rc=0
 		_base=$(basename "$_check")
 		_outfile="$RESULT_DIR/$RUN_ID.$_name.out"
 
@@ -427,7 +428,15 @@ main() {
 			# rather than the measurement. Parameters come from the env file
 			# rather than an inline assignment, so no value of ours has to
 			# survive two layers of shell quoting.
-			_out=$(ssh_root ". $DEVICE_DIR/env.sh; sh $DEVICE_DIR/checks/$_base 2>&1 | tee $_outfile; sync" 2>&1) || true
+			# Keep ssh's own exit status. The `|| true` that used to be
+			# here threw it away, and since the verdict below was decided
+			# only by the absence of "FAIL:", a check whose transport died
+			# scored a silent pass - see the no-verdict guard below.
+			if _out=$(ssh_root ". $DEVICE_DIR/env.sh; sh $DEVICE_DIR/checks/$_base 2>&1 | tee $_outfile; sync" 2>&1); then
+				_rc=0
+			else
+				_rc=$?
+			fi
 		fi
 		ssh_root "cat $_outfile >>$RESULT_DIR/$RUN_ID.log 2>/dev/null; sync" >/dev/null 2>&1 || true
 		_elapsed=$(( $(date +%s) - _start ))
@@ -438,14 +447,49 @@ main() {
 		# pass or fail. Only a check that never ran leaves the category
 		# untested, so a failing voice check must read as "voice is broken",
 		# not as "voice was not looked at".
-		if [ -n "$_cat" ]; then _covered="$_covered $_cat"; fi
+		# ☠️ A check that produced no verdict at all is NOT a pass.
+		# Measured 2026-08-23: the phone reset mid-battery and the runner
+		# then printed "ok:" for nine consecutive checks, each with empty
+		# output, each straight after "No route to host" - because the only
+		# question asked was whether the output contained "FAIL:", and a
+		# dead link produces neither. Every check that succeeds emits at
+		# least one "PASS:" line, so require one. This is the guard that
+		# makes a reset visible instead of green.
 		if printf '%s\n' "$_out" | grep -q '^FAIL:'; then
-			log_line "FAIL: $_name (${_elapsed}s)"
-			_failed=$((_failed + 1))
+			_verdict=FAIL
+		elif printf '%s\n' "$_out" | grep -q '^PASS:'; then
+			_verdict=ok
 		else
-			log_line "ok:   $_name (${_elapsed}s)"
-			_ok=$((_ok + 1))
+			_verdict=NOVERDICT
 		fi
+
+		# Only a check that reached a verdict says anything about its
+		# category. A no-verdict check leaves the category untested, the
+		# same as one that never ran.
+		if [ -n "$_cat" ] && [ "$_verdict" != NOVERDICT ]; then
+			_covered="$_covered $_cat"
+		elif [ -n "$_cat" ]; then
+			_uncovered="$_uncovered $_cat"
+		fi
+
+		case "$_verdict" in
+		FAIL)
+			log_line "FAIL: $_name (${_elapsed}s)"
+			_failed=$((_failed + 1)) ;;
+		ok)
+			log_line "ok:   $_name (${_elapsed}s)"
+			_ok=$((_ok + 1)) ;;
+		NOVERDICT)
+			if [ "$_rc" -eq 255 ]; then
+				_why="the device was unreachable (ssh transport failed)"
+			elif [ "$_rc" -ne 0 ]; then
+				_why="the check exited $_rc without a verdict"
+			else
+				_why="the check produced no PASS: or FAIL: line"
+			fi
+			log_line "FAIL: $_name (${_elapsed}s) - no verdict: $_why"
+			_failed=$((_failed + 1)) ;;
+		esac
 	done
 
 	summarise "$_ok" "$_failed" "$_skipped" "$_covered" "$_uncovered"

@@ -202,8 +202,16 @@ list; do not stop at the end of an item to report.
    whose transport fails is being scored as a pass. Every "N ok" from a run that
    reset is therefore worthless after the reset point — including, by the same
    rule, any future bisect step. Step A is unaffected: it did not reset.
-   **Fixing this comes before any further bisect step**, because the bisect's
-   whole signal is which checks passed.
+   ★ **FIXED and both directions shown, 2026-08-23.** `tests/fp3-selftest` now
+   keeps ssh's exit status (the `|| true` was throwing it away) and requires a
+   verdict: a check whose output has no `PASS:` and no `FAIL:` line is scored
+   **FAIL — no verdict**, with the reason distinguishing an unreachable device
+   (ssh rc 255) from a check that exited non-zero from one that simply printed
+   nothing. A no-verdict check no longer marks its category covered either.
+   Shown failing: a temporary check that emits nothing scored
+   `FAIL: 97-noverdict (1s) - no verdict: the check produced no PASS: or FAIL:
+   line`, where the old code would have printed `ok:`. Shown passing:
+   `ok: 71-clock (1s)` on the same build.
    Next: bisect by running the battery with growing prefixes
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
