@@ -163,7 +163,48 @@ list; do not stop at the end of an item to report.
    camera-af-rail,suspend`, three consecutive runs: **2 ok / 0 failed each time,
    no reset** (uptime monotonic 1299 → 1331 → 1362 → 1398 s). So the hang is
    **load-dependent** — it needs the rest of the battery ahead of it, not just
-   these two checks. Next: bisect by running the battery with growing prefixes
+   these two checks. ★★★ **Step B reproduced the reset, and the kernel named the subsystem this
+   time — the "cpuidle hang" framing is now too narrow.** Dropping the *first
+   half* of the pre-camera checks (01-identity … 25-sensor) and keeping the
+   camera block **still reset the device** (uptime 2198 → 27). So checks 01–25
+   are not part of the load, and with step A that brackets it to the camera
+   block. The dead boot contains **no RCU stall at all**
+   (`grep -c 'rcu_preempt detected stalls'` = 0) — it is a *different* failure
+   mode reaching the same watchdog, and until something links them the two must
+   not be called one bug. The chain, monotonic, the run having started at 2198 s:
+
+   ```
+   [2260.16] i2c-qcom-cci 1b0c000.cci: master 0 queue 0 timeout
+   [2260.16] imx363 0-001a: Error reading reg 0x0016: -110
+   [2319.92] qcom-camss 1b00020.camss: VFE halt timeout
+   [2324.94] qcom-iommu-ctx 1e34000.iommu-ctx: timeout waiting for TLB SYNC
+             ... 60 TLB SYNC timeouts + 5 VFE halt timeouts over 518 s ...
+   [2859.02] watchdog0: pretimeout event
+   ```
+
+   The first fault is **62 s into the run** — inside `42-camera-flash` /
+   `43-camera-manual-focus`, **not** in the detached tail where the earlier
+   localisation put it. The phone then spends ~10 minutes unable to tear the
+   camera down. Capture:
+   `docs/power/bringup/captures/2026-08-23_camss-iommu-wedge-watchdog.txt`.
+   ★ **This is nearly the known item [`FP3-TODO.md`](FP3-TODO.md) 33f-2**, which
+   already records the same `master 0 queue 0 timeout` + `-110` from touching the
+   camera while another client tears it down. Two differences: 33f-2's `-110` is
+   on the ak7375 **lens**, this one is on the imx363 **sensor**; and 33f-2's
+   consequence is bounded (AF disabled for the boot, streaming continues) while
+   this one wedges the IOMMU and resets the phone. Same first link, worse ending
+   — so the next move is against **concurrent CCI access during camera
+   teardown**, not against cpuidle.
+   ☠️☠️ **A defect in our own instrument, found in the same log: a dead phone
+   reports green.** After the reset the runner printed `ok:` for **nine** checks
+   (`50-charger` through `71-clock`), each with empty output, each immediately
+   after `ssh: connect to host 172.16.42.1 port 22: No route to host`. A check
+   whose transport fails is being scored as a pass. Every "N ok" from a run that
+   reset is therefore worthless after the reset point — including, by the same
+   rule, any future bisect step. Step A is unaffected: it did not reset.
+   **Fixing this comes before any further bisect step**, because the bisect's
+   whole signal is which checks passed.
+   Next: bisect by running the battery with growing prefixes
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.

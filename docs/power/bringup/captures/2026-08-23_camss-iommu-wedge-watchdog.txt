@@ -1,0 +1,56 @@
+Bisect step B: the battery reset the phone again, and this time the kernel
+named the subsystem. AI-generated content, from a live device.
+
+Device: Fairphone 3, pmOS edge, linux-fp3 7.1.3-r73, build #74-fp3.
+Run: ./tests/fp3-selftest --skip 01-identity,02-boot,03-autologin,05-modules,
+     06-dtb,10-health,15-hwtest,16-vibrator,19-ucm,20-audio,24-speaker,25-sensor
+     (i.e. the first half of the pre-camera checks dropped, camera block kept)
+Device uptime before the run: 2198 s. After: 27 s -> the device reset.
+
+WHAT THIS BOOT DOES *NOT* CONTAIN: any RCU stall.
+    grep -c 'rcu_preempt detected stalls' <this boot> = 0
+The two earlier resets were RCU stalls in cpuidle_enter_state. This one is a
+different failure mode reaching the same watchdog, so they must not be assumed
+to be one bug until something links them.
+
+THE CHAIN, in order, monotonic seconds of the dead boot (run started at 2198):
+
+  [ 2260.160188] i2c-qcom-cci 1b0c000.cci: master 0 queue 0 timeout
+  [ 2260.161972] imx363 0-001a: Error reading reg 0x0016: -110
+  [ 2319.916222] qcom-camss 1b00020.camss: VFE halt timeout
+  [ 2324.936872] qcom-iommu-ctx 1e34000.iommu-ctx: timeout waiting for TLB SYNC
+  ... 60 TLB SYNC timeouts, one every ~5 s, alternating 1e34000 and 1e35000,
+      and 5 VFE halt timeouts, spanning 2324 -> 2842 ...
+  [ 2842.667427] qcom-iommu-ctx 1e34000.iommu-ctx: timeout waiting for TLB SYNC
+  [ 2859.021191] watchdog0: pretimeout event
+
+So the first fault is 62 s into the run - inside 42-camera-flash/43-camera-
+manual-focus, not in the detached tail - and the phone then spends 599 s
+failing to tear the camera down before the debug layer's watchdog resets it.
+The safety net worked again.
+
+RELATED, AND ALMOST THE SAME: FP3-TODO.md item 33f-2 already records
+`i2c-qcom-cci 1b0c000.cci: master 0 queue 0 timeout` followed by a -110, from
+opening the lens subdevice while another client tears the camera down. Two
+differences: there the -110 is on the ak7375 *lens* (`ak7375_vcm_resume I2C
+failure: -110`), here it is on the imx363 *sensor* (`Error reading reg 0x0016`);
+and there the consequence is bounded (autofocus disabled for the rest of the
+boot, camera keeps streaming), here it escalates to a wedged IOMMU and a reset.
+Same first link, worse ending.
+
+HARNESS DEFECT FOUND IN THE SAME LOG - a dead phone reports green.
+After the reset the runner kept printing verdicts for checks that could not
+have run:
+
+  ok:   50-charger (7s)     <- preceded by "ssh: connect to host 172.16.42.1
+  ok:   51-battery-temp (1s)    port 22: No route to host"
+  ok:   52-fuel-gauge (1s)
+  ok:   53-charge-termination (1s)
+  ok:   58-call-wake (0s)
+  ok:   60-wifi (1s)
+  ok:   65-bluetooth (1s)
+  ok:   70-modem (1s)
+  ok:   71-clock (1s)
+
+Nine checks passed on an unreachable device, each with empty output. A check
+whose transport fails must not be scored as a pass.
