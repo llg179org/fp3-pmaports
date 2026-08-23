@@ -63,10 +63,27 @@ fi
 
 # Disk full has bitten this device twice: it aborts an apk upgrade halfway and
 # leaves a version-skewed stack that then crashes somewhere unrelated.
+#
+# ☠️ Two thresholds, because 98% is not where the harm starts. journald's
+# SystemKeepFree defaults to 15% of the filesystem (~360 MB on this 2.4 G
+# rootfs); once free space drops under that, journald caps its store and rotates
+# so hard that only the current and previous boot survive - so an intermittent
+# fault's earlier boots are gone before anyone reads them. That began at ~85%
+# here and a bare "PASS: rootfs 93% used" called it fine while the evidence this
+# investigation needs was being deleted every reset. 85% is therefore a WARN,
+# not a silent pass: the device still runs, but it has stopped keeping history.
+# The apk *download* cache (/var/cache/apk/*.apk) is the usual reclaimable bulk
+# and is safe to rm - it is not the apk world, so clearing it does not
+# re-resolve anything (docs/deploy warns only against `apk` mutating world).
 used=$(df / | awk 'NR==2 {gsub("%","",$5); print $5}')
 if [ "${used:-100}" -ge 98 ]; then
 	echo "FAIL: rootfs ${used}% full - an upgrade here would break mid-way"
 	fail=1
+elif [ "${used:-100}" -ge 85 ]; then
+	echo "WARN: rootfs ${used}% used - past journald's 15% keep-free, so only"
+	echo "      the current and previous boot survive; older boots of an"
+	echo "      intermittent fault are being dropped. Reclaim with:"
+	echo "        sudo rm -f /var/cache/apk/*.apk   (download cache, safe)"
 else
 	echo "PASS: rootfs ${used}% used"
 fi

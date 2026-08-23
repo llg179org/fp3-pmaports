@@ -375,18 +375,23 @@ is now item 4.
    any LPASS question: it was closed on 2026-08-21 and the closure was invisible
    from here, which is what cost a day's re-run.
 
-2. ☠️ **The rootfs is 93% full and it is eating this investigation's
-   evidence.** `/var/log/journal` is persistent (22.4 MB) but only the current
-   and previous boot survive: 153 MB free on a 2.4 G rootfs puts journald
-   permanently against its free-space guard, so **every reset destroys the boot
-   before last** — which is why the two earlier RCU-stall boots can no longer be
-   checked. `10-health` reports `rootfs 93% used` as a **PASS**, so our own
-   instrument is watching this happen and calling it fine. Two separable moves:
-   raise `10-health`'s threshold question (a check that passes at 93% on a
-   device that loses evidence at 93% is miscalibrated), and free space —
-   ☠️ **not with `apk`**, which re-resolves `world` and has broken this device
-   before. Until then, capture full boot logs to the host at the moment of a
-   reset rather than expecting to read them later.
+2. ✅ **DONE 2026-08-23 night — rootfs freed 94%→81% and `10-health`
+   recalibrated.** The bulk was the apk *download* cache: `/var/cache/apk`
+   held 313 MB of old cached kernel `.apk` builds (r65–r74, ~30 MB each),
+   redundant with the installed/unpacked kernel. Cleared with a plain
+   `rm -f /var/cache/apk/*.apk` — **not** `apk`, so `world` was never
+   re-resolved (the docs/deploy caution is specifically about `apk` mutating
+   world; deleting cached downloads does not). Rootfs went 2.1 G→1.8 G used,
+   128 MB→441 MB free, so journald is back above its 15% keep-free guard and
+   the boot-before-last survives resets again.
+   `tests/checks/10-health-test.sh` now has two tiers: FAIL at ≥98% (the old
+   upgrade-hazard line) and a new **WARN at ≥85%**, where journald's default
+   `SystemKeepFree` (15% of the fs, ~360 MB here) starts dropping older boots —
+   so the instrument no longer prints a bare green `PASS: rootfs 93% used`
+   while evidence is being deleted. The WARN line names the safe reclaim command.
+   ☠️ **This refills on every kernel bump** (each `pmbootstrap` build re-caches
+   the new `.apk`), so it is not a one-time fix — the WARN is the standing
+   reminder to clear the cache when it fires.
 
 3. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
