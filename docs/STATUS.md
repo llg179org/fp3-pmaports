@@ -294,8 +294,22 @@ list; do not stop at the end of an item to report.
    the ones that do the damage, which is consistent with `43-camera-manual-focus`
    failing in every camera-block run and passing in the one run where it went
    first.
-   Next: step F runs 40–43 alone with the tap, to see whether they wedge the
-   camera without 44/45 present at all
+   ★★ **Step F clears 40–43 as well, so neither half reproduces alone.** Checks
+   40, 41, 42, 43 from a fresh reboot with the tap: **PASS — 4 ok, 0 failed**, no
+   reset (uptime 166 → 231 across exactly 65 s), zero faults in the tapped log.
+   And `43-camera-manual-focus` took **3 s and passed** here, against 82–126 s
+   and failing every time it ran inside the camera block.
+   So: 40–43 alone fine, 44–45 alone fine, 40–45 together wedges and resets.
+   ☠️ **A confound I only saw when the halves both passed:** the runs where 43
+   failed did **not** start from pristine boots. Step D began at uptime 1444 on a
+   boot that had already carried step C's detached `98-camera-af-rail` tail, and
+   I had cleared that boot only by grepping `dmesg` for *fault* lines — which
+   says nothing about whether the camera had been exercised. "No faults yet" is
+   not "untouched". The reproductions so far therefore vary in **two** things at
+   once, check composition and prior camera activity in the boot, and cannot
+   separate them.
+   Next: step G runs the whole camera block from a **verified fresh reboot**
+   with the tap — the first run of this investigation to vary only one thing
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.
