@@ -1326,3 +1326,21 @@ name of the blocker.
 suspend-window instrument must disarm the modem edge itself** (and restore it
 after) — the first r68 capture ran 8–19 s windows against an armed edge and
 was silently about the wrong thing.
+
+## 2026-08-23 dawn: with both_sets the suspect list collapses to the interconnect
+
+The rail census re-run under `both_sets=1`
+([`captures/2026-08-23_rail-census-both-sets.txt`](captures/2026-08-23_rail-census-both-sets.txt)):
+**every PMIC rail now carries a sleep vote** (0 enabled rails held up by an
+absent sleep vote — the 08-19 list is cleared), and the survivors with no
+sleep vote are **interconnect resources only**: eight bmas/bslv entries at
+bw=50000000 (and a few at 0), plus two disabled smpa rails that no DT
+declares. The 240 MB/s icc paths and `bslv/0` DO get sleep votes; the 50 MB/s
+ones never do — which points at how `icc-rpm` buckets its votes (AMC vs
+WAKE/SLEEP tagging, `keep_alive` paths) rather than at any consumer. Since
+vlow still reads 0 under this census's own suspend, the interconnect
+sleep-set gap is now the best-named remaining blocker candidate — and it is
+generic `drivers/interconnect/qcom/icc-rpm.c` territory, i.e. upstreamable.
+Next instrument: read icc-rpm's bucket handling against these eight resource
+ids, name which paths they are (`interconnect_graph` debugfs), and test a
+sleep-set write for them the same way both_sets did for the regulators.
