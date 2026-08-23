@@ -1594,3 +1594,37 @@ and no long sleep is wanted.
 `ModemManager` cannot start again without a reboot (leg D ran with the modem
 stack down, which is why its numbers are still normal — the ring is the
 modem's, not the stack's). Reboot to restore.
+
+## 2026-08-23 morning: the disarmed modem edge stops cleanly — and MPSS finally gets its subtraction leg
+
+Two answers from one run on the still-unfixed r69
+([`tools/mpss-leg.sh`](tools/mpss-leg.sh),
+[`captures/2026-08-23_mpss-leg-disarmed.txt`](captures/2026-08-23_mpss-leg-disarmed.txt)).
+
+**The teardown diagnosis holds, tested a third way.** Disarm the modem edge
+first and the `wakeup` child directory disappears from sysfs immediately
+(`wakeup child dir present: NONE`); stopping that same remoteproc then returns
+0, leaves the state `offline`, and puts **zero** "Unable to handle kernel"
+lines in `dmesg` — on the same kernel where the armed stop oopsed twice. The
+wakeup device really is the whole difference.
+
+**MPSS, at last, by subtraction.** With the modem stopped its XO shutdown
+count freezes at 968 and the mask settles into `0x17131713` / `0x13171317` —
+every byte `0x13` or `0x17`, so **bit 1 is pinned set**. That is the same
+signature PRONTO's bit 2 showed when PRONTO was stopped, and the same one
+LPASS's bit 4 shows once the ADSP releases.
+
+☠️ **Correction to this morning's earlier entry.** Three bits are now
+confirmed by direct subtraction and they agree on polarity: **bit 1 (MPSS),
+bit 2 (PRONTO) and bit 4 (LPASS) go *set* when that master is down.** The
+claim that bit 0 is the APSS and that "set means up and voting" does not
+survive this — it was inferred from a single knob, not from a subtraction, and
+it points the opposite way to the three that were. What is measured about
+bit 0 is narrower: it is set in every sample on an ordinary boot and clears
+only under `clk_smd_rpm.xo_sleep_off=1`. That is a correlation with the knob,
+not an identification of a client, and this log should not have called it one.
+
+**So the standing picture is:** three masters own bits 1, 2 and 4; bit 0 moves
+only with the XO knob and is unassigned; **bit 3 has never been set in any
+sample from either system.** Two clients' worth of the field are therefore
+still unexplained, and one of them never releases.

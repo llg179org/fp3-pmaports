@@ -1,0 +1,58 @@
+== mpss-leg Sun Aug 23 08:08:31 CEST 2026 uptime=357.35
+== kernel: #70-fp3 SMP PREEMPT Sun Aug 23 03:16:59 UTC 2026
+== modem edge wakeup at start: enabled
+--- M0: baseline, edge still armed
+M0 t=0 votes=0x15171511 count=0 xo: APSS=0 LPASS=53 MPSS=922 PRONTO=2827 TZ=0
+M0 t=1 votes=0x17151113 count=0 xo: APSS=0 LPASS=53 MPSS=925 PRONTO=2831 TZ=0
+M0 t=2 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=927 PRONTO=2836 TZ=0
+M0 t=3 votes=0x17151115 count=0 xo: APSS=0 LPASS=53 MPSS=930 PRONTO=2840 TZ=0
+M0 t=4 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=930 PRONTO=2843 TZ=0
+M0 t=5 votes=0x11131713 count=0 xo: APSS=0 LPASS=53 MPSS=933 PRONTO=2854 TZ=0
+M0 t=6 votes=0x13111511 count=0 xo: APSS=0 LPASS=53 MPSS=937 PRONTO=2864 TZ=0
+M0 t=7 votes=0x13111511 count=0 xo: APSS=0 LPASS=53 MPSS=940 PRONTO=2874 TZ=0
+M0 t=8 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=942 PRONTO=2884 TZ=0
+M0 t=9 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=942 PRONTO=2894 TZ=0
+--- disarming the modem edge
+== modem edge wakeup now: disabled
+== wakeup child dir present: NONE
+--- M1: disarmed, modem still running
+M1 t=0 votes=0x13171511 count=0 xo: APSS=0 LPASS=53 MPSS=943 PRONTO=2906 TZ=0
+M1 t=1 votes=0x15111511 count=0 xo: APSS=0 LPASS=53 MPSS=946 PRONTO=2916 TZ=0
+M1 t=2 votes=0x15111511 count=0 xo: APSS=0 LPASS=53 MPSS=949 PRONTO=2926 TZ=0
+M1 t=3 votes=0x15111311 count=0 xo: APSS=0 LPASS=53 MPSS=952 PRONTO=2936 TZ=0
+M1 t=4 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=953 PRONTO=2947 TZ=0
+M1 t=5 votes=0x13111511 count=0 xo: APSS=0 LPASS=53 MPSS=956 PRONTO=2957 TZ=0
+M1 t=6 votes=0x11151115 count=0 xo: APSS=0 LPASS=53 MPSS=959 PRONTO=2966 TZ=0
+M1 t=7 votes=0x15111317 count=0 xo: APSS=0 LPASS=53 MPSS=962 PRONTO=2976 TZ=0
+M1 t=8 votes=0x13111511 count=0 xo: APSS=0 LPASS=53 MPSS=966 PRONTO=2986 TZ=0
+M1 t=9 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=967 PRONTO=2997 TZ=0
+--- stopping remoteproc0 (modem) with the edge DISARMED
+== write returned 0; rproc0 state: offline
+== oops in dmesg since the write: 0
+--- M2: modem stopped
+M2 t=0 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3045 TZ=0
+M2 t=1 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3055 TZ=0
+M2 t=2 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3065 TZ=0
+M2 t=3 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3075 TZ=0
+M2 t=4 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3086 TZ=0
+M2 t=5 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3096 TZ=0
+M2 t=6 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3106 TZ=0
+M2 t=7 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3116 TZ=0
+M2 t=8 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3126 TZ=0
+M2 t=9 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3136 TZ=0
+M2 t=10 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3146 TZ=0
+M2 t=11 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3150 TZ=0
+M2 t=12 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3154 TZ=0
+M2 t=13 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3158 TZ=0
+M2 t=14 votes=0x13171317 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3162 TZ=0
+M2 t=15 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3170 TZ=0
+M2 t=16 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3181 TZ=0
+M2 t=17 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3191 TZ=0
+M2 t=18 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3201 TZ=0
+M2 t=19 votes=0x17131713 count=0 xo: APSS=0 LPASS=53 MPSS=968 PRONTO=3211 TZ=0
+== dmesg tail
+[  366.381103] qcom-wcnss-pil a204000.remoteproc: unexpected response to sysmon event
+[  366.400274] remoteproc remoteproc0: stopped remote processor 4080000.remoteproc
+[  366.404040] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=130310uA
+[  366.443923] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411642uV ibat=130310uA
+== done Sun Aug 23 08:09:16 CEST 2026 — REBOOT to restore the modem

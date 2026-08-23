@@ -184,9 +184,15 @@ may describe both slots equally.
    the co-processor parks holding the XO instead of cycling it. Price the
    whole leg in mA, not the churn. WiFi is also
    the USB-independent rescue link.
-4. **Name and quiet the modem edge's signal ring** (~one poke per 2 s,
-   payload-free). This gates re-enabling automatic sleep with call-wake
-   armed.
+4. ~~**Name and quiet the modem edge's signal ring**~~ (~one poke per 2 s,
+   payload-free) — **not ours to quiet, measured 2026-08-23.** Stopping
+   `ModemManager` and `rmtfs` leaves the rate unchanged (24 / 33 / 20 / 31
+   pokes per 60 s across the A/B), so the modem produces it on its own and no
+   AP-side policy reaches it. What is left is the modem firmware or the SMD
+   channel state machine, neither reachable from a device patch. **So the
+   call-wake trade has to be resolved elsewhere**: hold an inhibitor while
+   ringing, or arm the edge only when a long sleep is not wanted. That
+   decision, not more measurement, is what gates automatic sleep.
 5. **The three experiment knobs stay default-off** (`clk_smd_rpm.
    xo_sleep_off`, `qcom_smd_regulator.both_sets`, `icc_smd_rpm.sleep_init`,
    all in r69); design their upstream forms only after a measured positive.
