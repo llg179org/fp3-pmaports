@@ -219,6 +219,24 @@ the gaps are here and only here:
     change. Belongs in the cover letter, with a Cc to maintainers who have the
     hardware.
 
+41. **The WCD9335 does not survive an ADSP restart.** The SLIMbus NGD master is
+    on the ADSP, so an ADSP SSR takes the codec's bus out from under it:
+    `CODEC version detection fail!`, `Failed to bringup WCD9335`, ~80 log lines.
+    Measured 2026-08-23 on r71 — six modem restarts do **not** do this, the first
+    ADSP restart does. Undiagnosed, and the functional root cause of the two
+    items below. Not upstream-shaped yet: nobody knows whose recovery this is.
+42. **`slim_rx_mux_put()` could NULL-deref from a mixer write** — fixed on this
+    branch (`647cb5a1`) by initialising the channel list heads in
+    `wcd9335_codec_probe()` instead of only in `wcd9335_set_channel_map()`.
+    **Upstream-shaped and self-contained**; the bug is reachable by any user with
+    access to the mixer on any wcd9335 board whose codec re-probes. Verified only
+    as "did not crash in four attempts, one of them through the failure burst" —
+    the crashing state was entered once, so the evidence is thin.
+43. **`apq8016_sbc.c` latched the SLIMbus channel-map setup** for the life of the
+    card, guarding state that lives in the codec — fixed here (`2f4ea47a`).
+    ☠️ `sound/soc/qcom/sdm845.c` has the same shape and is untouched; deciding
+    whether to fix both is part of preparing this one.
+
 ## `wip/7.1.3/camera` — Sony IMX363
 
 Three commits: a verbatim import, our power-path delta, the DT node. The driver

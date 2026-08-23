@@ -31,7 +31,12 @@ headset](first-call/README.md)**.
 
 ## What is still open
 
-Two lists, on different axes, and it is worth knowing which one you want:
+[`STATUS.md`](STATUS.md) is the **live** page — what the device is running right
+now, the branch tips, and the work queue in the order it should be worked. Read
+it first; it is rewritten as the work happens, so it is the newest thing here and
+also the thinnest.
+
+Then two lists, on different axes, and it is worth knowing which one you want:
 
 * [`TODO.md`](TODO.md) — **the authoritative one**, organised by item: what was
   measured, what is parked and why, plus the settled questions kept as a record
