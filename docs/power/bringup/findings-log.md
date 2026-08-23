@@ -1364,3 +1364,21 @@ questions — the next instruments are a simultaneity measurement (do the
 masters' XO-shutdown windows ever overlap?) and the mask decode, and the
 levers may live in the modem/wcnss firmware's own sleep configuration, not
 in Linux.
+
+## 2026-08-23 morning: simultaneity achieved, vlow still 0 — the last master standing is the TZ
+
+One 120 s window under all three knobs, full master stats with timestamps
+([`captures/2026-08-23_xo-simultaneity.txt`](captures/2026-08-23_xo-simultaneity.txt)):
+the APSS entered XO shutdown at tick 710403659 (~37 s uptime) and exited at
+3036019762 (~158 s) — **one continuous XO-down window spanning the whole
+suspend**, with MPSS (81 cycles), PRONTO (5) and LPASS (44) all cycling
+inside it. So every master except one was XO-down simultaneously, repeatedly
+— and vlow still reads `Count: 0, Last Entered At: 0`. The one master that
+has never once entered XO shutdown, in every capture all night, is the
+**TZ** (all-zero stats). Either the TZ genuinely holds an XO vote the RPM
+waits on, or its msg-ram stats slice is simply inert and the blocker is a
+non-master XO consumer (a PMIC clk client — BT/WLAN sleep clock, debug
+block) that no master-stats view shows. Next instruments: the downstream
+master list and TZ sleep configuration (vendor tree), and the PMIC's clk
+buffer request state (`regmap` dump of the pm8953 clk buffers) during a
+window.

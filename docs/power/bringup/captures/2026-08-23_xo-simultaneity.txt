@@ -1,0 +1,84 @@
+elapsed=122 success=1
+--- full master stats (tick=19.2MHz arch timer)
+== APSS
+APSS:
+	Last shutdown @ 710392695
+	Last bringup req @ 3036011251
+	Last bringup ack @ 3036024585
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 710403659
+	Last XO shutdown exit @ 3036019762
+	XO total duration: 2349763070
+	Last sleep transition duration: 6326
+	Last wake transition duration: 6668
+	XO shutdown count: 103
+	Wakeup reason: 0x0
+	Shutdown count: 160
+	Active cores bitmask: 0x1
+== LPASS
+LPASS:
+	Last shutdown @ 3049125443
+	Last bringup req @ 3049072654
+	Last bringup ack @ 3049093245
+	Last wakeup idx: 1056197754
+	Last XO shutdown enter @ 3049132442
+	Last XO shutdown exit @ 3049086717
+	XO total duration: 2488393723
+	Last sleep transition duration: 7354
+	Last wake transition duration: 7934
+	XO shutdown count: 44
+	Wakeup reason: 0x0
+	Shutdown count: 49
+	Active cores bitmask: 0x0
+== MPSS
+MPSS:
+	Last shutdown @ 3049428243
+	Last bringup req @ 3049340368
+	Last bringup ack @ 3049349923
+	Last wakeup idx: 2961936832
+	Last XO shutdown enter @ 3049435177
+	Last XO shutdown exit @ 3049344894
+	XO total duration: 2421460014
+	Last sleep transition duration: 7601
+	Last wake transition duration: 7693
+	XO shutdown count: 81
+	Wakeup reason: 0x0
+	Shutdown count: 89
+	Active cores bitmask: 0x0
+== PRONTO
+PRONTO:
+	Last shutdown @ 3040275944
+	Last bringup req @ 3036896463
+	Last bringup ack @ 3036911763
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 3040285337
+	Last XO shutdown exit @ 3036903249
+	XO total duration: 2329492718
+	Last sleep transition duration: 10268
+	Last wake transition duration: 12765
+	XO shutdown count: 5
+	Wakeup reason: 0x0
+	Shutdown count: 5
+	Active cores bitmask: 0x0
+== TZ
+TZ:
+	Last shutdown @ 0
+	Last bringup req @ 0
+	Last bringup ack @ 0
+	Last wakeup idx: 0
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 0
+	Last wake transition duration: 0
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 0
+	Active cores bitmask: 0x0
+--- vlow
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x3010301
+DONE
