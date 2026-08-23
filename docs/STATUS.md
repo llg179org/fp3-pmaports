@@ -319,9 +319,37 @@ list; do not stop at the end of an item to report.
    **the camera had already been used earlier in that boot.** That is the
    variable, not which checks are in the set — and it fits `33f-2`, where each
    camera creation adds another ancillary media link instead of replacing one.
-   Next: step H runs the camera block **twice** on one fresh boot. If the second
-   pass wedges, the minimal reproducer is "use the camera twice", which is a far
-   smaller thing to debug than a 34-check battery.
+   ☠️☠️☠️ **Step H refutes step G's conclusion, and with it the whole bisect
+   method used today.** Two full camera blocks back to back on one fresh boot:
+   **both passed**, same boot id throughout, zero faults. So "a second camera
+   session in the same boot" is **not** the trigger either.
+   And the run that breaks the story was already in hand: the attempt at step C
+   that I killed had started ~4 minutes into a nearly-fresh boot, with nothing
+   before it, and it **did** wedge — same command line as step G, which passed.
+   **The fault is intermittent.** Counting independent camera-containing runs
+   today: wedged in step B, in the killed step-C attempt, and in step D; clean in
+   step G and in both passes of step H — roughly **3 in 6**.
+   ☠️ **Therefore steps E, F, G and H "clearing" things clear nothing.** Every
+   one of them is a single non-reproduction of a fault that fails about half the
+   time, so each had a coin-flip chance of looking innocent. I wrote as early as
+   step A that "a single non-hanging run is weaker evidence than the two hangs it
+   is compared against" and then spent the afternoon reasoning as though the
+   fault were deterministic. **Retract the localisations, keep the measurements.**
+   What survives, because it was observed rather than inferred:
+   - the failure signature — `VFE halt timeout` plus an `iommu-ctx ... TLB SYNC`
+     storm at 5 s intervals, sometimes with an `rcu_preempt` stall, ending at
+     `watchdog0: pretimeout event`;
+   - `44-camera-af-windows` taking 502 s instead of 5 s is a **symptom** of an
+     already-damaged camera, not a cause;
+   - the boot-time `cci ... timeout` + `imx363 -110` at 13 s with no client
+     present (`FP3-TODO.md` 33f-4);
+   - the reproduction rate, ~50% per camera-containing run.
+   Next, and it is a different kind of job: **stop bisecting and go for the
+   mechanism.** Loop the camera block on fresh boots with `kmsg-tap.sh` attached
+   until it wedges, which at ~50% should not take many passes, and read the
+   onset out of the host-side log — the one thing no reproduction so far has
+   produced. Only after that does arm-by-arm comparison make sense, and then
+   only with several runs per arm rather than one.
    ☠️ **The reset guard added earlier was wrong and is now fixed.** Comparing
    uptime against elapsed wall time cannot work on this battery: `99-suspend`
    suspends the device on purpose and suspended time does not accrue, so step G
