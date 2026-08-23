@@ -32,6 +32,43 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    aggregates over resource votes as well. The question is now which rails are
    still voted active-set while the phone sleeps.
 
+## The LPASS question is CLOSED (2026-08-21), and here is where it went
+
+Kept here because it was previously recorded only in a working note that this
+page never pointed at — which on 2026-08-23 cost a re-run of the whole bisect
+and a retracted conclusion. Detail:
+[`leads/lpass-mclk-gate-state.md`](leads/lpass-mclk-gate-state.md).
+
+**Two root causes, both fixed and both in the kernel the phone runs:**
+
+1. `msm8916-wcd-digital` called `clk_prepare_enable(mclk)` unconditionally at
+   probe; on msm8953 that mclk is a q6afe clock, i.e. an ADSP request held for
+   the lifetime of the driver. Fixed by moving it into DAI startup/shutdown —
+   `ASoC: msm8916-wcd-digital: hold mclk only while a stream runs`.
+2. A second latch: `qcom-ngd-ctrl` silently dropped every core
+   reconfiguration-sequence message, which is where the generic SLIMbus teardown
+   sends NEXT_DEACTIVATE_CHANNEL / NEXT_REMOVE_CHANNEL. `enable_stream` had a
+   real implementation and there was no `disable_stream`, so the ADSP never saw
+   a **TX (source)** channel removed and held the XO vote forever. RX never
+   latched. Fixed by porting the downstream `SLIM_USR_MC_CHAN_CTRL` recipe —
+   `slimbus: qcom-ngd-ctrl: implement disable_stream so the ADSP releases the
+   channel` (`cff137fdef8e` on `debug-int/7.1.3`, shipped in r63).
+
+**How to read the instrument, because it is ambiguous and has now misled once:**
+`Shutdown count` going flat means *either* pinned awake *or* asleep and staying
+down. The disambiguators are `Last XO shutdown enter` vs `Last XO shutdown exit`
+and `Active cores bitmask` — `enter > exit` with `cores 0x0` is asleep.
+`tools/lpass-trace.sh` prints the verdict; never quote the count alone.
+
+**Verified on r73, 2026-08-23:** clean boot, LPASS cycles during bring-up, takes
+its last shutdown at ~34 s of uptime and reads `ASLEEP cores=0x0` from there on.
+☠️ An ADSP restart re-introduces the latch for that boot (post-SSR re-attach) —
+so any measurement taken after an SSR is measuring that, not steady state.
+
+☠️ **And it is not the `vlow` gate.** Measured twice, on 2026-08-21 and again on
+2026-08-23 with the ADSP `remoteproc` stopped outright: `vlow`/`vmin` `Count`
+stay 0 either way. The gate is still unidentified.
+
 ## Next step
 
 ★★★★ **2026-08-17: the RPM handshake is fixed. One hex digit.**

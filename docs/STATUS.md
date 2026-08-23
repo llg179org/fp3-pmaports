@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-23 20:40**.
+Last updated: **2026-08-23 22:15**.
 
 ## The device
 
@@ -62,6 +62,13 @@ from the repos.
    over the whole buffer and prints sanity rows that must be **non-zero**; if
    those are zero the instrument is blind, not the kernel clean.
 
+☠️ **Before starting anything power-related, read
+[`power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md) top section.** A finished
+investigation that lives only in a `leads/*` working note is invisible from this
+page, and on 2026-08-23 that produced a re-run of a closed bisect and a
+conclusion that had to be retracted. If you close something, move the result to
+the runbook in the same commit.
+
 ## The work queue, in order
 
 Everything here is machine-doable unless the row says otherwise. Work down the
@@ -85,21 +92,23 @@ list; do not stop at the end of an item to report.
    `qcom_slim_ngd_notify_slaves()` on a runtime-PM resume taken while the
    controller state is `DOWN`, and that window closes as soon as the controller
    unregisters. Widening it deliberately is the next move.
-3. **Price the pinned ADSP in mA.** ★★ Measured 2026-08-23: LPASS stops
-   shutting down at **~34 s of uptime** (not 46 — that was RPM ticks, which lead
-   `/proc/uptime` by the bootloader's ~13 s) on all three boots tested, and
-   re-pins within five seconds of being let go. The sensor stack is **acquitted**
-   (`smgr*` unloaded + `snsregd`/`iio-sensor-proxy` stopped: LPASS flat at 37 for
-   60 s while APSS did +1960). ☠️☠️ **And it is NOT the `vlow` gate** — with the
-   ADSP `remoteproc` stopped outright, `vlow`/`vmin` `Count` are still 0 across a
-   30 s window, same as the control. That retraction is written up in
-   `leads/rpm-sleep-set.md`; the earlier "LPASS is a name for what the RPM is
-   waiting for" line here was wrong. What is left is a real anomaly with an
-   unpriced cost: an ADSP that never sleeps after second 34. The measurement is a
-   median `current_now` over a suspend window with the ADSP running vs stopped —
-   the same instrument as the WiFi lever below, so run them together.
-   ☠️ One `current_now` read is ±138 mA; take medians.
-   Tools: `docs/power/bringup/tools/{lpass-trace,lpass-bisect,adsp-vlow}.sh`.
+3. **The `vlow` gate is still unidentified, and the ADSP is not it.**
+   ☠️☠️ Everything this queue said today about LPASS being pinned is
+   **retracted** — a flat `Shutdown count` reads the same whether the ADSP is
+   held awake or asleep and staying down, and it was the latter. `enter > exit`
+   with `cores 0x0` is asleep; re-measured on a clean r73 boot, LPASS reads
+   `ASLEEP cores=0x0` from ~34 s onward. That is the goal state the NGD
+   `disable_stream` fix produced in r63, still working. Full retraction and the
+   three mistakes behind it in `leads/rpm-sleep-set.md`.
+   What is actually open is what it was before: `vlow`/`vmin` `Count` have never
+   left 0, and that survives the AP-side sleep-set family, `xo_sleep_off`,
+   `both_sets`, `sleep_init`, and a powered-off ADSP. The one control still
+   unrun is the oracle with USB detached — **which is a human item**, so the
+   machine-side move is to stop attacking `vlow` blind and take the mA
+   measurements below instead.
+   ☠️ Read `docs/power/bringup/RUNBOOK.md` before opening any LPASS question:
+   it was closed on 2026-08-21 and the closure was invisible from here, which is
+   what cost a day's re-run.
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
 5. **`99-suspend` fails inside the battery and passes outside it.** Measured

@@ -432,6 +432,23 @@ file returned nothing.
 
 ## ★★ 2026-08-23, later: the freeze is at ~34 s of *uptime*, and it is not the sensors
 
+> ☠️☠️ **Read this first: most of this section re-walked ground already covered
+> on 2026-08-21**, in
+> [`lpass-mclk-gate-state.md`](lpass-mclk-gate-state.md) — which had already
+> root-caused the original LPASS pin (`msm8916-wcd-digital` holding `mclk`
+> unconditionally at probe), already **exonerated the sensors, q6/APR, wcd9335
+> and the NGD**, already recorded a **second latch** in session bring-up, and
+> already knew that `vlow` stays 0 with LPASS down. That page carries the banner
+> "temporary session-state file — delete once the result is in RUNBOOK.md", and
+> the result never got there, so neither `STATUS.md` nor the runbook knew any of
+> it. **That is the actual defect this evening exposed**, and it cost a rerun of
+> a bisect that had already been done.
+> What below is genuinely new: the RPM-tick-vs-uptime offset, that the second
+> latch survives on r73 and lands at the same moment on every boot, that the
+> sensor teardown releases it for about five seconds before it re-pins (so it is
+> a continuously held vote, not the one-way latch the earlier note described),
+> and the two instruments.
+
 Two corrections and one acquittal, all measured the same evening.
 
 ### ☠️ Correction: "46.3 s of uptime" was 46.3 s of *RPM* time
@@ -541,3 +558,67 @@ system ever reaches `vlow` on this SoC at all.
 voting" is a mechanism, and a mechanism that explains the symptom is not evidence
 that it causes it. The distinguishing experiment was cheap and available the
 whole time.
+
+## ☠️☠️☠️ 2026-08-23, end of evening: the ADSP was never pinned — everything above about LPASS is retracted
+
+The whole LPASS thread of this evening rests on reading `Shutdown count` and
+calling a flat counter "pinned awake". **A flat `Shutdown count` means the
+opposite just as often**, and the disambiguating fields were sitting in the very
+dumps quoted above:
+
+```
+Last XO shutdown enter @ 889669562     <- enter > exit
+Last XO shutdown exit  @ 889532186
+Shutdown count: 65                     <- flat, because it went down and stayed
+Active cores bitmask: 0x0              <- no core running
+```
+
+`enter > exit` with `cores 0x0` is **down and staying down**. That is the goal
+state, produced by the NGD `disable_stream` fix of 2026-08-21 (`cff137fdef8e` on
+`debug-int`, an ancestor of the pinned r73 commit — checked with
+`git merge-base --is-ancestor`). The flagship xo-label capture, the one the
+"LPASS is the master that stopped sleeping" claim was built on, shows exactly
+that pattern. **The ADSP was asleep the whole time.**
+
+Re-measured on a clean r73 boot with the tracer taught to print state instead of
+a bare count:
+
+```
+t=14  lpass=AWAKE  cores=0x1  sd=4   en=507034210  ex=507042293
+t=18  lpass=ASLEEP cores=0x0  sd=9   en=618546898  ex=618523089
+t=23  lpass=AWAKE  cores=0x1  sd=11  en=703926647  ex=717224314
+t=30  lpass=ASLEEP cores=0x0  sd=25  en=839990339  ex=730614671
+t=34  lpass=ASLEEP cores=0x0  sd=27  ...  (unchanged to t=133)
+```
+
+The ADSP cycles through bring-up, takes its last shutdown at ~34 s, and **stays
+asleep**. Nothing pins it. Withdrawn, in order:
+
+- "LPASS is a name for what the RPM is waiting for" — **false**, it is asleep.
+- "The ADSP slept 65 times in the first ~46 s and has not slept since" — the
+  count is right, the reading is **false**; it has not *woken* since.
+- "Find what pins the ADSP at ~34 s" as a work item — **there is nothing to
+  find**, and the follow-up "price the pinned ADSP in mA" is deleted with it.
+- The sensor bisect and the ADSP-offline control were both **answering a
+  question that did not exist**. Their data stands; their motivation does not.
+- The one AWAKE reading that looked like a live latch (uptime 629 s, `exit >
+  enter`, `cores 0x1`) was **caused by my own ADSP restart** earlier in that
+  boot — the documented post-SSR re-attach latch, not a spontaneous one.
+
+Three compounding mistakes, all avoidable:
+
+1. **The ambiguity was already written down.** `lpass-mclk-gate-state.md` says,
+   in its own ☠️ line: *"Static shutdown count is ambiguous: read last-enter vs
+   last-exit."* It was not read.
+2. **The prior investigation was already finished.** That same page closes the
+   LPASS question on 2026-08-21 with a root cause, a fix and a deployed r63.
+3. **It was invisible from the resume path.** The page is banner-marked
+   "temporary session-state file — delete once the result is in RUNBOOK.md", and
+   nothing was ever moved into the runbook, so `STATUS.md` did not know the
+   question was closed. **That is the defect worth fixing**, and it is fixed in
+   the same commit as this retraction.
+
+`../tools/lpass-trace.sh` and `../tools/lpass-bisect.sh` now print `ASLEEP` /
+`AWAKE` from the two timestamps and the core mask, and never a bare count.
+`../tools/votes-post-resume.sh` still prints bare counts and its output above
+must be read with this section in hand.

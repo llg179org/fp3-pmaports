@@ -13,12 +13,15 @@ MS=/sys/kernel/debug/qcom_rpm_master_stats
 modprobe rpm_master_stats 2>/dev/null
 [ -r "$MS/LPASS" ] || { echo "ABORT: $MS/LPASS unreadable"; exit 1; }
 sd() { awk '/^\tShutdown count/{print $NF}' "$MS/$1"; }
+# ☠️ The count alone cannot tell "pinned awake" from "asleep and staying down".
+st() { awk '/XO shutdown enter/{e=$NF} /XO shutdown exit/{x=$NF} /Active cores/{c=$NF}
+            END{printf "%s(cores %s)", (e>x ? "ASLEEP" : "AWAKE"), c}' "$MS/$1"; }
 watch() {
 	l0=$(sd LPASS); a0=$(sd APSS); n=0
 	while [ $n -lt "$2" ]; do sleep 5; n=$((n+5))
-		echo "  $1 +${n}s LPASS=$(sd LPASS) APSS=$(sd APSS)"
+		echo "  $1 +${n}s LPASS=$(sd LPASS) $(st LPASS) APSS=$(sd APSS)"
 	done
-	echo "$1: LPASS $l0 -> $(sd LPASS)   APSS $a0 -> $(sd APSS)"
+	echo "$1: LPASS $l0 -> $(sd LPASS) $(st LPASS)   APSS $a0 -> $(sd APSS)"
 }
 echo "== uptime $(cut -d. -f1 /proc/uptime)"
 echo "-- BEFORE (premise check: LPASS must be flat)"

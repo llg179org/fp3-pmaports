@@ -207,7 +207,17 @@ may describe both slots equally.
    stopped, LPASS flat at 37 for 60 s while APSS did +1960; the `+2` at the
    moment of teardown says the ADSP can still shut down and that the pin
    re-establishes within five seconds.
-   ☠️☠️ **And the LPASS lead is NOT the `vlow` gate.** With the ADSP
+   ☠️☠️☠️ **RETRACTED the same night, in full: the ADSP was never pinned.**
+   A flat `Shutdown count` means "asleep and staying down" just as readily as
+   "held awake"; `Last XO shutdown enter` vs `exit` and `Active cores bitmask`
+   are what separate them, and every capture above shows `enter > exit` with
+   `cores 0x0` — asleep. Re-measured on a clean r73 boot: LPASS reads
+   `ASLEEP cores=0x0` from ~34 s to the end of the trace. The LPASS question was
+   already closed on 2026-08-21 (two root causes, both fixed, shipped in r63),
+   and this evening re-walked it only because the closure lived in a working
+   note the resume path never read. The sensor bisect and the ADSP-offline
+   control answered a question that did not exist.
+   ☠️☠️ **And the ADSP is NOT the `vlow` gate** — which was also already known: With the ADSP
    `remoteproc` stopped by name, a 30 s suspend window leaves `vlow`/`vmin`
    `Count` at 0, identical to the control with it running. "One master is not
    voting" was a mechanism that explained the symptom, not evidence that it

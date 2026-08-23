@@ -20,9 +20,17 @@ while [ $n -lt 240 ]; do
 	u=$(cut -d. -f1 /proc/uptime)
 	sd=$(awk '/^\tShutdown count/{print $NF}' "$MS/LPASS")
 	xo=$(awk '/^\tXO shutdown count/{print $NF}' "$MS/LPASS")
-	ls=$(awk '/Last shutdown @/{print $NF}' "$MS/LPASS")
+	# ☠️ A flat Shutdown count is AMBIGUOUS: it reads the same whether the
+	# ADSP is pinned awake or asleep and staying down. The disambiguators are
+	# the two XO timestamps and the core mask - enter > exit with cores 0x0
+	# is "down and staying down" (the goal), exit > enter with cores 0x1 is
+	# "awake". Never report the count on its own.
+	en=$(awk '/XO shutdown enter/{print $NF}' "$MS/LPASS")
+	ex=$(awk '/XO shutdown exit/{print $NF}' "$MS/LPASS")
+	cores=$(awk '/Active cores/{print $NF}' "$MS/LPASS")
+	if [ "$en" -gt "$ex" ]; then st=ASLEEP; else st=AWAKE; fi
 	asd=$(awk '/^\tShutdown count/{print $NF}' "$MS/APSS")
-	line="t=$u lpass_sd=$sd lpass_xo=$xo lpass_last=$ls apss_sd=$asd"
+	line="t=$u lpass=$st cores=$cores sd=$sd xo=$xo en=$en ex=$ex apss_sd=$asd"
 	echo "$line"
 	# Also into the kernel ring, so the counter lands in the journal on the
 	# journal's own clock. Correlating two clocks by arithmetic was the last

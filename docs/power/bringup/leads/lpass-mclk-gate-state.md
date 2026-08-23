@@ -1,7 +1,21 @@
-# LPASS mclk-gate experiment — session state (2026-08-21)
+# LPASS never-sleeps — CLOSED 2026-08-21, two root causes, both fixed
 
-> AI-generated working note (Claude Fable 5); temporary session-state file.
-> Delete once the result is in RUNBOOK.md.
+> ⚠️ **AI-generated.** Maintained by Claude under the direction of
+> Lajosházi, László Gergely.
+>
+> ☠️ **This page used to be banner-marked "temporary session-state file, delete
+> once the result is in RUNBOOK.md" — and the result was never moved.** On
+> 2026-08-23 that cost a full re-run of a bisect finished here two days earlier,
+> plus a wrong conclusion built on an instrument this page had already warned
+> was ambiguous. The result now lives in [`../RUNBOOK.md`](../RUNBOOK.md) and in
+> [`../README.md`](../README.md); this page keeps the working detail. A closed
+> result in a file the resume path does not read is not a closed result.
+>
+> **The two-line summary, for anyone arriving here from a flat counter:**
+> LPASS is **asleep** on the current kernel and stays that way. A flat
+> `Shutdown count` alone cannot tell that from "pinned awake" — read
+> `Last XO shutdown enter` vs `exit` and `Active cores bitmask`:
+> `enter > exit` with `cores 0x0` is down and staying down.
 
 ## What is proven (committed: aae124e and earlier, all pushed)
 - LPASS never-sleeps root cause: `msm8916-wcd-digital` probe does an
