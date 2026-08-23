@@ -32,8 +32,10 @@ that is why this one now carries its own date in the heading.
 `TODO-DONE.md`, post-mortem in `power/bringup/RUNBOOK.md`. Everything else in
 this summary still stands.
 
-**The device is on `linux-fp3-7.1.3-r70` (`#71-fp3`, `debug-int/7.1.3`
-`1afd8034`), and the running kernel is ours.**
+**The device is on `linux-fp3-7.1.3-r73` (`#74-fp3`, `debug-int/7.1.3`
+`818d35f1`), and the running kernel is ours.** ☠️ Read off the device
+2026-08-24; the previous revision of this line still said `r70` / `#71-fp3` /
+`1afd8034`, which is the fourth time this exact paragraph has gone stale.
 `/boot/vmlinuz` matches the file owned by that package byte for byte.
 ☠️ **This line is the one that goes stale first** — two earlier revisions of this
 paragraph named `r61` and `r65` while the phone had long moved on, so read the
@@ -96,6 +98,46 @@ up so they need no re-investigation:
   before switching automatic sleep back on is the second layer: something must
   hold an inhibitor while ringing or the system re-suspends immediately, and a
   persistent way to arm the modem edge at boot (the knob defaults to off).
+
+## ☠️ The camera wedges the phone and the watchdog resets it — intermittently
+
+**Live item: queue entry 5 in [`STATUS.md`](STATUS.md). Day-by-day account with
+every reversal: [`power/bringup/leads/camera-wedge-2026-08-23.md`](power/bringup/leads/camera-wedge-2026-08-23.md).
+Per-branch entries: [`FP3-TODO.md`](FP3-TODO.md) 33f-3 and 33f-4.**
+
+Measured 2026-08-23 on r73. Something in normal camera use leaves the pipeline
+un-teardownable: `qcom-camss ...: VFE halt timeout`, then a
+`qcom-iommu-ctx ...: timeout waiting for TLB SYNC` storm at 5 s intervals for up
+to ten minutes — 60 to 125 of them — sometimes joined by an `rcu_preempt` stall,
+and then `watchdog0: pretimeout event`. The debug layer's watchdog is doing
+exactly what it is for; without it the phone would simply be dead.
+
+☠️ **It fires on roughly one camera-touching run in two, and that ruins the
+obvious method.** A full day of one-run-per-arm bisecting "cleared" four separate
+arms — the pre-camera checks, checks 44/45, checks 40–43, and the whole camera
+block on a fresh boot — and at a ~50% rate each of those clearances was a coin
+flip. All four are retracted. Any future arm-by-arm comparison needs **several
+runs per arm and a stated rate**, not one run and a conclusion.
+
+What is established, because it was observed rather than inferred:
+
+* the signature above, in four separate resets;
+* `44-camera-af-windows` taking ~502 s instead of ~5 s is a **symptom** of an
+  already-damaged camera and not a cause — it was read as a duration for hours;
+* a `cci ... timeout` plus `imx363 ... -110` fires **at boot**, ~13 s in, between
+  the APR audio service registering and the second remoteproc coming up, with no
+  camera client in existence. That cuts against the explanation shared by
+  `FP3-TODO.md` 33f-2 and 33f-3, which both blame a client colliding with a
+  teardown;
+* the rate, ~3 wedges in 6 independent runs.
+
+**The current move is a hunt, not a bisect.**
+`docs/power/bringup/tools/camera-wedge-hunt.sh` repeats the camera block from a
+fresh reboot each pass with `kmsg-tap.sh` streaming the kernel log to the
+**host**, and stops at the first fault so the onset is captured. The log has to
+live on the host: the phone's rootfs is 93% full, journald therefore vacuums the
+boot before last, and a reset destroys its own evidence — measured, a run that
+provably reset left `journalctl -k -b -1` answering `-- No entries --`.
 
 ## ☠️ Deep sleep: `vlow` has never once been reached
 
