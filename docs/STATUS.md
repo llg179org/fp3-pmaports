@@ -421,6 +421,23 @@ is now item 4.
    "the mechanism is confirmed and the config now matches it", not "the hit rate
    improved".
 
+   ★ **Partly settled during the r74 bump of 2026-08-23, and it turned up a
+   second, larger defect.** `base_dir = /home/pmos` and `hash_dir = false` are
+   confirmed present in **both** `ccache.conf` files, so that fix is in place.
+   ☠️☠️ **But the recorded "raised to 25G" was false and had never taken
+   effect.** Measured mid-build: `ccache -s` reads `Cache size (GB): 5.0 / 5.0
+   (99.94%)` with **5062** cleanups, and both config files read literally
+   `max_size = 5G`. The cache has been evicting continuously the whole time,
+   which is exactly the condition the `base_dir` work was meant to stop
+   mattering. Raised to 25G for real (`sudo`, read back from both files;
+   ☠️ an unprivileged `sed -i` fails on this root-owned tree with a *temp-file*
+   permission error that is easy to skim past as noise). 398 G free on the
+   volume, so the size is not a constraint.
+   ☠️ **The lesson is about this document, not about ccache: a note saying a
+   thing was fixed is not evidence that it was.** Read the config back.
+   Hit rate at the time of measurement, for the next comparison: 60.30 %
+   (622 829 / 1 032 922 cacheable calls).
+
 **Waiting on a human, skip over them:**
 
 - the call-wake ↔ deep-sleep trade has to be *decided* (inhibitor while ringing,
