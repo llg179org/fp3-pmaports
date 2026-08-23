@@ -308,8 +308,35 @@ list; do not stop at the end of an item to report.
    not "untouched". The reproductions so far therefore vary in **two** things at
    once, check composition and prior camera activity in the boot, and cannot
    separate them.
-   Next: step G runs the whole camera block from a **verified fresh reboot**
-   with the tap — the first run of this investigation to vary only one thing
+   ★★★ **Step G settles it: the camera block is not the trigger — a second
+   camera session in the same boot is.** The whole block plus suspend, from a
+   verified fresh reboot with the tap: **no reset**, boot id unchanged,
+   **zero** `TLB SYNC` / `VFE halt` / `rcu_preempt` lines, and the tell-tale
+   timings back to normal — `44-camera-af-windows` **5 s** (not 502) and
+   `43-camera-manual-focus` **3 s** (not 82–126). The one failure,
+   `42-camera-flash`, is the ambient-light comparison and unrelated.
+   So every earlier reproduction had one thing in common that step G removed:
+   **the camera had already been used earlier in that boot.** That is the
+   variable, not which checks are in the set — and it fits `33f-2`, where each
+   camera creation adds another ancillary media link instead of replacing one.
+   Next: step H runs the camera block **twice** on one fresh boot. If the second
+   pass wedges, the minimal reproducer is "use the camera twice", which is a far
+   smaller thing to debug than a 34-check battery.
+   ☠️ **The reset guard added earlier was wrong and is now fixed.** Comparing
+   uptime against elapsed wall time cannot work on this battery: `99-suspend`
+   suspends the device on purpose and suspended time does not accrue, so step G
+   lost 35 s with no reboot at all. A long enough suspend would have made it cry
+   reset on a healthy run. It now compares **`/proc/sys/kernel/random/boot_id`**,
+   which changes on reboot and on nothing else, and reports the uptimes only as
+   context. Shown failing: rebooting the phone deliberately 25 s into a run now
+   prints `DEVICE REBOOTED DURING THIS RUN: boot id 7c63d1ca… -> e955f2b9…` and
+   fails the run.
+   ☠️ **A second hole, found while proving the first fix and also closed:** that
+   same deliberate reboot initially still reported `PASS - 1 ok`, because the
+   check had emitted a `PASS:` line before the link died and the reboot could
+   not be confirmed afterwards. The runner now waits for the device to come back
+   before deciding, and if it still cannot tell, **fails** — an unattributable
+   run is not a green one.
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.

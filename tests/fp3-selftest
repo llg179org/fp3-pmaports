@@ -367,6 +367,7 @@ main() {
 	# not reachable, which makes that check skip rather than guess.
 	RUN_EPOCH_START=$(date +%s)
 	RUN_UPTIME_BEFORE=$(ssh_run 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
+	RUN_BOOT_ID=$(ssh_run 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null | tr -dc 'a-f0-9-')
 	RESET_SEEN=0
 
 	_ok=0 _failed=0 _skipped=0 _covered="" _uncovered=""
@@ -514,22 +515,46 @@ summarise() {
 		_gaps="$_gaps $_cat"
 	done
 
-	# ☠️ Did the phone reboot under us? A rising uptime does not answer that.
-	# Measured 2026-08-23: a run started at uptime 951 and ended at 1242 - the
-	# number went up, and it had still been reset by the watchdog partway
-	# through, because the run itself took ~2000 s. The witness is uptime
-	# compared against the run's own elapsed wall time. 60 s of slack covers
-	# the sampling either side.
-	if [ -n "$RUN_UPTIME_BEFORE" ]; then
+	# ☠️ Did the phone reboot under us? Two wrong answers were tried first.
+	#
+	# A rising uptime does not answer it: measured 2026-08-23, a run went from
+	# uptime 951 to 1242 - the number went up - having been reset by the
+	# watchdog partway through, because the run itself took ~2000 s.
+	#
+	# Uptime against the run's elapsed wall time does not answer it either,
+	# and that is why this is not arithmetic. 99-suspend deliberately suspends
+	# the device, and suspended time does not accrue here: step G lost 35 s
+	# that way with no reboot involved. A long enough suspend would make that
+	# version cry reset on a healthy run.
+	#
+	# The boot id changes on reboot and on nothing else, so ask it directly.
+	# The uptimes are still reported, as context rather than as the witness.
+	if [ -n "$RUN_BOOT_ID" ]; then
 		_now=$(ssh_run 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
+		_boot_now=$(ssh_run 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null | tr -dc 'a-f0-9-')
 		_wall=$(( $(date +%s) - RUN_EPOCH_START ))
-		if [ -z "$_now" ]; then
+		if [ -z "$_boot_now" ]; then
+			# Unreachable right now is usually a device still coming back
+			# up - which is itself the interesting case. Wait, then ask
+			# again rather than shrugging.
+			wait_for_device 180 >/dev/null 2>&1 || true
+			_boot_now=$(ssh_run 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null | tr -dc 'a-f0-9-')
+			_now=$(ssh_run 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
+		fi
+		if [ -z "$_boot_now" ]; then
+			# ☠️ Not knowing is not a pass. Measured 2026-08-23: a run
+			# during which the phone was deliberately rebooted still
+			# reported "PASS - 1 ok", because the check had emitted a
+			# PASS line before the link died and the reboot could not be
+			# confirmed afterwards. An unattributable run fails.
 			log_line ""
-			log_line "WARNING: the device is unreachable at the end of this run, so whether it reset could not be established"
-		elif [ "$_now" -lt $(( RUN_UPTIME_BEFORE + _wall - 60 )) ]; then
+			log_line "DEVICE UNREACHABLE AT THE END OF THIS RUN: whether it rebooted could not be established, so no verdict here is attributable"
+			RESET_SEEN=1
+		elif [ "$_boot_now" != "$RUN_BOOT_ID" ]; then
 			log_line ""
-			log_line "DEVICE RESET DURING THIS RUN: uptime ${RUN_UPTIME_BEFORE}s -> ${_now}s across ${_wall}s of wall time"
-			log_line "      Every verdict after the reset point is meaningless. Check the watchdog:"
+			log_line "DEVICE REBOOTED DURING THIS RUN: boot id $RUN_BOOT_ID -> $_boot_now"
+			log_line "      (uptime ${RUN_UPTIME_BEFORE}s -> ${_now:-?}s across ${_wall}s of wall time)"
+			log_line "      Every verdict after the reboot point is meaningless. Check the watchdog:"
 			log_line "      journalctl -k -b -1 | tail -40"
 			RESET_SEEN=1
 		fi
