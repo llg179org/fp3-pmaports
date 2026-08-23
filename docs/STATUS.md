@@ -122,6 +122,19 @@ list; do not stop at the end of an item to report.
    ☠️ Read `docs/power/bringup/RUNBOOK.md` before opening any LPASS question:
    it was closed on 2026-08-21 and the closure was invisible from here, which is
    what cost a day's re-run.
+3b. ☠️ **The rootfs is 93% full and it is eating this investigation's
+   evidence.** `/var/log/journal` is persistent (22.4 MB) but only the current
+   and previous boot survive: 153 MB free on a 2.4 G rootfs puts journald
+   permanently against its free-space guard, so **every reset destroys the boot
+   before last** — which is why the two earlier RCU-stall boots can no longer be
+   checked. `10-health` reports `rootfs 93% used` as a **PASS**, so our own
+   instrument is watching this happen and calling it fine. Two separable moves:
+   raise `10-health`'s threshold question (a check that passes at 93% on a
+   device that loses evidence at 93% is miscalibrated), and free space —
+   ☠️ **not with `apk`**, which re-resolves `world` and has broken this device
+   before. Until then, capture full boot logs to the host at the moment of a
+   reset rather than expecting to read them later.
+
 4. **Price the WiFi lever in mA** (slope leg, `wlan0` down vs up). ☠️ PRONTO
    parks holding the XO when `wlan0` is down, so the naive reading flatters it.
 5. ☠️☠️ **The phone HANGS and the watchdog resets it — `99-suspend` was never
@@ -212,7 +225,41 @@ list; do not stop at the end of an item to report.
    `FAIL: 97-noverdict (1s) - no verdict: the check produced no PASS: or FAIL:
    line`, where the old code would have printed `ok:`. Shown passing:
    `ok: 71-clock (1s)` on the same build.
-   Next: bisect by running the battery with growing prefixes
+   ★★★ **Step C, and three corrections it forced.** Ran `--only camera,suspend`.
+   ☠️ **First I read it as "no reset" and that was wrong.** uptime went 951 →
+   1242, rising, so I called it monotonic — but the run lasted ~2000 s, so an
+   un-reset device would have read ~2950. **uptime-after > uptime-before is not
+   evidence of no reset; it must be compared against the run's elapsed wall
+   time.** Added to the guardrails below.
+   ☠️ **Second, the run is confounded, by my own earlier mistake.** That boot's
+   first fault is at 541 s and step C only started at 951 s: the camera was
+   already wedged, left that way by a previous attempt at the same run which I
+   killed by leaving it in the foreground past a 10-minute cap. So step C says
+   nothing about its own contribution. What it does support is that a
+   camera-block-only run started the wedge unaided (the killed attempt did, ~4
+   min in), and that the wedge survives into a later run and ends in a reset
+   19 minutes on. **Before trusting a run, check the kernel log's first fault is
+   later than the run's start.**
+   ★★ **Third, the two failure modes are linked after all — and CCI is not
+   required.** That single boot carries **both**: 125 `TLB SYNC` timeouts, 9
+   `VFE halt timeout`, **and** an `rcu_preempt detected stalls` (CPU 5, 1 GP
+   behind) 1131 s after the storm began, then `watchdog0: pretimeout`. So the
+   step-B insistence that these are two unrelated bugs is withdrawn; a CPU
+   spinning in a 5 s IOMMU timeout loop stalling RCU is a plausible mechanism,
+   but that is a hypothesis, not a measurement. The same boot has **zero** CCI
+   timeouts and zero `-110`, so step B's CCI timeout is **not necessary** to
+   reach the wedge. The common core across every reset so far is **VFE halt +
+   TLB SYNC storm**.
+   ☠️ **Retraction of my own step-B sentence:** I wrote that the two earlier
+   resets "contain no camss or IOMMU line at all". That came from excerpt files
+   I had written myself, not from the boots, and the boots are gone. Unknown, not
+   false — but it was never measured.
+   Capture: `docs/power/bringup/captures/2026-08-23_camss-wedge-step-c-confounded.txt`.
+   ★ The no-verdict guard added an hour earlier caught a **real** case here, not
+   a synthetic one: `FAIL: 45-camera-af-windows-pipewire (74s) - no verdict: the
+   device was unreachable`, where the old runner printed `ok:`.
+   Next: a clean camera-only run **from a fresh boot** (the only way to
+   un-confound it), then bisect by running the battery with growing prefixes
    (`--skip` the tail, then progressively fewer), each time checking `uptime`
    for a reset, until the smallest prefix that still hangs is known. Budget it
    as a long unattended run; each iteration costs a reboot when it hits.
@@ -271,6 +318,20 @@ list; do not stop at the end of an item to report.
 
 ## Guardrails that have each cost a day
 
+- **A reboot's witness is `uptime` compared against elapsed time, not `uptime`
+  alone.** Measured 2026-08-23: a run started at uptime 951 and ended at 1242, so
+  the number rose and I called it "no reset" — but the run itself took ~2000 s,
+  so an un-reset device would have read ~2950. Record the host-side start and
+  end and require `uptime_after >= uptime_before + elapsed`.
+- **A killed run can poison the next one.** Same day: a battery left in the
+  foreground past a 10-minute cap was killed mid-camera-test and left the camss
+  wedged; the next run inherited it and its result was uninterpretable. Before
+  trusting a run, check that the kernel log's **first fault is later than the
+  run's start**. Long runs go in the background, never the foreground.
+- **An excerpt you wrote is not evidence about the boot it came from.** A claim
+  that two earlier boots "contained no camss line" rested on capture files that
+  were my own selections; the boots had since been vacuumed and it could not be
+  rechecked. Grep the source, or write it down as unknown.
 - **The category rule.** A kernel change lands on `wip/<base>/<category>` **and**
   `integration/<base>` **and** `debug-int/<base>`, then all of them are pushed to
   `fork`, and only then does `_commit` move.

@@ -1,0 +1,68 @@
+Bisect step C, and the three ways it corrected me. AI-generated content, from a
+live device.
+
+Device: Fairphone 3, pmOS edge, linux-fp3 7.1.3-r73, build #74-fp3.
+Run: ./tests/fp3-selftest --only camera,suspend   (the camera block plus suspend)
+Boot under test: 34370b56... first entry 18:54:10, run started 19:09:43.
+
+1. THE DEVICE DID RESET, AND MY FIRST READING SAID IT DID NOT.
+   uptime before the run: 951 s. uptime after: 1242 s. Rising - so I called it
+   monotonic and concluded "no reset". Wrong: the run itself lasted about
+   2000 s (53 + 126 + 503 + 74 + 626 + 611), so a device that had not reset
+   would have read ~2950 s.
+   ☠️ RULE: uptime-after > uptime-before is NOT evidence of no reset. It has to
+   be compared against the ELAPSED WALL TIME of the run. Record the run's start
+   and end on the host and check uptime_after >= uptime_before + elapsed.
+
+2. THE MEASUREMENT IS CONFOUNDED, BY MY OWN EARLIER MISTAKE.
+   The first fault of that boot is at monotonic 541 s:
+       [ 541.772110] qcom-iommu-ctx 1e35000.iommu-ctx: timeout waiting for TLB SYNC
+   but step C only started at 951 s. So the camera was ALREADY wedged when step
+   C began. The wedge started during the previous attempt at the same run, which
+   I had killed by leaving it in the foreground past a 10-minute cap.
+   What this boot therefore does and does not support:
+     - SUPPORTED: a camera-block-only run (`--only camera,suspend`) can start
+       the wedge by itself - the killed attempt did, ~4 minutes in, with nothing
+       but camera checks having run.
+     - SUPPORTED: the wedge survives across a following run and ends in a reset
+       19 minutes later.
+     - NOT SUPPORTED: anything about step C's own contribution. It ran on an
+       already-broken device.
+   ☠️ RULE: before trusting a run, check that the kernel log's first fault is
+   LATER than the run's start. A killed run can leave the device wedged and
+   poison the next measurement.
+
+3. THE TWO FAILURE MODES ARE LINKED AFTER ALL, AND CCI IS NOT REQUIRED.
+   This one boot contains BOTH signatures:
+       125x qcom-iommu-ctx ...: timeout waiting for TLB SYNC
+         9x qcom-camss 1b00020.camss: VFE halt timeout
+          1x rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+             5-...0: (1 GPs behind) idle=1ddc/1/0x4000000000000000
+             (detected by 2, t=5252 jiffies, g=135369, q=1817 ncpus=8)
+       [ 1691.461172] watchdog0: pretimeout event
+   Earlier I wrote that the IOMMU wedge and the RCU stall were different failure
+   modes "not to be called one bug until something links them". This links them:
+   they co-occur in one boot, with the stall arriving 1131 s after the storm
+   starts. A CPU spinning in a 5-second IOMMU timeout loop stalling RCU is a
+   plausible mechanism, but that is a hypothesis, not a measurement.
+   And: this boot contains ZERO `i2c-qcom-cci ... timeout` and zero `-110`.
+   So the CCI timeout seen in step B is NOT necessary to reach the wedge.
+   The common core across every reset so far is VFE halt + TLB SYNC storm.
+
+4. ☠️ RETRACTION. In the step B write-up I said the two earlier resets "contain
+   no camss or IOMMU line at all". That claim came from excerpt files I had
+   written myself, not from the boots. The boots are gone - the device retains
+   only two - so it can no longer be checked either way. Treat it as unknown.
+
+5. WHY THE EVIDENCE KEEPS DISAPPEARING.
+   The journal IS persistent (/var/log/journal exists, 22.4 MB) but only the
+   current and previous boot survive, because the rootfs is 93% full with
+   153 MB free and journald vacuums against its free-space guard. Every reset
+   destroys the boot before last. `10-health` reports "rootfs 93% used" as a
+   PASS, so the instrument is watching this happen and calling it fine.
+
+6. THE NEW NO-VERDICT GUARD CAUGHT A REAL ONE.
+   Not a synthetic test this time:
+       FAIL: 45-camera-af-windows-pipewire (74s) - no verdict: the device was
+             unreachable (ssh transport failed)
+   In the identical situation before the fix, the runner printed `ok: 45-...`.
