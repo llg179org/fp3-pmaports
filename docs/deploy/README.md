@@ -59,6 +59,20 @@ misses on every object even where the file content is identical. (It also
 means paths baked into debug info follow the first compilation rather than
 the current directory — fine here, worth knowing.)
 
+☠️ **Edit the cache the build actually uses, which is not the one named after
+the target.** An aarch64 kernel is cross-compiled *in the native chroot*, so
+its ccache is `work/cache_ccache_x86_64` — `chroot_native/mnt/pmbootstrap/
+ccache` is a bind mount of it, and `stat -c %i` on both proves it. Meanwhile
+`work/cache_ccache_aarch64` has been carrying a careful `hash_dir = false` +
+`base_dir = /home/pmos` since 2026-08-01 and taking no part in any kernel
+build: 572 MB, untouched, in the directory whose name matches the target.
+Confirm the mapping before tuning anything:
+
+```sh
+stat -c '%i %n' <work>/chroot_native/mnt/pmbootstrap/ccache \
+                <work>/cache_ccache_x86_64 <work>/cache_ccache_aarch64
+```
+
 ☠️ **These live inside the chroot, so a `--force` without `--lax` zaps them.**
 
 ☠️ **And do not measure the cache with an unprivileged `find`.** The tree is
