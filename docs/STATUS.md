@@ -56,10 +56,32 @@ to remote `fork` only, over port 443, and never to `origin`.
 The state that is *not* in git, in one place. Everything else is recoverable
 from the repos.
 
-1. `wip/7.1.3/audio` `42b7e745`, `integration/7.1.3` `204f1cc3`,
-   `debug-int/7.1.3` `818d35f1` — **all pushed to `fork`**, all carrying the
-   same three commits. Nothing is stranded locally, and r73 is built, deployed
-   and proven, so there is no half-finished step to pick up.
+1. ★ **There IS a half-finished step as of 2026-08-23 22:20: r74 is built or
+   building, and is NOT deployed.** The RPM sleep-set DT commit is on
+   `wip/7.1.3/power` `e59893af`, `integration/7.1.3` `4cf51780` and
+   `debug-int/7.1.3` `84241a07`, all pushed to `fork`, tarball checked
+   (200 real / 404 bogus). `linux-fp3` is at `pkgrel=74` with that `_commit`,
+   checksummed, and the build log is `/mnt/1TB/pmos/build-r74-sleepset.log`.
+   The remaining steps, in order:
+
+   1. `apk add` the built package. ☠️ `--simulate` first and **read the output
+      for `Purging`** — apk-tools 3 re-resolves the whole `world` on a single
+      local install and has broken this device that way before.
+   2. Re-arm extlinux and check the md5 of the deployed kernel/dtb. The net was
+      verified intact just before the bump (`02-boot-fallback`: fallback entry
+      present, menu armed, all three entries carry `panic=`, watchdog active).
+   3. Add a **non-default** label carrying
+      `trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M`
+      (the `postmarketOS-xo` label is the precedent for an experiment label),
+      flip `default` to it, reboot, and run
+      `docs/power/bringup/tools/sleepset-witness.sh` **early** — the ring
+      overwrites the boot window within minutes. Then flip `default` back.
+      ☠️ **Never add `tp_printk`.** The cmdline carries
+      `console=ttyMSM0,115200`; a boot's worth of tracepoints at 115200 baud
+      runs past the 20 s watchdog and boot-loops the phone.
+   4. Only once the votes are witnessed does reading `vlow` mean anything.
+
+   `wip/7.1.3/audio` is unchanged at `42b7e745`; nothing there is stranded.
 2. The reproduction is `docs/audio/ssr-repro.sh` in this repo: one ADSP restart
    addressed **by name**, health measured before and at +20 s / +90 s, then a
    verdict table of named symptoms. Copy it to the device and run it under
