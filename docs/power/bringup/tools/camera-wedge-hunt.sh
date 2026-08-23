@@ -38,6 +38,17 @@ FAULTS='TLB SYNC|VFE halt|rcu_preempt detected|watchdog0: pretimeout'
 
 say() { echo "$*" | tee -a "$SUM"; }
 
+# ☠️ Count faults with this, never with `grep -c ... || echo 0`.
+# `grep -c` already prints 0 when nothing matches - and *also* exits 1, so the
+# `|| echo 0` fires as well and the variable becomes two lines ("0\n0"). The
+# later `[ "$after" -gt "$before" ]` then errors on a non-integer and returns
+# non-zero, which reads exactly like "no wedge": a detector that can never
+# fire. Caught 2026-08-23 on the first pass of the first hunt.
+count_faults() {
+	c=$(grep -cE "$FAULTS" "$KMSG" 2>/dev/null | head -1 | tr -dc '0-9')
+	echo "${c:-0}"
+}
+
 # One tap for the whole hunt: it reattaches by itself after a reset, so it
 # spans the reboots between passes as well as the one that ends the hunt.
 "$HERE/kmsg-tap.sh" "$KMSG" &
@@ -63,7 +74,7 @@ while [ "$n" -le "$PASSES" ]; do
 		sleep 10
 	done
 
-	before_faults=$(grep -cE "$FAULTS" "$KMSG" 2>/dev/null || echo 0)
+	before_faults=$(count_faults)
 	b0=$(boot_id)
 	say "pass $n: boot $b0 uptime ${u}s, faults so far $before_faults"
 
@@ -76,7 +87,7 @@ while [ "$n" -le "$PASSES" ]; do
 	# Give a wedged device time to reach the watchdog: the storm has run for
 	# up to ten minutes before the reset in every instance so far.
 	sleep 60
-	after_faults=$(grep -cE "$FAULTS" "$KMSG" 2>/dev/null || echo 0)
+	after_faults=$(count_faults)
 	b1=$(boot_id)
 
 	say "pass $n: rc=$rc faults $before_faults -> $after_faults boot $b0 -> ${b1:-unreachable}"

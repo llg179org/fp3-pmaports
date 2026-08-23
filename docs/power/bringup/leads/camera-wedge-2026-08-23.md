@@ -28,6 +28,16 @@ What survives, in one place:
   camera client in existence — see `FP3-TODO.md` 33f-4.
 - Roughly 3 wedges in 6 independent camera-containing runs.
 
+☠️ **A fourth instrument error, caught on the first pass of the hunt itself.**
+The hunt counted faults with `grep -cE ... || echo 0`. `grep -c` prints `0` when
+nothing matches **and** exits 1, so the `|| echo 0` fired too and the variable
+became two lines; the later `[ "$after" -gt "$before" ]` then errored on a
+non-integer and returned non-zero — which reads exactly like "no wedge". The
+detector could never have fired. It was visible only as a stray `0` in
+`summary.txt`. Shown failing before the fix (`od -c` gives `0 \n 0`, the
+comparison fails) and shown working after (0 on a clean tap, 136 on a wedged
+one, comparison succeeds).
+
 The blow-by-blow follows, in the order it happened.
 
 ---
