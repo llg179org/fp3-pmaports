@@ -32,6 +32,22 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    aggregates over resource votes as well. The question is now which rails are
    still voted active-set while the phone sleeps.
 
+   ★★★ **2026-08-24 — the oracle differential ran, and it moves the search off
+   the AP for good.** pmOS r73 runtime-idle (57 min, display off): `vlow`/`vmin`
+   Count stayed **0**. UT oracle runtime-idle (21 min): its three co-processors
+   (MPSS/PRONTO/LPASS) vote the XO down thousands of times/window and `system-pc`
+   collapses ~18/s — the working slot reaches deep sleep continuously. Decisive
+   detail: **APSS `xo_count` is 0 on *both* systems** — the AP never votes the
+   crystal down on the oracle either, so the AP is not the differentiator; the XO
+   votes that matter are the co-processors'. ☠️ The two builds expose **disjoint
+   instruments** (pmOS: `vlow`/`vmin` only; UT: `rpm_master_stats`+`lpm_stats`,
+   no vlow file), so a same-counter diff is impossible. **Next lever, AP-side and
+   readable: restore `rpm_master_stats` on pmOS** (the FP3 soc-stats DT node
+   describes only the aggregate record; mainline `qcom_stats` can expose the
+   per-master one) — then pmOS's own co-processor XO votes can be read and
+   compared. Full write-up + captures in `findings-log.md` (2026-08-24) and
+   `captures/2026-08-24_vlow-idle-*`.
+
 ## The LPASS question is CLOSED (2026-08-21), and here is where it went
 
 Kept here because it was previously recorded only in a working note that this

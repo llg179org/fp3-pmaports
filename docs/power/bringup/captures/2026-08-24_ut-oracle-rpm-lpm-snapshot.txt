@@ -1,0 +1,129 @@
+# UT oracle (slot_a, 4.9.218-perf-ubuntutouch+) idle snapshot, 2026-08-24
+# Cable IN. rpm_stats(vlow) file DOES NOT EXIST downstream; rpm_master_stats + lpm_stats do.
+=========== rpm_master_stats (full) ===========
+APSS
+	shutdown_req:0x1D61119D9
+	wakeup_ind:0x1D559F9E4
+	bringup_req:0x1D615DDB0
+	bringup_ack:0x1D6161AA3
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x3293
+	last_wake_transition_duration:0x3266
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x3b16
+	active_cores:0x1
+		core0
+MPSS
+	shutdown_req:0x1D60942B9
+	wakeup_ind:0x1D604A615
+	bringup_req:0x1D604AA19
+	bringup_ack:0x1D604AA89
+	xo_last_entered_at:0x1D60970E1
+	xo_last_exited_at:0x1D6046E0B
+	xo_accumulated_duration:0x17796D166
+	last_sleep_transition_duration:0x42f8
+	last_wake_transition_duration:0x4c30
+	xo_count:0x4c0
+	wakeup_reason:0x0
+	numshutdowns:0x4dd
+	active_cores:0x0
+PRONTO
+	shutdown_req:0x1D6245796
+	wakeup_ind:0x1D6223094
+	bringup_req:0x1D62234C3
+	bringup_ack:0x1D6223532
+	xo_last_entered_at:0x1D62475F8
+	xo_last_exited_at:0x1D622174C
+	xo_accumulated_duration:0x153611AD7
+	last_sleep_transition_duration:0x24df
+	last_wake_transition_duration:0x29ab
+	xo_count:0xc85
+	wakeup_reason:0x0
+	numshutdowns:0xc87
+	active_cores:0x0
+TZ
+	shutdown_req:0x0
+	wakeup_ind:0x0
+	bringup_req:0x0
+	bringup_ack:0x0
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x0
+	last_wake_transition_duration:0x0
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x0
+	active_cores:0x0
+LPASS
+	shutdown_req:0x1D62E1EF9
+	wakeup_ind:0x160487FBE
+	bringup_req:0x1D62DC7D8
+	bringup_ack:0x1D62DEC1F
+	xo_last_entered_at:0x1D62E3B58
+	xo_last_exited_at:0x1D62DD455
+	xo_accumulated_duration:0x16FBFD3CA
+	last_sleep_transition_duration:0x1e0f
+	last_wake_transition_duration:0x1e65
+	xo_count:0x10e8
+	wakeup_reason:0x0
+	numshutdowns:0x1128
+	active_cores:0x0
+=========== lpm_stats/stats [system] block ===========
+[system] system-active:
+  success count:       0
+  total success time: 0.000000000
+	<     0.000062500:       0 (0-0)
+	<     0.000250000:       0 (0-0)
+	<     0.001000000:       0 (0-0)
+	<     0.004000000:       0 (0-0)
+	<     0.016000000:       0 (0-0)
+	<     0.064000000:       0 (0-0)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[system] system-wfi:
+  success count:    3271
+  total success time: 12.791137101
+  failed count:     545
+	<     0.000062500:       3 (61408-62448)
+	<     0.000250000:     184 (66270-249740)
+	<     0.001000000:     643 (250012-994964)
+	<     0.004000000:     373 (1000416-3965990)
+	<     0.016000000:    2068 (4005521-7550768)
+	<     0.064000000:       0 (0-0)
+	<     0.256000000:       0 (0-0)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[system] system-pc:
+  success count:   15761
+  total success time: 252.287515426
+  failed count:     938
+	<     0.000062500:       4 (18908-60937)
+	<     0.000250000:     180 (65417-245425)
+	<     0.001000000:     447 (251048-980603)
+	<     0.004000000:     716 (1445157-3999738)
+	<     0.016000000:   12374 (4000728-15998424)
+	<     0.064000000:    1417 (16006334-63978560)
+	<     0.256000000:     623 (64290434-99720369)
+	<     1.024000000:       0 (0-0)
+	<     4.096000000:       0 (0-0)
+	>=    4.096000000:       0 (0-0)
+[system] suspend:
+  success count:       0
+  total success time: 0.000000000
+	<     1.000000000:       0 (0-0)
+	<     4.000000000:       0 (0-0)
+	<    16.000000000:       0 (0-0)
+	<    64.000000000:       0 (0-0)
+	<   256.000000000:       0 (0-0)
+	<  1024.000000000:       0 (0-0)
+	<  4096.000000000:       0 (0-0)
+	< 16384.000000000:       0 (0-0)
+	< 65536.000000000:       0 (0-0)
+	>=65536.000000000:       0 (0-0)

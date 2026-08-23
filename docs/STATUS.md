@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 04:10**.
+Last updated: **2026-08-24 01:36**.
 
 ## The device
 
@@ -24,7 +24,7 @@ Last updated: **2026-08-24 04:10**.
 | kernel package | `linux-fp3-7.1.3-r73` | `apk info -vv \| grep ^linux-fp3` |
 | build stamp | `#74-fp3` | `uname -v` |
 | pinned commit | `debug-int/7.1.3` `818d35f1` | `grep _commit linux-fp3/APKBUILD` |
-| boot config | 3 labels, md5 `863cdf20…`, `panic=10`, `timeout 3` | `md5sum /boot/extlinux/extlinux.conf` |
+| boot config | **4 labels** (default `postmarketOS-prev` = clean r73; + `-bothsets`, `-sleepset` [the r74 non-booting DTB], `-fallback`), md5 `e2fc5423…`, all 4 carry `panic=10` (measured 2026-08-24 after the slot round-trip) | `md5sum /boot/extlinux/extlinux.conf` |
 | last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Read that number with care: the failures were `98-camera-af-rail` and `99-suspend`, and neither is a check defect — **the camera wedged and the watchdog reset the phone mid-run** (queue item 4). ☠️ It also predates the runner fixes of 2026-08-23, so its `ok` count includes checks scored green after the reset | `tests/fp3-selftest` |
 | last camera-block run | **8 ok / 0 failed** on a fresh boot (2026-08-23 late, r73), and the same block wedged the phone earlier the same evening — the fault is intermittent, ~1 run in 2 | `tests/fp3-selftest --only camera,suspend` |
 
@@ -327,7 +327,21 @@ is now item 4.
    (item 3), so a WiFi-attached measurement is not the 79.1 mA baseline — state
    which link was up in every capture.
 
-   ### Next, in order — updated 2026-08-23 night
+   ### Next, in order — updated 2026-08-24
+
+   ★★★ **2026-08-24 — the runtime-idle oracle differential ran and moved the
+   search off the AP for good.** pmOS r73 idle 57 min, display off: `vlow`/`vmin`
+   Count **0**. UT oracle idle 21 min: MPSS/PRONTO/LPASS each vote XO down
+   thousands of times/window, `system-pc` collapses ~18/s — the working slot
+   reaches deep sleep continuously. **APSS `xo_count` is 0 on *both* systems**, so
+   the AP is not the differentiator; the co-processor XO votes are. ☠️ The builds
+   expose **disjoint instruments** (pmOS has only `vlow`/`vmin`; UT has
+   `rpm_master_stats`+`lpm_stats`, no vlow file), so the next lever is a DT change
+   we can make and read: **restore `rpm_master_stats` on pmOS** to read our own
+   co-processor XO votes and finish the comparison. Details + captures in
+   `power/bringup/findings-log.md` (2026-08-24). This retires live-thread 2a
+   (the runtime-idle oracle question); the **USB-detached suspend-region** oracle
+   run (below) still needs a physical unplug and is the remaining oracle step.
 
    ☠️☠️ **The regulator candidate for `vlow` is KILLED — stated as loudly as a
    positive result would be, per this item's own rule.** The runtime equivalent

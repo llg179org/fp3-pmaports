@@ -1844,3 +1844,75 @@ probe) reset the device while it was wedged. Confirmed by the `boot_id` changing
 under the session and a fresh ~90 s uptime with no panic line. Never sweep the
 whole of `/sys/kernel/debug/` on this device; name the exact file. The `boot_id`
 check is what caught it, exactly as the runner guard intends.
+
+## 2026-08-24 — the oracle DOES reach deep sleep; and the two builds expose disjoint instruments
+
+Both halves of the runtime-idle differential ran tonight, cable IN, display off,
+device reachable on the wire throughout (pmOS on WiFi, UT on USB rndis — the slot
+switch is `reboot bootloader` → `fastboot set_active a|b`, no buttons).
+
+**pmOS control (r73, `#74-fp3`), 57 min, 116 samples**
+([capture](captures/2026-08-24_vlow-idle-pmos-r73.txt)): `vlow` Count **0**,
+`vmin` Count **0** for the entire window; `dpms=Off` verified (not backlight=0),
+`msm_mdss` confirmed quiesced; `boot_id` unchanged. The vlow Client Votes mask
+fluctuated the whole time (`0x1030105`, `0x7030703`, …) — the instrument is live,
+and the mask is never `0`, i.e. some client is always voting the aggregate up.
+
+**UT oracle (slot_a, 4.9.218-perf-ubuntutouch+), 21 min, 22 samples**
+([capture](captures/2026-08-24_vlow-idle-ut-oracle.txt), snapshot in
+[2026-08-24_ut-oracle-rpm-lpm-snapshot.txt](captures/2026-08-24_ut-oracle-rpm-lpm-snapshot.txt)).
+Per-master deltas over the window:
+
+| master | numshutdowns | xo_count |
+|---|---|---|
+| APSS   | +22161 (17.6/s) | **+0 (0.0/s)** |
+| MPSS   | +3953 (3.1/s)   | +3943 (3.1/s) |
+| PRONTO | +11315 (9.0/s)  | +11309 (9.0/s) |
+| LPASS  | +15119 (12.0/s) | +15029 (11.9/s) |
+
+`lpm_stats` `[system] system-pc` success climbed +22809 (18.1/s). So the working
+downstream reaches its deepest per-master and per-system sleep **continuously**
+while idle.
+
+### The three things this settles
+
+1. ★ **The oracle unambiguously reaches deep sleep** — its three co-processors
+   (MPSS, PRONTO, LPASS) vote the XO down thousands of times per window, and the
+   AP power-collapses ~18/s. The "vlow has never been reached" state is *ours*,
+   not something both slots share.
+2. ★★ **The AP is NOT the differentiator.** APSS `xo_count` is **0 on both
+   systems** — the application processor never votes the crystal down on the
+   oracle either (it power-collapses, which is a different vote). Everything the
+   AP-side sleep-set family chased (XO / regulators / interconnect) was therefore
+   never going to be the lever, which is consistent with that family being
+   measured exhausted. **The XO votes that matter come from the co-processors.**
+3. ☠️☠️ **The two builds expose DISJOINT instruments, so a same-counter
+   differential is impossible.** pmOS r73's `qcom_stats` has **only** `vlow` and
+   `vmin` (no `rpm_master_stats`); UT's 4.9 has `rpm_master_stats` + `lpm_stats`
+   but **no** `rpm_stats`/vlow file at all (re-confirmed tonight, as the
+   2026-08-15 note first found). "Does the oracle reach vlow" cannot be answered
+   with the vlow counter — it does not exist downstream — but the co-processor XO
+   votes and `system-pc` are the downstream evidence that it reaches the
+   equivalent depth.
+
+### ★★★ The next lever, concrete and AP-side-readable
+
+The pmOS half is currently **blind to per-master XO votes** — the one number that
+would localise the gate. Earlier pmOS work *did* read an APSS "Shutdown count"
+from `rpm_master_stats`, so mainline `qcom_stats` can expose it; this r73 build
+does not, which points at the FP3 `qcom,rpm-stats` / soc-stats DT node describing
+only the aggregate (vlow/vmin) records and not the per-master subnode. **Restore
+the master-stats record on pmOS** (DT, power category) and the decisive
+comparison becomes possible on the wire:
+
+- if pmOS's MPSS/PRONTO/LPASS **do** vote XO down like the oracle's, the gate is
+  the RPM aggregation itself (closed firmware) and "full vlow" is likely not
+  reachable from Linux;
+- if they **do not**, the gate is co-processor firmware sleep config — exactly
+  the standing STATUS item-1 hypothesis — and that names where to look next
+  (modem/wcnss/adsp sleep votes), not another AP-side knob.
+
+Either way the AP-side search is closed by measurement, and the next instrument
+is a DT change we can make and read ourselves. ☠️ Until that node exists, do not
+quote a pmOS "co-processors don't sleep" claim — it is untested, because the
+instrument for it is absent.
