@@ -25,6 +25,12 @@ set -u
 
 PASSES=${1:-10}
 OUTDIR=${2:-./wedge-hunt}
+# Seconds to let the phone sit after boot before touching the camera. The
+# reason this is a knob: eight passes at ~43 s of uptime produced no wedge at
+# all, while all three wedges seen on 2026-08-23 began at 290 s, 1444 s and
+# 2198 s of uptime. Boot age is the one measured difference between the arms,
+# so it is the one to vary.
+SETTLE=${3:-0}
 HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../../../.." && pwd)
 PW=${FP3_PW:-<pw>}
@@ -60,7 +66,7 @@ sleep 3
 
 boot_id() { fp3-ssh 'cat /proc/sys/kernel/random/boot_id' 2>/dev/null | tr -dc 'a-f0-9-'; }
 
-say "camera-wedge-hunt: $PASSES passes max, output in $OUTDIR"
+say "camera-wedge-hunt: $PASSES passes max, settle ${SETTLE}s, output in $OUTDIR"
 
 n=1
 while [ "$n" -le "$PASSES" ]; do
@@ -70,7 +76,7 @@ while [ "$n" -le "$PASSES" ]; do
 	sleep 20
 	while :; do
 		u=$(fp3-ssh 'cut -d. -f1 /proc/uptime' 2>/dev/null | tr -dc '0-9')
-		[ -n "$u" ] && [ "$u" -gt 40 ] && break
+		[ -n "$u" ] && [ "$u" -gt $(( 40 + SETTLE )) ] && break
 		sleep 10
 	done
 

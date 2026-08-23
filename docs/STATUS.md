@@ -179,7 +179,29 @@ list; do not stop at the end of an item to report.
      client in existence — [`FP3-TODO.md`](FP3-TODO.md) 33f-4, and it cuts
      against the client-collides-with-teardown story in 33f-2 and 33f-3;
    - the rate itself, ~3 wedges in 6 independent runs.
-   **Current move:** `docs/power/bringup/tools/camera-wedge-hunt.sh` — repeat the
+   ★★ **The hunt ran 8 passes and reproduced nothing — which is itself a
+   result, and it corrects the rate I quoted.** Eight consecutive camera blocks,
+   each from its own fresh reboot with the tap attached: **0 wedges, 0 fault
+   lines**, boot id unchanged every time. Together with step G and both passes of
+   step H that is **11 clean camera runs from fresh boots**. If the fault were a
+   uniform coin flip, 0 of 11 would happen about 1 time in 2000. So ~50% is the
+   rate *across all camera runs*, **not** the rate under these conditions, and
+   the "about one run in two" phrasing above should be read that way.
+   ☠️ **But do not turn that into "a fresh boot is safe" — that is exactly the
+   inference this investigation keeps getting wrong.** What separates the arms is
+   not established. The one *measured* difference is how long the phone had been
+   up when the camera was first touched: the three wedges began at **290 s,
+   1444 s and 2198 s** of uptime, every clean hunt pass at **~43 s**. That is a
+   candidate, not a cause, and the 290 s case makes any threshold uncomfortably
+   low. Other differences have not been excluded.
+   **Next:** the hunt now takes a third argument, a settle time, so the same
+   passes can be run after the phone has been up for a while — varying the one
+   thing that actually differs.
+   ☠️ **Second sighting of a smaller defect:** `98-camera-af-rail` finished with
+   **no verdict at all** in 2 of the ~11 runs (hunt pass 8, step H pass 1). Before
+   today's runner fix that scored as `ok`, so it has probably been happening for
+   a long time unseen. Its detached mechanism is the suspect.
+   **Instrument:** `docs/power/bringup/tools/camera-wedge-hunt.sh` — repeat the
    camera block from a fresh reboot, with `kmsg-tap.sh` streaming the kernel log
    to the **host**, and stop at the first fault, so the onset is finally captured.
    It has to go to the host because the phone's rootfs is 93% full and journald
