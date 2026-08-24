@@ -2049,3 +2049,32 @@ the discriminator: if APSS XO count / `vlow` finally move → USB is the holder
 (a concrete, fixable target); if they stay 0 → it is USB-independent and the fix
 is a platform system-suspend path. Detector is armed (polls `charger/online`
 → 0 over the Wi-Fi link, then fires the cable-out run); waiting on the unplug.
+
+### The cable-out discriminator: it is not USB — the AP holds XO regardless
+
+Ran the identical XO-across-suspend measurement on battery (`online=0`,
+`ibat=-159607 µA`, `suspend_success` 3→4 so the suspend was real):
+
+| | APSS XO count | vlow Count |
+|---|---|---|
+| cable IN  | 0 → 0 | 0 → 0 |
+| cable OUT | 0 → 0 | 0 → 0 |
+
+Same result both ways. The USB controller (`7000000.ssusb`) is **not** what keeps
+the AP's XO vote up: the AP never enters XO-shutdown in s2idle whether the cable
+is in or out (its `Shutdown count` climbs +988 across the cable-out window —
+cores collapse — but XO count stays a hard 0). MPSS (+45) and PRONTO (+115) drop
+XO regardless, as before.
+
+So the deep-sleep gate is **USB-independent and architectural**: mainline
+msm8953 is s2idle-only, and nothing drives the APSS RPM master into the
+XO-shutdown handshake. The fix is a platform system-suspend path (or driving the
+XO-shutdown vote from the deepest cpuidle/genpd state), not a USB autosuspend or
+wakeup tweak. Data:
+[`captures/2026-08-24_xo-across-suspend-pmos-r73-cableout.txt`](captures/2026-08-24_xo-across-suspend-pmos-r73-cableout.txt).
+
+This closes the "is it USB" branch. The remaining oracle question — does the
+**downstream** (UT 4.9) AP enter XO-shutdown when it genuinely suspends? — would
+say whether this is a mainline regression against a working baseline or a limit
+of the SoC's s2idle path itself; it needs the UT slot and the same across-suspend
+snap, not another pmOS run.

@@ -1,0 +1,29 @@
+# XO-shutdown across a forced s2idle suspend, pmOS r73 (#74-fp3), CABLE OUT.
+# Identical instrument to the cable-in run, taken on battery (online=0,
+# ibat=-159607 uA at the post-wake snap). suspend_success 3->4 => real suspend.
+# Purpose: discriminate whether the AP holds XO because of the USB controller
+# (7000000.ssusb) with the cable in, or regardless of it.
+
+=== XO-across-suspend 2026-08-24T06:42:40+02:00 ===
+== BEFORE uptime=18533 ==
+suspend_success=3
+vlow_count=0
+APSS:   XOcount=0      XOdur=0             SD=291979
+MPSS:   XOcount=44120  XOdur=222754604938  SD=44144
+PRONTO: XOcount=175634 XOdur=295716956174  SD=175674
+LPASS:  XOcount=79     XOdur=353987626139  SD=119
+== AFTER uptime=18551 ==
+suspend_success=4
+vlow_count=0
+APSS:   XOcount=0      XOdur=0             SD=292967   (+988 SD, XO STILL 0)
+MPSS:   XOcount=44165  XOdur=222965770850  SD=44189    (+45 XO)
+PRONTO: XOcount=175749 XOdur=295944110179  SD=175791   (+115 XO)
+LPASS:  XOcount=81     XOdur=354005398023  SD=121       (+2 XO)
+online=0  ibat=-159607
+
+# A/B verdict vs the cable-in run (same boot):
+#   cable IN : APSS XO 0->0, vlow 0->0
+#   cable OUT: APSS XO 0->0, vlow 0->0
+# The AP holds XO up in s2idle REGARDLESS of the cable. It is NOT ssusb keeping
+# the AP's XO vote up -> the gate is USB-independent and architectural
+# (s2idle-only; nothing drives the APSS RPM master into XO-shutdown).
