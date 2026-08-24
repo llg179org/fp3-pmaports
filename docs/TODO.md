@@ -262,7 +262,7 @@ Set by Lajosházi, László Gergely. This is the objective the whole power track
 serves; everything below is a means to it, and an item that does not move the
 level is not a power item however interesting it is.
 
-**The level to beat, measured the same evening:** UT idles at **~22 mA** (panel
+**The level to beat, measured the same evening over a 60-minute window:** UT idles at **29.7 mA** (panel
 off, radio up, WiFi associated, on battery, `bms/cc_soc`), against pmOS's 58-63
 mA on the same protocol. ☠️ Our best *asleep* number — the radio-low leg of the
 same day — is 40.8 mA, so **the oracle awake beats our phone asleep**. The gap
@@ -271,8 +271,7 @@ is idle depth, not suspend depth.
 **What this reorders.** "Reach `vlow`" was closed as a phantom earlier the same
 day; "sleep deeper" is now demoted with it. The modem lead keeps its place
 because it is worth ~36 mA and the mechanism is named, but it is no longer the
-frame — it is one contributor to a level. The next measurements are: confirm the
-22 mA over a long window, reproduce the pmOS side on the identical protocol and
+frame — it is one contributor to a level. The next measurements are: reproduce the pmOS side on the identical protocol and
 instrument (not a five-day-old number), and then take the gap apart by
 cumulative subtraction on the pmOS side.
 

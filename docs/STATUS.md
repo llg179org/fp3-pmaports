@@ -236,15 +236,16 @@ this track is for, and it is what "done" now means.
 Why the restatement matters: the oracle does not get its number by sleeping.
 Measured the same evening on the same protocol (panel **off**, radio up, WiFi
 associated, on battery, via the newly validated `bms/cc_soc` coulomb counter),
-**UT idles at ~22 mA** where pmOS idles at 58-63 mA — and our best *asleep*
+**UT idles at 29.7 mA** where pmOS idles at 58-63 mA — and our best *asleep*
 figure, the radio-low leg of the same day, is 40.8 mA. The oracle sitting awake
 beats our phone asleep. So the gap to close is **idle depth**, not suspend, and
 the target is a level rather than a mode.
 
-☠️ The 22 mA rests on one 10-minute window with a counter that steps in 0.01 %
-and a pack still relaxing from an earlier load; a 60-minute confirmation was
-running when this was written. Treat it as the working target, re-read the
-number from findings-log before quoting it.
+☠️ **The first reading of this was 22 mA and it was wrong by a third.** That
+came from a single 10-minute window on a pack still relaxing from an earlier
+load, where one counter step is worth ±1.8 mA; the 60-minute confirmation gives
+**29.7 mA at ±0.3 mA**. Quote the hour, not the ten minutes — and note the error
+went in the flattering direction, which is the one to distrust.
 
 ## The work queue, in order
 

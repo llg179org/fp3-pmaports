@@ -2755,6 +2755,63 @@ Method notes that held: the probe gate (wall-clock ≥75 s of 90 AND MPSS XO off
 the `nocable` preflight mode armed correctly with the cable out; every exit path
 restored the modem (`registered`, `power state: on`) without intervention.
 
+### ★★★★★ 2026-08-24 late evening — the goal is restated, and the oracle idles below our phone asleep
+
+The project owner set the objective plainly: **bring pmOS's consumption down to
+the UT level or below.** This entry is the measurement that gives that a number,
+and the instrument work that made it possible.
+
+**1. The vendor gauge has a real coulomb counter, and a decoy beside it.**
+`bms/cc_soc` (downstream QG, UT only) integrates: implied **97.3 mA** against a
+medianed `current_now` of 103.4 discharging, and **1.079** against delivered
+charge while charging — both controls bracketing 1.0. `bms/charge_counter` does
+not: over 453 s at ~103 mA it **did not move at all**, and it steps in exactly
+1.00 % of `charge_full` — the same OCV-lookup construction as pmOS's
+`charge_now`, which fails the identical test at 1.37. One run produced a
+known-positive and a known-negative side by side, which is the cheapest form
+this check ever takes.
+
+**2. There is no "UT sleeping current" to compare against, because the oracle
+does not sleep.** The full documented recipe (ssusb wakeup disabled, BOTH ofono
+modems `Powered=false`, the `wakeup_count` handshake) over a 603 s window gave
+**2 completed suspends out of 120 attempts**, 93 s asleep — 15 % of the window.
+Solving `93·I_sleep + 510·I_awake` for plausible awake values swings the sleep
+term from 70 mA to 5 mA across a 15 % change in the awake term. The sleep term
+has no leverage; the measurement is not available at this ratio. (This matches
+the morning's XO capture, whose working windows were 7–12 s.)
+
+**3. So the comparable regime is IDLE — and the oracle idles at 29.7 mA.**
+Panel **off**, radio up, WiFi associated, on battery, 60-minute window,
+`cc_soc` −97 counts = 29.68 mAh:
+
+| | draw | how |
+|---|---|---|
+| **UT idle, panel off** | **29.7 mA** | cc_soc, 60 min, ±0.3 mA |
+| pmOS idle, panel off | 58–63 mA | medianed `current_now`, 2026-08-19 |
+| pmOS **asleep**, radio low | 40.8 mA | slope leg, same day |
+
+**The oracle sitting awake beats our phone asleep.** That reframes the track:
+the gap to close is **idle depth**, not suspend depth, and the target is a level
+rather than a mode. It is also consistent with everything already measured — the
+oracle's runtime idle collapses `system-pc` ~18/s and its co-processors shut the
+crystal down thousands of times per window; it has no need to suspend.
+
+☠️ **The first reading of the oracle's idle was 22 mA and it was wrong by a
+third** — one 10-minute window on a pack still relaxing from an earlier load,
+where a single counter step is worth ±1.8 mA. The hour-long window gives 29.7.
+The error flattered the oracle, which is the direction to distrust, and the
+lesson is the one this log keeps re-learning: a convenient number measured once
+is a hypothesis.
+
+☠️ **The two sides are still measured by different instruments** (sampled
+`current_now` here, an integrator there), which is a comparison with a seam in
+it. [`tools/idle-ab.sh`](tools/idle-ab.sh) was written to remove it: one script,
+one protocol, either phone, reporting the floor (p10) and the median on both and
+the integrated value where a counter exists. The matched pair is the next
+measurement.
+
+Capture: [`captures/2026-08-24_ut-coulomb-and-sleep-attempt.txt`](captures/2026-08-24_ut-coulomb-and-sleep-attempt.txt).
+
 ---
 
 # Part II — the run-book's dated body (2026-08-15 → 2026-08-24), moved here unedited on 2026-08-24

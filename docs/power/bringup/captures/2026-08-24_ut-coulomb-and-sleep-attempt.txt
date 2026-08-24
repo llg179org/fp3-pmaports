@@ -30,3 +30,15 @@ There is no 'UT sleeping current' to compare our 40.8 mA against, because the or
 does not sleep on this device: it aborts nearly every suspend even with both modems
 off. This is the same behaviour the morning's XO capture hit (its working windows were
 7-12 s). The comparable regime between the two systems is IDLE, not suspend.
+
+=== 3. UT idle level, by cc_soc, panel OFF, radio up, on battery ===
+10 min window: cc_soc -12  = 3.67 mAh -> 22.0 mA   (+/-1 count = +/-1.8 mA)
+60 min window: cc_soc -97  = 29.68 mAh -> 29.7 mA  (+/-1 count = +/-0.3 mA)   <== the number
+
+☠️ The ten-minute window read a third low, on a pack still relaxing from the
+earlier discharge control. Quote the hour. The error flattered the oracle, which
+is the direction to distrust.
+
+For comparison: pmOS on the same protocol (2026-08-19, medianed current_now)
+58-63 mA; pmOS ASLEEP with the radio low (2026-08-24) 40.8 mA. The oracle idles
+below our phone asleep.
