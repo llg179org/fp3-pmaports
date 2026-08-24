@@ -2295,3 +2295,16 @@ reading the wrong RPM stats region/format for msm8953. That region/format check
 was set aside earlier as "real, not artifact"; now that all masters can be made to
 vote XO down and the counter still will not move, it is worth a direct check
 before assuming a hidden holder.
+
+**Region/counter sub-question, answered same day.** Before chasing "wrong RPM
+stats region", dumped the full `qcom_stats/vlow` record: `Count`/`Last Entered`/
+`Accumulated Duration` all 0, but **`Client Votes: 0x7050705`** — non-zero and
+clean. A misaligned region would not produce a tidy votes mask beside all-zero
+duration fields, so the driver **is** reading a valid, live RPM stats region:
+`vlow`=0 is real, not a counter artifact. Combined with the already-closed
+Client-Votes decode (2026-08-23: no mystery holder), the region/counter
+explanation is out. What is left is at the **RPM protocol/handshake level** —
+why the RPM never triggers `vlow` entry even with valid votes and every master
+made to drop XO (`xo_sleep_off=1`) — which needs a downstream-vs-mainline RPM
+message-sequence comparison during suspend, a much larger reverse-engineering
+effort than any single lever. That is the honest frontier as of 2026-08-24.
