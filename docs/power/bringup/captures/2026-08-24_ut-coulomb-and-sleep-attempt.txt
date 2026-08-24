@@ -1,0 +1,32 @@
+UT-side sleeping current: the instrument works, the phone does not sleep
+FP3 slot a, Ubuntu Touch 4.9.218-perf-ubuntutouch+, 2026-08-24 evening, cable in (input suspended in software)
+
+=== 1. Is the vendor gauge a real coulomb counter? ===
+bms/charge_counter  : NO. Charging window: dQ/dt overstated medianed current_now by 1.365x
+                      (pmOS's charge_now fails the identical test at 1.37). Step quantum 30600 uAh
+                      = exactly 1.00% of charge_full -> it is capacity x charge_full / 100.
+                      Discharge window: DID NOT MOVE AT ALL over 453 s at ~103 mA (distinct=1).
+bms/cc_soc          : YES, usable. Scale 0..10000 = 0..100% of charge_full (3060000 uAh).
+                      discharge control: implied 97.3 mA vs medianed current_now 103.4 (ratio 0.941)
+                      charging control : ratio 1.079 vs delivered charge
+                      resolution 0.01% = 306 uAh; updates about once a minute.
+                      Both controls bracket 1.0 while charge_counter fails both -> known-positive
+                      and known-negative in the same run.
+
+=== 2. Can UT be made to stay asleep long enough to measure? NO ===
+Full documented recipe applied (see 2026-08-24_xo-across-suspend-ut-oracle-slotA.txt):
+  ssusb wakeup disabled + BOTH ofono modems Powered=false + wakeup_count handshake.
+Result over a 603 s window: 120 attempts, 2 completed suspends (64 s and 29 s),
+  total slept 93 s = 15% of the window, awake 510 s.
+  cc_soc -43 counts = 13.16 mAh -> window mean 78.6 mA.
+
+Solving 93*I_sleep + 510*I_awake = 47369 mA*s for plausible awake values:
+  I_awake=80 -> I_sleep=70.6 | 85 -> 43.2 | 88 -> 26.8 | 90 -> 15.8 | 92 -> 4.8 mA
+A 15% swing in the awake term moves the sleep term by a factor of several and can
+drive it negative. The sleep term has no leverage. NOT MEASURABLE this way.
+
+=== CONCLUSION ===
+There is no 'UT sleeping current' to compare our 40.8 mA against, because the oracle
+does not sleep on this device: it aborts nearly every suspend even with both modems
+off. This is the same behaviour the morning's XO capture hit (its working windows were
+7-12 s). The comparable regime between the two systems is IDLE, not suspend.

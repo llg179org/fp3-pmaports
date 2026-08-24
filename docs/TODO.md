@@ -256,6 +256,32 @@ live on the host: the phone's rootfs is 93% full, journald therefore vacuums the
 boot before last, and a reset destroys its own evidence — measured, a run that
 provably reset left `journalctl -k -b -1` answering `-- No entries --`.
 
+## ★ THE GOAL (stated 2026-08-24 evening): pmOS consumption down to the UT level or below
+
+Set by Lajosházi, László Gergely. This is the objective the whole power track
+serves; everything below is a means to it, and an item that does not move the
+level is not a power item however interesting it is.
+
+**The level to beat, measured the same evening:** UT idles at **~22 mA** (panel
+off, radio up, WiFi associated, on battery, `bms/cc_soc`), against pmOS's 58-63
+mA on the same protocol. ☠️ Our best *asleep* number — the radio-low leg of the
+same day — is 40.8 mA, so **the oracle awake beats our phone asleep**. The gap
+is idle depth, not suspend depth.
+
+**What this reorders.** "Reach `vlow`" was closed as a phantom earlier the same
+day; "sleep deeper" is now demoted with it. The modem lead keeps its place
+because it is worth ~36 mA and the mechanism is named, but it is no longer the
+frame — it is one contributor to a level. The next measurements are: confirm the
+22 mA over a long window, reproduce the pmOS side on the identical protocol and
+instrument (not a five-day-old number), and then take the gap apart by
+cumulative subtraction on the pmOS side.
+
+☠️ **Instrument note that makes this cheap on the UT side, and a trap on both.**
+`bms/cc_soc` is a real coulomb counter (validated both directions 2026-08-24);
+`bms/charge_counter` is **not** — it did not move at all over 453 s at ~103 mA
+and steps in exactly 1 % of `charge_full`, the same OCV-lookup trap as pmOS's
+`charge_now`. Never price anything with `charge_counter` on either system.
+
 ## Deep sleep — CLOSED 2026-08-24: `vlow` never occurs on this platform; the open item is the MODEM LEAD
 
 The multi-week `vlow` hunt is over: a raw mmap read of the RPM's own

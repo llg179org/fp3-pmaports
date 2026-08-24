@@ -227,6 +227,25 @@ page, and on 2026-08-23 that produced a re-run of a closed bisect and a
 conclusion that had to be retracted. If you close something, move the result to
 the runbook in the same commit.
 
+## ★ The primary goal, stated 2026-08-24 evening
+
+**Bring pmOS's consumption down to the Ubuntu Touch level, or below.** Set by
+Lajosházi, László Gergely; it replaces "reach a deep-sleep mode" as the thing
+this track is for, and it is what "done" now means.
+
+Why the restatement matters: the oracle does not get its number by sleeping.
+Measured the same evening on the same protocol (panel **off**, radio up, WiFi
+associated, on battery, via the newly validated `bms/cc_soc` coulomb counter),
+**UT idles at ~22 mA** where pmOS idles at 58-63 mA — and our best *asleep*
+figure, the radio-low leg of the same day, is 40.8 mA. The oracle sitting awake
+beats our phone asleep. So the gap to close is **idle depth**, not suspend, and
+the target is a level rather than a mode.
+
+☠️ The 22 mA rests on one 10-minute window with a counter that steps in 0.01 %
+and a pack still relaxing from an earlier load; a 60-minute confirmation was
+running when this was written. Treat it as the working target, re-read the
+number from findings-log before quoting it.
+
 ## The work queue, in order
 
 Everything here is machine-doable unless the row says otherwise. Work down the
