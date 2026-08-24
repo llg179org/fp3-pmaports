@@ -281,6 +281,36 @@ Caveat: the mainline side has not yet been re-run with modems off. Capture:
 `captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`; full trace in
 findings-log 2026-08-24 (UT-oracle across-suspend).
 
+★★★ **2026-08-24 — the AP XO vote is now LOCALIZED, and two tempting culprits are
+ruled out by measurement.** From the mainline side (`qcom_rpm_master_stats`,
+across a real `rtcwake -m mem` suspend):
+
+- APSS **`XO shutdown count: 0`** (never), while `Shutdown count` = 39218 advances
+  (cluster power-collapse works). Every other master drops XO: MPSS 5502, PRONTO
+  19148, LPASS 48.
+- **NOT cpuidle/PSCI/OSI.** dmesg's `psci: [Firmware Bug]: failed to set PC mode`
+  is a red herring (an `EPROBE_DEFER` that recovered): the genpd `idle_states`
+  usage counters show `system-pc` (0x42000353) entered **50933×** (2 in s2idle)
+  and `cluster-pc` ~150k× each. The AP *does* reach system power collapse.
+- **NOT the LDO regulators** (so the regulator-state-mem thread was never going to
+  move `vlow`).
+- **IS the AP-side RPM sleep-set XO/TCXO vote.** `clk_summary`: the root `xo`
+  (held via `bi_tcxo`) is kept up by the two MMC controllers
+  (`7824900`/`7864900.mmc`) and the codec ahbix (`c0f0000.codec`) on the AP side;
+  the `qcom_rpm_smd_write` tracepoint confirms `sleep clk0/0 "Enab"=1` (CXO on in
+  the sleep set). This explains *why APSS naturally never XO-shutdowns* and is
+  upstream-correctness detail — but it is **necessary, not sufficient** for
+  `vlow`: the prior `clk_smd_rpm.xo_sleep_off=1` lever already forces APSS into XO
+  shutdown and `vlow` **still stayed 0** (queue item 1 in STATUS). So fixing the
+  MMC/codec XO holders will make APSS XO-shutdown naturally, but will not by
+  itself reach `vlow`. The open frontier (per STATUS) is the **USB controller**
+  (`7000000.usb` stuck `control=on`/`pm_runtime_forbid`, never runtime-suspends —
+  the `control=auto`+detach test is still not done), not the XO vote and not the
+  LDOs (killed).
+- Full chain + the disproven PSCI hypothesis:
+  [`power/bringup/findings-log.md`](power/bringup/findings-log.md) and
+  [`power/bringup/captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`](power/bringup/captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt).
+
 - The RPM's own entry threshold is **not** readable from any source we hold.
   `qcom_stats.c` (mainline) and the vendor 4.9 `rpm_stats.c` are both *readers*
   of an RPM-maintained counter — the vendor binding says so in as many words —

@@ -2207,3 +2207,62 @@ one-rail DTB stays on the device (`/boot/sdm632-fairphone-fp3.dtb-1rail-s3`) for
 further per-rail bisection if the off-in-suspend direction is picked up later.
 
 Capture: `sleep smpa/3 swen=1 @ t=0.276084` (ftrace, one-rail-s3 boot `1a2202e0`).
+
+---
+
+## 2026-08-24 (mainline vlow blocker, localized) — ★★★ APSS never releases its XO vote; the blocker is the AP-side RPM sleep-set XO (MMC + codec), not the LDOs and not PSCI/OSI
+
+Went after the top priority — why mainline never reaches `vlow` — from the AP
+side, with the correct per-master field this time. Measured on slot b (r73 +
+one-rail-s3 DTB, boot `1a2202e0`), across a genuine suspend
+(`rtcwake -m mem -s 15`, `suspend_stats/success` 1 → 2). Raw:
+[`captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`](captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt).
+
+**The decisive per-master number.** `/sys/kernel/debug/qcom_rpm_master_stats`:
+APSS **`XO shutdown count: 0`** — the AP has *never once* entered XO shutdown —
+while `Shutdown count: 39218` advances (core/cluster power-collapse works, since
+the r64 handshake fix). Every other active master drops XO fine: MPSS 5502,
+PRONTO 19148, LPASS 48. `qcom_stats` `vlow`/`vmin` stayed 0 across the suspend
+(0 → 0 while success 1 → 2). So the SoC-wide low-power aggregate is gated by the
+AP alone.
+
+**A hypothesis I nearly wrote up as fact, and the measurement that killed it.**
+cpu0 cpuidle shows only WFI + cpu-pc, and dmesg says
+`psci: [Firmware Bug]: failed to set PC mode: -1` /
+`CPUidle PSCI: failed to create CPU PM domains ret=-517`. Read alone, that is
+"the firmware refuses OSI, so deep idle never happens" — clean, plausible, wrong.
+The genpd `idle_states` **usage counters** say the opposite: `power-domain-system`
+enters `system-pc` (0x42000353) **50933** times (2 during s2idle), the clusters
+enter `cluster-pc` ~150k times each. The `ret=-517` was `EPROBE_DEFER`, retried
+and recovered; OSI deep idle **works**. cpuidle/PSCI is not the blocker. (The
+boot log line is not a steady-state measurement — the usage counter is.)
+
+**Where the gap actually is.** The AP reaches `system_pc` but the RPM still does
+not count an APSS **XO** shutdown, because the AP never releases its XO/TCXO vote
+in the RPM **sleep set**. Located the holders in `clk_summary`: the root `xo`
+(19.2 MHz, enable 7) is held via `bi_tcxo` by the two remoteprocs (own masters,
+fine), the **two MMC controllers** (`7824900`/`7864900.mmc`) and the **codec
+ahbix** (`c0f0000.codec`) — the last three are AP-side, so their vote lands in the
+AP's sleep set. Confirmed the sleep vote directly on the `qcom_rpm_smd_write`
+tracepoint: `sleep clk0/0 … 45 6e 61 62 … 01 …` = CXO `"Enab"=1` in the sleep
+context (measured, not inferred).
+
+**What this reorients.** The `vlow` blocker is the **AP-side RPM sleep-set XO
+vote**, held by the SD/eMMC controllers and the codec ahbix through the
+sleep-voting `bi_tcxo` branch rather than the active-only `bi_tcxo_a`. It is
+**not** the LDO regulators (why the regulator-state-mem thread could never move
+`vlow`) and **not** cpuidle/PSCI/OSI (which works). Next: make those AP-side
+consumers drop their sleep-set XO vote (runtime-PM across suspend, or the
+active-only clock), then re-read APSS `XO shutdown count` and `vlow`. Vendor
+oracle: `/mnt/1TB/Fp3-Sailfish/hadk22/kernel/fairphone/sdm632`.
+
+**☠️ Reconciliation, same day (do not over-read the above).** Checked against the
+prior `clk_smd_rpm.xo_sleep_off=1` measurement before concluding: that lever
+already forces APSS into XO shutdown and `vlow` **still stayed 0**, and the LDO
+sleep-set candidate is separately killed (`both_sets=1`). So the AP-side XO vote
+localized here is **necessary, not sufficient** — fixing the MMC/codec holders
+will make APSS XO-shutdown naturally but will not by itself reach `vlow`. The net
+new value of today's work is (a) disproving the PSCI/OSI "[Firmware Bug]"
+hypothesis (system_pc *is* entered, 50933×) and (b) naming the natural XO holders
+for upstream correctness. The open `vlow` frontier remains the **USB controller**
+`control=auto`+detach test (STATUS queue item 1), not the XO vote and not the LDOs.

@@ -1,0 +1,140 @@
+=== Mainline (pmOS) APSS never enters XO shutdown — the vlow blocker, per-master ===
+Device: FP3 slot b, kernel 7.1.3-postmarketos-qcom-msm8953 (r73 + one-rail-s3 DTB),
+boot_id 1a2202e0. Measured 2026-08-24. Suspend confirmed genuine
+(rtcwake -m mem -s 15, /sys/power/suspend_stats/success advanced across it).
+
+Source: /sys/kernel/debug/qcom_rpm_master_stats/* (CONFIG_QCOM_RPM_MASTER_STATS,
+module rpm_master_stats). Full raw snapshot of every master:
+
+APSS:
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	XO shutdown count: 0          <== the AP has NEVER entered XO shutdown
+	Shutdown count: 39218         <== but it power-collapses its cores constantly
+	Active cores bitmask: 0x1
+LPASS:
+	XO shutdown count: 48         (dropped XO 48x; mostly quiescent now)
+	Shutdown count: 62
+MPSS:
+	XO shutdown count: 5502       (modem drops XO thousands of times)
+	Shutdown count: 5514
+PRONTO:
+	XO shutdown count: 19148      (wifi/bt drops XO constantly)
+	Shutdown count: 19149
+TZ:
+	all zero (never reports)
+
+=== Interpretation ===
+Two different states, and only one of them works for the AP:
+  * "Shutdown count"     = per-master cluster/core POWER COLLAPSE. APSS = 39218,
+                           advances across suspend. This is what the r64 RPM
+                           handshake fix (system_pc affinity nibble 1->2) enabled.
+  * "XO shutdown count"  = the master entered the deep state that lets the SoC
+                           gate the 19.2 MHz TCXO. APSS = 0, NEVER. Every other
+                           active master reaches it fine.
+
+The SoC-wide aggregate low-power set (qcom_stats vlow/vmin) can only be reached
+when every voting master permits XO off. APSS never does, so vlow/vmin Count
+stayed 0 across this suspend (measured: 0 -> 0 while success 1 -> 2).
+
+=== What this rules in/out ===
+- NOT modem traffic: the suspend completed, and MPSS drops XO 5502x - the modem
+  is not the thing holding XO up. (The ofono modem-off step failed anyway -
+  "ServiceUnknown: not activatable" - ofono is not running in this pmOS config;
+  irrelevant, since MPSS XO-shutdown works regardless.)
+- NOT a cluster-power-collapse gap: APSS Shutdown count advances fine.
+- IS specifically the AP's XO-shutdown-capable deep-idle/suspend level never being
+  entered. This is the precise mainline gap vs the downstream 4.9 oracle (which
+  reached APSS XO shutdown across a suspend, 2026-08-24 UT-oracle capture).
+
+=== Next ===
+Chase the AP idle path: PSCI domain-idle-states / cpuidle levels on mainline
+msm8953 vs the downstream lpm-levels config, and the RPM sleep-set handshake that
+signals "APSS permits XO off". The vendor oracle tree is at
+/mnt/1TB/Fp3-Sailfish/hadk22/kernel/fairphone/sdm632.
+
+=== UPDATE (same day) — mechanism localized; the PSCI/OSI hypothesis is DISPROVEN ===
+
+Chased the AP idle path and the first hypothesis (firmware refuses OSI, deep idle
+never happens) turned out WRONG. Measured, in order:
+
+1. cpuidle (psci_idle): cpu0 exposes only WFI + cpu-power-collapse (cpu-pc). No
+   cluster/system state in per-CPU cpuidle -> looked like the deep states are
+   unreachable.
+
+2. dmesg carried a tempting red herring:
+      psci: OSI mode supported.
+      psci: [Firmware Bug]: failed to set PC mode: -1
+      CPUidle PSCI: failed to create CPU PM domains ret=-517
+   Reading only that, "the firmware refuses OSI" is the obvious (wrong) conclusion.
+
+3. But the genpd idle_states usage counters are the ground truth, and they say the
+   opposite -- the CPU PM domains DO exist and DO enter their deep states:
+      power-domain-cluster0: S2 (cluster-pc) usage 152193 (S2idle 0)
+      power-domain-cluster1: S2 (cluster-pc) usage 150741 (S2idle 0)
+      power-domain-system  : S0 (system-pc)  usage  50933, S2idle 2
+   The ret=-517 was EPROBE_DEFER, retried and recovered; OSI deep idle WORKS. The
+   AP reaches PSCI system power collapse (system_pc, 0x42000353) tens of thousands
+   of times, including twice during real s2idle. So cpuidle/PSCI is NOT the blocker.
+
+   (Discipline note: the dmesg "[Firmware Bug]" line would have been written up as
+   the root cause if the idle_states usage had not been read. A boot-time log line
+   is not a steady-state measurement.)
+
+4. So the gap is narrower: the AP enters system_pc, yet the RPM's APSS master still
+   shows XO shutdown count = 0. The difference between the RPM's "Shutdown count"
+   (APSS = 39218, works since the r64 handshake fix) and "XO shutdown count"
+   (APSS = 0) is that the latter needs the AP to RELEASE its XO/TCXO vote in the
+   RPM sleep set. It never does.
+
+5. Located the holders. clk_summary: root `xo` (19.2 MHz) enable_count 7. The
+   sleep-set-voting branch `bi_tcxo` (enable 7) is held by:
+      c200000.remoteproc (ADSP)   -- own master LPASS, drops XO on its own
+      4080000.remoteproc (modem)  -- own master MPSS, drops XO on its own
+      7864900.mmc                 -- AP-side peripheral
+      7824900.mmc                 -- AP-side peripheral
+   plus `xo` -> c0f0000.codec (ahbix-clk), also AP-side.
+   The AP-attributed XO holders are therefore the TWO MMC controllers and the
+   codec ahbix path.
+
+6. Confirmed the sleep-set XO vote directly on the qcom_rpm_smd_write tracepoint
+   (armed on this boot). RPM resource clk0/0 with key "Enab" (45 6e 61 62) is the
+   CXO enable in the SLEEP context, and it is written =1 in sleep:
+      qcom_rpm_smd_write: sleep clk0/0 len=12 45 6e 61 62 04 00 00 00 01 00 00 00
+   (clka/* = "swen" active-set _a clocks; clk1/clk2 = "KHz" rate votes.)
+   So XO is voted ON in the RPM sleep set -- measured, not inferred.
+
+=== Reoriented conclusion ===
+The vlow blocker is NOT the LDO regulators (the regulator-state-mem thread), and
+NOT cpuidle/PSCI/OSI (which works). It is the AP-side RPM **sleep-set XO/TCXO
+vote**, held by AP peripherals -- the two SD/eMMC controllers and the codec ahbix
+clock -- through the `bi_tcxo` (sleep-voting) branch instead of the active-only
+`bi_tcxo_a`. Until those consumers stop voting XO in the sleep set, the APSS
+master cannot XO-shutdown and the SoC cannot aggregate to vlow.
+
+=== Next (actionable) ===
+Make the AP-side XO holders drop their sleep-set vote:
+  - the two MMC controllers (7824900/7864900.mmc): should release bi_tcxo across
+    system suspend (runtime-PM / sleep vote), or take the active-only clock.
+  - the codec ahbix (c0f0000.codec): same.
+Then re-read APSS "XO shutdown count" and qcom_stats vlow across a suspend.
+Vendor oracle for the intended sleep-set XO behaviour:
+/mnt/1TB/Fp3-Sailfish/hadk22/kernel/fairphone/sdm632.
+
+=== RECONCILIATION with prior work — necessary, not sufficient ===
+Cross-checked against STATUS queue item 1 before drawing the wrong conclusion.
+Prior MEASURED result: clk_smd_rpm.xo_sleep_off=1 already forces APSS into XO
+shutdown, and vlow STILL stayed 0. And the LDO/regulator sleep-set candidate is
+KILLED (qcom_smd_regulator.both_sets=1 cast all the sleep votes; vlow still 0).
+
+Therefore the AP-side XO sleep-set vote localized above is *necessary but not
+sufficient* for vlow. What today's measurement genuinely adds:
+  (a) the PSCI/OSI "[Firmware Bug]" hypothesis is DISPROVEN (system_pc entered
+      50933x) — a real dead-end removed;
+  (b) the concrete natural holders of the AP XO vote are named (the two MMC
+      controllers + codec ahbix via bi_tcxo) — upstream-correctness detail that
+      explains why APSS XO count is 0 without the xo_sleep_off lever.
+It does NOT identify the last vlow blocker. Per STATUS the open frontier is the
+USB controller (7000000.usb stuck control=on / pm_runtime_forbid, never
+runtime-suspends) — the control=auto + detach test is still not done.

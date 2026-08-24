@@ -397,6 +397,22 @@ is now item 4.
    sleep set is **not** what the RPM is waiting on. The whole AP-side sleep-set
    family (XO / regulators / interconnect) is now exhausted.
 
+   ★★★ **2026-08-24 (mainline side, two net-new results + one correction).**
+   (1) The PSCI/OSI "[Firmware Bug]: failed to set PC mode" dmesg line is a **red
+   herring** — genpd `idle_states` usage shows `system-pc` (0x42000353) entered
+   **50933×** (2 in s2idle) and `cluster-pc` ~150k×, so the AP *does* reach system
+   power collapse; cpuidle/PSCI is NOT the blocker. (2) The natural AP XO holders
+   are named: root `xo` is held via `bi_tcxo` by the two MMC controllers
+   (`7824900`/`7864900.mmc`) and the codec ahbix (`c0f0000.codec`); the sleep-set
+   XO vote is confirmed on the tracepoint (`sleep clk0/0 "Enab"=1`). **Correction:**
+   this is *necessary, not sufficient* — `xo_sleep_off=1` already forces APSS XO
+   shutdown with `vlow` still 0, so naming/fixing the holders is upstream-correctness
+   detail, not the last blocker. Frontier unchanged: the **USB controller**
+   `control=auto`+detach test (armed 2026-08-24: `7000000.usb`+`79000.phy` set
+   `control=auto`, but they stay active with the cable in — needs a physical
+   detach, which a background watcher will run automatically on unplug). Chain:
+   `power/bringup/findings-log.md` + `captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`.
+
    What that leaves:
 
    1. **The DTB `regulator-state-mem` change is now upstream-correctness work,
