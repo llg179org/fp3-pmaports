@@ -2398,3 +2398,62 @@ of the downstream flush). Category: **power**.
 
 Captures: `captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt`
 (decoded final sleep set) and the in-run suspend witness above.
+
+---
+
+## 2026-08-24 (sleep_bw_off experiment #1) — ★★★ the blunt "zero the backbone sleep votes always" boot-loops, and that failure CORROBORATES the finding: the RPM applies the sleep set during idle, and zeroing the backbone bandwidth visibly collapses the display
+
+Built the decisive lever: `icc_smd_rpm.sleep_bw_off`, a sibling of
+`clk_smd_rpm.xo_sleep_off`, that forces the SLEEP-context per-node bandwidth
+(`bmas`/`bslv`) **and** the bus-clock sleep rate (bimc/pcnoc/snoc, via
+`qcom_icc_update_provider`) to **0** for every RPM-owned NoC node. Full r73
+rebuild (envkernel), hand-deployed as `/boot/vmlinuz-sleepbw` on a **non-default**
+label `postmarketOS-sleepbw-exp`, armed with
+`clk_smd_rpm.xo_sleep_off=1 icc_smd_rpm.sleep_bw_off=1` + the tracepoint.
+
+**Result: it does not boot — it boot-loops with a garbage (random-colour-noise)
+display**, observed on the physical screen (reboot cycle: garbage → reset →
+garbage). No SSH, no clean userspace. Recovered cleanly via the cross-slot route
+(fastboot `set_active a` → UT → loop-mount `system_b` pmOS `/boot` at offset 1 MiB
+→ revert `default` to `postmarketOS-prev` → `set_active b` → reboot; pmOS r73 back
+in ~24 s). ☠️ Note for next time: `fastboot devices` never listed the device
+during the loop (too-brief window), but a **blocking** `sudo fastboot set_active a`
+caught it the moment the user held vol-DOWN+power; and `fastboot` needs `sudo`
+here (no udev rule — `fastboot devices` prints nothing as non-root).
+
+**Why this is a result and not just a failed build.** `xo_sleep_off=1` alone is a
+known-good, boots-fine knob (measured before). The **new** breakage is
+`sleep_bw_off`, and a *garbage display* is the signature of the display/MDSS
+losing its NoC bandwidth / DDR path. So the failure says two concrete things:
+1. The RPM **applies the sleep-set backbone votes during ordinary idle windows**
+   (the AP WFIs between boot tasks), not only across a full suspend — otherwise a
+   sleep-only vote could never affect a booting system.
+2. Zeroing the backbone sleep bandwidth **actually collapses the backbone** — the
+   lever has real teeth. It collapsed it at the wrong time (panel still on, so the
+   display still needs that bandwidth), which is why it looked like corruption.
+
+That is exactly the **keepalive** problem Konrad Dybcio's upstream "SMD RPMCC
+sleep preparations" series exists to solve: some consumers (here the display while
+the panel is on) must keep an active/always vote so the backbone is *not* dropped
+under them. A blanket "zero all sleep bandwidth, always" violates that invariant
+during runtime; it is only correct **once the display and the other AON consumers
+have themselves suspended** — i.e. scoped to the actual suspend sequence, which is
+precisely what downstream's `msm_rpm_flush_requests()` (fired at power-collapse,
+after everything else is down) achieves and what this blunt param does not.
+
+**Corrected next experiment (the upstreamable shape).** Do not force the sleep
+votes globally. Instead re-vote the backbone sleep set to 0 **inside the icc
+provider's own suspend callback** (`dev_pm_ops.suspend`/`.suspend_noirq` — these
+*do* run on this device's s2idle path, unlike `syscore_ops`, and they run *after*
+`dpm_suspend` has already turned the display off and let it release its
+bandwidth), restoring the saved values on resume. That makes the zeroing safe
+(nothing on-screen to starve), scopes it to real suspend, and is the mainline
+equivalent of the downstream flush. Then re-read `vlow`/`vmin` across an
+`rtcwake -m mem` suspend. Web scan (2026-08-24) found no existing issue/fix for
+this on RPM/SMD SoCs; the closest upstream work is Dybcio's active_only/keepalive
+prep (MSM8996/8998/SM6375) and the ICC restructure — infrastructure, not a
+reached-`vlow` result.
+
+Device state after: r73, `default postmarketOS-prev`, fallback net intact, the
+`vmlinuz-sleepbw` + `postmarketOS-sleepbw-exp` label left in place (non-default,
+inert) for the corrected rebuild.

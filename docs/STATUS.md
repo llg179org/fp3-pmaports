@@ -440,6 +440,24 @@ is now item 4.
    "non-XO `vlow` holder" entry;
    `captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt`.
 
+   ★★★ **2026-08-24 (evening, experiment #1) — the lever is confirmed to have
+   real teeth, but the blunt form boot-loops.** Built `icc_smd_rpm.sleep_bw_off`
+   (sibling of `xo_sleep_off`) that zeroes the SLEEP-context bandwidth + bus-clock
+   rate for every RPM-owned NoC node. Armed on a non-default label with
+   `xo_sleep_off=1` → **garbage display, boot-loop** (recovered cross-slot,
+   device back on r73). This is corroboration, not just a build fail:
+   `xo_sleep_off` alone boots, so the new breakage is `sleep_bw_off`, and a
+   garbage display = the RPM **collapsed the backbone under the still-on panel**.
+   So (a) the RPM applies the sleep set during ordinary idle windows, and (b)
+   zeroing the backbone sleep vote really does collapse it — the blunt global form
+   just does it too early (panel still needs the bandwidth: the keepalive problem).
+   **Corrected next build:** move the zeroing into the icc provider's
+   `dev_pm_ops.suspend`/`.suspend_noirq` (runs on s2idle, *after* `dpm_suspend`
+   turns the display off), restore on resume — the mainline equivalent of
+   downstream's flush-at-suspend — then re-read `vlow`. Web scan found no existing
+   fix for this on RPM/SMD SoCs (closest: Dybcio's active_only/keepalive prep).
+   Detail: findings-log 2026-08-24 "sleep_bw_off experiment #1".
+
    What that leaves:
 
    1. **The DTB `regulator-state-mem` change is now upstream-correctness work,
