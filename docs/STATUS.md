@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 06:55**.
+Last updated: **2026-08-24 07:56**.
 
 ## The device
 
@@ -360,9 +360,19 @@ is now item 4.
    done. The frontier is unchanged and already has a working XO lever
    (`clk_smd_rpm.xo_sleep_off=1` makes APSS enter XO shutdown, `vlow` still 0):
    the remaining named blocker is the **LDO sleep votes** (`regulator-state-mem`,
-   one rail at a time). Details + captures in `power/bringup/findings-log.md`
-   (2026-08-24 correction, cable A/B, and the correction to both) +
-   `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`. This
+   one rail at a time). ★★★ **2026-08-24 (UT-oracle, slot a): the
+   AP-never-drops-XO is a MAINLINE REGRESSION, not an SoC/s2idle limit.** The
+   downstream (UT 4.9) APSS `xo_count` went **0 → 2** across two CONFIRMED `mem`
+   suspends (echo mem exit 0, 7 s + 12 s), i.e. the downstream AP *does* vote its
+   XO down in a real suspend — while mainline never does. Getting the downstream
+   to suspend needed the modem powered off (ofono `Powered=false`): a steady ~5
+   wakeups/s from the modem IPC router aborted every attempt, and `7000000.ssusb`
+   stayed an active wakeup source through a physical unplug (same dwc3 behaviour
+   as pmOS). Caveat: the mainline side has not yet been re-run with modems off.
+   Details + captures in `power/bringup/findings-log.md`
+   (2026-08-24 correction, cable A/B, the correction to both, and the UT-oracle
+   entry) + `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`
+   and `captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`. This
    retires live-thread 2a (runtime-idle oracle) **and** the bit-3 thread; the
    **USB-controller `control=auto`+detach** test and the UT-oracle across-suspend
    run remain open.

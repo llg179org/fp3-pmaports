@@ -2109,3 +2109,48 @@ Read the two entries above with these two retractions.
    **and then** detach — that was **not** done. The branch stays open. The
    cable-out capture is still a valid on-battery record that the AP holds XO with
    no charger attached; it just is not the USB discriminator I labelled it.
+
+## 2026-08-24 (UT-oracle across-suspend) — ★★★ the AP-never-drops-XO is a MAINLINE REGRESSION, not an SoC limit
+
+Booted slot a (UT, 4.9.218-perf-ubuntutouch) and asked the downstream oracle the
+one question that decides whether pmOS's `vlow=0` is fixable: **does the
+downstream APSS master enter XO shutdown across a genuine `mem` suspend?** Same
+`rpm_master_stats` driver both sides, so it is apples-to-apples.
+
+**Answer: yes — so the mainline behaviour is a regression.**
+
+- Downstream (UT), CONFIRMED `mem` suspend (echo mem exit 0, 7 s and 12 s real
+  sleeps): **APSS `xo_count` 0x0 → 0x2**, exactly matching the two completed
+  suspends. The AP *does* vote its XO down in a real suspend.
+- Mainline (pmOS r73), CONFIRMED `rtcwake -m mem` suspends (`suspend_success`
+  increments): APSS `xo_count` stays a hard **0**.
+
+→ pmOS `vlow=0` is because the mainline msm8953 **s2idle** path never drives the
+APSS RPM master into XO shutdown, whereas the downstream **PSCI mem-suspend**
+path does. This is a fixable mainline gap, not SoC- or s2idle-inherent. It sits
+alongside the already-known **LDO sleep-vote** gap (the AP XO vote is one
+necessary condition, not the last gate — `xo_sleep_off=1` already forces APSS XO
+on mainline and `vlow` is still 0).
+
+Getting the downstream to suspend on demand was the whole fight, and each layer
+is itself a measured fact (full trace in
+[`captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`](captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt)):
+1. downstream honours wakeup sources even on a direct `/sys/power/state` write;
+2. `7000000.ssusb` stays an active wakeup source **through a physical unplug**
+   (same dwc3 "USB stays active regardless of cable" as pmOS) — cable-out alone
+   never suspended it;
+3. with ssusb wakeup disabled it *still* aborted every time — a steady ~5
+   wakeups/s from the **modem IPC router** (`ipc_rtr_smd_ipcrtr` /
+   `NasModemEndPoint`) re-aborted the suspend;
+4. `rfkill` covers only BT/WLAN; the modem is ofono-managed (`/ril_0`,`/ril_1`).
+   Powering both modems off (ofono `Powered=false`) finally let it complete two
+   suspends before traffic resumed. Modems + ssusb wakeup restored afterwards;
+   device left healthy (98 %, slot a).
+
+**Caveat kept honest:** downstream reached XO shutdown only with the modem
+powered off; the mainline side has **not** yet been re-run with the modem
+quiesced (pmOS suspended via rtcwake with the radio up). The comparison is
+completed-suspend vs completed-suspend, which is the right axis, but a mainline
+re-run with modems off would remove the last asymmetry. `active_cores=0x1` in
+every snapshot is only because snapshots are post-resume, not evidence about the
+suspended state.

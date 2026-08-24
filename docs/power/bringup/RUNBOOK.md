@@ -62,7 +62,18 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    too, so **`vlow`=0 is real, not an artifact** — re-confirming the 2026-08-22
    finding (runtime idle is not suspend). A working XO lever already exists
    (`clk_smd_rpm.xo_sleep_off=1` → APSS enters XO shutdown, `vlow` still 0), so
-   the remaining named blocker is the LDO sleep votes. ☠️ The 2026-08-24 cable-out
+   the remaining named blocker is the LDO sleep votes. ★★★ **2026-08-24
+   (UT-oracle across-suspend, slot a): the AP-never-drops-XO reading above is a
+   MAINLINE REGRESSION, not an SoC/s2idle limit — and it overturns "the AP is not
+   the differentiator" for the SUSPEND axis.** At idle the oracle AP also shows
+   `xo_count` 0; but across a genuine downstream `mem` suspend it went **0 → 2**
+   (echo mem exit 0, 7 s + 12 s), while mainline stays 0 across confirmed
+   suspends. So on the suspend path the AP *is* exactly where mainline regresses.
+   Forcing the downstream to suspend needed the modem powered off (ofono
+   `Powered=false`): ~5 wakeups/s from the modem IPC router aborted every attempt
+   and `7000000.ssusb` stayed active through a physical unplug. Caveat: mainline
+   not yet re-run with modems off. Capture:
+   `captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`. ☠️ The 2026-08-24 cable-out
    A/B did **not** close the "is it USB" sub-question: cable in-vs-out is
    identical, so the cable is not the variable, but `7000000.usb` stayed active
    (`control=on`, `runtime_suspended_time=0`) in both runs — the controller test

@@ -245,6 +245,22 @@ separately because the section above is a status summary and this is a task.
 AP-side gate stopped being unidentified. Full derivation and the next steps are
 in [`STATUS.md`](STATUS.md) queue item 1; the short form:
 
+★★★ **2026-08-24 — the regression-vs-SoC-limit question is ANSWERED: it is a
+MAINLINE REGRESSION.** Booted the UT oracle (slot a, 4.9.218) and forced a real
+downstream `mem` suspend: **APSS `xo_count` 0 → 2** across two confirmed suspends
+(echo mem exit 0, 7 s + 12 s). The downstream AP votes its XO down in a genuine
+suspend; mainline never does across a confirmed `rtcwake -m mem`. So pmOS
+`vlow`=0 is a fixable gap in the mainline msm8953 suspend/RPM path (the AP's XO
+vote), **not** an s2idle- or SoC-inherent limit — it sits alongside the LDO
+sleep-vote gap below (the AP XO vote is one necessary condition, not the last
+gate; `xo_sleep_off=1` already forces APSS XO and `vlow` is still 0). Forcing the
+downstream to suspend took powering both ofono modems off (~5 wakeups/s from the
+modem IPC router aborted every attempt) and disabling the `7000000.ssusb` wakeup
+source (it stays active through a physical unplug — same dwc3 behaviour as pmOS).
+Caveat: the mainline side has not yet been re-run with modems off. Capture:
+`captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`; full trace in
+findings-log 2026-08-24 (UT-oracle across-suspend).
+
 - The RPM's own entry threshold is **not** readable from any source we hold.
   `qcom_stats.c` (mainline) and the vendor 4.9 `rpm_stats.c` are both *readers*
   of an RPM-maintained counter — the vendor binding says so in as many words —
