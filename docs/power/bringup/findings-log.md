@@ -2710,6 +2710,51 @@ guardian + queue under systemd, host supervisor pulling to
 vs `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62 mV/h) —
 that difference is the radio's mA price.
 
+### ★★★★ 2026-08-24 evening — the radio is priced, and it does NOT need the modem powered off
+
+The `radiolow-20260824` leg completed clean (rc=0, 6/6 phase-A suspends all
+full-term at 901–902 s of a requested 900, cable out, pack 100 %→81 %).
+Capture: [`captures/2026-08-24_radiolow-slope-leg.txt`](captures/2026-08-24_radiolow-slope-leg.txt).
+
+| leg | phase-A slope | r² | derived |
+|---|---|---|---|
+| `baseline-20260819` (radio up) | −35.77 mV/h | — | 79.1 mA |
+| `baseline-20260822` (r64) | — | — | 83.4 mA |
+| **`radiolow-20260824`** | **−18.68 mV/h** | 0.9874 | **40.8 mA** |
+| `nomodem-20260819` (services cut ⇒ modem OFF) | −22.62 mV/h | — | 43.3 mA |
+| phase B (awake control, same leg) | −50.75 mV/h | 0.9994 | I_awake 110.8 mA |
+
+**The result: `mmcli --set-power-state-low` buys the whole ~36 mA that powering
+the modem processor off buys** — 40.8 mA against a 79–83 mA baseline, with the
+modem still loaded, still owned by ModemManager, and one command away from
+being back on the network. The mechanism is the one the XO-duty differential
+named this morning: with the radio up the MPSS chops the crystal and aborts the
+AP's suspends outright; radio-low lets it hold XO-shutdown and the suspends run
+to term.
+
+☠️ **Read "slightly better than modem-off" as "at least as good", not as
+better.** The radio-low slope is 0.826 of the `nomodem-20260819` slope, i.e.
+nominally 2.5 mA under it — but those are different legs on different days, the
+nomodem leg's cut was the `rmtfs -P` contamination path, and a single leg's
+phase-A slope has not been characterised for run-to-run scatter at this
+resolution. The defensible claim is that the two are indistinguishable, and
+that is already the interesting one: **the saving does not require the modem
+processor to be down.**
+
+☠️ **This is a mechanism, not yet a fix.** Radio-low is airplane mode by another
+name: no calls, no data, no paging. What it establishes is *where* the 36 mA
+lives — in RF/registration activity, not in the modem being loaded, and not in
+host services. The fix direction is therefore modem power-save configuration
+(PSM / eDRX / the paging cycle the network negotiates), which is config and
+possibly network-side, not an AP-side kernel patch. The next measurement is
+whether a power-save mode that keeps the phone *registered* reproduces any part
+of this.
+
+Method notes that held: the probe gate (wall-clock ≥75 s of 90 AND MPSS XO off
+≥60 s) passed at 92 s / 87.6 s before the leg was allowed to spend four hours;
+the `nocable` preflight mode armed correctly with the cable out; every exit path
+restored the modem (`registered`, `power state: on`) without intervention.
+
 ---
 
 # Part II — the run-book's dated body (2026-08-15 → 2026-08-24), moved here unedited on 2026-08-24

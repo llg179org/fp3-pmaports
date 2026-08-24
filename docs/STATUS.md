@@ -15,11 +15,15 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 ~15:10 — the modem lead is in motion: the XO-duty
-differential is done (radio up = suspends abort early + MPSS chops the crystal;
-radio low = full-term suspends + MPSS XO off the whole window), and the
-radio-low pricing leg (`radiolow-20260824`) is ARMED and running under the
-night harness, cable out, probe gate passed. Earlier the same day: ★★★★★ the
+Last updated: **2026-08-24 evening — ★★★★ the radio is PRICED and the modem
+lead has its answer: `mmcli --set-power-state-low` gives 40.8 mA asleep against
+a 79–83 mA baseline, i.e. the whole ~36 mA that powering the modem processor
+off gives (43.3 mA), with the modem still loaded. Mechanism: with the radio up
+the MPSS chops the crystal and aborts the AP's suspends outright; radio-low
+lets it hold XO-shutdown and the suspends run full-term. ☠️ It is a mechanism,
+not a fix — radio-low is airplane mode by another name; the open question is
+whether a power-save mode that keeps the phone REGISTERED (PSM/eDRX) reproduces
+it, which is modem configuration rather than an AP-side kernel patch. Earlier the same day: ★★★★★ the
 deep-sleep item was CLOSED: the
 `vlow` record read RAW from RPM message RAM on the working UT oracle is 0 too,
 across a window with +34 603 AP power collapses and thousands of co-proc XO
@@ -251,13 +255,15 @@ is now item 4.
    section: (1) ✅ MPSS XO-duty across s2idle — DONE 2026-08-24: radio up =
    suspends abort early + MPSS chops the crystal; radio low = full-term
    suspends + MPSS XO off the whole window
-   (`captures/2026-08-24_modem-xo-duty.txt`); (2) uncontaminated night
-   slope-legs — **(a) radio-low ARMED and running 2026-08-24 ~14:55**
-   (`radiolow-20260824`, cable out, `nocable` preflight, probe gate passed:
-   wall 92 s of 90, MPSS XO off 87.6 s; supervisor pulling to
-   `night/runs/radiolow-20260824/`), (b) remoteproc modem-off leg next;
-   (3) the mechanism readout (`qcom_rpm_master_stats` MPSS XO duration on
-   whichever leg saves).
+   (`captures/2026-08-24_modem-xo-duty.txt`); (2) ✅ **(a) radio-low night slope leg
+   DONE 2026-08-24 evening: 40.8 mA asleep** (phase-A −18.68 mV/h, r²=0.987,
+   6/6 full-term suspends) against a 79–83 mA baseline and the 43.3 mA
+   modem-off leg — **radio-low buys the whole ~36 mA without powering the
+   modem processor off**; (b) the remoteproc modem-off leg is now optional;
+   (3) **next: does a power-save mode that keeps the phone REGISTERED
+   (PSM/eDRX/paging cycle) reproduce any part of it** — radio-low itself is
+   airplane mode by another name, so it is a mechanism, not a fix. The fix
+   direction is modem configuration, likely not an AP-side kernel patch.
 
 2. ✅ **DONE 2026-08-23 night — rootfs freed 94%→81% and `10-health`
    recalibrated.** The bulk was the apk *download* cache: `/var/cache/apk`

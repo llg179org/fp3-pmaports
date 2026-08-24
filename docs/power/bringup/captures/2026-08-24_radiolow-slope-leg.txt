@@ -1,8 +1,8 @@
-# radio-low-leg radiolow-20260824 uptime=3905
-# modem before:  | state: registered  | power state: on  | signal quality: 81% (cached)  | packet service state: attached 
-# radio armed low
-# probe suspend: wall 92s of 90, MPSS XO off 87624ms
-# gate passed - handing over to slope-leg.sh radiolow-20260824 (modem restore stays on this shell's exit path)
+# radio-low slope leg 'radiolow-20260824' — the modem lead's pricing measurement
+# pmOS r73 (#74-fp3), slot b, cable OUT, night harness (preflight nocable), 2026-08-24 14:55 -> 19:0x
+# arm: mmcli -m any --set-power-state-low for the whole leg; probe gate passed (wall 92s of 90, MPSS XO off 87624ms)
+# fit: phase A -18.68 mV/h r2=0.9874 (6/6 full-term suspends); phase B -50.75 mV/h r2=0.9994, I_awake 110.8 mA => I_sleep 40.8 mA
+
 suspend-slope: radiolow-20260824 === settle 1800s off VBUS ===
 radiolow-20260824 phase=settle n=0 t=5754 v=4036966 i=-89339 pll=0 nread=20
 radiolow-20260824 phase=settle n=1 t=5825 v=4067718 i=-88348 pll=0 nread=20
@@ -54,3 +54,5 @@ radiolow-20260824 phase=B n=1 t=15308 v=4006992 i=-96893 pll=0 nread=20
 radiolow-20260824 phase=B n=2 t=16238 v=3994632 i=-114898 pll=0 nread=20
 radiolow-20260824 phase=B n=3 t=17168 v=3982370 i=-105056 pll=0 nread=20
 radiolow-20260824 phase=B n=4 t=18099 v=3967870 i=-111083 pll=0 nread=20
+radiolow-20260824 phase=B n=5 t=19029 v=3954634 i=-117263 pll=0 nread=20
+suspend-slope: radiolow-20260824 done - restoring charger and greetd

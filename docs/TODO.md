@@ -283,13 +283,20 @@ The lead, in order:
    ~2.5 transitions/s; radio low = full-term suspends with MPSS XO off
    essentially the whole window. So the mechanism IS RF/registration activity
    and the fix direction is modem power-save config, not host services.
-2. **Uncontaminated night slope-legs** (cable out, `night/` harness):
-   (a) radio-low via mmcli for the whole leg — **ARMED and running 2026-08-24
-   ~14:55** (`radiolow-20260824`; `night/radio-low-leg.sh` wrapper, probe gate
-   passed: wall 92 s of 90, MPSS XO off 87.6 s; preflight `nocable` mode,
-   device scripts re-synced from the repo); (b) true modem-off via remoteproc
-   stop, reproducing the 36 mA cleanly. Compare phase-A slopes against
-   `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62).
+2. ✅ **(a) radio-low night slope leg — DONE 2026-08-24 evening**
+   (`radiolow-20260824`, cable out, 6/6 full-term suspends, rc=0):
+   **phase-A −18.68 mV/h (r²=0.987) ⇒ 40.8 mA asleep**, against
+   `baseline-20260819` −35.77 mV/h / 79.1 mA and `nomodem-20260819`
+   −22.62 mV/h / 43.3 mA. **So radio-low buys the WHOLE ~36 mA that powering
+   the modem processor off buys, with the modem still loaded.** ☠️ Read the
+   2.5 mA it sits under the modem-off leg as "indistinguishable", not
+   "better" — different legs, different days, run-to-run scatter at this
+   resolution uncharacterised. Capture:
+   `captures/2026-08-24_radiolow-slope-leg.txt`; account: findings-log
+   2026-08-24 evening entry.
+   (b) A true modem-off leg via remoteproc stop is now **optional** — it would
+   only re-measure a number radio-low has already reached; spend the night on
+   (3) instead.
 3. Only then the mechanism question — what the modem does with the radio up
    that costs ~36 mA (QMI traffic? paging config? `qcom_rpm_master_stats` MPSS
    XO duration across the sleeping leg is the readout).

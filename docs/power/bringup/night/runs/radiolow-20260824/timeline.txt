@@ -6,3 +6,52 @@
 15:15:10 192.168.100.17 up=5102 q=active g=active cap=92 v=3980911 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
 15:20:12 192.168.100.17 up=5404 q=active g=active cap=90 v=3786857 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
 15:25:13 192.168.100.17 up=5705 q=active g=active cap=88 v=3936728 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:30:15 192.168.100.17 up=6007 q=active g=active cap=88 v=4072585 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:35:17 192.168.100.17 up=6309 q=active g=active cap=88 v=4051369 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:40:24 192.168.100.17 up=6616 q=active g=active cap=87 v=4054873 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:45:26 192.168.100.17 up=6918 q=active g=active cap=87 v=4062463 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:50:27 192.168.100.17 up=7219 q=active g=active cap=87 v=4059155 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+15:55:34 192.168.100.17 up=7526 q=active g=active cap=87 v=4052342 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+16:00:37 192.168.100.17 up=7829 q=active g=active cap=87 v=4048060 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+16:05:54 !! device unreachable on both links (miss 1)
+16:11:05 !! device unreachable on both links (miss 2)
+16:16:08 # device answered again on 192.168.100.17 after 2 missed poll(s)
+16:16:08 192.168.100.17 up=8760 q=active g=active cap=87 v=4050201 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+16:21:26 !! device unreachable on both links (miss 1)
+16:26:37 !! device unreachable on both links (miss 2)
+16:31:40 # device answered again on 192.168.100.17 after 2 missed poll(s)
+16:31:40 192.168.100.17 up=9692 q=active g=active cap=87 v=4043973 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+16:36:57 !! device unreachable on both links (miss 1)
+16:42:08 !! device unreachable on both links (miss 2)
+16:47:12 # device answered again on 192.168.100.17 after 2 missed poll(s)
+16:47:12 192.168.100.17 up=10624 q=active g=active cap=87 v=4041248 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+16:52:30 !! device unreachable on both links (miss 1)
+16:57:41 !! device unreachable on both links (miss 2)
+17:02:44 # device answered again on 192.168.100.17 after 2 missed poll(s)
+17:02:44 192.168.100.17 up=11556 q=active g=active cap=87 v=4017502 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:08:01 !! device unreachable on both links (miss 1)
+17:13:13 !! device unreachable on both links (miss 2)
+17:18:15 # device answered again on 192.168.100.17 after 2 missed poll(s)
+17:18:16 192.168.100.17 up=12488 q=active g=active cap=87 v=4020811 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:23:33 !! device unreachable on both links (miss 1)
+17:28:44 !! device unreachable on both links (miss 2)
+17:33:48 # device answered again on 192.168.100.17 after 2 missed poll(s)
+17:33:48 192.168.100.17 up=13420 q=active g=active cap=86 v=4003683 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:38:50 192.168.100.17 up=13722 q=active g=active cap=86 v=4015945 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:43:52 192.168.100.17 up=14024 q=active g=active cap=86 v=3996871 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:48:53 192.168.100.17 up=14325 q=active g=active cap=86 v=3992005 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:53:57 192.168.100.17 up=14629 q=active g=active cap=85 v=3986555 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+17:59:02 192.168.100.17 up=14934 q=active g=active cap=85 v=3976823 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:04:04 192.168.100.17 up=15236 q=active g=active cap=85 v=3981494 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:09:07 192.168.100.17 up=15539 q=active g=active cap=84 v=3971957 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:14:11 192.168.100.17 up=15843 q=active g=active cap=84 v=3970984 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:19:12 192.168.100.17 up=16144 q=active g=active cap=84 v=3966897 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:24:16 192.168.100.17 up=16448 q=active g=active cap=83 v=3950742 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:29:18 192.168.100.17 up=16750 q=active g=active cap=83 v=3950742 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:34:22 192.168.100.17 up=17053 q=active g=active cap=83 v=3958138 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:39:23 192.168.100.17 up=17355 q=active g=active cap=82 v=3936533 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:44:25 192.168.100.17 up=17657 q=active g=active cap=82 v=3945487 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:49:30 192.168.100.17 up=17962 q=active g=active cap=82 v=3943346 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:54:33 192.168.100.17 up=18265 q=active g=active cap=82 v=3931473 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+18:59:40 192.168.100.17 up=18572 q=active g=active cap=81 v=3911425 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+19:04:42 192.168.100.17 up=18874 q=active g=active cap=81 v=3926801 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
