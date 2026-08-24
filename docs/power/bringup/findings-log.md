@@ -2630,3 +2630,44 @@ each suspend from `qcom_rpm_master_stats`. Log:
 `/var/tmp/modem-xo-duty-20260824.log` on the device. Question it answers:
 does radio state gate whether MPSS sleeps across an AP suspend (the 2026-08-20
 census saw MPSS hold XO up in 5 of 6 suspend arms). Results in the next entry.
+
+## 2026-08-24 (night, +1h) — ★★★ modem-xo-duty result: radio-low makes the MPSS sleep CONTINUOUSLY and lets the AP suspend run to term
+
+The differential ran clean (4/4 suspends `success` 0→4, radio restored to `on`
+at exit, capture
+[`2026-08-24_modem-xo-duty.txt`](captures/2026-08-24_modem-xo-duty.txt)).
+MPSS across each suspend, from `XO total duration` (19.2 MHz ticks → s):
+
+| arm | asked | wall | MPSS XO-off | XO transitions |
+|---|---|---|---|---|
+| normal 1 | 90 s | **~11 s** | 6.7 s | 27 |
+| normal 2 | 90 s | **~47 s** | 29.5 s | 119 |
+| radio-low 1 | 90 s | 97 s | **102.9 s** | 8 |
+| radio-low 2 | 90 s | 97 s | **97.0 s** | 6 |
+
+Two findings, both firsts:
+
+1. ★★★ **With the radio on, the modem terminates the AP's suspend early** —
+   both radio-normal suspends ended at a fraction of the asked 90 s (11 s,
+   47 s), while both radio-low suspends ran full term. This is the pmOS twin
+   of the UT-side observation ("~5 wakeups/s from the modem IPC router aborted
+   every suspend attempt") — same mechanism, now measured on mainline.
+2. ★★★ **`mmcli --set-power-state-low` flips the MPSS from chopped XO cycling
+   (~2.5 transitions/s, ~60 % XO-off duty) to essentially continuous XO
+   shutdown** (6–8 transitions per ~97 s, XO-off ≥ 100 % of the window — the
+   >window figure is the pre-snap gap; the sign is what matters). The modem
+   with the radio up never settles; with the radio low it goes down and stays
+   down.
+
+**What it does NOT yet say:** the mA price. Radio-low is airplane mode by
+another name — the phone is unreachable — so this is the *mechanism* arm, not
+the fix. The next instrument is the night slope-leg with radio-low held for
+the whole leg: if its phase-A slope lands near `nomodem-20260819` (−22.62 vs
+baseline −35.77), most of the modem's ~36 mA is radio/paging activity, and the
+tuning question becomes paging/DRX config rather than killing the radio. Also
+untested: whether the early-abort behaviour alone (suspends that never run to
+term) accounts for part of the sleeping-draw gap on normal nights.
+
+☠️ Method note: `rtcwake -m mem -s 90` on this RTC (epoch 1970) sets the alarm
+correctly, but a suspend that *ends early* still exits `rtcwake` with rc=0 —
+wall-clock the window (`date +%T` around it) or the abort is invisible.

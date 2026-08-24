@@ -1,0 +1,579 @@
+== modem-xo-duty Mon Aug 24 14:04:41 CEST 2026 boot_id=0646a621-2927-4f55-9297-eabefffb7890
+== mmcli initial state:
+    /org/freedesktop/ModemManager1/Modem/0 [QUALCOMM INCORPORATED] 0
+           |                  state: registered
+           |            power state: on
+           |         signal quality: 78% (recent)
+           |   packet service state: attached
+--- snap normal-pre1 14:04:41 success=0
+[APSS]
+APSS:
+	Last shutdown @ 17022184192
+	Last bringup req @ 17022515808
+	Last bringup ack @ 17022529975
+	Last wakeup idx: 16958764960
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12233
+	Last wake transition duration: 12437
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 21818
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 17033583988
+	Last bringup req @ 17032509766
+	Last bringup ack @ 17032509877
+	Last wakeup idx: 17032508843
+	Last XO shutdown enter @ 17033595621
+	Last XO shutdown exit @ 17032495239
+	XO total duration: 10973863097
+	Last sleep transition duration: 16721
+	Last wake transition duration: 21235
+	XO shutdown count: 2175
+	Wakeup reason: 0x0
+	Shutdown count: 2182
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 17034352418
+	Last bringup req @ 17035280502
+	Last bringup ack @ 17035296211
+	Last wakeup idx: 17020359547
+	Last XO shutdown enter @ 17034363558
+	Last XO shutdown exit @ 17035288712
+	XO total duration: 11971106558
+	Last sleep transition duration: 11491
+	Last wake transition duration: 13934
+	XO shutdown count: 7571
+	Wakeup reason: 0x0
+	Shutdown count: 7576
+	Active cores bitmask: 0x1
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sat Jan  3 01:30:31 1970
+rtcwake rc=0
+--- snap normal-post1 14:04:52 success=1
+[APSS]
+APSS:
+	Last shutdown @ 17243301409
+	Last bringup req @ 17243865806
+	Last bringup ack @ 17243872330
+	Last wakeup idx: 17236491273
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12653
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 21939
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 17242405869
+	Last bringup req @ 17241481791
+	Last bringup ack @ 17241481904
+	Last wakeup idx: 17241481365
+	Last XO shutdown enter @ 17242420301
+	Last XO shutdown exit @ 17241467656
+	XO total duration: 11102026610
+	Last sleep transition duration: 19413
+	Last wake transition duration: 21510
+	XO shutdown count: 2202
+	Wakeup reason: 0x0
+	Shutdown count: 2209
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 17242751741
+	Last bringup req @ 17244499518
+	Last bringup ack @ 17244499629
+	Last wakeup idx: 17244499257
+	Last XO shutdown enter @ 17242766656
+	Last XO shutdown exit @ 17244492244
+	XO total duration: 12109989775
+	Last sleep transition duration: 15692
+	Last wake transition duration: 13025
+	XO shutdown count: 7597
+	Wakeup reason: 0x1
+	Shutdown count: 7602
+	Active cores bitmask: 0x1
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+--- snap normal-pre2 14:04:52 success=1
+[APSS]
+APSS:
+	Last shutdown @ 17243301409
+	Last bringup req @ 17243865806
+	Last bringup ack @ 17243872330
+	Last wakeup idx: 17236491273
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12653
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 21939
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 17242405869
+	Last bringup req @ 17241481791
+	Last bringup ack @ 17241481904
+	Last wakeup idx: 17241481365
+	Last XO shutdown enter @ 17242420301
+	Last XO shutdown exit @ 17241467656
+	XO total duration: 11102026610
+	Last sleep transition duration: 19413
+	Last wake transition duration: 21510
+	XO shutdown count: 2202
+	Wakeup reason: 0x0
+	Shutdown count: 2209
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 17244722800
+	Last bringup req @ 17244499518
+	Last bringup ack @ 17244499629
+	Last wakeup idx: 17244499257
+	Last XO shutdown enter @ 17244734185
+	Last XO shutdown exit @ 17244492244
+	XO total duration: 12109989775
+	Last sleep transition duration: 11733
+	Last wake transition duration: 13025
+	XO shutdown count: 7598
+	Wakeup reason: 0x0
+	Shutdown count: 7603
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sat Jan  3 01:30:42 1970
+rtcwake rc=0
+--- snap normal-post2 14:05:39 success=2
+[APSS]
+APSS:
+	Last shutdown @ 18146550189
+	Last bringup req @ 18147536774
+	Last bringup ack @ 18147551011
+	Last wakeup idx: 18105310985
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12383
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22042
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 18145820496
+	Last bringup req @ 18144935572
+	Last bringup ack @ 18144935684
+	Last wakeup idx: 18144935147
+	Last XO shutdown enter @ 18145834991
+	Last XO shutdown exit @ 18144921438
+	XO total duration: 11667684703
+	Last sleep transition duration: 19413
+	Last wake transition duration: 21513
+	XO shutdown count: 2321
+	Wakeup reason: 0x0
+	Shutdown count: 2328
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 18147157294
+	Last bringup req @ 18146926842
+	Last bringup ack @ 18146926953
+	Last wakeup idx: 18146926581
+	Last XO shutdown enter @ 18147168321
+	Last XO shutdown exit @ 18146919569
+	XO total duration: 12946415499
+	Last sleep transition duration: 11723
+	Last wake transition duration: 13025
+	XO shutdown count: 7628
+	Wakeup reason: 0x0
+	Shutdown count: 7633
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+== setting power-state-low 14:05:39
+successfully set new power state in the modem
+           |                  state: disabled
+           |            power state: low
+           |   packet service state: detached
+--- snap lowpower-pre1 14:05:49 success=2
+[APSS]
+APSS:
+	Last shutdown @ 18343660516
+	Last bringup req @ 18345085641
+	Last bringup ack @ 18345092270
+	Last wakeup idx: 18335726132
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12234
+	Last wake transition duration: 12603
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22218
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 18169341769
+	Last bringup req @ 18169096357
+	Last bringup ack @ 18169096469
+	Last wakeup idx: 18169096113
+	Last XO shutdown enter @ 18169347380
+	Last XO shutdown exit @ 18169091261
+	XO total duration: 11687088895
+	Last sleep transition duration: 6919
+	Last wake transition duration: 7080
+	XO shutdown count: 2323
+	Wakeup reason: 0x0
+	Shutdown count: 2330
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 18345722116
+	Last bringup req @ 18345455638
+	Last bringup ack @ 18345455749
+	Last wakeup idx: 18345454680
+	Last XO shutdown enter @ 18345733948
+	Last XO shutdown exit @ 18345447360
+	XO total duration: 13107665205
+	Last sleep transition duration: 12518
+	Last wake transition duration: 13638
+	XO shutdown count: 7728
+	Wakeup reason: 0x0
+	Shutdown count: 7733
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sat Jan  3 01:31:39 1970
+rtcwake rc=0
+--- snap lowpower-post1 14:07:26 success=3
+[APSS]
+APSS:
+	Last shutdown @ 20202194955
+	Last bringup req @ 20204005783
+	Last bringup ack @ 20204020009
+	Last wakeup idx: 20202102474
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12434
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22324
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 20148345146
+	Last bringup req @ 20148308770
+	Last bringup ack @ 20148317407
+	Last wakeup idx: 19851199818
+	Last XO shutdown enter @ 20148350672
+	Last XO shutdown exit @ 20148312371
+	XO total duration: 13662051175
+	Last sleep transition duration: 6921
+	Last wake transition duration: 7081
+	XO shutdown count: 2331
+	Wakeup reason: 0x0
+	Shutdown count: 2338
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 20203682087
+	Last bringup req @ 20203453406
+	Last bringup ack @ 20203453517
+	Last wakeup idx: 20203453145
+	Last XO shutdown enter @ 20203693063
+	Last XO shutdown exit @ 20203446131
+	XO total duration: 14905627670
+	Last sleep transition duration: 11722
+	Last wake transition duration: 13023
+	XO shutdown count: 7760
+	Wakeup reason: 0x0
+	Shutdown count: 7765
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+--- snap lowpower-pre2 14:07:26 success=3
+[APSS]
+APSS:
+	Last shutdown @ 20202194955
+	Last bringup req @ 20204005783
+	Last bringup ack @ 20204020009
+	Last wakeup idx: 20202102474
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12434
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22324
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 20148345146
+	Last bringup req @ 20148308770
+	Last bringup ack @ 20148317407
+	Last wakeup idx: 19851199818
+	Last XO shutdown enter @ 20148350672
+	Last XO shutdown exit @ 20148312371
+	XO total duration: 13662051175
+	Last sleep transition duration: 6921
+	Last wake transition duration: 7081
+	XO shutdown count: 2331
+	Wakeup reason: 0x0
+	Shutdown count: 2338
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 20203682087
+	Last bringup req @ 20203453406
+	Last bringup ack @ 20203453517
+	Last wakeup idx: 20203453145
+	Last XO shutdown enter @ 20203693063
+	Last XO shutdown exit @ 20203446131
+	XO total duration: 14905627670
+	Last sleep transition duration: 11722
+	Last wake transition duration: 13023
+	XO shutdown count: 7760
+	Wakeup reason: 0x0
+	Shutdown count: 7765
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sat Jan  3 01:33:16 1970
+rtcwake rc=0
+--- snap lowpower-post2 14:09:03 success=4
+[APSS]
+APSS:
+	Last shutdown @ 22065916949
+	Last bringup req @ 22066451994
+	Last bringup ack @ 22066472698
+	Last wakeup idx: 22058496284
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12652
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22425
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 22011454170
+	Last bringup req @ 22011427819
+	Last bringup ack @ 22011434916
+	Last wakeup idx: 21550608023
+	Last XO shutdown enter @ 22011459695
+	Last XO shutdown exit @ 22011392368
+	XO total duration: 15524241576
+	Last sleep transition duration: 6921
+	Last wake transition duration: 2675
+	XO shutdown count: 2337
+	Wakeup reason: 0x0
+	Shutdown count: 2346
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 22065565935
+	Last bringup req @ 22065337143
+	Last bringup ack @ 22065337254
+	Last wakeup idx: 22065336882
+	Last XO shutdown enter @ 22065576911
+	Last XO shutdown exit @ 22065329870
+	XO total duration: 16701473918
+	Last sleep transition duration: 11721
+	Last wake transition duration: 13024
+	XO shutdown count: 7787
+	Wakeup reason: 0x0
+	Shutdown count: 7792
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+== restoring power-state-on 14:09:03
+successfully set new power state in the modem
+           |                  state: disabled
+           |            power state: on
+           |   packet service state: detached
+--- snap final 14:09:13 success=4
+[APSS]
+APSS:
+	Last shutdown @ 22259121764
+	Last bringup req @ 22260274224
+	Last bringup ack @ 22260288511
+	Last wakeup idx: 22255994310
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12434
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 22641
+	Active cores bitmask: 0x1
+[MPSS]
+MPSS:
+	Last shutdown @ 22256472690
+	Last bringup req @ 22255757207
+	Last bringup ack @ 22255757319
+	Last wakeup idx: 22255756793
+	Last XO shutdown enter @ 22256487167
+	Last XO shutdown exit @ 22255743084
+	XO total duration: 15700300982
+	Last sleep transition duration: 19401
+	Last wake transition duration: 21521
+	XO shutdown count: 2362
+	Wakeup reason: 0x0
+	Shutdown count: 2371
+	Active cores bitmask: 0x0
+[PRONTO]
+PRONTO:
+	Last shutdown @ 22260209169
+	Last bringup req @ 22259979384
+	Last bringup ack @ 22259979496
+	Last wakeup idx: 22259979124
+	Last XO shutdown enter @ 22260220132
+	Last XO shutdown exit @ 22259972111
+	XO total duration: 16834766932
+	Last sleep transition duration: 11729
+	Last wake transition duration: 13022
+	XO shutdown count: 7873
+	Wakeup reason: 0x0
+	Shutdown count: 7878
+	Active cores bitmask: 0x0
+[LPASS]
+LPASS:
+	Last shutdown @ 890251534
+	Last bringup req @ 890157964
+	Last bringup ack @ 890158124
+	Last wakeup idx: 890135031
+	Last XO shutdown enter @ 890259617
+	Last XO shutdown exit @ 890129649
+	XO total duration: 186034797
+	Last sleep transition duration: 8075
+	Last wake transition duration: 7736
+	XO shutdown count: 53
+	Wakeup reason: 0x0
+	Shutdown count: 67
+	Active cores bitmask: 0x0
+== DONE Mon Aug 24 14:09:13 CEST 2026
