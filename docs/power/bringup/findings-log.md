@@ -1997,3 +1997,55 @@ it cannot do. (b) I then proposed decoding the mask as the next step without
 first reading the closed 2026-08-23 decode — the same "closed in a lead,
 invisible from the resume page" trap the runbook warns about. Read the prior
 findings before proposing a next measurement.
+
+## 2026-08-24 (later) — ☠️ CORRECTION to the "vlow is a counter artifact" synthesis: the AP never drops XO, even in a genuine suspend
+
+The synthesis above read `vlow`=0 as *uncorroborated by any per-master deficit*
+and therefore "most likely a counter artifact, not a power defect". That was
+measured in **runtime idle** (cable-in, no forced suspend). Pushed one step
+further — forcing real s2idle with `rtcwake -m mem` and reading
+`rpm_master_stats` either side — it is wrong, and in an instructive way.
+
+**The suspend genuinely happens.** `suspend_stats/success` increments per cycle;
+`suspendseries.sh` shows both CPU clusters reaching their deepest genpd state
+(cluster0 S2 `usage` +1580, `time_ms` +18 s over a 60 s window — `cpu-power-collapse`).
+So the phone is not "failing to sleep".
+
+**But there is a per-master deficit, and it is the AP.** Across a 120 s
+`rtcwake` suspend (`suspend_success` 2→3), snapping
+`/sys/kernel/debug/qcom_rpm_master_stats/*`:
+
+| master | XO shutdown count | across the suspend |
+|---|---|---|
+| **APSS (application proc.)** | **0 → 0** (XO duration 0 → 0) | never enters XO-shutdown, though its `Shutdown count` climbs +303 (cores do collapse) |
+| MPSS (modem) | 40799 → 40981 | **+182**, +0.90 s |
+| PRONTO (Wi-Fi) | 164189 → 164295 | **+106**, +1.29 s |
+| LPASS (audio DSP) | 79 → 79 | frozen — the LPASS-CLOSED steady state (deeper, not shallower) |
+
+`vlow`/`vmin` Count stay 0 throughout. The RPM aggregates to `vlow` (XO off for
+the whole SoC) only when **every** master, the AP included, has voted its
+resources down. The co-processors do; the AP never does. So **`vlow`=0 is real**
+— the application processor holds the XO up even in s2idle — **not** the counter
+misreading it named last night.
+
+The mechanism this points at: mainline msm8953 offers **s2idle only** (no
+platform "deep"/`mem` suspend_ops). s2idle freezes tasks and power-collapses the
+CPU clusters via cpuidle/genpd, but nothing drives the **APSS RPM master** into
+the XO-shutdown handshake the way a PSCI system-suspend path would. The AP's XO
+vote is the gate on `vlow`.
+
+☠️ **Discipline:** the artifact reading was not wrong for lack of care — it was
+right about what it measured (runtime idle, co-procs sleep like the oracle) and
+wrong to generalise from it. *Runtime idle is not suspend.* The decisive
+instrument was the per-master XO count taken **across a forced suspend**, not the
+aggregate counter and not the idle-window per-master rates. Data:
+[`captures/2026-08-24_xo-across-suspend-pmos-r73-cablein.txt`](captures/2026-08-24_xo-across-suspend-pmos-r73-cablein.txt).
+
+**Still open — the one experiment that needs the cable physically out.** Whether
+the AP holds XO because the USB controller (`7000000.ssusb`) keeps a resource up
+with the cable in, or because the s2idle-vs-deep architecture would hold it
+regardless. Re-running the identical XO-across-suspend measurement cable-out is
+the discriminator: if APSS XO count / `vlow` finally move → USB is the holder
+(a concrete, fixable target); if they stay 0 → it is USB-independent and the fix
+is a platform system-suspend path. Detector is armed (polls `charger/online`
+→ 0 over the Wi-Fi link, then fires the cable-out run); waiting on the unplug.

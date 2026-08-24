@@ -1,0 +1,32 @@
+# XO-shutdown across a forced s2idle suspend, pmOS r73 (#74-fp3), CABLE IN.
+# Instrument: rpm_master_stats (per-master XO shutdown count/duration) + qcom_stats
+# vlow + suspend_stats, snapped either side of `rtcwake -m mem -s 120`.
+# suspend_success incremented (2->3) => the suspend genuinely happened.
+# Cable-in is valid here: these are counters, not a current meter.
+
+=== XO-across-suspend 2026-08-24T06:19:28+02:00 ===
+== BEFORE uptime=17142 ==
+suspend_success=2
+vlow_count=0
+APSS:   XOcount=0      XOdur=0             SD=271215
+MPSS:   XOcount=40799  XOdur=205985064126  SD=40821
+PRONTO: XOcount=164189 XOdur=276017038189  SD=164225
+LPASS:  XOcount=79     XOdur=38982174512   SD=119
+== AFTER uptime=17216 ==
+suspend_success=3
+vlow_count=0
+APSS:   XOcount=0      XOdur=0             SD=271518   (+303 SD, XO still 0)
+MPSS:   XOcount=40981  XOdur=206889130827  SD=41003    (+182 XO, +0.90s)
+PRONTO: XOcount=164295 XOdur=277308784001  SD=164331   (+106 XO, +1.29s)
+LPASS:  XOcount=79     XOdur=38982174512   SD=119       (frozen: LPASS-CLOSED steady state)
+
+# Reading: co-processors (MPSS/PRONTO) drop XO repeatedly across the suspend;
+# the AP (APSS) never enters XO-shutdown (hard 0) even though its cores
+# power-collapse (SD climbs). The RPM aggregates to vlow only when every master
+# including the AP has voted its resources down, so vlow stays 0. vlow=0 is
+# therefore REAL (the AP holds XO up in s2idle), not a mere counter artifact.
+
+# Companion residency run (suspendseries.sh, same boot, "60 120"):
+#   suspend_success 0->1->2, genpd cluster0 S2 usage +1580 / +18s over the 60s
+#   window (deepest cpu-power-collapse reached), vlow/vmin Count stay 0,
+#   vlow Client Votes churn (0x7050705 -> 0x3070301 -> 0x3010501).
