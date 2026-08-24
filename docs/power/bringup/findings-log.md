@@ -2671,3 +2671,9 @@ term) accounts for part of the sleeping-draw gap on normal nights.
 ☠️ Method note: `rtcwake -m mem -s 90` on this RTC (epoch 1970) sets the alarm
 correctly, but a suspend that *ends early* still exits `rtcwake` with rc=0 —
 wall-clock the window (`date +%T` around it) or the abort is invisible.
+
+☠️ One more trap from the same run: the `--set-power-state-low` →
+`--set-power-state-on` round trip leaves the modem **disabled** (it started
+`registered`/`attached`); an explicit `mmcli -m any --enable` is needed to
+re-register. Restored and verified (registered, 75 % signal). Any scripted leg
+using power-state-low must end with `--enable`, not just `--set-power-state-on`.
