@@ -13,11 +13,26 @@
 # below is written so that it CAN fail: it reads the live state, never a flag we
 # set ourselves earlier in the same script.
 #
-#   preflight.sh [min_capacity_pct]     (default 95)
+#   preflight.sh [min_capacity_pct] [nocable]     (default 95)
+#
+# 'nocable' declares the night runs with the cable physically out (a discharge
+# leg armed by an operator who just unplugged it). The charger check then turns
+# into a note instead of a gate: online=0 is the DECLARED state, not evidence of
+# a leftover USBIN suspend. ☠️ It stays a hard FAIL by default because with the
+# cable in, online=0 means exactly that leftover - the one that hands over a
+# phone that silently will not charge.
 
 set -u
 
-MINCAP=${1:-95}
+MINCAP=95
+NOCABLE=0
+for a in "$@"; do
+	case "$a" in
+	nocable) NOCABLE=1 ;;
+	*[!0-9]*) echo "unknown arg: $a" >&2; exit 2 ;;
+	*) MINCAP=$a ;;
+	esac
+done
 CHG=/sys/class/power_supply/pmi632-charger
 BAT=/sys/class/power_supply/pmi632-battery
 RPM=/sys/kernel/debug/qcom_rpm_master_stats
@@ -108,6 +123,8 @@ fi
 online=$(f $CHG/online); cstat=$(f $CHG/status)
 if [ "$online" = 1 ]; then
 	ok charger "online=1 status=$cstat"
+elif [ "$NOCABLE" = 1 ]; then
+	note charger "online=$online status=$cstat - cable declared OUT; USBIN state unverifiable until replug (restore paths unchanged)"
 else
 	bad charger "online=$online status=$cstat - USBIN may still be suspended from an earlier leg"
 fi
