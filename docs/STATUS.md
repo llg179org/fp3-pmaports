@@ -15,7 +15,19 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 (evening — the non-XO `vlow` holder is NAMED)**.
+Last updated: **2026-08-24 (night — ★★★★★ the deep-sleep item is CLOSED: the
+`vlow` record read RAW from RPM message RAM on the working UT oracle is 0 too,
+across a window with +34 603 AP power collapses and thousands of co-proc XO
+shutdowns. `vlow` never occurs on this device/firmware at all — the target was
+a phantom, there is nothing to fix. Instrument:
+`docs/power/bringup/tools/rpmstats_raw.py` (mmap `/dev/mem`, works on both
+slots, validated byte-for-byte against pmOS debugfs). The "missing RPM
+handshake" thread closes with it — the RPM-observable handshake (vMPM
+wakeup + doorbell) exists and works on mainline; the AP-local SMD-RX-mask/flush
+is invisible to the RPM; and the oracle has all of it and still never enters
+`vlow`. The remaining deep-sleep work is the modem-lead (absolute draw:
+79–83 mA sleep baseline vs 43 mA modem-cut), per the RUNBOOK. Details:
+findings-log 2026-08-24 "(continued)" entry.**
 
 ## The device
 
@@ -45,8 +57,9 @@ The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 The three branches above advanced by one commit (the default-off icc suspend-hook
 knob, `icc_smd_rpm.sleep_bw_off`), pushed to `fork`, but `_commit` was
 deliberately **not** bumped: the knob has no runtime effect unless armed on a boot
-label, and it does not by itself reach `vlow` (the RPM handshake is still
-missing). Bump `_commit` only when there is a reason to ship.
+label, and it does not by itself reach `vlow` (which, as of the same night's
+oracle raw-read, **nothing** can — the mode never occurs on this platform).
+Bump `_commit` only when there is a reason to ship.
 
 ★★ 2026-08-24: the all-20-rails `regulator-state-mem` commit (r74,
 `84241a07`) **did not boot** and is now **reverted** on all three branches
@@ -214,16 +227,24 @@ are directly under it (evidence retention, and the WiFi lever the same
 measurement has to account for); the camera wedge, which led this list yesterday,
 is now item 4.
 
-1. ★★★ **TOP PRIORITY — full deep sleep (`vlow`/`vmin`). The AP-side gate IS
-   identifiable from source, and it was identified on 2026-08-23: the
-   sleep-set regulator votes are never cast because no device tree describes a
-   suspend state.**
+1. ★★★★★ **CLOSED 2026-08-24 night — full deep sleep (`vlow`/`vmin`): the
+   target was a phantom.** The raw message-RAM read on the working UT oracle
+   (`tools/rpmstats_raw.py`) shows `vlow`/`vmin` count=0 there too, across a
+   10-min window in which the oracle demonstrably slept at full depth
+   (APSS +34 603 collapses, MPSS/PRONTO/LPASS XO +1 779/+4 997/+7 745).
+   `vlow` is a mode this device/firmware never enters on ANY OS; equality with
+   the oracle — the actual success criterion — was already reached. The
+   planned `smd-rpm.c` s2idle-handshake driver work is **cancelled** (the
+   RPM-observable handshake exists mainline; the rest is AP-local). What
+   remains of "deep sleep" is absolute draw: the **modem-lead** (79–83 mA
+   sleep baseline vs 43 mA modem-cut), per the RUNBOOK. Historical detail below
+   kept for the record.
 
-   The standing fact is unchanged: `vlow` and `vmin` `Count` have **never** left
+   The pre-closure standing fact: `vlow` and `vmin` `Count` never left
    0 in any capture we hold, and that survives the AP-side sleep-set family,
    `xo_sleep_off`, `both_sets`, `sleep_init`, and a powered-off ADSP. System
-   suspend itself works (12 successes in the last votes run); what has never
-   happened is the RPM entering an aggregate low-power set.
+   suspend itself works (12 successes in the last votes run). It is now known
+   the same is true of the oracle.
 
    ☠️☠️ Everything this queue once said about LPASS being pinned is
    **retracted** — a flat `Shutdown count` reads the same whether the ADSP is

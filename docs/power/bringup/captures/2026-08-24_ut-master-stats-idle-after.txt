@@ -1,0 +1,72 @@
+[sudo] password for phablet: 13:49:03
+APSS
+	shutdown_req:0x4B08445DC
+	wakeup_ind:0x4B0437A75
+	bringup_req:0x4B08691D1
+	bringup_ack:0x4B086CF81
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x3362
+	last_wake_transition_duration:0x334e
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0xe32f
+	active_cores:0x1
+		core0
+MPSS
+	shutdown_req:0x4B0A22F60
+	wakeup_ind:0x4B09C8A70
+	bringup_req:0x4B09C8DF5
+	bringup_ack:0x4B09C8E65
+	xo_last_entered_at:0x4B0A25F0B
+	xo_last_exited_at:0x4B09C5269
+	xo_accumulated_duration:0x4270AED6C
+	last_sleep_transition_duration:0x4555
+	last_wake_transition_duration:0x4c2d
+	xo_count:0xc8b
+	wakeup_reason:0x0
+	numshutdowns:0xcb3
+	active_cores:0x0
+PRONTO
+	shutdown_req:0x4B0E60EA7
+	wakeup_ind:0x4B0E25FA3
+	bringup_req:0x4B0E260B5
+	bringup_ack:0x4B0E26124
+	xo_last_entered_at:0x4B0E63493
+	xo_last_exited_at:0x4B0E2465B
+	xo_accumulated_duration:0x3640C3A95
+	last_sleep_transition_duration:0x2b9c
+	last_wake_transition_duration:0x29ae
+	xo_count:0x2206
+	wakeup_reason:0x0
+	numshutdowns:0x2206
+	active_cores:0x0
+TZ
+	shutdown_req:0x0
+	wakeup_ind:0x0
+	bringup_req:0x0
+	bringup_ack:0x0
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x0
+	last_wake_transition_duration:0x0
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x0
+	active_cores:0x0
+LPASS
+	shutdown_req:0x4B0DA465B
+	wakeup_ind:0x4B074DDD6
+	bringup_req:0x4B0D9B619
+	bringup_ack:0x4B0D9DE0F
+	xo_last_entered_at:0x4B0DA625D
+	xo_last_exited_at:0x4B0D9C447
+	xo_accumulated_duration:0x434CA9569
+	last_sleep_transition_duration:0x1dcc
+	last_wake_transition_duration:0x1e65
+	xo_count:0x338f
+	wakeup_reason:0x0
+	numshutdowns:0x3431
+	active_cores:0x0

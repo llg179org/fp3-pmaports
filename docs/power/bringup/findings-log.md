@@ -2531,3 +2531,73 @@ software SMD-RX-mask + flush is.)
 Device restored to clean r73 (`default postmarketOS-prev`); the suspend-hook
 kernel + `postmarketOS-sleepbw-exp` label remain in place (non-default, inert) as
 the diagnostic vehicle.
+
+## 2026-08-24 (continued) — ★★★★★ vlow read RAW on the working oracle: it is 0 there too. The target was a phantom; the deep-sleep item CLOSES
+
+The "handshake is the single remaining blocker" conclusion above had one
+untested premise: that the working system ever reaches `vlow` at all. The
+counter "does not exist downstream" as a debugfs file — but the *record*
+exists: it lives in RPM message RAM, written by the same RPM firmware on both
+slots, at the address mainline `qcom_stats` reads (`qcom,rpm-stats`,
+phys `0x290000`, dynamic offset at `+0x14`). A ~30-line mmap reader
+(`tools/rpmstats_raw.py` — `read(2)` on `/dev/mem` EFAULTs on this config,
+`mmap` works) reads it on **both** systems, bypassing the disjoint-instrument
+problem for good.
+
+**Validation (pmOS r73):** raw read matches debugfs `qcom_stats/vlow`
+byte-for-byte, including the live Client Votes mask. Instrument proven, and
+proven against its own kernel-side decoder.
+
+**The oracle leg (UT 4.9.218, slot a, cable in, screen off, ~10 min idle
+window 13:38:57→13:48:57):** during the window the oracle demonstrably did its
+full continuous deep sleep —
+
+| master | delta over the window |
+|---|---|
+| APSS numshutdowns | **+34 603** (~58/s; xo_count 0, as always) |
+| MPSS xo_count | +1 779 (~3/s) |
+| PRONTO xo_count | +4 997 (~8.3/s) |
+| LPASS xo_count | +7 745 (~13/s) |
+
+— and the RPM's own record throughout: **`vlow` count=0, last_entered=0,
+accumulated=0; `vmin` all-zero** (Client Votes churning: `0x1110105` →
+`0x1051505`, so the record is live, not stale). Captures:
+[`2026-08-24_ut-master-stats-idle-before.txt`](captures/2026-08-24_ut-master-stats-idle-before.txt),
+[`2026-08-24_ut-master-stats-idle-after.txt`](captures/2026-08-24_ut-master-stats-idle-after.txt).
+
+### What this settles
+
+1. ★★★★★ **The working downstream system never enters `vlow` either.** With
+   tens of thousands of AP power collapses and thousands of co-processor XO
+   shutdowns in the very window, the RPM never once aggregated to `vlow`
+   (or `vmin`). `vlow`=0 is **platform behaviour on this device/firmware**,
+   not a pmOS defect. There is nothing to fix.
+2. **The "missing handshake" thread closes too — nothing is blocked by it.**
+   The code audit this afternoon already weakened it: the RPM-observable part
+   of the downstream sleep entry (vMPM wakeup-time write + IPC doorbell) exists
+   and provably works on mainline (the 1s-cap fix's measured effect *is* the
+   RPM honouring the vMPM deadline), while `msm_rpm_enter_sleep`'s two halves
+   (GIC-level SMD RX mask + batch flush) are **AP-local and invisible to the
+   RPM**. The oracle measurement now confirms it from the other side: the
+   downstream system *has* the handshake and still never reaches `vlow`.
+   No `smd-rpm.c` s2idle driver work is warranted; that planned next step is
+   cancelled.
+3. **The success criterion was met before this entry.** Oracle-equivalence in
+   every readable per-master metric was already measured (co-proc XO rates
+   match; AP collapses; genuine s2idle works), and the real power metric is
+   absolute draw: sleep baseline 79–83 mA, modem-cut 43 mA. The remaining
+   deep-sleep work is the **modem-lead** (RUNBOOK), not any RPM mode counter.
+
+☠️ **Discipline, again the same shape as 08-16 and last night:** a target
+inherited from a counter's *name* ("deepest mode, so reaching it = success")
+was chased through the entire AP-side vote space before anyone checked whether
+the reference system ever produces it. The two-sided rule applies to the
+*goal*, not just the mechanism: before adopting a metric as a target, measure
+it on the oracle. The raw-mmap reader is the instrument that should have
+existed three weeks ago — the debugfs asymmetry ("no such file downstream")
+was allowed to stand in for "unknowable downstream".
+
+Device restored to slot b, clean r73 default. ☠️ Operational note (user-supplied):
+after a slot switch to UT, ssh comes up **only after the user logs in and
+replugs USB** — ask for it in advance next time; the "no-touch" reconnect times
+hold for plain reboots only.
