@@ -55,3 +55,15 @@
 18:54:33 192.168.100.17 up=18265 q=active g=active cap=82 v=3931473 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
 18:59:40 192.168.100.17 up=18572 q=active g=active cap=81 v=3911425 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
 19:04:42 192.168.100.17 up=18874 q=active g=active cap=81 v=3926801 chg=Discharging root=rw [3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824 
+19:09:44 192.168.100.17 up=19176 q=inactive g=active cap=80 v=3923493 chg=Discharging root=rw QUEUE FINISHED rc=0 
+19:09:45 # the queue reported itself finished - pulling once more and exiting
+19:09:46 # supervisor radiolow-20260824 done; artefacts in /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/radiolow-20260824
+total 100
+drwxrwxr-x 2 fp3 fp3  4096 Aug 24 15:00 .
+drwxrwxr-x 5 fp3 fp3  4096 Aug 24 14:55 ..
+-rw-r--r-- 1 fp3 fp3  4265 Aug 24 19:09 01-root-radio-low-leg-sh-radiolow-20260824.txt
+-rw-r--r-- 1 fp3 fp3 61235 Aug 24 19:09 guardian.log
+-rw-r--r-- 1 fp3 fp3   813 Aug 24 19:09 jobs-radiolow-20260824.txt
+-rw-r--r-- 1 fp3 fp3  1334 Aug 24 19:09 preflight.txt
+-rw-r--r-- 1 fp3 fp3   638 Aug 24 19:09 queue.log
+-rw-rw-r-- 1 fp3 fp3  8070 Aug 24 19:09 timeline.txt

@@ -54,3 +54,7 @@ radiolow-20260824 phase=B n=1 t=15308 v=4006992 i=-96893 pll=0 nread=20
 radiolow-20260824 phase=B n=2 t=16238 v=3994632 i=-114898 pll=0 nread=20
 radiolow-20260824 phase=B n=3 t=17168 v=3982370 i=-105056 pll=0 nread=20
 radiolow-20260824 phase=B n=4 t=18099 v=3967870 i=-111083 pll=0 nread=20
+radiolow-20260824 phase=B n=5 t=19029 v=3954634 i=-117263 pll=0 nread=20
+suspend-slope: radiolow-20260824 done - restoring charger and greetd
+# slope-leg rc=0
+# modem restored:  | state: registered  | power state: on 
