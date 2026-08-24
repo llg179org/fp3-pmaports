@@ -65,12 +65,35 @@ fi
 # A change repeats on every boot and there is no console on this device. The
 # fallback label is the entire recovery story, so verify the files it names
 # actually exist rather than that the stanza is present.
+#
+# ☠ The default label name is NOT hard-coded. The scheme has already gone from
+# 'postmarketOS' to prev/bothsets/sleepset/fallback, and a plain name-match
+# silently fails the whole night the day someone renames a working default -
+# measured 2026-08-23: the default was 'postmarketOS-prev' (clean r73, the very
+# kernel that was running) and the old '= postmarketOS' check refused to arm on
+# it. What we actually require is stronger and version-free: the default must
+# resolve to a FROZEN, named kernel snapshot (vmlinuz-<tag>), never the bare
+# live 'vmlinuz' symlink whose contents are whatever was installed last and may
+# not boot - that is the r74 'sleepset' trap. And it verifies the file exists,
+# which the old name-match never did.
 EXT=/boot/extlinux/extlinux.conf
 defl=$(sed -n 's/^default[[:space:]]*//p' "$EXT" 2>/dev/null | head -1)
-if [ "$defl" = postmarketOS ]; then
-	ok boot-default "default label is $defl"
+resolve() { # $1=field -> path named by the default label's stanza
+	awk -v want="$defl" -v fld="$1" '
+		$1=="label"{cur=$2; next}
+		cur==want && $1==fld{print $2; exit}' "$EXT" 2>/dev/null
+}
+kpath=$(resolve kernel); fpath=$(resolve fdt)
+kfile=/boot/${kpath#/}; ffile=/boot/${fpath#/}
+kbase=${kpath##*/}
+if [ -z "$kpath" ]; then
+	bad boot-default "default label '${defl:-?}' has no kernel line in $EXT"
+elif [ "$kbase" = vmlinuz ]; then
+	bad boot-default "default '$defl' boots the live 'vmlinuz' symlink, not a frozen snapshot - refusing (r74 no-boot trap)"
+elif [ -s "$kfile" ] && [ -s "$ffile" ]; then
+	ok boot-default "default '$defl' -> frozen $kbase (+ ${fpath##*/}), both present"
 else
-	bad boot-default "default label is '${defl:-?}', expected postmarketOS"
+	bad boot-default "default '$defl' names $kbase / ${fpath##*/} but the file is missing or empty - no proven boot"
 fi
 if [ -s /boot/vmlinuz-fallback ] && [ -s /boot/sdm632-fairphone-fp3.dtb-fallback ]; then
 	ok boot-fallback "vmlinuz-fallback and dtb-fallback both present and non-empty"

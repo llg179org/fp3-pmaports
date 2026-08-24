@@ -2031,7 +2031,7 @@ plus a 37-min idle window earlier the same boot: 0 failures (r64 idle: ~14)
 cpuidle sanity: state1 usage kept climbing during and after the run — the QoS
 request does not stick outside the rate-change window.
 
-## 2026-08-24 — night slope-legs are gated OFF until the boot label is reconciled
+## 2026-08-24 — night slope-legs were gated on the boot label; gate now fixed
 
 Ran `night/preflight.sh` on r73 to decide the sanctioned alternative (a clean
 r73 s2idle baseline). **Result: FAILED on exactly one gate —**
@@ -2055,3 +2055,23 @@ lower-stakes than it looks: `vlow`=0 turned out uncorroborated by any per-master
 deficit (pmOS co-processors sleep like the oracle's), so the deep-sleep question
 is not blocked on getting this leg — the real figure of merit is the mA baseline
 already held (~79–83 mA, r64).
+
+**Resolved the same day (took the second option).** Rather than a boot-config
+edit — the class of change that bricked r74 — I taught `preflight.sh` what the
+gate was really for. The old check string-matched `default = postmarketOS` and,
+tellingly, **never verified the default's kernel file existed at all** — only its
+name. The new `boot-default` gate resolves the default label's `kernel`/`fdt`
+lines out of `extlinux.conf` and requires (a) the kernel be a **frozen, named
+snapshot** (`vmlinuz-<tag>`), never the bare live `vmlinuz` symlink whose
+contents are whatever was installed last and may not boot — that is precisely the
+`postmarketOS-sleepset` → r74 trap — and (b) that both files exist non-empty.
+Version-free, and stronger than the name it replaced.
+
+Proven on all five branches against the real label layout before deploy: `-prev`
+and `-bothsets` PASS (frozen `vmlinuz-r73`), `-fallback` PASS, `-sleepset` FAIL
+(live symlink) **even when its files exist and are non-empty** — the guard is the
+unproven-kernel identity, not mere file absence — and a nonexistent default FAILs
+on the missing kernel line. Then run live on r73: **`PREFLIGHT OK — the night may
+be armed`**, `boot-default` now reading `default 'postmarketOS-prev' -> frozen
+vmlinuz-r73 (+ dtb-r73), both present`. The queue can arm on the next unattended
+night with the cable out; nothing was armed now (cable in, operator present).
