@@ -582,7 +582,7 @@ and the unattended harness that now runs the long legs is
 [`night/`](night/README.md).
 
 ☠️ **If you are picking the work up, none of those is the entry point.**
-[`RUNBOOK.md`](RUNBOOK.md) is: it says what is running on the device right now and
+[`../../STATUS.md`](../../STATUS.md) + [`../../TODO.md`](../../TODO.md) are: they say what is running on the device right now and
 what to do next, and it is the only page that does.
 
 ## What is still open here

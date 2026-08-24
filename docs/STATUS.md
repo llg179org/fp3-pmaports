@@ -31,7 +31,7 @@ handshake" thread closes with it — the RPM-observable handshake (vMPM
 wakeup + doorbell) exists and works on mainline; the AP-local SMD-RX-mask/flush
 is invisible to the RPM; and the oracle has all of it and still never enters
 `vlow`. The remaining deep-sleep work is the modem-lead (absolute draw:
-79–83 mA sleep baseline vs 43 mA modem-cut), per the RUNBOOK. Details:
+79–83 mA sleep baseline vs 43 mA modem-cut), per the TODO plan. Details:
 findings-log 2026-08-24 "(continued)" entry.**
 
 ## The device
@@ -216,8 +216,8 @@ from the repos.
    output directory; kill it by the PID from `ps -eo pid,args`, ☠️ **never with
    `pkill -f`**, whose pattern matches the killer's own command line.
 
-☠️ **Before starting anything power-related, read
-[`power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md) top section.** A finished
+☠️ **Before starting anything power-related, read the modem-lead plan in
+[`TODO.md`](TODO.md) ("Deep sleep — CLOSED" section) and the queue item above.** A finished
 investigation that lives only in a `leads/*` working note is invisible from this
 page, and on 2026-08-23 that produced a re-run of a closed bisect and a
 conclusion that had to be retracted. If you close something, move the result to

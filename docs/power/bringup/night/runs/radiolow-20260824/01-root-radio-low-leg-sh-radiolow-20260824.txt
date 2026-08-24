@@ -1,0 +1,5 @@
+# radio-low-leg radiolow-20260824 uptime=3905
+# modem before:  | state: registered  | power state: on  | signal quality: 81% (cached)  | packet service state: attached 
+# radio armed low
+# probe suspend: wall 92s of 90, MPSS XO off 87624ms
+# gate passed - handing over to slope-leg.sh radiolow-20260824 (modem restore stays on this shell's exit path)

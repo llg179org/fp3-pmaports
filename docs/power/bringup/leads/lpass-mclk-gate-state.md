@@ -7,7 +7,7 @@
 > once the result is in RUNBOOK.md" — and the result was never moved.** On
 > 2026-08-23 that cost a full re-run of a bisect finished here two days earlier,
 > plus a wrong conclusion built on an instrument this page had already warned
-> was ambiguous. The result now lives in [`../RUNBOOK.md`](../RUNBOOK.md) and in
+> was ambiguous. The result now lives in [`../findings-log.md`](../findings-log.md) (Part II, the former run-book) and in
 > [`../README.md`](../README.md); this page keeps the working detail. A closed
 > result in a file the resume path does not read is not a closed result.
 >

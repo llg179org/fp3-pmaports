@@ -289,7 +289,7 @@ That is the useful shape of a negative result: it moves the search off userspace
 entirely and onto the platform - the kernel, the RPM votes and the regulator
 sleep set, which is where [`rpm-sleep-set.md`](rpm-sleep-set.md) already points.
 The one thing that has moved a number since is the modem cut measured **asleep**
-(36 % off the discharge slope, `RUNBOOK.md`), and its cost is bursts rather than
+(36 % off the discharge slope, findings-log Part II), and its cost is bursts rather than
 baseline - which is why it shows up in a slope and not in a floor.
 
 ## ☠️★★ CORRECTION, 2026-08-19: ~25 mA of every floor above is the panel

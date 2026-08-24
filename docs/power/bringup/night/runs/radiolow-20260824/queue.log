@@ -1,0 +1,6 @@
+[3884] # queue radiolow-20260824 start jobfile=/root/night/jobs-radiolow.txt cap=100% v=4204354
+[3884] # preflight 95 nocable
+[3905] # preflight PASSED
+[3905] # note: radio-low slope leg: arm the radio low, gate on a probe suspend, then a full slope leg
+[3905] # timeout is now 28800s
+[3905] # job 1 START (timeout 28800s): /root/radio-low-leg.sh radiolow-20260824

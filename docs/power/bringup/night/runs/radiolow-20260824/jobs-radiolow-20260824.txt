@@ -1,0 +1,15 @@
+# The price of the radio, arm 1: mmcli --set-power-state-low for a whole leg.
+#
+# Measured 2026-08-24 (modem-xo-duty): radio up = every suspend aborts early and
+# the MPSS chops the crystal; radio low = full-term suspends, MPSS XO off the
+# whole window. This leg prices that in mA, against baseline-20260819 (phase-A
+# slope -35.77 mV/h) and nomodem-20260819 (-22.62 mV/h).
+#
+# ☠️ Compare phase-A slopes directly. The derived mA is for scale only.
+# ☠️ Cable is physically OUT for this night (operator unplugged it before
+# arming) - hence 'nocable' on the gate and NO @charge lines: with no cable a
+# charge wait can only time out.
+@preflight 95 nocable
+@note radio-low slope leg: arm the radio low, gate on a probe suspend, then a full slope leg
+@timeout 28800
+/root/radio-low-leg.sh radiolow-20260824

@@ -15,5 +15,5 @@ be wrong. Neither has happened to any of these yet.
 | [`idle-ladder.md`](idle-ladder.md) | what the awake floor is made of: five userspace candidates, all zero, and the panel's 24.5 mA that was hiding in every level |
 | [`de-compare.md`](de-compare.md) | phosh against another desktop environment. ☠️ Dropped by decision — the Sxmo install needed 264 MB net against 347 MB free |
 
-☠️ **A lead is not a plan.** What to do next is in [`../RUNBOOK.md`](../RUNBOOK.md),
+☠️ **A lead is not a plan.** What to do next is in [`../../../TODO.md`](../../../TODO.md),
 and it is deliberately the only page that says so.

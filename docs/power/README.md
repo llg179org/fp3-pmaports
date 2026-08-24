@@ -17,8 +17,8 @@ then disproved, every lead still being chased — is under
 
 | | |
 |---|---|
-| **this page** | the current state: draws, fixes, open questions, caveats |
-| [`bringup/RUNBOOK.md`](bringup/RUNBOOK.md) | ★ **the resume point.** What is running on the device right now and what to do next. Read it first if you are picking the work back up |
+| **this page** | the current state: draws, fixes, open questions, caveats — and the instrument table below |
+| [`../STATUS.md`](../STATUS.md) + [`../TODO.md`](../TODO.md) | ★ **the resume point.** What is running on the device and what to do next, in queue order. (The former `bringup/RUNBOOK.md` was split on 2026-08-24: its dated body is Part II of the findings-log) |
 | [`bringup/README.md`](bringup/README.md) | the narrative of how the idle current was localised |
 | [`bringup/findings-log.md`](bringup/findings-log.md) | the dated record, in the order it happened |
 | [`bringup/leads/`](bringup/leads/) | the open leads, one page each |
@@ -27,6 +27,20 @@ then disproved, every lead still being chased — is under
 | [`bringup/captures/`](bringup/captures/) | the raw data every number here came from |
 | [`bringup/patches/`](bringup/patches/) | patches carried out of this work |
 | [`bringup/disproven/`](bringup/disproven/README.md) | hypotheses that were disproved, kept so they are not re-run |
+
+## Reading the state off the device — the instruments that cost time to find
+
+| question | command |
+|---|---|
+| did the SoC reach a low-power mode | `grep Count /sys/kernel/debug/qcom_stats/{vlow,vmin}` — ☠️ closed 2026-08-24: `vlow` never occurs on this platform under any OS; it is not a figure of merit here |
+| which master never goes down | `cat /sys/kernel/debug/qcom_rpm_master_stats/APSS` — ☠️ one file per master, and the directory is `qcom_rpm_master_stats`, not `rpm_master_stats`; needs `modprobe rpm_master_stats` |
+| the RPM's own records, raw (works on BOTH slots) | `bringup/tools/rpmstats_raw.py` — mmap `/dev/mem` at message RAM; `dd`/`devmem` EFAULT here |
+| how deep does idle actually get | `cat /sys/kernel/debug/pm_genpd/power-domain-cluster0/idle_states` |
+| the same on the oracle | `ut-ssh 'cat /sys/kernel/debug/rpm_master_stats'` (one file, not a directory) and `.../lpm_stats/stats` |
+| what is waking the CPUs | two `/proc/interrupts` snapshots differenced — ☠️ stop the compositor first, or `msm_mdss` at 65/s makes the run meaningless |
+| has the phone ever suspended | `grep -H . /sys/power/suspend_stats/*` — `success` is the only honest answer; `cat /sys/power/mem_sleep` says which path. ☠️ `rtcwake` exits 0 even when the suspend aborts early — wall-clock the window |
+| current while suspended | `bringup/tools/suspend-slope.sh` — ☠️ **only `voltage_now`/`current_now` are live**; `capacity`, `charge_now` and `voltage_ocv` are one cached number the frozen poll worker maintains, and all three lie across a suspend. Use a slope of compensated `voltage_now`, calibrated against an awake control |
+| does the RTC alarm wake it | `echo 0 > /sys/class/rtc/rtc0/wakealarm; echo +90 > …` then `echo mem > /sys/power/state` — ☠️ prove this **before** relying on it to bring an unattended leg back |
 
 ## The theory: how this platform sleeps
 
@@ -226,7 +240,7 @@ runs. The reasoning behind each is in
 
 | question | where it is being worked |
 |---|---|
-| ★ **the modem stack costs ~36 mA asleep** — reproduced against a same-day control, and **the only intervention that has ever moved the sleeping slope**. The mechanism is still unnamed, and this is where the next measurement belongs | [`bringup/RUNBOOK.md`](bringup/RUNBOOK.md) |
+| ★ **the modem stack costs ~36 mA asleep** — reproduced against a same-day control, and **the only intervention that has ever moved the sleeping slope**. The mechanism is still unnamed, and this is where the next measurement belongs | [`bringup/findings-log.md`](bringup/findings-log.md) (Part II) |
 | **`vlow` has never once been reached** — and as of 2026-08-23 the whole AP-side sleep-set family is closed, three measured negatives deep (XO released, every regulator voted in both sets, explicit icc sleep zeros — the three r68/r69 experiment knobs, default off). Simultaneity is not the gap (the APSS held one 121 s XO-shutdown spanning a whole suspend) and the TZ is acquitted (all-zero on the oracle too). ☠️ The decisive control is unrun: with a USB cable in, the oracle cannot sleep at all, so whether the working system ever reaches vlow is itself unmeasured | [`../TODO.md`](../TODO.md) deep-sleep next-steps; [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
 | ~~**LPASS never shuts down**~~ — **solved and priced, 2026-08-19/20.** It is held by upstream's internal digital codec (`msm8916_wcd_digital_probe()` enables `mclk` and `ahbix-clk` at probe and drops them only in `remove()`). Freeing it is worth **~4 %**, inside the instrument's own spread — a correctness fix, not a power one | [`bringup/leads/lpass-never-sleeps.md`](bringup/leads/lpass-never-sleeps.md) |
 | ~~**the RPM sleep set**~~ — **closed, 2026-08-19.** Five enabled rails with no sleep vote became **one** with the USB controller unbound, and that one is the eMMC's. The mainline/vendor divergence is real in the code and costs nothing droppable here | [`bringup/leads/rpm-sleep-set.md`](bringup/leads/rpm-sleep-set.md) |
@@ -260,7 +274,7 @@ suspend, so the **system power domain collapses from s2idle anyway**. `deep` is
 in any case not ours to add: it exists only if the secure firmware answers
 `psci_features(SYSTEM_SUSPEND)`, which this one does not. The reasoning, and why
 neither systemd nor a kernel bump can have taken it away, is in
-[`RUNBOOK.md`](bringup/RUNBOOK.md#why-suspend-only-halves-it-there-is-no-deep-state);
+[`findings-log.md`](bringup/findings-log.md#why-suspend-only-halves-it-there-is-no-deep-state);
 `tests/checks/99-suspend-test.sh` now asserts both the state list and the
 collapse. `rtcwake` and `/dev/rtc0` work, and cpuidle has `WFI` plus
 `cpu-power-collapse`.

@@ -1375,7 +1375,7 @@ from the clk notifier) deadlocked ABBA against the GPU-devfreq QoS notifier on
 `smp_call_function_any()` kick. Validation: 27 720 frequency transitions +
 24 916 power-collapse entries under burst load, **0 failures** (baseline
 predicted ~50), plus a 37-minute idle window at 0 (r64 predicted ~14). Full
-post-mortem in [`docs/power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md)
+post-mortem in [`docs/power/bringup/findings-log.md`](power/bringup/findings-log.md) (Part II, the former run-book)
 (2026-08-22 entry). Not LKML-material: `apcs-msm8953.c` is
 msm8953-mainline-only. The history below is kept as the record of the hunt.
 
@@ -1383,7 +1383,7 @@ msm8953-mainline-only. The history below is kept as the record of the hunt.
 from `alpha_pll_huayra_set_rate()` under `sugov_work`, 266 times in one boot on
 2026-08-15/16, ending in an unclean power cut with no shutdown sequence in the
 journal. Evidence and the analysis are in
-[`docs/power/bringup/RUNBOOK.md`](power/bringup/RUNBOOK.md); the raw capture is
+[`docs/power/bringup/findings-log.md`](power/bringup/findings-log.md) (Part II); the raw capture is
 [`docs/power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt`](power/bringup/captures/2026-08-16_apcs-cpu0-pll-lock-failures.txt).
 
 Two reasons this outranks the power numbers it was found under. It makes the

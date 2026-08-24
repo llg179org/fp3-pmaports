@@ -146,7 +146,7 @@ that is why this one now carries its own date in the heading.
 **Update 2026-08-22: the PLL enable-failure item below is closed** — v2 fix
 (global `cpu_latency_qos` from the clk notifier), measured 27 720 transitions +
 24 916 power-collapse entries with 0 failures; the section moved to
-`TODO-DONE.md`, post-mortem in `power/bringup/RUNBOOK.md`. Everything else in
+`TODO-DONE.md`, post-mortem in `power/bringup/findings-log.md` (Part II). Everything else in
 this summary still stands.
 
 **The device is on `linux-fp3-7.1.3-r73` (`#74-fp3`, `debug-int/7.1.3`

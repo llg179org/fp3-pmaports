@@ -1,0 +1,22 @@
+# preflight uptime=3884 mincap=95%
+PASS  root-rw                wrote /root/.preflight-probe
+PASS  root-space             443 MB free
+PASS  tmpfs                  /run writable, 1778 MB free
+PASS  boot-default           default 'postmarketOS-prev' -> frozen vmlinuz-r73 (+ sdm632-fairphone-fp3.dtb-r73), both present
+PASS  boot-fallback          vmlinuz-fallback and dtb-fallback both present and non-empty
+#     charger                online=0 status=Discharging - cable declared OUT; USBIN state unverifiable until replug (restore paths unchanged)
+PASS  battery                capacity=100% voltage=4198515
+#     battery-current        current_now=-300293 (one read; ±138 mA scatter, never trust a single sample)
+PASS  battery-temp           281 (dC)
+PASS  no-stale-units         no measurement unit is running
+PASS  rpm-stats              /sys/kernel/debug/qcom_rpm_master_stats/APSS readable
+#     qcom_stats-vlow        Count: 0
+#     qcom_stats-vmin        Count: 0
+PASS  counters-live          over 20 s: APSS +614 MPSS +55 PRONTO +172 LPASS +0
+PASS  mem-sleep              [s2idle]
+#     suspend-stats          success=4 fail=0
+PASS  dpms                   writable, currently Off
+PASS  mmc-clean              no mmc error in dmesg this boot
+#     mmc-timing             10 (mmc HS400)
+
+PREFLIGHT OK - the night may be armed

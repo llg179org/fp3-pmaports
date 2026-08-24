@@ -9,7 +9,7 @@
 > `qcom-ngd-ctrl` (`dbb414e0be28`). On an ordinary full-stack boot the
 > LPASS now duty-cycles and re-enters XO shutdown within ~30 s of audio
 > use. Measurements and the corrected attribution of the "second latch":
-> RUNBOOK entries 2026-08-21 12:10 and 2026-08-22 10:30.
+> findings-log Part II (the former run-book) entries 2026-08-21 12:10 and 2026-08-22 10:30.
 
 ## The finding
 
