@@ -1,0 +1,51 @@
+=== USB controller eliminated as the vlow blocker (control=auto + physical detach) ===
+Device: FP3 slot b, pmOS r73 + one-rail-s3 DTB, boot 1a2202e0. Measured 2026-08-24.
+Autonomous watcher (systemd-run unit "usbdetach"): armed control=auto on
+7000000.usb + 79000.phy, waited for the cable to be physically unplugged
+(pmi632-charger/online 1->0), then measured across a real rtcwake -m mem suspend
+and restored control=on.
+
+The point of the test: with control=on (pm_runtime_forbid) the USB controller
+never runtime-suspends, so every prior suspend measurement carried an
+un-power-collapsed dwc3 - it "was never tested". control=auto + detach is the only
+way to get the controller itself suspended and see if it was holding vlow up.
+
+after-detach, before-suspend (control=auto):
+  7000000.usb: status=suspended susp_time=44        <== controller DID suspend
+  79000.phy  : status=suspended susp_time=61        <== phy too (first time)
+  APSS XO shutdown count = 0
+  qcom_stats vlow/vmin = 0 / 0
+  suspend_success = 2
+
+across rtcwake -m mem -s 15 (suspend completed, success 2 -> 3):
+after-suspend:
+  7000000.usb: susp_time 659ms (deeply suspended across the system suspend)
+  APSS XO shutdown count = 0        <== STILL zero
+  qcom_stats vlow/vmin = 0 / 0      <== STILL zero
+  suspend_success = 3
+  -> control restored to "on" on both.
+
+CONCLUSION: with the USB controller AND its phy demonstrably runtime-suspended
+(susp_time > 0) across a genuine suspend, APSS XO shutdown count and vlow both
+stay 0. The USB controller is NOT the vlow blocker. This closes the last named
+open frontier from STATUS queue item 1.
+
+STATE OF THE SEARCH after this: every named candidate is now exhausted -
+  - LDO regulator sleep set: killed (both_sets=1, vlow still 0)
+  - AP XO vote: necessary-not-sufficient (xo_sleep_off=1 forces APSS XO shutdown,
+    vlow still 0; natural holders = MMC x2 + codec ahbix, upstream-correctness)
+  - cpuidle / PSCI / OSI: works (system-pc entered 50933x)
+  - USB controller: eliminated (this capture)
+The vlow blocker is therefore something not yet on the list. Candidate next
+instruments (none run yet):
+  - Re-examine whether mainline qcom_stats reads the correct RPM stats region for
+    msm8953 at all (does the RPM firmware populate a "vlow"/"vmin" record under the
+    names/offsets the driver expects, or a differently-named deep state?). Even
+    forcing every master's XO vote down (xo_sleep_off=1) left vlow at 0, which is
+    consistent either with a genuine non-XO holder OR with the counter reading the
+    wrong region. This possibility was set aside earlier as "real, not artifact"
+    but deserves a direct region/format check now that all masters can be made to
+    vote XO down and the counter still does not move.
+  - A complete active+sleep RPM vote dump across ALL resource types during a
+    suspend (regulators, clocks, interconnect, XO, bus), diffed for any resource
+    still voted up in the sleep set.

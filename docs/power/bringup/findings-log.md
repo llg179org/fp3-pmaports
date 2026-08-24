@@ -2266,3 +2266,32 @@ new value of today's work is (a) disproving the PSCI/OSI "[Firmware Bug]"
 hypothesis (system_pc *is* entered, 50933×) and (b) naming the natural XO holders
 for upstream correctness. The open `vlow` frontier remains the **USB controller**
 `control=auto`+detach test (STATUS queue item 1), not the XO vote and not the LDOs.
+
+---
+
+## 2026-08-24 (USB controller eliminated) — ★★★ the last named vlow frontier is closed; every named candidate is now exhausted
+
+Ran the `control=auto` + physical-detach test that STATUS had left open. An
+autonomous device-side watcher armed `control=auto` on `7000000.usb` + `79000.phy`,
+waited for the cable to be unplugged, measured across a real `rtcwake -m mem`
+suspend, then restored `control=on`. Raw:
+[`captures/2026-08-24_usb-controller-not-the-vlow-blocker.txt`](captures/2026-08-24_usb-controller-not-the-vlow-blocker.txt).
+
+With `control=on` the dwc3 never runtime-suspends, so every earlier suspend
+carried an un-collapsed USB controller — it "was never tested". This time, after
+detach, `7000000.usb` **did** runtime-suspend (`susp_time` 44 → 659 ms across the
+suspend) and so did the phy. Result across the suspend (success 2 → 3):
+**APSS XO shutdown count stayed 0, `vlow`/`vmin` stayed 0.** So the USB controller,
+fully suspended, is **not** the `vlow` blocker.
+
+That closes the last named frontier. The state of the search: **every named
+candidate is exhausted** — LDO sleep set (killed), AP XO vote (necessary-not-
+sufficient: `xo_sleep_off=1` forces it, `vlow` still 0), cpuidle/PSCI/OSI (works,
+`system-pc` entered 50933×), USB controller (eliminated here). The `vlow` blocker
+is something not yet on the list. The sharpest unresolved thread: even forcing
+*every* master's XO vote down (`xo_sleep_off=1`) leaves `vlow` at 0 — which is
+consistent with a genuine non-XO holder, but also with mainline `qcom_stats`
+reading the wrong RPM stats region/format for msm8953. That region/format check
+was set aside earlier as "real, not artifact"; now that all masters can be made to
+vote XO down and the counter still will not move, it is worth a direct check
+before assuming a hidden holder.

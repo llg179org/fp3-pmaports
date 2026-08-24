@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 08:34**.
+Last updated: **2026-08-24 09:12**.
 
 ## The device
 
@@ -407,10 +407,15 @@ is now item 4.
    XO vote is confirmed on the tracepoint (`sleep clk0/0 "Enab"=1`). **Correction:**
    this is *necessary, not sufficient* — `xo_sleep_off=1` already forces APSS XO
    shutdown with `vlow` still 0, so naming/fixing the holders is upstream-correctness
-   detail, not the last blocker. Frontier unchanged: the **USB controller**
-   `control=auto`+detach test (armed 2026-08-24: `7000000.usb`+`79000.phy` set
-   `control=auto`, but they stay active with the cable in — needs a physical
-   detach, which a background watcher will run automatically on unplug). Chain:
+   detail, not the last blocker. **USB controller frontier now CLOSED (2026-08-24):** the detach ran — after
+   unplug `7000000.usb`+`79000.phy` runtime-suspended (`susp_time` 44→659 ms across
+   a real suspend), and APSS XO shutdown count + `vlow` **both stayed 0**. The USB
+   controller, fully suspended, is **not** the blocker. **Every named candidate is
+   now exhausted** (LDO killed; AP XO vote necessary-not-sufficient; cpuidle/PSCI/OSI
+   works; USB eliminated). Sharpest open thread: `xo_sleep_off=1` forces every
+   master's XO vote down yet `vlow` stays 0 — check whether mainline `qcom_stats`
+   even reads the correct RPM stats region/format for msm8953 before assuming a
+   hidden non-XO holder. See `captures/2026-08-24_usb-controller-not-the-vlow-blocker.txt`. Chain:
    `power/bringup/findings-log.md` + `captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`.
 
    What that leaves:
