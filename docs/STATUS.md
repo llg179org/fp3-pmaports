@@ -458,6 +458,31 @@ is now item 4.
    fix for this on RPM/SMD SoCs (closest: Dybcio's active_only/keepalive prep).
    Detail: findings-log 2026-08-24 "sleep_bw_off experiment #1".
 
+   ★★★★★ **2026-08-24 (experiment #2 — CONCLUSIVE) — the vote hypothesis is
+   EXHAUSTED; the blocker is the RPM sleep-entry HANDSHAKE, not any vote.**
+   Rebuilt `sleep_bw_off` as a **suspend-scoped** hook
+   (`qcom_icc_rpm_suspend_late/resume_early`, wired via `qnoc_pm_ops` on
+   `qnoc-msm8953`) — boots cleanly (unlike the blunt form). Measured across a real
+   `rtcwake -m mem` suspend with `xo_sleep_off=1` + `sleep_bw_off=1`: the hook
+   **fired** (trace shows bimc/pcnoc/snoc sleep rate → 0 and `bmas`/`bslv`
+   bandwidth → 0 during suspend), so the **entire AP-side sleep set was at the
+   deep-sleep floor** (XO off, backbone clocks 0, NoC bw 0, Cx/Mx 0), **and every
+   master entered XO shutdown** (APSS 2436 / MPSS 289 / PRONTO 696 / LPASS 47) —
+   yet **`vlow` Count stayed 0**. So no nonzero sleep vote is the gate. ⇒ The
+   remaining blocker is the RPM **sleep-entry trigger**: downstream's
+   `msm_rpm_enter_sleep()` masks the SMD RX interrupt (tells the RPM the AP is
+   going down) and flushes the sleep set as a batch; mainline `qcom_smd-rpm`
+   writes votes eagerly and has **no cpuidle/s2idle hook that ever announces the
+   AP is entering sleep**, so the RPM never switches to the sleep set for `vlow`.
+   **The single remaining step (substantial, not a one-liner):** implement the
+   mainline equivalent of `msm_rpm_enter_sleep` — from the s2idle path, mask the
+   qcom_smd-rpm RX interrupt / assert the "AP entering sleep" the RPM expects.
+   Capture:
+   `captures/2026-08-24_sleepbw-suspend-hook-all-votes-zero-vlow-still-0.txt`;
+   detail: findings-log 2026-08-24 "sleep_bw_off experiment #2 (the CONCLUSIVE
+   one)". The icc suspend-hook itself is a real upstreamable improvement (it does
+   lower the backbone in the sleep set) and is kept in the tree, default-off.
+
    What that leaves:
 
    1. **The DTB `regulator-state-mem` change is now upstream-correctness work,

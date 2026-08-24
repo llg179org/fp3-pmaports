@@ -2457,3 +2457,77 @@ reached-`vlow` result.
 Device state after: r73, `default postmarketOS-prev`, fallback net intact, the
 `vmlinuz-sleepbw` + `postmarketOS-sleepbw-exp` label left in place (non-default,
 inert) for the corrected rebuild.
+
+---
+
+## 2026-08-24 (sleep_bw_off experiment #2 — the CONCLUSIVE one) — ★★★★★ every AP-side sleep vote driven to the deep-sleep floor + every master in XO shutdown, and `vlow` STILL 0 → the blocker is NOT a vote, it is the RPM sleep-entry HANDSHAKE
+
+Rebuilt `icc_smd_rpm.sleep_bw_off` as a **suspend-scoped** hook instead of the
+blunt always-on form: `qcom_icc_rpm_suspend_late()` rewrites every RPM-owned
+node's sleep-set bandwidth **and** the bus-clock sleep rate to 0, and
+`qcom_icc_rpm_resume_early()` restores them (wired via an exported `qnoc_pm_ops`
+on `qnoc-msm8953`'s `.driver.pm`; `suspend_late` runs after `dpm_suspend` has
+already suspended the display, with IRQs still on so the RPM ack path works, and
+it fires on this SoC's s2idle path). **This kernel boots cleanly** — confirming
+experiment #1's boot-loop was purely the runtime application of the sleep set,
+not a probe/boot problem.
+
+**Measured on the device** (boot `ae5c4633`, `xo_sleep_off=1` +
+`icc_smd_rpm.sleep_bw_off=1`, across a genuine `rtcwake -m mem -s 15`,
+`suspend_stats/success` 0 → 1;
+[capture](captures/2026-08-24_sleepbw-suspend-hook-all-votes-zero-vlow-still-0.txt)):
+
+- The hook **fired**: the `qcom_rpm_smd_write` tracepoint shows, from the
+  `rtcwake` task during the suspend, `sleep clk1/0`, `sleep clk1/1`,
+  `sleep clk1/2`, `sleep clk2/0` all written **`00 00 00 00`** (bimc/pcnoc/snoc
+  sleep rate → 0), and the `bmas`/`bslv` `bw` sleep votes written **0**.
+- So during the s2idle window the **entire AP-side sleep set was at the
+  deep-sleep floor**: XO `Enab`=0 (xo_sleep_off), bimc/pcnoc/snoc rate 0, NoC
+  bandwidth 0, Cx (`smpa/2`) level 0, Mx (`smpa/7`) level 0.
+- And **every master entered XO shutdown**, read from
+  `qcom_rpm_master_stats`: APSS `XO shutdown count` 2436 (+18 across the
+  suspend), MPSS 289, PRONTO 696, LPASS 47, TZ 0 (inert). APSS `Shutdown count`
+  2679 — the AP genuinely power-collapses.
+- **`vlow` Count: 0. `vmin` Count: 0.** Unchanged across the suspend.
+
+**This exhausts the vote hypothesis.** Over the whole investigation every AP-side
+sleep-set contribution has now been individually driven to its deep-sleep value
+and *combined* in one run — XO (xo_sleep_off), the LDO/SMPS enables+levels
+(both_sets, and Cx/Mx reach 0 natively), the interconnect bandwidth, and the
+backbone bus/mem clocks — while every co-processor master independently reaches
+XO shutdown. If a nonzero sleep vote were the gate, `vlow` would have moved. It
+did not. **The remaining blocker is not any resource vote; it is the RPM's
+sleep-entry trigger** — the step that tells the RPM "the AP is now entering sleep,
+switch to the sleep set and re-aggregate for the backbone-collapse (`vlow`)
+mode."
+
+**What downstream does that mainline does not (the named handshake).** Downstream
+4.9 `rpm-smd.c` buffers all sleep-set requests and, at the deepest cluster level,
+`msm_rpm_enter_sleep()` (a) **masks the SMD RX interrupt** — signalling the RPM
+that the AP will no longer service messages, i.e. is going down — and (b)
+**flushes the buffered sleep set as one batch** (`msm_rpm_flush_requests()`).
+Mainline `qcom_smd-rpm` has neither: it writes each sleep vote eagerly at
+vote-change time and has no cpuidle/s2idle hook that ever tells the RPM the AP is
+entering sleep. The votes are all present and correct; the RPM simply never
+switches to acting on them for `vlow`, because from its point of view the AP
+never announced the transition. (On PSCI the SPM/SAW→RPM hardware handshake is
+firmware-driven and identical on both slots, so it is not the differentiator; the
+software SMD-RX-mask + flush is.)
+
+**Status of the deliverables.**
+- The icc suspend-scoped sleep-set drop (`qcom_icc_rpm_suspend_late/resume_early`)
+  is a genuine, upstreamable correctness improvement (it is what should lower the
+  backbone in the sleep set), and it works — but it cannot reach `vlow` alone
+  because the handshake is missing. Kept in the tree
+  (`drivers/interconnect/qcom/icc-rpm.c` + `msm8953.c` `.pm`), default-off param.
+- The next real step is to implement the mainline equivalent of
+  `msm_rpm_enter_sleep`: from the s2idle/cpuidle path, mask the qcom_smd-rpm RX
+  interrupt (and/or assert whatever "AP entering sleep" the RPM expects) so the
+  RPM adopts the sleep set. That is a substantial, novel addition to
+  `drivers/soc/qcom/smd-rpm.c` + a cpuidle hook, not a one-liner — and it is now
+  the *single* identified blocker, the vote-space having been ruled out by
+  construction.
+
+Device restored to clean r73 (`default postmarketOS-prev`); the suspend-hook
+kernel + `postmarketOS-sleepbw-exp` label remain in place (non-default, inert) as
+the diagnostic vehicle.

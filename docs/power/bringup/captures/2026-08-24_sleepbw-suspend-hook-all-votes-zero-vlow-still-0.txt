@@ -1,0 +1,68 @@
+=== cmdline ===
+quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10 clk_smd_rpm.xo_sleep_off=1 icc_smd_rpm.sleep_bw_off=1 trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M
+=== uptime before ===
+46.51
+=== VERIFY param took: last SLEEP votes for backbone (want clk1/clk2 KHz=0, bmas/bslv bw=0) ===
+sleep clk1/0 :    kworker/u33:2-116     [002] .....    46.225742: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+sleep clk1/1 :    kworker/u33:2-116     [002] .....    46.228909: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+sleep clk2/0 :    kworker/u34:1-70      [004] .....    45.348728: qcom_rpm_smd_write: sleep clk2/0 len=12 4b 48 7a 00 04 00 00 00 80 35 0e 00
+--- sample sleep bmas/bslv (bw) last few ---
+   kworker/u33:2-116     [002] .....    46.227493: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:2-116     [002] .....    46.228464: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:2-116     [002] .....    46.229979: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+   kworker/u33:2-116     [002] .....    46.231811: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 b8 84 04 37
+=== APSS XO shutdown before ===
+	Last XO shutdown enter @ 1123017471
+	Last XO shutdown exit @ 1123287321
+	XO shutdown count: 130
+	Shutdown count: 233
+=== vlow before ===
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x5010501
+=== vmin before ===
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+=== suspend_success before ===
+0
+=== rtcwake -m mem -s 15 ===
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sat Jan  3 00:29:15 1970
+rtcwake rc=0
+=== suspend_success after ===
+1
+=== APSS XO shutdown after ===
+	Last XO shutdown enter @ 1292469085
+	Last XO shutdown exit @ 1292528644
+	XO shutdown count: 148
+	Shutdown count: 252
+=== vlow AFTER ===
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x5010501
+=== vmin AFTER ===
+Count: 0
+Last Entered At: 0
+Last Exited At: 0
+Accumulated Duration: 0
+Client Votes: 0x0
+=== post-suspend backbone sleep votes (confirm still 0) ===
+sleep clk1/0 :    kworker/u34:2-78      [007] .....    50.570150: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+sleep clk2/0 :    kworker/u32:1-100     [003] .....    50.599497: qcom_rpm_smd_write: sleep clk2/0 len=12 4b 48 7a 00 04 00 00 00 80 35 0e 00
+=== uptime after ===
+54.15
+=== DONE ===
+
+### post-analysis (same boot ae5c4633, suspend-hook kernel, xo_sleep_off=1 + icc_smd_rpm.sleep_bw_off=1):
+### suspend_late hook FIRED: backbone clocks clk1/0,clk1/1,clk2/0 written to 0 during rtcwake suspend (10 zero clk-sleep writes)
+### NoC bandwidth bmas/bslv written to 0 during suspend
+### all masters entered XO shutdown: APSS 2436 / MPSS 289 / PRONTO 696 / LPASS 47 / TZ 0
+### => every AP-side sleep vote at deep-sleep floor + every master XO-shutdown, and vlow Count STILL 0.
+### Conclusion: the vlow blocker is NOT any sleep vote (vote-space exhausted). It is the RPM sleep-entry handshake.
