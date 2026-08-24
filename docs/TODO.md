@@ -276,16 +276,20 @@ leg is contaminated by `rmtfs -P` (stopping rmtfs POWERS THE MODEM DOWN and it
 stays down), so the only named mechanism is "modem off", unusable as a fix.
 The lead, in order:
 
-1. **MPSS XO-duty differential across genuine s2idle, modem normal vs
-   `mmcli --set-power-state-low`** — cable-in, no discharge, ~10 min
-   (`modem-xo-duty` unit, first run 2026-08-24). The 2026-08-20 census showed
-   MPSS holds XO up through 5 of 6 suspend arms; if low-power radio lets MPSS
-   sleep across suspends, the mechanism is RF/registration activity and the fix
-   direction is modem power-save config, not host services.
-2. **Uncontaminated night slope-legs** (cable out, `night/` harness — preflight
-   now PASSES): (a) radio-low via mmcli for the whole leg; (b) true modem-off
-   via remoteproc stop, reproducing the 36 mA cleanly. Compare phase-A slopes
-   against `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62).
+1. ✅ **MPSS XO-duty differential across genuine s2idle, modem normal vs
+   `mmcli --set-power-state-low`** — DONE 2026-08-24 (cable-in, ~10 min,
+   `captures/2026-08-24_modem-xo-duty.txt`): radio up = every suspend aborts
+   early (11 s / 47 s of a requested 90) with the MPSS chopping the crystal
+   ~2.5 transitions/s; radio low = full-term suspends with MPSS XO off
+   essentially the whole window. So the mechanism IS RF/registration activity
+   and the fix direction is modem power-save config, not host services.
+2. **Uncontaminated night slope-legs** (cable out, `night/` harness):
+   (a) radio-low via mmcli for the whole leg — **ARMED and running 2026-08-24
+   ~14:55** (`radiolow-20260824`; `night/radio-low-leg.sh` wrapper, probe gate
+   passed: wall 92 s of 90, MPSS XO off 87.6 s; preflight `nocable` mode,
+   device scripts re-synced from the repo); (b) true modem-off via remoteproc
+   stop, reproducing the 36 mA cleanly. Compare phase-A slopes against
+   `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62).
 3. Only then the mechanism question — what the modem does with the radio up
    that costs ~36 mA (QMI traffic? paging config? `qcom_rpm_master_stats` MPSS
    XO duration across the sleeping leg is the readout).

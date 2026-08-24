@@ -15,7 +15,12 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 (night — ★★★★★ the deep-sleep item is CLOSED: the
+Last updated: **2026-08-24 ~15:10 — the modem lead is in motion: the XO-duty
+differential is done (radio up = suspends abort early + MPSS chops the crystal;
+radio low = full-term suspends + MPSS XO off the whole window), and the
+radio-low pricing leg (`radiolow-20260824`) is ARMED and running under the
+night harness, cable out, probe gate passed. Earlier the same day: ★★★★★ the
+deep-sleep item was CLOSED: the
 `vlow` record read RAW from RPM message RAM on the working UT oracle is 0 too,
 across a window with +34 603 AP power collapses and thousands of co-proc XO
 shutdowns. `vlow` never occurs on this device/firmware at all — the target was
@@ -243,12 +248,16 @@ is now item 4.
    the modem: **modem processor off is worth ~36 mA** (79.1 → 43.3 mA asleep),
    mechanism unnamed, and every service-cut leg was contaminated by `rmtfs -P`
    (= modem shutdown). The ordered plan is in TODO "Deep sleep — CLOSED"
-   section: (1) MPSS XO-duty across s2idle, radio normal vs
-   `mmcli --set-power-state-low` (cable-in, first run launched 2026-08-24,
-   unit `modem-xo-duty`, log `/var/tmp/modem-xo-duty-20260824.log`);
-   (2) uncontaminated night slope-legs (radio-low; true modem-off via
-   remoteproc), preflight now PASSES; (3) the mechanism readout
-   (`qcom_rpm_master_stats` MPSS XO duration on whichever leg saves).
+   section: (1) ✅ MPSS XO-duty across s2idle — DONE 2026-08-24: radio up =
+   suspends abort early + MPSS chops the crystal; radio low = full-term
+   suspends + MPSS XO off the whole window
+   (`captures/2026-08-24_modem-xo-duty.txt`); (2) uncontaminated night
+   slope-legs — **(a) radio-low ARMED and running 2026-08-24 ~14:55**
+   (`radiolow-20260824`, cable out, `nocable` preflight, probe gate passed:
+   wall 92 s of 90, MPSS XO off 87.6 s; supervisor pulling to
+   `night/runs/radiolow-20260824/`), (b) remoteproc modem-off leg next;
+   (3) the mechanism readout (`qcom_rpm_master_stats` MPSS XO duration on
+   whichever leg saves).
 
 2. ✅ **DONE 2026-08-23 night — rootfs freed 94%→81% and `10-health`
    recalibrated.** The bulk was the apk *download* cache: `/var/cache/apk`

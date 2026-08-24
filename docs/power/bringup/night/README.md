@@ -93,6 +93,21 @@ sudo systemd-run --unit=night-queue --collect /root/night/queue.sh /root/night/j
 docs/power/bringup/night/night-supervisor.sh lpass-20260819 300 12
 ```
 
+**Arming with the cable out** (a discharge night the operator unplugs before
+leaving): pass `nocable` to the gate — `preflight.sh 95 nocable`, or
+`@preflight 95 nocable` in the job file. The charger check then becomes a note
+instead of a FAIL, because `online=0` is the *declared* state, not evidence of a
+leftover USBIN suspend; it stays a hard FAIL by default. ☠️ Two corollaries:
+the job file must carry **no `@charge` lines** (with no cable a charge wait can
+only time out), and the USBIN state is unverifiable until replug — the restore
+paths still run, they just have nothing to push against.
+
+☠️ **The device copies of these scripts are not self-updating.** The repo is the
+source of truth; a gate rewrite that exists only in the repo protects nothing.
+Measured 2026-08-24: the on-device `preflight.sh` predated the boot-default
+rewrite and FAILed on a correct frozen-snapshot default. `md5sum` both sides
+before arming, sync repo → device on mismatch.
+
 ☠️ **Everything on the device runs under `systemd-run`, never in the foreground
 over ssh.** An ssh timeout once killed a probe mid-script and left the modem and
 the ADSP unbound with nothing running to rebind them.
@@ -189,6 +204,20 @@ job, `guardian.log` for the net, `evidence-*.txt` if the net ever fires. All of
 it is tmpfs — the supervisor pulls it to `runs/<tag>/` on the host every poll,
 because the guardian's answer to a dead card is a reboot and a reboot is exactly
 what tmpfs does not survive.
+
+## Intervention legs carry their own gate
+
+A leg that measures an intervention which silently did not take is the most
+expensive kind of null, so an intervention is never handed straight to
+`slope-leg.sh`: a wrapper applies it, **proves across one short probe suspend
+that it took**, and only then hands over. Two exist and both follow the shape:
+`/root/adsp-restart-leg.sh` (restart the ADSP, require the LPASS crystal off
+for most of a 30 s probe) and [`radio-low-leg.sh`](radio-low-leg.sh) (arm
+`mmcli --set-power-state-low`, require the probe suspend to run full-term by
+**wall clock** — ☠️ `rtcwake` exits 0 even when the suspend aborts early — AND
+the MPSS crystal off for most of it, and restore with `--set-power-state-on`
+**plus `--enable`** on every exit path, because the round trip otherwise leaves
+the modem disabled).
 
 ## What runs first, and why
 

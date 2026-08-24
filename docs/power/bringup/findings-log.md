@@ -2677,3 +2677,34 @@ wall-clock the window (`date +%T` around it) or the abort is invisible.
 `registered`/`attached`); an explicit `mmcli -m any --enable` is needed to
 re-register. Restored and verified (registered, 75 % signal). Any scripted leg
 using power-state-low must end with `--enable`, not just `--set-power-state-on`.
+
+### 2026-08-24 afternoon — the pricing leg is ARMED: radio-low slope leg running under the night harness (cable out)
+
+The operator unplugged the cable and the radio-low arm went from "next" to
+"running" (`radiolow-20260824`, commit `edf35f4`). Three things had to be true
+first, and two of them were findings of their own:
+
+1. ☠️ **The device's `preflight.sh` and `queue.sh` were STALE** — the 2026-08-23
+   boot-default gate rewrite and the audible-job refusal existed only in the
+   repo. The on-device gate still string-matched `= postmarketOS` and FAILed on
+   the (correct, frozen-r73) `postmarketOS-prev` default. Synced repo → device;
+   the repo is the source of truth for the harness, and "PASSES since the
+   rewrite" is only true on a device that *has* the rewrite.
+2. **`preflight.sh` gained a `nocable` argument** for discharge nights armed
+   with the cable physically out: the charger gate becomes a note (`online=0`
+   is the declared state, not evidence of a leftover USBIN suspend) and stays a
+   hard FAIL by default. Corollary in the job file: **no `@charge` lines with
+   the cable out** — a charge wait can only time out.
+3. **`radio-low-leg.sh`** (deployed to `/root/`, source in `night/`): arms
+   `mmcli --set-power-state-low`, then gates on ONE probe suspend before
+   spending hours — wall-clock ≥75 s of 90 (rtcwake rc lies, see above) AND
+   MPSS XO off ≥60 s. Every exit path restores `--set-power-state-on` **and**
+   `--enable` (the disabled-modem trap above, now encoded).
+
+**The gate passed cleanly: probe suspend wall 92 s of 90, MPSS XO off
+87 624 ms** — the radio-low arm demonstrably took before the leg was allowed to
+start. Descent phase running (rested 4.205→4.166 V toward the 4.030 V target),
+guardian + queue under systemd, host supervisor pulling to
+`night/runs/radiolow-20260824/` every 5 min. The readout to come: phase-A slope
+vs `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62 mV/h) —
+that difference is the radio's mA price.

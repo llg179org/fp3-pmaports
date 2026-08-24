@@ -2112,11 +2112,17 @@ figure of merit on this device.
 and the open thread is the modem's ~36 mA. Protocol, in order (detail in
 TODO "Deep sleep — CLOSED" section):
 
-1. `modem-xo-duty` — MPSS XO duty across genuine s2idle, radio normal vs
-   `mmcli --set-power-state-low`. Cable-in, ~10 min, no discharge. First run
-   2026-08-24 night.
+1. ✅ `modem-xo-duty` — MPSS XO duty across genuine s2idle, radio normal vs
+   `mmcli --set-power-state-low`. Cable-in, ~10 min, no discharge. **Done
+   2026-08-24: radio up = every suspend aborts early (11 s / 47 s of 90) with
+   the MPSS chopping the crystal ~2.5 transitions/s; radio low = full-term
+   suspends with MPSS XO off essentially the whole window.** Capture:
+   `captures/2026-08-24_modem-xo-duty.txt`.
 2. Night slope-legs, uncontaminated (☠️ remember `rmtfs -P` = modem shutdown):
-   radio-low whole-leg, then true modem-off via remoteproc stop. Preflight
-   PASSES since the boot-default gate rewrite; needs cable out.
+   radio-low whole-leg, then true modem-off via remoteproc stop.
+   **(a) radio-low ARMED and running 2026-08-24 ~14:55** (`radiolow-20260824`,
+   `night/radio-low-leg.sh` + `jobs-radiolow.txt`, preflight `nocable` mode,
+   probe gate passed: wall 92 s of 90, MPSS XO off 87.6 s); (b) remoteproc-stop
+   leg still to come.
 3. Mechanism readout on whichever leg saves: MPSS XO duration + shutdown count
    across the sleeps.
