@@ -2030,3 +2030,28 @@ plus a 37-min idle window earlier the same boot: 0 failures (r64 idle: ~14)
 
 cpuidle sanity: state1 usage kept climbing during and after the run — the QoS
 request does not stick outside the rate-change window.
+
+## 2026-08-24 — night slope-legs are gated OFF until the boot label is reconciled
+
+Ran `night/preflight.sh` on r73 to decide the sanctioned alternative (a clean
+r73 s2idle baseline). **Result: FAILED on exactly one gate —**
+`boot-default: default label is 'postmarketOS-prev', expected postmarketOS`.
+Every other gate passes (root-rw, space, tmpfs, boot-fallback, charger, battery
+100 %, no-stale-units, **rpm-stats** [now persistent via modules-load.d],
+counters-live APSS+331/MPSS+54/PRONTO+198 in 20 s, mem-sleep s2idle, dpms
+writable, mmc-clean). So the instruments and the pack are ready; the only blocker
+is the label.
+
+The r74 recovery deliberately left `default postmarketOS-prev` (clean r73), and
+there is no plain `postmarketOS` label any more. Reconciling that is a
+**boot-config change** — repeats every boot, no console — and is exactly the kind
+of edit that bricked r74, so it is **not** an unattended-night task. Two clean
+options for when the user is awake: rename the default back to `postmarketOS`, or
+teach `preflight.sh` to accept `postmarketOS-prev`. Until then the guarded night
+queue correctly refuses to arm, and no battery-draining leg was started.
+
+☠️ Note the reframe from the same night makes an r73 absolute-power re-baseline
+lower-stakes than it looks: `vlow`=0 turned out uncorroborated by any per-master
+deficit (pmOS co-processors sleep like the oracle's), so the deep-sleep question
+is not blocked on getting this leg — the real figure of merit is the mA baseline
+already held (~79–83 mA, r64).
