@@ -173,7 +173,7 @@ gap — but a different one.** Three of the four gates now open:
 | the cores reach `cpu-power-collapse` | ✅ since the genpd `bool` fix |
 | the AP tells the RPM it went down | ✅ since `0x42000353`, and it does it thousands of times a minute |
 | the audio DSP shuts down | ✅ reachable — an ADSP restart frees it for the rest of the boot |
-| **the RPM enters `vlow` / `vmin`** | ❌ **`Count: 0` in every capture ever taken here** |
+| **the RPM enters `vlow` / `vmin`** | ✅ **CLOSED 2026-08-24 — it never does, on ANY OS: the raw message-RAM read shows count 0 on the working oracle too. Not a gate; the mode does not occur on this platform** |
 
 ☠️ **There is no `deep` on this platform.** `mem_sleep` offers `[s2idle]` only, and
 s2idle itself works — 6/6 suspends, full duration. "Deep sleep" here means getting
@@ -192,10 +192,10 @@ prices it at ~4 %, inside the instrument's own spread). Full account in
 [`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md)
 and [`power/bringup/findings-log.md`](power/bringup/findings-log.md).
 
-**So the next question is: what else is voting, now that a master going down is
-demonstrably not enough.** And the one thing that has *ever* moved the sleeping
-number is the modem stack — a 36 % slope reduction, mechanism still unnamed. That
-is where the next measurement belongs, not on the ADSP.
+**So the next question is the modem lead** — the one thing that has *ever*
+moved the sleeping number (~36 mA when the modem processor is off), mechanism
+still unnamed; see the "Deep sleep — CLOSED" section below for the ordered
+plan. Not the ADSP, and not the RPM mode counters (closed 2026-08-24).
 
 ☠️ **The 139–143 mA floor and its daemon subtraction are retracted** — the lens
 actuator was powered underneath the whole run. The `ak7375` kernel fix that was
@@ -256,297 +256,45 @@ live on the host: the phone's rootfs is 93% full, journald therefore vacuums the
 boot before last, and a reset destroys its own evidence — measured, a run that
 provably reset left `journalctl -k -b -1` answering `-- No entries --`.
 
-## ☠️ Deep sleep: `vlow` has never once been reached
+## Deep sleep — CLOSED 2026-08-24: `vlow` never occurs on this platform; the open item is the MODEM LEAD
 
-The single open item behind every idle-current number on this page, stated
-separately because the section above is a status summary and this is a task.
+The multi-week `vlow` hunt is over: a raw mmap read of the RPM's own
+`vlow`/`vmin` records (`power/bringup/tools/rpmstats_raw.py`, works on both
+slots) shows **count = 0 on the working UT oracle too**, across a 10-min window
+in which it demonstrably slept at full depth (APSS +34 603 power collapses,
+co-processor XO shutdowns in the thousands). The mode never occurs on this
+device/firmware under any OS; there was nothing to fix, and the planned
+`smd-rpm.c` s2idle-handshake work is cancelled. Full section archived in
+[`TODO-DONE.md`](TODO-DONE.md); the definitive account is findings-log
+2026-08-24 "(continued)".
 
-★★★ **This is the project's top priority as of 2026-08-23**, and on that day the
-AP-side gate stopped being unidentified. Full derivation and the next steps are
-in [`STATUS.md`](STATUS.md) queue item 1; the short form:
+### What replaces it: the modem lead (now the top power task)
 
-★★★ **2026-08-24 — the regression-vs-SoC-limit question is ANSWERED: it is a
-MAINLINE REGRESSION.** Booted the UT oracle (slot a, 4.9.218) and forced a real
-downstream `mem` suspend: **APSS `xo_count` 0 → 2** across two confirmed suspends
-(echo mem exit 0, 7 s + 12 s). The downstream AP votes its XO down in a genuine
-suspend; mainline never does across a confirmed `rtcwake -m mem`. So pmOS
-`vlow`=0 is a fixable gap in the mainline msm8953 suspend/RPM path (the AP's XO
-vote), **not** an s2idle- or SoC-inherent limit — it sits alongside the LDO
-sleep-vote gap below (the AP XO vote is one necessary condition, not the last
-gate; `xo_sleep_off=1` already forces APSS XO and `vlow` is still 0). Forcing the
-downstream to suspend took powering both ofono modems off (~5 wakeups/s from the
-modem IPC router aborted every attempt) and disabling the `7000000.ssusb` wakeup
-source (it stays active through a physical unplug — same dwc3 behaviour as pmOS).
-Caveat: the mainline side has not yet been re-run with modems off. Capture:
-`captures/2026-08-24_xo-across-suspend-ut-oracle-slotA.txt`; full trace in
-findings-log 2026-08-24 (UT-oracle across-suspend).
+The one thing that ever moved the sleeping number: **modem processor off is
+worth ~36 mA** (79.1 → 43.3 mA asleep) — but every 2026-08-20/21 "service cut"
+leg is contaminated by `rmtfs -P` (stopping rmtfs POWERS THE MODEM DOWN and it
+stays down), so the only named mechanism is "modem off", unusable as a fix.
+The lead, in order:
 
-★★★ **2026-08-24 — the AP XO vote is now LOCALIZED, and two tempting culprits are
-ruled out by measurement.** From the mainline side (`qcom_rpm_master_stats`,
-across a real `rtcwake -m mem` suspend):
+1. **MPSS XO-duty differential across genuine s2idle, modem normal vs
+   `mmcli --set-power-state-low`** — cable-in, no discharge, ~10 min
+   (`modem-xo-duty` unit, first run 2026-08-24). The 2026-08-20 census showed
+   MPSS holds XO up through 5 of 6 suspend arms; if low-power radio lets MPSS
+   sleep across suspends, the mechanism is RF/registration activity and the fix
+   direction is modem power-save config, not host services.
+2. **Uncontaminated night slope-legs** (cable out, `night/` harness — preflight
+   now PASSES): (a) radio-low via mmcli for the whole leg; (b) true modem-off
+   via remoteproc stop, reproducing the 36 mA cleanly. Compare phase-A slopes
+   against `baseline-20260819` (−35.77 mV/h) and `nomodem-20260819` (−22.62).
+3. Only then the mechanism question — what the modem does with the radio up
+   that costs ~36 mA (QMI traffic? paging config? `qcom_rpm_master_stats` MPSS
+   XO duration across the sleeping leg is the readout).
 
-- APSS **`XO shutdown count: 0`** (never), while `Shutdown count` = 39218 advances
-  (cluster power-collapse works). Every other master drops XO: MPSS 5502, PRONTO
-  19148, LPASS 48.
-- **NOT cpuidle/PSCI/OSI.** dmesg's `psci: [Firmware Bug]: failed to set PC mode`
-  is a red herring (an `EPROBE_DEFER` that recovered): the genpd `idle_states`
-  usage counters show `system-pc` (0x42000353) entered **50933×** (2 in s2idle)
-  and `cluster-pc` ~150k× each. The AP *does* reach system power collapse.
-- **NOT the LDO regulators** (so the regulator-state-mem thread was never going to
-  move `vlow`).
-- **IS the AP-side RPM sleep-set XO/TCXO vote.** `clk_summary`: the root `xo`
-  (held via `bi_tcxo`) is kept up by the two MMC controllers
-  (`7824900`/`7864900.mmc`) and the codec ahbix (`c0f0000.codec`) on the AP side;
-  the `qcom_rpm_smd_write` tracepoint confirms `sleep clk0/0 "Enab"=1` (CXO on in
-  the sleep set). This explains *why APSS naturally never XO-shutdowns* and is
-  upstream-correctness detail — but it is **necessary, not sufficient** for
-  `vlow`: the prior `clk_smd_rpm.xo_sleep_off=1` lever already forces APSS into XO
-  shutdown and `vlow` **still stayed 0** (queue item 1 in STATUS). So fixing the
-  MMC/codec XO holders will make APSS XO-shutdown naturally, but will not by
-  itself reach `vlow`. The open frontier (per STATUS) is the **USB controller**
-  (`7000000.usb` stuck `control=on`/`pm_runtime_forbid`, never runtime-suspends —
-  the `control=auto`+detach test is still not done), not the XO vote and not the
-  LDOs (killed).
-- Full chain + the disproven PSCI hypothesis:
-  [`power/bringup/findings-log.md`](power/bringup/findings-log.md) and
-  [`power/bringup/captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`](power/bringup/captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt).
+☠️ Traps carried over: `systemctl stop rmtfs` = modem shutdown (`-P`); a
+service "restart" does NOT bring the modem back (needs remoteproc `start`,
+then pd-mapper may stay broken until reboot); per-suspend voltage slopes
+scatter ±87 mV/h — only whole-leg fitted slopes resolve effects this size.
 
-- The RPM's own entry threshold is **not** readable from any source we hold.
-  `qcom_stats.c` (mainline) and the vendor 4.9 `rpm_stats.c` are both *readers*
-  of an RPM-maintained counter — the vendor binding says so in as many words —
-  and a word-boundary grep for `vlow|vmin` across the entire vendor tree returns
-  no RPM hit at all. ☠️ It returns plenty of `VMIN` from `termbits.h` and `vmin`
-  regulator properties from dtsi files; an unanchored grep here lies.
-- What the AP *votes* is fully readable, and that is where the hole is. Four
-  subsystems write `QCOM_SMD_RPM_SLEEP_STATE`: `clk-smd-rpm`, `rpmpd`,
-  `icc-rpm`, `qcom_smd-regulator`. The first three vote sleep; the LDOs measured
-  14 active / 0 sleep.
-- ☠️ **The reason is a device-tree gap, not a driver gap.**
-  `qcom_smd-regulator.c` already has `rpm_reg_write_sleep()` behind
-  `.set_suspend_enable/disable/voltage` — **our** commit `0be43747a1d2`. Those
-  ops are reached from `regulator/core.c:__suspend_set_state()`, which needs a
-  `regulator_state` that only a DT `regulator-state-mem` child node can create
-  (`of_regulator.c`, which also sets `constraints->initial_state =
-  PM_SUSPEND_MEM` at line 327, making `regulator_register()` cast the sleep vote
-  **at probe**). **No DT in the tree has that node** — not
-  `sdm632-fairphone-fp3.dts:741`, not any of the ~616 qcom arm64 DTs. The ops
-  have never been called.
-- ☠️ **Two traps before anyone writes the DT.** (1) A `regulator-state-mem` node
-  without `regulator-on-in-suspend` or `regulator-off-in-suspend` is silently
-  ignored (`regulator_get_suspend_state_check()`); a suspend voltage alone only
-  earns a `No configuration` warning. (2) The phone suspends via **s2idle**
-  (`/sys/power/mem_sleep` = `[s2idle]`, no `deep`), and
-  `regulator_get_suspend_state()` returns NULL for `PM_SUSPEND_TO_IDLE` — so the
-  *runtime* `regulator_suspend()` path is dead here regardless. Only the
-  probe-time `initial_state` path can work on this device.
-- ☠️☠️ **DEPLOYED AS r74 AND IT DID NOT BOOT (now recovered to r73) — see the ✅ RECOVERED section at the top of
-  this page.** `regulator-state-mem { regulator-on-in-suspend; }` went onto all
-  20 rails (`wip/7.1.3/power` `e59893af`, cherry-picked to `integration/7.1.3`
-  and `debug-int/7.1.3` `84241a07`, shipped as r74). The DTB compiles, the
-  binding schema allows the node (`regulator.yaml`
-  `^regulator-state-(standby|mem|disk)$`, inherited by
-  `qcom,smd-rpm-regulator.yaml` through `$ref`), and 20 of 20 nodes are present
-  in the deployed DTB. The phone then stopped booting, silently and before the
-  watchdog probed.
-  The likely mechanism, read from source: `regulator_register()` treats a failed
-  `suspend_set_initial_state()` as fatal and `rpm_reg_probe()` returns out of
-  its loop, so **one rejected or timed-out sleep vote unregisters every rail on
-  the board**. Full derivation, recovery steps and the guardrail post-mortem are
-  in the ✅ RECOVERED section.
-- **Next (the phone is back on r73 now):** repeat with **one** rail, not twenty,
-  and read the boot before adding a second. ☠️ Prove the votes were cast before
-  believing a null result — the `qcom_rpm_smd_write` tracepoint must show
-  sleep-context writes for `ldoa`/`smpa`. A property that parsed into nothing is
-  indistinguishable from a lever that did not work, and the witness for
-  probe-time votes is `tools/sleepset-witness.sh` on a boot armed with
-  `trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=4M`
-  (☠️ never `tp_printk` — see that script's header for why it would boot-loop
-  the phone).
-- A second, lower-ranked candidate found the same day: the USB controller
-  `7000000.usb` and its PHY `79000.phy` are the only 2 of 45 `soc@0` children
-  with `power/control = on`, and neither has ever runtime-suspended
-  (`runtime_suspended_time = 0`). That is dwc3's unconditional
-  `pm_runtime_forbid()` at probe (`core.c:2321`, never followed by
-  `pm_runtime_allow()` on the success path) — **not** the cable. ☠️ So unplugging
-  the cable on its own tests nothing; the experiment is `control=auto` on both
-  nodes **and then** detach, over the WiFi link (`fp3@192.168.100.17`, verified
-  live 2026-08-23).
-
-  ★ **Measured 2026-08-24 — and it walked straight into the trap above.** With
-  the cable physically out I re-ran the XO-across-suspend snap: APSS XO count 0
-  and `vlow` 0, **identical to cable-in**, so the *cable* is not the variable.
-  But `7000000.usb`/`79000.phy` were `control=on` / `runtime_suspended_time=0`
-  in both runs (dwc3 forbid), exactly as this bullet warns - the USB *controller*
-  was never idled. So the cable-alone A/B rules the cable out, not the controller;
-  the `control=auto`+detach experiment is still the one to run. Captures:
-  `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`.
-
-**What is known.** The application processor collapses constantly and says so to
-the RPM; the audio DSP can be made to collapse for the whole of every suspend; and
-`vlow` and `vmin` still read `Count: 0`. So a master being down is **necessary and
-not sufficient**, which is a measured correction to a claim this project carried
-for several days.
-
-**Measured 2026-08-22** (findings-log, `captures/2026-08-22_vlow-a1-systemd.txt`):
-`rpm_master_stats` across three real 120 s s2idle windows names the blocker —
-**the APSS has never once entered XO shutdown** (count 0 against ~50 000 power
-collapses), while MPSS/PRONTO toggle XO freely and LPASS sleeps for good. The
-standing sleep-set XO vote comes from the `bi_tcxo` holders in `clk_summary`
-(both remoteprocs, both mmc hosts, the codec ahbix path) plus the 08-17 LDO
-no-sleep-vote finding. And the modem's 36 % now has a rate: the modem smd-edge
-fires ~once per 2 s inside a suspend window (+64/124 s), each wake echoed by
-RPM request traffic (rpm edge +775) and 57–76 APSS collapses per window.
-
-**Measured further, 2026-08-22 night** (findings-log entries of that evening,
-captures `2026-08-22_vlow-xo-sleep-off.txt`, `_smd-channel-census.txt`,
-`_send-census.txt`, `_wifi-ab-sends.txt`):
-
-* **The XO lever works.** Booted with `clk_smd_rpm.xo_sleep_off=1` (the parked
-  patch, `postmarketOS-xo` extlinux entry) the APSS enters XO shutdown ~0.7/s
-  where it had never once — and `vlow` is *still* 0. So of the two named
-  blockers only the LDO sleep votes remain.
-* **The LDO driver side exists now**: `regulator: qcom_smd: cast sleep-set
-  votes for suspend states` on `wip/7.1.3/power` (`5fe5dba6`, all three
-  layers). No-op until a board opts in via `regulator-state-mem`; the opt-in
-  plan (start `smpa/3`, never `ldoa/7`/`ldoa/8`) is in
-  `power/bringup/leads/rpm-sleep-set.md`.
-* **The window traffic has names.** kprobe census: `rpm_requests` ~670 events
-  per 120 s window — our own interconnect/clk votes, cast per wakeup
-  (`qcom_icc_rpm_set_bus_rate`; a governor A/B *refuted* the cpufreq-vote
-  theory) — against IPCRTR 35 (signal-level pokes, ~zero qrtr payload) and
-  `WLAN_CTRL` 32 (wcn36xx). **`ip link set wlan0 down` takes WLAN_CTRL to
-  zero and the vote churn down a third** — a real, unpriced lever.
-* ☠️ **Call-wake and staying asleep are mutually exclusive today**: with the
-  modem edge armed (the r66 wake fix + the arm-at-boot unit) the signal ring
-  re-wakes the phone within seconds of every suspend — measured as the
-  99-suspend check failing armed and passing 3/3 disarmed. Quieting that ring
-  gates both automatic sleep and leaving call-wake armed.
-
-**Measured at dawn, 2026-08-23** (findings-log; captures
-`2026-08-23_vlow-both-sets.txt`, `_rail-census-both-sets.txt`,
-`_vlow-sleep-init.txt`, `_xo-simultaneity.txt`, `_icc-summary.txt`,
-`_oracle-vlow-control.txt`): **the whole AP-side sleep-set family is closed,
-three measured negatives deep.** A `both_sets=1` knob (r68) mirrors every
-regulator request into the sleep set — the vendor shape, all 23 downstream
-rails are `qcom,set = <3>` and none turn off in sleep, which killed the
-off-in-suspend idea; the census under it shows every PMIC rail voted, leaving
-only interconnect resources — and those turned out to be the GPU's
-ACTIVE-tagged config path (sleep-0 by design, just never *written* because
-`qcom_icc_rpm_set` elides no-change writes). An `icc_smd_rpm.sleep_init=1`
-knob (r69) writes the explicit sleep zeros at probe. **All three knobs
-together: vlow still 0** — across windows in which the APSS held one
-continuous 121 s XO-shutdown with every other master cycling inside it, so
-simultaneity is not the gap either. The TZ (all-zero master stats) is
-**acquitted**: the oracle shows the same zeros. And the decisive control is
-still unrun: **with a USB cable in, the oracle cannot sleep at all**
-(`7000000.ssusb` wakeup source held; `rtcwake` fails on UT), so whether the
-working system ever reaches vlow is itself unmeasured — the night's negatives
-may describe both slots equally.
-
-**What to do next, in order:**
-
-1. **The oracle control with USB physically detached** (one session, WiFi
-   links both slots): does UT ever reach vlow while actually sleeping? This
-   decides whether vlow is a real target or a re-framing — everything below
-   is ordered by its answer. Same detached-cable session also reruns the
-   rail census (the three USB-PHY rails stay confounded until then;
-   USBIN-suspend does not help — it cuts charge current, not the data link).
-2. ~~**Decode the vlow `Client Votes` mask**~~ — **done by subtraction on
-   2026-08-23, no RPM firmware needed** (findings-log). Take one master away
-   at a time and watch which bit moves: **bit 0 ↔ APSS, bit 1 ↔ MPSS,
-   bit 2 ↔ PRONTO, bit 4 ↔ LPASS**, and the four bytes are the same field
-   sampled four times, not four clients. ☠️ **Bit 3 has never once been set**
-   — not under any knob, not on the oracle. ☠️ **Named the same day, and it
-   is not an outside client:** the RPM message RAM gives each master a 4 KB
-   slot (`0x150`, `0x1150`, `0x2150`, `0x3150`, `0x4150` in `msm8953.dtsi`),
-   so the master index is `offset >> 12` — APSS 0, MPSS 1, PRONTO 2, **TZ 3**,
-   LPASS 4, which is exactly where the four measured bits fall. **Bit 3 is the
-   TZ**, silent for the same reason its stats block is all zeros: it does not
-   participate. The earlier "vote from outside the five masters" reading is
-   retracted; stop looking for a sixth client. ★★★ **The last follow-up — read
-   the mask immediately after a suspend window, from the `postmarketOS-xo`
-   entry — is done, 2026-08-23, and it named the blocker.** Six real 30 s
-   windows (`/sys/power/suspend_stats/success` 6 → 12, APSS XO shutdown
-   +1710, so the windows suspended and the APSS collapsed inside them):
-   `vlow`/`vmin` `Count` **0 in all 58 samples**, and the master stats show
-   **LPASS `Shutdown count` frozen at 65 with `Last shutdown @` decoding to
-   46.3 s of uptime** (19.2 MHz ticks). APSS/MPSS/PRONTO cycle normally.
-   Bit 4 was set in exactly 1 of 58 mask samples — the same fact seen by the
-   other instrument, since bit 4 is LPASS. **The ADSP slept 65 times in the
-   first ~46 s of the boot and has not slept since**, and an aggregate
-   low-power set cannot be entered while a master has not voted itself down.
-   Instrument `docs/power/bringup/tools/votes-post-resume.sh`, capture
-   `captures/2026-08-23_votes-post-resume-xo.txt`, write-up in
-   `leads/rpm-sleep-set.md`.
-   ☠️ **Corrections, same evening, both in `leads/rpm-sleep-set.md`:** the
-   freeze is at **~34 s of Linux uptime**, not 46 — the RPM's 19.2 MHz counter
-   runs from SoC reset and leads `/proc/uptime` by the bootloader's ~13 s.
-   The sensor stack was the obvious suspect (`snsregd` starts at 33.6 s, SMGR
-   runs on the ADSP) and is **acquitted**: modules unloaded and both services
-   stopped, LPASS flat at 37 for 60 s while APSS did +1960; the `+2` at the
-   moment of teardown says the ADSP can still shut down and that the pin
-   re-establishes within five seconds.
-   ☠️☠️☠️ **RETRACTED the same night, in full: the ADSP was never pinned.**
-   A flat `Shutdown count` means "asleep and staying down" just as readily as
-   "held awake"; `Last XO shutdown enter` vs `exit` and `Active cores bitmask`
-   are what separate them, and every capture above shows `enter > exit` with
-   `cores 0x0` — asleep. Re-measured on a clean r73 boot: LPASS reads
-   `ASLEEP cores=0x0` from ~34 s to the end of the trace. The LPASS question was
-   already closed on 2026-08-21 (two root causes, both fixed, shipped in r63),
-   and this evening re-walked it only because the closure lived in a working
-   note the resume path never read. The sensor bisect and the ADSP-offline
-   control answered a question that did not exist.
-   ☠️☠️ **And the ADSP is NOT the `vlow` gate** — which was also already known: With the ADSP
-   `remoteproc` stopped by name, a 30 s suspend window leaves `vlow`/`vmin`
-   `Count` at 0, identical to the control with it running. "One master is not
-   voting" was a mechanism that explained the symptom, not evidence that it
-   caused it. Two investigations now, not one: the `vlow` gate and the ADSP.
-   ★ **Updated 2026-08-23: the `vlow` gate is no longer "unidentified" on the
-   AP side** — the regulator sleep-set votes are never cast because no DT
-   describes a suspend state (top of this section). The never-sleeping ADSP
-   remains a separate anomaly whose cost in mA is unmeasured.
-3. **Price the WiFi lever** (slope leg, wlan0 down vs up: WLAN_CTRL 32→0 and
-   a third of the vote churn) and decide the suspend policy. ☠️ **The mask
-   decode found the other side of this trade**: with `wlan0` down, PRONTO's
-   XO shutdown count stops advancing at all and its mask bit sits pinned —
-   the co-processor parks holding the XO instead of cycling it. Price the
-   whole leg in mA, not the churn. WiFi is also
-   the USB-independent rescue link.
-4. ~~**Name and quiet the modem edge's signal ring**~~ (~one poke per 2 s,
-   payload-free) — **not ours to quiet, measured 2026-08-23.** Stopping
-   `ModemManager` and `rmtfs` leaves the rate unchanged (24 / 33 / 20 / 31
-   pokes per 60 s across the A/B), so the modem produces it on its own and no
-   AP-side policy reaches it. What is left is the modem firmware or the SMD
-   channel state machine, neither reachable from a device patch. **So the
-   call-wake trade has to be resolved elsewhere**: hold an inhibitor while
-   ringing, or arm the edge only when a long sleep is not wanted. That
-   decision, not more measurement, is what gates automatic sleep.
-5. **The three experiment knobs stay default-off** (`clk_smd_rpm.
-   xo_sleep_off`, `qcom_smd_regulator.both_sets`, `icc_smd_rpm.sleep_init`,
-   all in r69); design their upstream forms only after a measured positive.
-   ☠️ **`both_sets` is now understood to be the wrong shape, which is part of
-   why it measured nothing.** It mirrors each *active*-set request verbatim into
-   the sleep set, i.e. it votes every rail **on** in sleep — the opposite of
-   what a sleep vote should say. The correct mechanism is the DT
-   `regulator-state-mem` path at the top of this section, which lets each rail
-   state its own suspend enable/voltage. Do not resurrect `both_sets` as the
-   upstream form.
-6. **Release the internal digital codec's LPASS clocks** — ☠️ **half of this is
-   already done and the entry was stale until 2026-08-23.** In the tree the
-   package builds, `mclk` is requested per stream (`.startup`/`.shutdown`, with
-   a comment naming the ADSP); the upstream base has no such code, so that half
-   is ours. What is still held for the life of the boot is **`ahbix-clk` alone**,
-   enabled in `msm8916_wcd_digital_probe()` and dropped only in `remove()`.
-   ☠️ It cannot simply be moved per-stream the way `mclk` was: it is the AHB
-   interface clock behind the codec's MMIO regmap, so every register access
-   outside a stream — DAPM widgets, mixer controls — needs it. The honest fix is
-   runtime PM around register access, which is a real piece of work, not a
-   one-liner. On this board the codec is not in the audio path, and the leg
-   prices the whole mechanism at ~4 %, so this stays correctness-and-upstream
-   work rather than a power fix. Detail in the audio section above.
-
-☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
-code that has not been written; it is blocked on not knowing which vote is left.
 
 ## ~~An incoming call cannot wake the phone from s2idle~~ — FIXED (r66, 2026-08-22)
 

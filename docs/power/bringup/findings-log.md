@@ -2601,3 +2601,32 @@ Device restored to slot b, clean r73 default. ☠️ Operational note (user-supp
 after a slot switch to UT, ssh comes up **only after the user logs in and
 replugs USB** — ask for it in advance next time; the "no-touch" reconnect times
 hold for plain reboots only.
+
+## 2026-08-24 (scope caveat on the closure, added same night)
+
+One corner the closure entry above did not cover, stated so it cannot be
+mistaken for covered: the oracle window measured **runtime idle** (cable in;
+UT's `7000000.ssusb` wakeup source blocks suspend on the wire), not a genuine
+downstream `mem` suspend. Earlier the same day a forced downstream suspend
+(modems powered off + ssusb wakeup disabled) measured APSS `xo_count` 0 → 2 —
+so downstream *suspend* is a state the idle window did not sample, and whether
+`vlow` increments **there** remains unmeasured. It does not reopen the item:
+daily-use oracle depth (continuous system-pc + co-proc XO cycling) is what the
+port is held against, and that is where `vlow` is now proven never to occur.
+If anyone wants the last corner: re-run `tools/rpmstats_raw.py` around the
+forced-suspend recipe on slot a (needs the modem-off + wakeup-disable steps
+from the 2026-08-24 UT-oracle entry, and a user login + USB replug after the
+slot switch).
+
+## 2026-08-24 (night) — the modem lead opens: MPSS XO-duty differential launched
+
+With `vlow` closed, the top power item is the modem's ~36 mA (79.1 → 43.3 mA
+asleep, named "modem processor off" after the `rmtfs -P` contamination was
+found). First uncontaminated instrument launched tonight on r73, cable in,
+no discharge needed: `modem-xo-duty` (systemd-run --collect), two genuine
+`rtcwake -m mem` 90 s suspends per arm, arms = radio normal vs
+`mmcli --set-power-state-low`, readout = MPSS XO count/duration either side of
+each suspend from `qcom_rpm_master_stats`. Log:
+`/var/tmp/modem-xo-duty-20260824.log` on the device. Question it answers:
+does radio state gate whether MPSS sleeps across an AP suspend (the 2026-08-20
+census saw MPSS hold XO up in 5 of 6 suspend arms). Results in the next entry.

@@ -2097,3 +2097,26 @@ on the missing kernel line. Then run live on r73: **`PREFLIGHT OK — the night 
 be armed`**, `boot-default` now reading `default 'postmarketOS-prev' -> frozen
 vmlinuz-r73 (+ dtb-r73), both present`. The queue can arm on the next unattended
 night with the cable out; nothing was armed now (cable in, operator present).
+
+## 2026-08-24 night — `vlow` CLOSED (the target never occurs on this platform); the runbook's open thread is the MODEM LEAD
+
+The deep-sleep item this runbook has orbited for three weeks is closed: the
+RPM's own `vlow`/`vmin` records, read raw from message RAM on **both** slots
+with `tools/rpmstats_raw.py`, are 0 on the working UT oracle too — across a
+10-min window in which the oracle demonstrably slept at full depth. Definitive
+account + scope caveat: findings-log 2026-08-24 "(continued)" and the caveat
+entry after it. Do not start another `vlow` measurement; the counter is not a
+figure of merit on this device.
+
+**The figure of merit is the mA baseline** (asleep 79–83 mA; modem-off 43 mA),
+and the open thread is the modem's ~36 mA. Protocol, in order (detail in
+TODO "Deep sleep — CLOSED" section):
+
+1. `modem-xo-duty` — MPSS XO duty across genuine s2idle, radio normal vs
+   `mmcli --set-power-state-low`. Cable-in, ~10 min, no discharge. First run
+   2026-08-24 night.
+2. Night slope-legs, uncontaminated (☠️ remember `rmtfs -P` = modem shutdown):
+   radio-low whole-leg, then true modem-off via remoteproc stop. Preflight
+   PASSES since the boot-default gate rewrite; needs cable out.
+3. Mechanism readout on whichever leg saves: MPSS XO duration + shutdown count
+   across the sleeps.
