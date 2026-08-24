@@ -11,10 +11,10 @@
 # a new base, bump pkgver and _commit together - that is the single version edit
 # (see the repo's docs/rolling-a-new-base.md).
 _flavor="fp3"
-_commit="84241a07627b931bf6163792cbf611d8620231f2"
+_commit="8d7ecf9153cde4c1a80f0f1d4f53562524a30598"
 pkgname=linux-$_flavor
 pkgver=7.1.3
-pkgrel=74
+pkgrel=75
 pkgdesc="msm8953-mainline for the Fairphone 3: WCD9335 audio, IMX363 camera, PMI632 charger"
 arch="aarch64"
 _carch="arm64"
@@ -72,6 +72,6 @@ package() {
 	echo "$_commit" >"$pkgdir/usr/share/kernel/$_flavor/fp3-commit"
 }
 sha512sums="
-1cd9f6a596c44f562a943aae32eb9d0441a53335c8833304290d0aeaa0bddd54e16e0f2266c776f196232df7a667b36ed1a4ac4d58b9e188ed19185dbe199b3a  linux-fp3-84241a07627b931bf6163792cbf611d8620231f2.tar.gz
+72bbae3dcdde81d4d96059839cb53b4c9c1d737e97b0fac60fc0e0ba9019a651d74564e6acd901ae64a71607e5fa4a63de62e955e3eeb748a01cf5b6b6796d32  linux-fp3-8d7ecf9153cde4c1a80f0f1d4f53562524a30598.tar.gz
 c0b71c7ea60cc7da602473caf1a31f7376c8fb93545d6cffeb7371edda2e15919b10cf9edb098eddf455144f17346bc5b2ee7c588612c60eb6b577fc2f7b676e  config-fp3.aarch64
 "
