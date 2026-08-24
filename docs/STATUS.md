@@ -37,9 +37,16 @@ The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 | branch | tip | note |
 |---|---|---|
 | `wip/7.1.3/audio` | `42b7e745` | + the three SSR fixes of 2026-08-23 |
-| `integration/7.1.3` | `140ff98e` | cherry-pick sum, debug-free (sleep-set revert 2026-08-24) |
-| `debug-int/7.1.3` | `8d7ecf9` | **what the package builds** (r75, sleep-set reverted → content ≡ r73, bootable) |
-| `wip/7.1.3/power` | `53e51066` | RPM sleep-set DT commit **reverted** 2026-08-24 (was `e59893af`) |
+| `integration/7.1.3` | `ecce72c3` | + icc suspend-scoped sleep-set drop knob (2026-08-24 eve) |
+| `debug-int/7.1.3` | `0c3dcfba` | tip advanced by the icc knob; ☠️ **the package still pins `8d7ecf9` (r73)** — the knob is default-off with no runtime effect, so it was **not** shipped/bumped |
+| `wip/7.1.3/power` | `3d883ecd` | + `icc_smd_rpm.sleep_bw_off` suspend-hook experiment knob (2026-08-24 eve) |
+
+☠️ **The device runs r73 (`8d7ecf9`), which the `linux-fp3` package still pins.**
+The three branches above advanced by one commit (the default-off icc suspend-hook
+knob, `icc_smd_rpm.sleep_bw_off`), pushed to `fork`, but `_commit` was
+deliberately **not** bumped: the knob has no runtime effect unless armed on a boot
+label, and it does not by itself reach `vlow` (the RPM handshake is still
+missing). Bump `_commit` only when there is a reason to ship.
 
 ★★ 2026-08-24: the all-20-rails `regulator-state-mem` commit (r74,
 `84241a07`) **did not boot** and is now **reverted** on all three branches
