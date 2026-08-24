@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 09:12**.
+Last updated: **2026-08-24 (evening — the non-XO `vlow` holder is NAMED)**.
 
 ## The device
 
@@ -417,6 +417,28 @@ is now item 4.
    even reads the correct RPM stats region/format for msm8953 before assuming a
    hidden non-XO holder. See `captures/2026-08-24_usb-controller-not-the-vlow-blocker.txt`. Chain:
    `power/bringup/findings-log.md` + `captures/2026-08-24_apss-xo-shutdown-count-zero-mainline.txt`.
+
+   ★★★★ **2026-08-24 (evening) — that "hidden non-XO holder" is now FOUND, and it
+   is not a counter artifact or a wire handshake: it is the sleep-set *content*.**
+   The whole mainline RPM sleep set was dumped and decoded (from-boot
+   `qcom_rpm_smd_write` trace on the `postmarketOS-sleepset` label, no `both_sets`,
+   last-write-per-resource = what the RPM holds). Cx (`smpa/2`) and Mx (`smpa/7`)
+   reach **0** in sleep, but the **backbone clocks + NoC bandwidth are pinned
+   nonzero across a genuine suspend**: bimc (`clk2/0`) **211 MHz**, pcnoc/snoc
+   (`clk1/0,1`) **87.5 MHz**, icc bandwidth (`bmas`/`bslv`) **≈240 MB/s**. Since
+   `vlow` *is* the RPM collapsing the backbone, it cannot fire while the sleep set
+   demands a running backbone — which is exactly why `xo_sleep_off=1` (XO down,
+   backbone up) never moved it. Root cause: `clk-smd-rpm.c to_active_sleep()`
+   mirrors active→sleep for non-`active_only` clocks with no suspend-time drop, and
+   `icc-rpm.c` leaves `TAG_ALWAYS` bandwidth in the sleep context; downstream
+   instead re-writes the sleep set to the idle floor at power-collapse
+   (`msm_rpm_flush_requests`). **Decisive experiment queued:** force the
+   non-active_only BUS/MEM clock sleep votes to 0 (sibling of `xo_sleep_off`) with
+   `xo_sleep_off=1` and re-read `vlow`; non-default label, reboot-and-unset
+   recovery. Full decoded table + source chain:
+   [`power/bringup/findings-log.md`](power/bringup/findings-log.md) 2026-08-24
+   "non-XO `vlow` holder" entry;
+   `captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt`.
 
    What that leaves:
 

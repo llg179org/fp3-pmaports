@@ -1,0 +1,41 @@
+### mainline r73 (1rail-s3 DTB, boot 67a43246), trace_event=qcom_rpm_smd_write
+### cmdline:
+quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10 trace_event=qcom_smd_rpm:qcom_rpm_smd_write trace_buf_size=8M
+
+=== FINAL sleep-set value per key resource (decode: KHz key 4b487a00 => LE32 value*1000 Hz; Enab key 456e6162; vlvl key 766c766c) ===
+LAST sleep clk0/0 :    kworker/u33:2-105     [003] .....     0.320722: qcom_rpm_smd_write: sleep clk0/0 len=12 45 6e 61 62 04 00 00 00 01 00 00 00
+LAST sleep clk1/0 :    kworker/u34:2-76      [006] .....   346.934436: qcom_rpm_smd_write: sleep clk1/0 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+LAST sleep clk1/1 :    kworker/u34:2-76      [006] .....   346.942896: qcom_rpm_smd_write: sleep clk1/1 len=12 4b 48 7a 00 04 00 00 00 cc 55 01 00
+LAST sleep clk2/0 :    kworker/u34:2-76      [007] .....   329.471072: qcom_rpm_smd_write: sleep clk2/0 len=12 4b 48 7a 00 04 00 00 00 00 39 03 00
+LAST sleep smpa/2 :    kworker/u34:2-76      [006] .....   346.966540: qcom_rpm_smd_write: sleep smpa/2 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+LAST sleep smpa/7 :  irq/15-smp2p-mo-109     [000] .....    16.380981: qcom_rpm_smd_write: sleep smpa/7 len=12 76 6c 76 6c 04 00 00 00 00 00 00 00
+
+=== FINAL bmas/bslv (interconnect) nonzero sleep votes (sample of last-seen per id) ===
+0e    kworker/u34:2-76      [006] .....   346.933429: qcom_rpm_smd_write: sleep bslv/115 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+0e    kworker/u34:2-76      [006] .....   346.935696: qcom_rpm_smd_write: sleep bslv/45 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+0e    kworker/u34:2-76      [006] .....   346.936361: qcom_rpm_smd_write: sleep bmas/29 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+0e    kworker/u34:2-76      [006] .....   346.941285: qcom_rpm_smd_write: sleep bslv/104 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+0e    kworker/u34:2-76      [006] .....   346.946237: qcom_rpm_smd_write: sleep bmas/76 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+0e    kworker/u34:2-76      [006] .....   346.949459: qcom_rpm_smd_write: sleep bslv/0 len=12 62 77 00 00 04 00 00 00 00 1c 4e 0e
+
+=== resource write counts (sleep) ===
+    969 sleep smpa/2
+    487 sleep clk2/0
+    267 sleep bslv/0
+    262 sleep bslv/45
+    262 sleep bslv/115
+    262 sleep bslv/104
+    262 sleep bmas/86
+    262 sleep bmas/76
+    262 sleep bmas/29
+    255 sleep bmas/33
+    227 sleep clk1/0
+    226 sleep clk1/1
+      9 sleep clk1/2
+      8 sleep clk0/0
+      7 sleep bmas/35
+      6 sleep smpa/7
+      6 sleep clka/12
+      4 sleep clka/5
+      4 sleep clka/2
+      4 sleep clka/1

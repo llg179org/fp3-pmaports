@@ -2308,3 +2308,93 @@ why the RPM never triggers `vlow` entry even with valid votes and every master
 made to drop XO (`xo_sleep_off=1`) — which needs a downstream-vs-mainline RPM
 message-sequence comparison during suspend, a much larger reverse-engineering
 effort than any single lever. That is the honest frontier as of 2026-08-24.
+
+---
+
+## 2026-08-24 (the non-XO `vlow` holder, NAMED) — ★★★★ mainline pins the backbone bus/mem clocks and NoC bandwidth in the RPM **sleep set**; the RPM cannot collapse the backbone while they are up, XO or no XO
+
+The frontier above asked the one open question: with valid votes and every master
+forced to drop XO, **what non-XO resource keeps the RPM out of `vlow`?** It was
+answered by dumping the *entire* mainline RPM sleep set from a from-boot
+`qcom_rpm_smd_write` trace and decoding the final value of every resource — the
+first time the whole sleep aggregate (not just the XO/regulator slice) was read.
+
+**Method.** Booted r73 on the `postmarketOS-sleepset` label (working r73 kernel +
+the confirmed-booting `1rail-s3` DTB + `trace_event=qcom_smd_rpm:qcom_rpm_smd_write
+trace_buf_size=8M`, **no** `both_sets` contamination), boot `67a43246`. Dumped the
+ring, took the **last** write per resource (that is the value the RPM currently
+holds), and confirmed it survives a genuine suspend (`rtcwake -m mem -s 12`,
+`suspend_stats/success` 0 → 1). Raw:
+[`captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt`](captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt).
+
+**The decoded sleep set** (key FourCC → LE32 value; `4b487a00`="KHz", `456e6162`=
+"Enab", `766c766c`="vlvl", `62770000`="bw"):
+
+| resource | type / meaning | final **sleep** vote | verdict |
+|---|---|---|---|
+| `smpa/2` "vlvl" | VDDCX corner (rpmpd + pm8953_s2) | **0** | ✓ drops — not the holder |
+| `smpa/7` "vlvl" | VDDMX corner | **0** | ✓ drops — not the holder |
+| `clk0/0` "Enab" | MISC_CLK 0 = **bi_tcxo / XO** | 1 | the known XO holder |
+| `clk2/0` "KHz" | MEM_CLK 0 = **bimc** (DDR backbone) | **211 200 kHz** | ☠️ pinned |
+| `clk1/0` "KHz" | BUS_CLK 0 = **pcnoc** | **87 500 kHz** | ☠️ pinned |
+| `clk1/1` "KHz" | BUS_CLK 1 = **snoc** | **87 500–100 000 kHz** | ☠️ pinned |
+| `bmas/*`,`bslv/*` "bw" | icc-rpm NoC **bandwidth** | **0x0e4e1c00 ≈ 240 MB/s** | ☠️ pinned |
+
+So the rails (Cx/Mx) correctly reach 0 in the sleep set — but the **backbone
+clocks (bimc/pcnoc/snoc) and the NoC bandwidth are pinned at their active idle
+values**, and stay there across a real suspend (measured before *and* after:
+bimc `00 39 03 00`, pcnoc/snoc `cc 55 01 00`, bw `00 1c 4e 0e`, unchanged;
+`vlow`/`vmin` Count 0 → 0). `vlow` is defined (downstream `rpm_stats` binding) as
+the RPM **lowering or powering down the backbone rails Cx/Mx *and* the XO** — it
+cannot do that while the AP's sleep set still demands bimc at 211 MHz and 240 MB/s
+of NoC bandwidth. **This is why `xo_sleep_off=1` alone never moved `vlow`:** it
+drops the XO but leaves the backbone clocks and bandwidth up, so the RPM still has
+no permission to collapse the backbone.
+
+**Root cause, read from source (two mirroring bugs, one per subsystem).**
+1. `clk-smd-rpm.c:280 to_active_sleep()` — for any clock **not** marked
+   `active_only`, the **sleep-set rate is set equal to the active rate**
+   (`*sleep = *active`). `bimc` (MEM_CLK), `pcnoc`/`snoc` (BUS_CLK) are not
+   active_only, so whatever rate they run at while the AP is idle is *also* voted
+   into the sleep set. There is **no suspend hook** in the driver to lower it —
+   the sleep vote just mirrors the last active rate forever. (The existing
+   `xo_sleep_off` param is the *only* escape, and it is hard-coded to the XO clock
+   alone via `clk_smd_rpm_is_xo()`.)
+2. `interconnect/qcom/icc-rpm.c` — bandwidth is aggregated per context
+   (`agg_clk_rate[QCOM_SMD_RPM_ACTIVE_STATE]` vs `…SLEEP_STATE`), but a consumer
+   whose path request is tagged `QCOM_ICC_TAG_ALWAYS` (the common default) counts
+   in **both** contexts, and nothing re-tags or drops it at suspend. So an
+   always-on NoC path (CPU↔DDR, storage, etc.) leaves a nonzero **sleep**
+   bandwidth vote that pins the NoC up.
+
+**Why downstream (4.9, reaches deep sleep) differs — this is the "final handshake"
+the frontier was chasing, and it is a *content* difference, not a wire-protocol
+one.** Downstream RPM-SMD (`drivers/soc/qcom/rpm-smd.c`) does **not** send sleep
+votes eagerly. Every sleep-set request is **buffered** in an rb-tree
+(`msm_rpm_smd_buffer_request()` → `tr_root`) and physically transmitted to the RPM
+only by `msm_rpm_flush_requests()`, called from `msm_rpm_enter_sleep()` **at the
+moment the AP commits to system power-collapse** (with the SMD RX interrupt
+masked). The buffered sleep values are the ones the AP wants applied *while it is
+actually asleep* — for the AON bus masters that is a minimal/zero bandwidth,
+because the msm-bus driver keeps a separate sleep-context vote that drops when the
+AP suspends. Mainline has neither the buffer nor the flush nor the suspend-time
+re-vote: it wrote the sleep set once, at probe/vote-change time, mirrored from the
+active rate, and never revisits it. **The downstream AP's "enter sleep" step
+rewrites the sleep set to the truly-idle backbone floor; the mainline AP never
+does, so the RPM's sleep set permanently describes a running backbone.**
+
+**Status of the claim.** Measured and source-confirmed that the backbone
+clocks/bandwidth are pinned nonzero in mainline's sleep set across a real suspend,
+and that Cx/Mx are not. **Not yet proven by construction** that zeroing them is
+sufficient for `vlow` — that is the decisive next experiment: a sibling of
+`xo_sleep_off` that forces the sleep-set vote to 0 for the non-active_only
+BUS/MEM clocks (and, if needed, the icc sleep bandwidth), run **together with**
+`xo_sleep_off=1`, then re-read `vlow`. Risk is the same class as `xo_sleep_off`
+(gating the backbone during an s2idle the AP may need to resume through) — so it
+goes on a **non-default** label with the documented reboot-and-unset recovery. If
+`vlow` moves, the fix is upstreamable: either mark these clocks active_only for
+this platform, or add a real suspend-time sleep-set drop (the mainline equivalent
+of the downstream flush). Category: **power**.
+
+Captures: `captures/2026-08-24_sleepset-backbone-clocks-pinned-mainline.txt`
+(decoded final sleep set) and the in-run suspend witness above.
