@@ -2154,3 +2154,56 @@ completed-suspend vs completed-suspend, which is the right axis, but a mainline
 re-run with modems off would remove the last asymmetry. `active_cores=0x1` in
 every snapshot is only because snapshots are post-resume, not evidence about the
 suspended state.
+
+---
+
+## 2026-08-24 (one-rail regulator-state-mem) — ★★ the mechanism casts a real sleep vote and boots; the all-20 no-boot is rail-specific, not inherent
+
+Follow-up to the all-20-rails commit (`arm64: dts: qcom: sdm632-fairphone-fp3:
+specify the RPM sleep set for every rail`, r74). That commit added
+`regulator-state-mem { regulator-on-in-suspend; }` to **all 20 rails** and the
+resulting kernel **did not boot**. The open question was whether
+`regulator-state-mem` itself is unusable on this board (the whole
+sleep-vote mechanism dead) or whether one specific rail among the twenty breaks
+boot when it gets a probe-time sleep vote.
+
+**Answered by a one-rail bisection probe.** Rebuilt the DTB from the working base
+(no state-mem) with `regulator-state-mem { regulator-on-in-suspend; }` added to
+**only `pm8953_s3`** (nothing else). Deployed DTB-only (extlinux `fdt` line,
+lk2nd honours it — `/sys/firmware/fdt` confirmed as the one-rail DTB: exactly 1
+`state-mem` + 1 `on-in-suspend` node). Three Step-0 criteria, all met:
+
+1. **Boots** — ~16 s to userspace, boot_id `1a2202e0`.
+2. **The sleep vote is actually cast at probe** — the `qcom_rpm_smd_write`
+   tracepoint (armed via `trace_event=…:qcom_rpm_smd_write`) shows
+   `sleep smpa/3 swen=1` at `t=0.276084` (SMPS group A id 3 = s3; `swen`=software
+   enable, value 1). This is measured, not assumed: the probe-time
+   `suspend_set_initial_state()` → `.set_suspend_enable` path fired.
+3. **Suspend still works** with the vote active — `rtcwake -m mem -s 10`
+   completed, `/sys/power/suspend_stats/success` 0 → 1. (RTC reads 1970 on this
+   board, but rtcwake's relative alarm still armed; the earlier *detached*
+   attempts read success=0 only because the wifi drop during suspend tore down
+   the nohup'd shell before it recorded — a foreground run is clean.)
+
+**Conclusion.** `regulator-state-mem` is fully usable here; the all-20 no-boot is
+**one (or a few) specific rails**, not the mechanism. The state requested is
+identical in both cases (`on-in-suspend` only, no voltage, no rail actually
+changes) — so the difference is purely *which/how-many* rails get a probe-time
+vote, a clean bisection target.
+
+**But on-in-suspend carries no power benefit** — the rail stays on; only the vote
+is made to exist. Neither the one-rail nor a bisected working subset would lower
+draw. A real win needs `off-in-suspend` / lower `suspend-microvolt` on rails that
+are genuinely unused across suspend (bigger, riskier work), *and* it is gated
+behind the primary blocker: the AP never drops XO across suspend
+([2026-08-24 UT-oracle](#2026-08-24-ut-oracle-across-suspend--the-ap-never-drops-xo-is-a-mainline-regression-not-an-soc-limit)),
+without which the RPM never aggregates to vlow no matter how the LDOs vote.
+
+**Disposition.** The all-20 no-boot commit (`e59893af` wip/power → `4cf51780`
+integration → `84241a07` debug-int, pinned by the r74 package) is **reverted** —
+a no-benefit change must not ship, and a no-boot one certainly must not be the
+package's pinned commit. The mechanism proof stays here and in git history; the
+one-rail DTB stays on the device (`/boot/sdm632-fairphone-fp3.dtb-1rail-s3`) for
+further per-rail bisection if the off-in-suspend direction is picked up later.
+
+Capture: `sleep smpa/3 swen=1 @ t=0.276084` (ftrace, one-rail-s3 boot `1a2202e0`).

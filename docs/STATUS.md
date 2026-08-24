@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 07:56**.
+Last updated: **2026-08-24 08:34**.
 
 ## The device
 
@@ -37,23 +37,31 @@ The three extlinux labels are `postmarketOS` (default), `postmarketOS-fallback`
 | branch | tip | note |
 |---|---|---|
 | `wip/7.1.3/audio` | `42b7e745` | + the three SSR fixes of 2026-08-23 |
-| `integration/7.1.3` | `4cf51780` | cherry-pick sum, debug-free |
-| `debug-int/7.1.3` | `84241a07` | **what the package builds** (r74, building) |
-| `wip/7.1.3/power` | `e59893af` | + the RPM sleep-set DT commit of 2026-08-23 |
+| `integration/7.1.3` | `140ff98e` | cherry-pick sum, debug-free (sleep-set revert 2026-08-24) |
+| `debug-int/7.1.3` | `8d7ecf9` | **what the package builds** (r75, sleep-set reverted → content ≡ r73, bootable) |
+| `wip/7.1.3/power` | `53e51066` | RPM sleep-set DT commit **reverted** 2026-08-24 (was `e59893af`) |
 
-★ 2026-08-23: `arm64: dts: qcom: sdm632-fairphone-fp3: specify the RPM sleep set
-for every rail` is on all three, pushed to `fork`, tarball checked
-(`84241a07…` → 200, bogus hash → 404). `linux-fp3` bumped to `pkgrel=74`,
-`_commit=84241a07627b931bf6163792cbf611d8620231f2`, checksummed and building.
-☠️ Not yet deployed and not yet measured — the sleep votes have not been
-observed on the device, so nothing about `vlow` has changed yet.
+★★ 2026-08-24: the all-20-rails `regulator-state-mem` commit (r74,
+`84241a07`) **did not boot** and is now **reverted** on all three branches
+(`wip/power` `53e51066`, `integration` `140ff98e`, `debug-int` `8d7ecf9`), pushed
+to `fork`. `linux-fp3` re-pinned to `pkgrel=75`,
+`_commit=8d7ecf9153cde4c1a80f0f1d4f53562524a30598` (reverted debug-int, content
+≡ the running r73 kernel). Why revert: a one-rail bisection probe proved the
+mechanism is sound (state-mem on only `pm8953_s3` boots, casts the vote —
+`sleep smpa/3 swen=1 @ t=0.276084` — and suspends), so the all-20 no-boot is the
+`regulator_register()` all-or-nothing behaviour tripping on one specific rail;
+**and** `on-in-suspend` saves no power anyway (rail stays on, only the vote
+exists). `vlow` is unchanged (still 0) — the deep-sleep win is gated behind the
+AP-XO regression, not the LDO votes. Full detail:
+[`power/bringup/findings-log.md`](power/bringup/findings-log.md) 2026-08-24
+one-rail entry.
 
 `fp3-pmaports` `origin/main` carries the docs and the APKBUILD; the kernel goes
 to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
-## ✅ RECOVERED — r74 does not boot; back on r73 (2026-08-23 23:22)
+## ✅ RESOLVED — r74 no-boot cause found + reverted (2026-08-24); device on r73
 
 The device is up again on the r73 kernel/DTB and answers on SSH. r74 stays on
 `/boot` untouched for diagnosis; the boot default was moved off it. Kept below

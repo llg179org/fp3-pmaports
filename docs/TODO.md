@@ -109,8 +109,28 @@ as `/boot/extlinux/extlinux.conf.pre-r74`.
 **Nothing is stranded.** `wip/7.1.3/power` `e59893af`, `integration/7.1.3`
 `4cf51780`, `debug-int/7.1.3` `84241a07`, all pushed to `fork`; the package is
 at `/mnt/1TB/pmos/work/packages/edge/aarch64/linux-fp3-7.1.3-r74.apk`.
-☠️ **Do not roll `_commit` back before the cause is known** — the commit is not
-proven wrong, only the boot is proven broken.
+
+**★★ 2026-08-24 — cause found, and reverted.** A one-rail bisection probe
+answered the open question. Rebuilt the DTB with `regulator-state-mem
+{ regulator-on-in-suspend; }` on **only `pm8953_s3`**, deployed DTB-only, and it
+**boots** (~16 s), **casts the sleep vote** (`sleep smpa/3 swen=1 @ t=0.276084`
+on the `qcom_rpm_smd_write` tracepoint — measured, not assumed) and **suspends**
+(`success` 0 → 1). So `regulator-state-mem` is fully usable; the all-20 no-boot
+is the `regulator_register()` all-or-nothing behaviour tripping on **one
+specific rail** whose sleep vote the RPM rejects/times out — exactly the
+hypothesis above, now confirmed from the working side. Details:
+[`power/bringup/findings-log.md`](power/bringup/findings-log.md) (2026-08-24
+one-rail entry).
+
+☠️ **But on-in-suspend saves nothing** — the rail stays on, only the vote is made
+to exist; no bisected subset of it would lower draw. A real win needs
+`off-in-suspend`/lower `suspend-microvolt` on genuinely-unused rails, and is gated
+behind the AP-XO regression anyway. So the all-20 commit is **reverted** off all
+three branches (a no-benefit change must not ship; a no-boot one must not be the
+pinned commit). The one-rail DTB stays on the device
+(`/boot/sdm632-fairphone-fp3.dtb-1rail-s3`) for later per-rail bisection if the
+`off-in-suspend` direction is picked up. `84241a07` remains reachable in history
+(revert-on-top, not a rewrite), so the old package tarball still resolves.
 
 ## Where this stopped, 2026-08-23 — read this first after a long gap
 
