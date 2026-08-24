@@ -5,12 +5,13 @@
 > Gergely, who reviewed every change and made or reviewed every measurement
 > they rest on.
 
-Sections and numbered items moved out of [`TODO.md`](TODO.md) and
-[`FP3-TODO.md`](FP3-TODO.md) once they were answered, fixed or disproved.
-Everything is kept verbatim as it stood when closed — headings, numbering and
-strikethrough included — so cross-references by number or title still resolve.
-The numbering gaps left behind in `FP3-TODO.md` are deliberate for the same
-reason: nothing was renumbered.
+Sections and numbered items moved out of [`TODO.md`](TODO.md) once they were
+answered, fixed or disproved. (Until 2026-08-24 there was a second source, the
+by-branch `FP3-TODO.md`, since folded into `TODO.md`; the `# From FP3-TODO.md`
+group below is where its closed items were archived.) Everything is kept verbatim
+as it stood when closed — headings, numbering and strikethrough included — so
+cross-references by number or title still resolve. The numbering gaps left behind
+in `TODO.md` are deliberate for the same reason: nothing was renumbered.
 
 ---
 

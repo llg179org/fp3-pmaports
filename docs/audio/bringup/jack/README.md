@@ -14,8 +14,7 @@ codec. Without it the next attempt starts by rebuilding them.
 
 > **No status and no open items live on this page.** What the jack does today is
 > in [`../../README.md`](../../README.md#the-headset-jack); what is still open is
-> in [`../../../TODO.md`](../../../TODO.md) and
-> [`../../../FP3-TODO.md`](../../../FP3-TODO.md). Each round below records what
+> in [`../../../TODO.md`](../../../TODO.md). Each round below records what
 > was true when it was measured — and rounds one and two reached conclusions that
 > round three overturned, which is why they are kept.
 

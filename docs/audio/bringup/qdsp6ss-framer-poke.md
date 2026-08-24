@@ -14,8 +14,7 @@ what the poke was, why it looked necessary, and what settled it.
 
 > This page is a closed record: the poke existed, it was measured, it is gone.
 > What the audio path does today is in [`../README.md`](../README.md); what is
-> still open is in [`../../TODO.md`](../../TODO.md) and
-> [`../../FP3-TODO.md`](../../FP3-TODO.md).
+> still open is in [`../../TODO.md`](../../TODO.md).
 
 ## Why it existed
 

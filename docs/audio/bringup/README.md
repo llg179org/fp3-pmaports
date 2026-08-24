@@ -20,8 +20,7 @@ package.
 
 > **Where things stand is deliberately not on this page.** What works today and
 > how it fits together is in [`../README.md`](../README.md); what is still open
-> is in [`../../TODO.md`](../../TODO.md) and
-> [`../../FP3-TODO.md`](../../FP3-TODO.md). This is a record of how the current
+> is in [`../../TODO.md`](../../TODO.md). This is a record of how the current
 > arrangement was arrived at, and it is **not** revised when the device changes —
 > so read anything below as "what was true when it was measured", with the date
 > the step carries.

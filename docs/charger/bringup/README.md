@@ -19,7 +19,7 @@ component at all: everything that matters ships in the kernel package.
 
 > **Where things stand is deliberately not on this page.** What works today is in
 > [`../README.md`](../README.md); what is still open is in
-> [`../../TODO.md`](../../TODO.md) and [`../../FP3-TODO.md`](../../FP3-TODO.md).
+> [`../../TODO.md`](../../TODO.md).
 > This is a record of how the current arrangement was arrived at, and it is
 > **not** revised when the device changes.
 

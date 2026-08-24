@@ -13,8 +13,7 @@ because everything interesting lives under `/sys/kernel/debug`.
 
 > This page describes instruments only. What the audio path does today is in
 > [`../../README.md`](../../README.md); what is still open is in
-> [`../../../TODO.md`](../../../TODO.md) and
-> [`../../../FP3-TODO.md`](../../../FP3-TODO.md).
+> [`../../../TODO.md`](../../../TODO.md).
 
 ## `jack-probe.py`
 

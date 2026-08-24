@@ -289,13 +289,13 @@ a row hand the boot to the other slot.
 
 ---
 
-## 4. Do **not** copy `FP3-TODO.md` here
+## 4. Do **not** copy the open-item index here
 
-This procedure builds the safety net and nothing else. `FP3-TODO.md` is the
-port-wide index of open items and it lives in this repository, at
-[`../FP3-TODO.md`](../FP3-TODO.md). It used to ship on the fork as well and was
-dropped on 2026-07-30, for the same reason it should not go on your branch
-either: the kernel tree carries kernel source, a second copy is a stale snapshot
+This procedure builds the safety net and nothing else. The port-wide index of
+open items ([`../TODO.md`](../TODO.md), which since 2026-08-24 also carries the
+by-branch view formerly kept as `FP3-TODO.md`) lives in this repository, not on
+the fork. Its by-branch half used to ship on the fork as well and was dropped on
+2026-07-30, for the same reason it should not go on your branch either: the kernel tree carries kernel source, a second copy is a stale snapshot
 the moment the first one moves, and nothing in the safety net reads it. Leaving
 it out also keeps this commit reviewable as one thing.
 

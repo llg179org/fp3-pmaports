@@ -19,8 +19,7 @@ Nothing here is needed to run the sensors. Everything that is, lives in
 
 > **Where things stand is deliberately not on this page.** What works today and
 > where each piece came from is in [`../README.md`](../README.md); what is still
-> open is in [`../../TODO.md`](../../TODO.md) and
-> [`../../FP3-TODO.md`](../../FP3-TODO.md). This is a record of how the current
+> open is in [`../../TODO.md`](../../TODO.md). This is a record of how the current
 > arrangement was arrived at, and it is **not** revised when the device changes.
 
 ## The instruments

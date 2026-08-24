@@ -6,9 +6,9 @@
 
 **This file is the live one.** It is rewritten as work happens, not at the end of
 a session, and it is the first thing to read when picking the work back up. The
-reasoning behind each open item is in [`TODO.md`](TODO.md) (by item) and
-[`FP3-TODO.md`](FP3-TODO.md) (by branch); closed items move verbatim to
-[`TODO-DONE.md`](TODO-DONE.md). When this page and `TODO.md` disagree, **this one
+reasoning behind each open item is in [`TODO.md`](TODO.md) — the by-item view, with the
+by-branch view folded in at its end since 2026-08-24; closed items move verbatim
+to [`TODO-DONE.md`](TODO-DONE.md). When this page and `TODO.md` disagree, **this one
 is newer and `TODO.md` is more complete** — fix whichever is wrong rather than
 picking a winner.
 
@@ -444,7 +444,7 @@ is now item 4.
    - `44-camera-af-windows` taking ~502 s rather than ~5 s is a **symptom** of an
      already-damaged camera, not a cause;
    - a `cci ... timeout` + `imx363 -110` fires at boot, ~13 s in, with no camera
-     client in existence — [`FP3-TODO.md`](FP3-TODO.md) 33f-4, and it cuts
+     client in existence — [`TODO.md`](TODO.md) 33f-4, and it cuts
      against the client-collides-with-teardown story in 33f-2 and 33f-3;
    - the rate itself, ~3 wedges in 6 independent runs.
    ★★ **The hunt ran 8 passes and reproduced nothing — which is itself a
@@ -495,8 +495,8 @@ is now item 4.
    ☠️ Found while checking that: **the branch table in `~/.claude/CLAUDE.md`
    lists five upstream-bound categories and there are seven.** `power` (8
    commits) and `i2c` (the QUP runtime-PM pinctrl fix) both carry real work and
-   appear in neither that table nor `FP3-TODO.md`'s per-branch sections. Written
-   up in [`FP3-TODO.md`](FP3-TODO.md); the table is incomplete, not
+   appear in neither that table nor `TODO.md`'s by-branch sections. Written
+   up in [`TODO.md`](TODO.md); the table is incomplete, not
    authoritative — re-derive with `git for-each-ref`.
    The fix itself is still unwritten; the placement question is what is closed.
 

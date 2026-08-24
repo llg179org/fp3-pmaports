@@ -14,7 +14,7 @@ mainline kernel: what is wired, and what has been measured to work.
 |---|---|
 | **provenance** — whose code each file is | [`../kernel/README.md`](../kernel/README.md#camera-imx363c) |
 | **how it was brought up**, and the traps found on the way | [`bringup/README.md`](bringup/README.md) |
-| **what is still open** | [`../TODO.md`](../TODO.md) and [`../FP3-TODO.md`](../FP3-TODO.md), items 1 and 33 |
+| **what is still open** | [`../TODO.md`](../TODO.md), items 1 and 33 |
 
 ## The shape of it
 
@@ -119,7 +119,7 @@ The Samsung S5K4H7 at `1-0010` identifies itself — `S5K4H7 detected, model ID
 0x487b` — and does nothing else. Its driver registers no subdevice, so `cam -l`
 still reports one camera. Why it stops there, and why that is a licence question
 rather than an engineering one, is in
-[`../FP3-TODO.md`](../FP3-TODO.md).
+[`../TODO.md`](../TODO.md).
 
 ☠️ **The second CCI bus needs `cci1_default` in the board's `&cci` pinctrl-0.**
 `msm8953.dtsi` muxes both buses; a board that overrides `pinctrl-0` to add its
@@ -295,7 +295,7 @@ Measured 2026-08-01 on `linux-fp3-7.1.3-r32` (`#33-fp3`) with libcamera 0.7.1,
 | PipeWire | device `imx363 [libcamera]`, source *Built-in Back Camera*, offering a ladder of sizes from 160×120 up |
 | controls offered | `Contrast`, `Gamma`, **`AfMode`, `AfTrigger`, `AfMetering`, `AfWindows`**, and with the manual-control patches **`ExposureTimeMode`, `ExposureTime`, `AnalogueGainMode`, `AnalogueGain`, `AwbEnable`, `ColourTemperature`** |
 | what a control can be | the node describes itself — `pw-dump <node>` returns each control's libcamera name, type, bounds and, for the enumerated ones, its value labels. That is enough to build a user interface for a camera nobody wrote code for, and is how the app's manual controls are built |
-| manual focus | **offered**, since the `Af` block of [`imx363.yaml`](../../userspace-camera/libcamera/imx363.yaml) gained `lens-infinity-code` / `lens-closest-code` / `lens-closest-distance`. `LensPosition` is in dioptres, so publishing it needs two actuator codes tied to real distances, and those keys supply them — as an **estimate**, not a calibration; the module's EEPROM (`bl24s64`, no driver) is where a vendor keeps the real numbers, see [FP3-TODO 33j](../FP3-TODO.md). ☠️ It was published and **completely inert** up to r12 — see "Manual focus was offered and did nothing" below |
+| manual focus | **offered**, since the `Af` block of [`imx363.yaml`](../../userspace-camera/libcamera/imx363.yaml) gained `lens-infinity-code` / `lens-closest-code` / `lens-closest-distance`. `LensPosition` is in dioptres, so publishing it needs two actuator codes tied to real distances, and those keys supply them — as an **estimate**, not a calibration; the module's EEPROM (`bl24s64`, no driver) is where a vendor keeps the real numbers, see [TODO 33j](../TODO.md). ☠️ It was published and **completely inert** up to r12 — see "Manual focus was offered and did nothing" below |
 | autofocus | continuous by default; a scan is 19 measurements, so **~3.5 s at 1920×1080** and ~14 s at full resolution — statistics arrive once every four frames |
 | autofocus, in daylight | **verified 2026-08-02**: repeated scans of a lit indoor scene settled at 385, 386, 387, 389, 391 and 394 with peak scores around 15 000. In the dark the same instrument scored ~1 300 and refused (`No focus peak … staying at`), which is the algorithm declining rather than guessing |
 | reaching a control from an app | only by binding the PipeWire node directly. `pw-cli set-param <node> Props '{ 16777249: 1 }'` sets `AfMode`; the id is `SPA_PROP_START_CUSTOM` (0x1000000) plus libcamera's control id (`AfMode` 33, `AfTrigger` 38) |
@@ -342,7 +342,7 @@ GStreamer.** PipeWire's libcamera plugin maps controls to properties only for
 (`if (cid.isArray()) return nullptr;` in
 `spa/plugins/libcamera/libcamera-source.cpp`), so `AfWindows` never arrives —
 focusing on a *tapped point* still needs a change there
-([FP3-TODO 33g](../FP3-TODO.md)). And `pipewiresrc` carries no camera controls
+([TODO 33g](../TODO.md)). And `pipewiresrc` carries no camera controls
 at all, so an application has to reach the node itself; the Snapshot patches run
 `pw-cli set-param` on the `object.id` the GStreamer device already carries.
 Binding the node in-process needs the `pipewire` Rust crate, whose bindgen step
@@ -356,7 +356,7 @@ while another client is tearing the camera down, the CCI transfer times out
 the error, so every later open returns `EINVAL`, libcamera logs *"Lens
 initialisation failed, lens disabled"* and autofocus silently disappears while
 the camera still streams. Sequential use is unaffected — measured
-across two clean boots, four runs each. See [FP3-TODO 33f](../FP3-TODO.md).
+across two clean boots, four runs each. See [TODO 33f](../TODO.md).
 
 ☠️ **Unbinding and rebinding the lens driver breaks libcamera until the next
 reboot.** Each bind leaves the previous ancillary media link behind, one of them
@@ -543,7 +543,7 @@ Nothing upstream does this: the gen2 write master (`camss-vfe-17x.c`) reaches th
 same conclusion from the other end, writing a constant `WM_STRIDE_DEFAULT_STRIDE`
 under a comment that says *Configure stride for RDIs*. That makes it a change
 with no reference implementation to check against, which is why it has not been
-attempted here — see [FP3-TODO](../FP3-TODO.md).
+attempted here — see [TODO](../TODO.md).
 
 The saving it would buy is bounded by the table above: the readout step costs
 20 points of a core for 12.6 MB per frame of extra upload, so removing the

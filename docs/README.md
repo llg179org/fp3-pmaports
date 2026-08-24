@@ -38,21 +38,22 @@ also the thinnest.
 
 Then two lists, on different axes, and it is worth knowing which one you want:
 
-* [`TODO.md`](TODO.md) — **the authoritative one**, organised by item: what was
-  measured, what is parked and why, plus the settled questions kept as a record
-  so nobody re-investigates them. Items already written up on a subsystem page
-  are linked rather than repeated.
-* [`FP3-TODO.md`](FP3-TODO.md) — the same ground organised **by branch**: which
-  branch owns which open item, where the work may be sent at all, which series
-  applies to which maintainer tree, and the `vendor/*` / `archive/*` namespaces.
-  It flattens back in what `TODO.md` links out, so read it when the question is
-  *"what is the state of this branch"* rather than *"what is left to do"*. When
-  the two disagree, `TODO.md` wins.
+* [`TODO.md`](TODO.md) — **the single open-item list**. Organised by item: what
+  was measured, what is parked and why, plus the settled questions kept as a
+  record so nobody re-investigates them. Folded in at its end since 2026-08-24 is
+  the **by-branch view** (formerly a separate `FP3-TODO.md`): which branch owns
+  which open item, where the work may be sent at all, which series applies to
+  which maintainer tree, and the `vendor/*` / `archive/*` namespaces — read that
+  when the question is *"what is the state of this branch"* rather than *"what is
+  left to do"*. Items already written up on a subsystem page are linked rather
+  than repeated.
 
-Both live here and nowhere else. Until 2026-07-30 `FP3-TODO.md` also shipped at
-the root of the kernel fork, as a byte-identical copy kept in sync by hand; it
-was dropped there because the kernel tree should carry kernel source, and one
-file in two repositories is one file too many to keep honest.
+It lives here and nowhere else. Until 2026-07-30 a by-branch copy (`FP3-TODO.md`)
+also shipped at the root of the kernel fork, as a byte-identical copy kept in
+sync by hand; it was dropped there because the kernel tree should carry kernel
+source, and one file in two repositories is one file too many to keep honest. On
+2026-08-24 that by-branch view was folded into `TODO.md`, so there is one
+open-item list, not two.
 
 ## How to work on it
 

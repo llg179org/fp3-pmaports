@@ -25,7 +25,7 @@ What survives, in one place:
 - `44-camera-af-windows` taking ~502 s instead of ~5 s is a **symptom** of an
   already-damaged camera, not a cause. It was read as a duration for hours.
 - A `cci ... timeout` + `imx363 ... -110` fires **at boot**, ~13 s in, with no
-  camera client in existence — see `FP3-TODO.md` 33f-4.
+  camera client in existence — see `TODO.md` 33f-4.
 - Roughly 3 wedges in 6 independent camera-containing runs.
 
 ☠️ **A fourth instrument error, caught on the first pass of the hunt itself.**
@@ -105,7 +105,7 @@ The blow-by-blow follows, in the order it happened.
    localisation put it. The phone then spends ~10 minutes unable to tear the
    camera down. Capture:
    `docs/power/bringup/captures/2026-08-23_camss-iommu-wedge-watchdog.txt`.
-   ★ **This is nearly the known item [`FP3-TODO.md`](FP3-TODO.md) 33f-2**, which
+   ★ **This is nearly the known item [`TODO.md`](TODO.md) 33f-2**, which
    already records the same `master 0 queue 0 timeout` + `-110` from touching the
    camera while another client tears it down. Two differences: 33f-2's `-110` is
    on the ak7375 **lens**, this one is on the imx363 **sensor**; and 33f-2's
@@ -247,7 +247,7 @@ The blow-by-blow follows, in the order it happened.
    - `44-camera-af-windows` taking 502 s instead of 5 s is a **symptom** of an
      already-damaged camera, not a cause;
    - the boot-time `cci ... timeout` + `imx363 -110` at 13 s with no client
-     present (`FP3-TODO.md` 33f-4);
+     present (`TODO.md` 33f-4);
    - the reproduction rate, ~50% per camera-containing run.
    Next, and it is a different kind of job: **stop bisecting and go for the
    mechanism.** Loop the camera block on fresh boots with `kmsg-tap.sh` attached
