@@ -19,3 +19,37 @@
 
 ## For comparison, UT oracle 21 min idle (2026-08-24_vlow-idle-ut-oracle.txt):
 # APSS   XO 0/s     MPSS XO 3.1/s   PRONTO XO 9.0/s   LPASS XO 11.9/s
+
+## Full 20-min screen-off window (systemd-run master-idle, r73):
+# pmos-master tag=pmos-r73 dur=1200s ival=60s boot=5ccc86b1-5e21-49c1-b51c-2f0765e14a3b kernel=#74-fp3 SMP PREEMPT Sun Aug 23 13:20:02 UTC 2026
+# dpms=Off
+uptime | APSS_sc/xo MPSS_sc/xo PRONTO_sc/xo LPASS_sc/xo | vlow vlow_votes
+851.09 | A=20565/0 M=2070/2062 P=7439/7436 L=94/65 | vlow=0 v=0x15171317
+911.16 | A=21499/0 M=2217/2209 P=8001/7998 L=95/66 | vlow=0 v=0x7030703
+971.24 | A=22342/0 M=2358/2350 P=8538/8535 L=95/66 | vlow=0 v=0x7030703
+1031.32 | A=23190/0 M=2496/2488 P=9073/9070 L=95/66 | vlow=0 v=0x1050105
+1091.39 | A=23988/0 M=2645/2637 P=9664/9661 L=95/66 | vlow=0 v=0x5010501
+1151.47 | A=24784/0 M=2775/2767 P=10253/10251 L=95/66 | vlow=0 v=0x3010501
+1211.54 | A=25633/0 M=2918/2909 P=10844/10840 L=95/66 | vlow=0 v=0x5010307
+1271.61 | A=26479/0 M=3055/3046 P=11428/11424 L=95/66 | vlow=0 v=0x5010501
+1331.69 | A=27341/0 M=3198/3189 P=12013/12010 L=95/66 | vlow=0 v=0x5010501
+1391.76 | A=28131/0 M=3343/3334 P=12603/12599 L=95/66 | vlow=0 v=0x7030703
+1451.83 | A=28873/0 M=3472/3463 P=13193/13189 L=95/66 | vlow=0 v=0x7030703
+1511.91 | A=29664/0 M=3627/3618 P=13782/13778 L=95/66 | vlow=0 v=0x1050105
+1571.96 | A=30494/0 M=3783/3774 P=14365/14361 L=95/66 | vlow=0 v=0x3010501
+1632.03 | A=31329/0 M=3930/3920 P=14953/14949 L=95/66 | vlow=0 v=0x3070301
+1692.11 | A=32140/0 M=4085/4075 P=15544/15540 L=95/66 | vlow=0 v=0x5010501
+1752.18 | A=33033/0 M=4229/4219 P=16135/16131 L=95/66 | vlow=0 v=0x5010501
+1812.25 | A=33895/0 M=4367/4357 P=16722/16718 L=95/66 | vlow=0 v=0x7030703
+1872.33 | A=34748/0 M=4509/4499 P=17302/17298 L=95/66 | vlow=0 v=0x5010501
+1932.40 | A=35579/0 M=4648/4638 P=17883/17879 L=95/66 | vlow=0 v=0x5010501
+1992.47 | A=36419/0 M=4789/4779 P=18474/18470 L=95/66 | vlow=0 v=0x1050105
+# done vlow=0
+
+## Screen-off 19-min window deltas (directly comparable to the oracle's 21-min):
+# APSS   XO 0.0/s   (oracle 0.0/s)
+# MPSS   XO 2.4/s   (oracle 3.1/s)
+# PRONTO XO 9.7/s   (oracle 9.0/s)  <- pmOS slightly HIGHER
+# LPASS  frozen/asleep (oracle 11.9/s cycling)
+# vlow Count 0 throughout. Conclusion: pmOS co-processors sleep like the oracle's;
+# vlow=0 is uncorroborated by any per-master deficit.
