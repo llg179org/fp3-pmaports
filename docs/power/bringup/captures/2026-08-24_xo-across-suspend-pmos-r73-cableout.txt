@@ -24,6 +24,8 @@ online=0  ibat=-159607
 # A/B verdict vs the cable-in run (same boot):
 #   cable IN : APSS XO 0->0, vlow 0->0
 #   cable OUT: APSS XO 0->0, vlow 0->0
-# The AP holds XO up in s2idle REGARDLESS of the cable. It is NOT ssusb keeping
-# the AP's XO vote up -> the gate is USB-independent and architectural
-# (s2idle-only; nothing drives the APSS RPM master into XO-shutdown).
+# The AP holds XO up in s2idle with the cable IN and OUT alike -> the CABLE
+# itself is not the variable. This does NOT rule out the USB CONTROLLER: dwc3's
+# pm_runtime_forbid keeps 7000000.usb control=on / runtime_suspended_time=0 in
+# both runs, so the controller was active either way. The USB-controller test is
+# control=auto on 7000000.usb + 79000.phy, THEN detach - not done here.

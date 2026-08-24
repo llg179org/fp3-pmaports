@@ -306,6 +306,15 @@ in [`STATUS.md`](STATUS.md) queue item 1; the short form:
   nodes **and then** detach, over the WiFi link (`fp3@192.168.100.17`, verified
   live 2026-08-23).
 
+  ★ **Measured 2026-08-24 — and it walked straight into the trap above.** With
+  the cable physically out I re-ran the XO-across-suspend snap: APSS XO count 0
+  and `vlow` 0, **identical to cable-in**, so the *cable* is not the variable.
+  But `7000000.usb`/`79000.phy` were `control=on` / `runtime_suspended_time=0`
+  in both runs (dwc3 forbid), exactly as this bullet warns - the USB *controller*
+  was never idled. So the cable-alone A/B rules the cable out, not the controller;
+  the `control=auto`+detach experiment is still the one to run. Captures:
+  `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`.
+
 **What is known.** The application processor collapses constantly and says so to
 the RPM; the audio DSP can be made to collapse for the whole of every suspend; and
 `vlow` and `vmin` still read `Count: 0`. So a master being down is **necessary and

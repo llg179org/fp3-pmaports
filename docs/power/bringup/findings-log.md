@@ -2050,7 +2050,7 @@ the discriminator: if APSS XO count / `vlow` finally move → USB is the holder
 is a platform system-suspend path. Detector is armed (polls `charger/online`
 → 0 over the Wi-Fi link, then fires the cable-out run); waiting on the unplug.
 
-### The cable-out discriminator: it is not USB — the AP holds XO regardless
+### The cable-out discriminator — ☠️ OVERCLAIM, see correction below: the cable is not the variable, but this does NOT rule out the USB controller
 
 Ran the identical XO-across-suspend measurement on battery (`online=0`,
 `ibat=-159607 µA`, `suspend_success` 3→4 so the suspend was real):
@@ -2073,8 +2073,39 @@ XO-shutdown vote from the deepest cpuidle/genpd state), not a USB autosuspend or
 wakeup tweak. Data:
 [`captures/2026-08-24_xo-across-suspend-pmos-r73-cableout.txt`](captures/2026-08-24_xo-across-suspend-pmos-r73-cableout.txt).
 
-This closes the "is it USB" branch. The remaining oracle question — does the
+☠️ This does **not** close the "is it USB" branch — see the correction below (the USB controller stayed active regardless of the cable). The remaining oracle question — does the
 **downstream** (UT 4.9) AP enter XO-shutdown when it genuinely suspends? — would
 say whether this is a mainline regression against a working baseline or a limit
 of the SoC's s2idle path itself; it needs the UT slot and the same across-suspend
 snap, not another pmOS run.
+
+
+### ☠️ Correction to both 2026-08-24 entries above (cable back in): two overclaims
+
+Read the two entries above with these two retractions.
+
+1. **"The AP never drops XO" is not a new finding — it was measured 2026-08-22.**
+   TODO.md's deep-sleep section already carries "the APSS has never once entered
+   XO shutdown (count 0 against ~50 000 power collapses)" from that day. Today's
+   forced-suspend runs *re-confirm* it; their real worth is undoing last night's
+   own "counter artifact" synthesis, which was itself a regression against the
+   2026-08-22 knowledge — not a discovery. And the mechanism line **"the fix is a
+   platform system-suspend path" is superseded**: a working XO lever already
+   exists — booting `clk_smd_rpm.xo_sleep_off=1` (the parked patch,
+   `postmarketOS-xo` extlinux entry) makes the APSS enter XO shutdown ~0.7/s —
+   and `vlow` is **still** 0 after it. So the AP's XO vote is one necessary
+   condition, not the last gate; the remaining named blocker is the **LDO sleep
+   votes** (`regulator-state-mem`, one rail at a time, per
+   [`leads/rpm-sleep-set.md`](leads/rpm-sleep-set.md)).
+
+2. **The cable-out A/B does NOT close the "is it USB" branch.** Measured after
+   the run (state is unchanged by the cable): `7000000.usb` and `79000.phy` are
+   both `power/control=on`, `runtime_status=active`, `runtime_suspended_time=0` —
+   dwc3's unconditional `pm_runtime_forbid()` keeps the USB controller **active
+   regardless of the cable**. So both my cable-in and cable-out runs had the USB
+   controller up; they show the **cable itself is not the variable**, but they
+   cannot rule the USB *controller* in or out. The correct experiment, already
+   specified in TODO.md's deep-sleep section, is `control=auto` on both nodes
+   **and then** detach — that was **not** done. The branch stays open. The
+   cable-out capture is still a valid on-battery record that the AP holds XO with
+   no charger attached; it just is not the USB discriminator I labelled it.

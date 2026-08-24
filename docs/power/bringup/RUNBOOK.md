@@ -53,11 +53,22 @@ The search moved three times on 2026-08-14 and landed outside this SoC:
    re-open it. **The synthesis: `vlow`=0 is uncorroborated by any per-master
    deficit** — both `rpm_master_stats` readers are the same ported driver on the
    same RPM message-RAM, and on it pmOS matches the oracle (co-procs vote XO, AP
-   does not, on both). So `vlow`=0 most likely reflects a counter that does not
-   increment on this RPM the way mainline names it, not a power defect; the real
-   metric is absolute draw (slope legs: suspend ≈ halves it, ~79–83 mA baseline).
-   Full write-up + captures in `findings-log.md` (2026-08-24 correction +
-   synthesis) and `captures/2026-08-24_pmos-master-stats-windowed.txt`.
+   does not, on both). So the runtime-idle reading was
+   "`vlow`=0 is a counter artifact, not a defect". ☠️ **That was corrected the
+   same day by a forced-suspend measurement** (`rtcwake -m mem`, `rpm_master_stats`
+   either side, `suspend_success` incrementing): the **APSS still never enters XO
+   shutdown** across a genuine suspend (count 0), while MPSS/PRONTO drop XO freely
+   and `vlow` stays 0. The RPM aggregates to `vlow` only when the AP votes XO down
+   too, so **`vlow`=0 is real, not an artifact** — re-confirming the 2026-08-22
+   finding (runtime idle is not suspend). A working XO lever already exists
+   (`clk_smd_rpm.xo_sleep_off=1` → APSS enters XO shutdown, `vlow` still 0), so
+   the remaining named blocker is the LDO sleep votes. ☠️ The 2026-08-24 cable-out
+   A/B did **not** close the "is it USB" sub-question: cable in-vs-out is
+   identical, so the cable is not the variable, but `7000000.usb` stayed active
+   (`control=on`, `runtime_suspended_time=0`) in both runs — the controller test
+   is `control=auto`+detach, not done. Full write-up + captures in
+   `findings-log.md` (2026-08-24 entries + the correction to both) and
+   `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`.
 
 ## The LPASS question is CLOSED (2026-08-21), and here is where it went
 

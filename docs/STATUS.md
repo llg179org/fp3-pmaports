@@ -15,7 +15,7 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 01:36**.
+Last updated: **2026-08-24 06:55**.
 
 ## The device
 
@@ -342,16 +342,30 @@ is now item 4.
    co-processors and **not** a missing instrument. ☠️ The `Client Votes` mask
    decode is already CLOSED (2026-08-23: 5 bits/5 masters, bit 3 = TZ inert, no
    mystery holder) — the STATUS item-1 "bit 3" thread below is **stale, mark it
-   closed**. **Synthesis: `vlow`=0 is uncorroborated by any per-master deficit.**
-   Both `rpm_master_stats` readers are the same ported driver on the same RPM
-   message-RAM, and on it pmOS matches the oracle. So `vlow`=0 most likely
-   reflects a counter that does not increment on this RPM the way mainline names
-   it, not a power defect; the real metric is absolute draw (already measured:
-   suspend ≈ halves it, ~79–83 mA baseline). Details + captures in
-   `power/bringup/findings-log.md` (2026-08-24 correction + synthesis) +
-   `captures/2026-08-24_pmos-master-stats-windowed.txt`. This retires
-   live-thread 2a (runtime-idle oracle) **and** the bit-3 thread; the
-   **USB-detached suspend-region** oracle run still needs a physical unplug.
+   closed**. ☠️ **That runtime-idle synthesis ("`vlow`=0 is a counter artifact, not a
+   defect") was itself CORRECTED the same day by a forced-suspend measurement —
+   and it turned out to re-derive what 2026-08-22 already knew.** Forcing real
+   s2idle with `rtcwake -m mem` and snapping `rpm_master_stats` either side
+   (`suspend_success` increments; CPU clusters hit genpd S2 collapse — the phone
+   really sleeps): the **APSS still never enters XO shutdown** (count 0 → 0),
+   while MPSS (+182) and PRONTO (+106) drop XO freely, and `vlow` stays 0. The
+   RPM aggregates to `vlow` only when the AP votes XO down too, so **`vlow`=0 is
+   real, not a counter artifact** — matching the 2026-08-22 finding. Runtime idle
+   is not suspend; that is the trap the artifact reading fell into. ☠️ **The
+   cable-out A/B (2026-08-24) does NOT close the "is it USB" sub-question:** the
+   cable in-vs-out gave the identical result, so the *cable* is not the variable,
+   but `7000000.usb` stayed `control=on` / `runtime_suspended_time=0` in both
+   runs (dwc3 `pm_runtime_forbid`), so the USB *controller* was never tested — the
+   real test is `control=auto` on `7000000.usb`+`79000.phy` **then** detach, not
+   done. The frontier is unchanged and already has a working XO lever
+   (`clk_smd_rpm.xo_sleep_off=1` makes APSS enter XO shutdown, `vlow` still 0):
+   the remaining named blocker is the **LDO sleep votes** (`regulator-state-mem`,
+   one rail at a time). Details + captures in `power/bringup/findings-log.md`
+   (2026-08-24 correction, cable A/B, and the correction to both) +
+   `captures/2026-08-24_xo-across-suspend-pmos-r73-cable{in,out}.txt`. This
+   retires live-thread 2a (runtime-idle oracle) **and** the bit-3 thread; the
+   **USB-controller `control=auto`+detach** test and the UT-oracle across-suspend
+   run remain open.
 
    ☠️☠️ **The regulator candidate for `vlow` is KILLED — stated as loudly as a
    positive result would be, per this item's own rule.** The runtime equivalent
