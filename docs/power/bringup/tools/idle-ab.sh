@@ -124,6 +124,14 @@ panel_is_off() {
 	[ -z "$(cat /sys/class/drm/*/dpms 2>/dev/null | head -1)" ] && [ "${BL:-x}" = 0 ]
 }
 
+# ☠️ Neither writing `blank` nor writing `dpms` takes the panel down while a
+# compositor holds DRM master - both are refused or undone, measured 2026-08-25.
+# What does work, and is what a person does to a phone anyway, is locking the
+# session: phosh then blanks the panel itself and `bl_power` goes to 4.
+for s in $(loginctl list-sessions --no-legend 2>/dev/null | awk '$4 != "-" {print $1}'); do
+	loginctl lock-session "$s" 2>/dev/null && echo "# locked session $s"
+done
+
 PANEL_WAIT=${PANEL_WAIT:-240}
 echo "# asking for the panel off, then waiting up to ${PANEL_WAIT}s for the hardware to say it is"
 i=0
