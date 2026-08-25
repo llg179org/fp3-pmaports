@@ -4998,3 +4998,139 @@ TODO "Deep sleep — CLOSED" section):
    leg still to come.
 3. Mechanism readout on whichever leg saves: MPSS XO duration + shutdown count
    across the sleeps.
+
+---
+
+## ★★★★★ 2026-08-25 — the idle gap named: our own PLL guard was the biggest waker on the phone
+
+The matched pair (entry above) said the gap to the oracle is **wakeups, not a
+continuous load**. This entry names the wakers. Every number here was taken on
+pmOS r75, panel proven off (`bl_power = 4`, DRM CRTC `enable=0 active=0`,
+`dpms=Off`), WiFi up, radio up, one ssh session, `top` reporting 96 % idle.
+
+### ☠️ First, a correction to the entry above
+
+The IRQ evidence quoted there — `IPI1 1927/s`, `arch_timer 1037/s`,
+`msm_mdss 79/s with the display off` — was **taken with the display on**. Redone
+with the CRTC proven off:
+
+```
+arch_timer                   54.3/s
+Rescheduling interrupts     151.1/s
+Function call interrupts    119.9/s
+msm_mdss, dsi_isr             0     (they do not appear at all)
+```
+
+The display pipeline **does** shut down properly; the `msm_mdss` lead was a
+measurement artifact of my own making. What survived the correction is the IPI
+traffic, and that turned out to be the real finding.
+
+☠️ The lesson is the one this log keeps re-learning: *a rate is only a fact
+together with the state it was sampled in.* Record the state in the same
+command that records the rate.
+
+### The AP is not the problem — it is being woken
+
+`cpu-power-collapse` residency over an 11 063 s uptime: **10 860 s = 98.2 %**,
+with no process consuming CPU. The cores do reach the deepest state they have.
+But cpu0 alone entered it **691 180 times = 62/s**. It is not residency that is
+missing, it is the *entry/exit cost*, paid hundreds of times a second.
+
+### The waker: our own `clk: qcom: apcs-msm8953` PLL guard
+
+`ipi_send_cpu` tracepoint, 10 s, idle:
+
+| callsite | count / 10 s | rate |
+|---|---:|---:|
+| `wake_up_if_idle+0xf0` | 1283 | **128/s** |
+| `ttwu_queue_wakelist+0x10c` | 978 | 98/s |
+| `irq_work_queue+0x50` | 188 | 19/s |
+| `generic_exec_single+0x58` | 172 | 17/s |
+
+`wake_up_if_idle` is the `wake_up_all_idle_cpus()` path, which
+`cpu_latency_qos_apply()` calls on **every change of the aggregate**. Confirmed
+directly with the `pm_qos_update_request` tracepoint:
+
+```
+pm_qos_update_request   458 / 10 s   (229x value=0, 229x value=-1)  -> 45.8/s
+cpu_frequency           916 / 10 s   -> 22.9 transitions/s
+```
+
+Perfectly balanced hold/release pairs, one pair per frequency transition. The
+source is `apcs_hold_cluster()`, added 2026-08-22 to stop the CPU PLLs failing
+to relock when the owning cluster power-collapses mid-latch. It took a **global**
+`cpu_latency_qos` request — so a guard meant to protect a few microseconds of
+PLL relock on one cluster was:
+
+* **the largest single source of wakeups on the phone**, two thirds of all IPI
+  traffic, poking all eight CPUs 46 times a second; and
+* barring **both** clusters from power collapse for the duration of each hold.
+
+☠️ The mechanism was right and the measurement behind it (18 failures per 10 000
+transitions, gated entirely by power collapse) still stands. What was wrong was
+the *scope* of the instrument used to apply it. A global constraint used to
+express a local requirement is a bug even when it works.
+
+**Fix:** `clk: qcom: apcs-msm8953: hold only the retuned cluster out of idle` —
+disable everything deeper than WFI in the owning cluster's cpuidle devices
+instead. That flag is read by `cpuidle_select()` on the CPU itself, so it costs
+no IPI and constrains no other CPU. `cpu_latency_qos` is kept only as a fallback
+for the window before cpuidle registers, and the path taken at PRE is recorded so
+the same one is undone at POST. Lock order `clk_prepare_lock -> cpuidle_lock`
+closes no cycle (unlike the per-CPU `dev_pm_qos` version, which deadlocked).
+
+### The second waker: a diagnostic harness nobody removed
+
+`sched_wakeup`, 10 s: **1951 wakeups**, of which the top woken tasks were
+`sugov:4` (331) and `sugov:0` (297) — the cpufreq churn above — and then
+`spkwatch` (96) with its `sh`/`tr`/`sed`/`cat` children.
+
+`spkwatch` is the 1 Hz shell sampler written during the speaker-amp
+investigation. Its cost, read off systemd:
+
+```
+spkwatch      365.75 s of CPU over 14 024 s of uptime  = 2.6 % of a core, permanently
+fp3-powerlog   22.37 s
+ringwatch       1.82 s
+```
+
+**2.6 % of a core, forever, for a question that was answered in August.** It also
+did an i2c transfer every second, which is why `gcc_blsp2_qup2_i2c_apps_clk` was
+among the enabled clocks at idle.
+
+Disabled (`disable --now`): `spkwatch`, `ringwatch`, `fp3-powerlog`, plus
+`avahi-daemon` and `cups`, which serve nothing on this phone and which the
+oracle does not run either — so they were also an unfairness in the matched pair.
+
+Immediately, with no kernel change yet:
+
+| | before | after | |
+|---|---:|---:|---|
+| `sched_wakeup` / 10 s | 1951 | **1172** | −40 % |
+| `cpu_frequency` / 10 s | 916 | **440** | −52 % |
+
+The cpufreq halving is the interesting one: fewer task wakeups means fewer
+utilisation updates means fewer transitions — so the two fixes compound rather
+than overlap.
+
+☠️ **Process lesson.** Both of these were *ours*. The instrument left running
+after the experiment, and the guard whose blast radius nobody measured. Neither
+would have been found by looking harder at Qualcomm's code. Before hunting a
+platform for a power gap, subtract what the port itself is doing to it.
+
+### What is NOT the problem (ruled out here)
+
+* **Display** — CRTC off, DSI runtime-suspended, no MDSS interrupts. Four
+  housekeeping clocks stay enabled (`gcc_mdss_axi/ahb` at rate 0,
+  `vsync_clk_src`/`gcc_mdss_vsync_clk` at 19.2 MHz); low value, left alone.
+* **schedutil rate limiting** — `transition_latency` is 1 ms so the rate limit is
+  ~10 ms, allowing 100 transitions/s; the measured 22.9/s was never near it. The
+  transitions are real demand, not a governor artifact.
+* **Sleep inhibitors** — all eight are `delay` mode; the two `block` ones only
+  claim the power key. Nothing was blocking suspend.
+* **journald** — the journal did not grow at all over 20 s at idle.
+* **The RPM sleep-set layer** (`wip/7.1.3/power`) — already written, already on
+  the running kernel, and it does **not** apply here: `on-in-suspend` and
+  `both_sets` only make the sleep vote *exist* at the active value. A saving
+  needs `off-in-suspend` / a lower suspend voltage on genuinely-unused rails,
+  which is separate work.

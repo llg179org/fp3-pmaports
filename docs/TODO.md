@@ -271,9 +271,43 @@ is idle depth, not suspend depth.
 **What this reorders.** "Reach `vlow`" was closed as a phantom earlier the same
 day; "sleep deeper" is now demoted with it. The modem lead keeps its place
 because it is worth ~36 mA and the mechanism is named, but it is no longer the
-frame — it is one contributor to a level. The next measurements are: reproduce the pmOS side on the identical protocol and
-instrument (not a five-day-old number), and then take the gap apart by
-cumulative subtraction on the pmOS side.
+frame — it is one contributor to a level.
+
+### ★★★★★ 2026-08-25: the gap is wakeups, and the two biggest wakers were OURS
+
+Named by tracepoint, panel proven off, machine 96 % idle. Full account and the
+numbers in [`power/bringup/findings-log.md`](power/bringup/findings-log.md)
+("the idle gap named").
+
+1. **`apcs_hold_cluster()` took a *global* `cpu_latency_qos`** to keep one
+   cluster out of power collapse during a PLL relock. Every toggle runs
+   `wake_up_all_idle_cpus()`: **45.8 pm_qos updates/s and 128 IPIs/s** on an
+   idle phone — two thirds of all IPI traffic — and both clusters barred from
+   power collapse for each hold. **Fixed:** the hold is now applied to the
+   owning cluster's cpuidle devices, which costs no IPI (`wip/7.1.3/power`
+   `68dcadbd`, on `integration` and `debug-int`, shipped as r76).
+2. **A diagnostic harness left running since August.** `spkwatch` alone had
+   burned **365.75 s of CPU over 14 024 s of uptime = 2.6 % of a core,
+   permanently**, forking four processes and doing an i2c transfer every
+   second. Disabled with `ringwatch`, `fp3-powerlog`, and `avahi`/`cups`
+   (which the oracle does not run either, so they were also an unfairness in
+   the matched pair). Effect before any kernel change: `sched_wakeup`
+   **1951 → 1172 / 10 s**, `cpu_frequency` **916 → 440 / 10 s**.
+
+☠️ **Neither would have been found by looking harder at Qualcomm's code.**
+Before hunting a platform for a power gap, subtract what the port itself is
+doing to it.
+
+**Ruled out here, do not re-chase:** the display (CRTC off, DSI suspended, zero
+MDSS interrupts — the earlier `msm_mdss 79/s` lead was sampled with the screen
+ON and is withdrawn); schedutil rate limiting (limit ~10 ms, allows 100/s, we
+measured 22.9/s — the transitions are real demand); sleep inhibitors (all
+`delay` mode); journald (journal does not grow at idle); and the RPM sleep-set
+layer, which is already on the running kernel and cannot save anything in its
+`on-in-suspend`/`both_sets` form.
+
+**Open:** the aggregate re-measurement of the matched pair on r76 with the
+harness gone — one `idle-ab` hour per side, same protocol.
 
 ☠️ **Instrument note that makes this cheap on the UT side, and a trap on both.**
 `bms/cc_soc` is a real coulomb counter (validated both directions 2026-08-24);
