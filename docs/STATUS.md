@@ -236,16 +236,28 @@ this track is for, and it is what "done" now means.
 Why the restatement matters: the oracle does not get its number by sleeping.
 Measured the same evening on the same protocol (panel **off**, radio up, WiFi
 associated, on battery, via the newly validated `bms/cc_soc` coulomb counter),
-**UT idles at 29.7 mA** where pmOS idles at 58-63 mA — and our best *asleep*
+**UT idles at 32.2 mA** where pmOS idles at 54 mA on its floor but **148 mA on the median** — measured 2026-08-25 by one instrument on both sides — and our best *asleep*
 figure, the radio-low leg of the same day, is 40.8 mA. The oracle sitting awake
 beats our phone asleep. So the gap to close is **idle depth**, not suspend, and
 the target is a level rather than a mode.
 
-☠️ **The first reading of this was 22 mA and it was wrong by a third.** That
-came from a single 10-minute window on a pack still relaxing from an earlier
-load, where one counter step is worth ±1.8 mA; the 60-minute confirmation gives
-**29.7 mA at ±0.3 mA**. Quote the hour, not the ten minutes — and note the error
-went in the flattering direction, which is the one to distrust.
+**The matched pair (2026-08-25, `tools/idle-ab.sh` on both, panel proven dark,
+compositor running on both):**
+
+| | floor (p10) | median | integrated | voltage slope |
+|---|---|---|---|---|
+| UT | 15.3 mA | 30.1 mA | **32.2 mA** | 43.0 mV/h |
+| pmOS r73 | 54.3 mA | **148.0 mA** | — | 133.7 mV/h |
+
+**The shape is the finding.** pmOS's floor is close to its long-documented
+58-63 mA, but its median is three times its own floor where UT's is barely
+twice. So the gap is not a load that burns continuously — it is **wakeups**.
+First evidence: with the panel dark, `IPI1` 1927/s, `arch_timer` 1037/s,
+`msm_mdss` **79/s with the display off**, at 82-100 % CPU idle.
+
+☠️ Earlier readings of the oracle (22, then 29.7 mA) came from shorter windows
+and a different script; 32.2 is the one taken by the same instrument as the pmOS
+row, and only same-instrument rows belong in this table.
 
 ## The work queue, in order
 
