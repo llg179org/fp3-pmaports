@@ -329,12 +329,17 @@ comparison's own premise came apart in the process. Full record:
    `gcc_blsp1_uart1_apps_clk` at the same 3 686 400 Hz with `console=ttyMSM0`
    *and* `earlycon=` on its cmdline. Its clock census is **43 enabled against
    our 37** — the oracle runs *more* clocks, not fewer.
-3. ★ **The rail diff, ranked last, is the only lead.** Two SMPS are enabled on
-   ours with the panel dark and no audio playing and are absent from the
-   oracle's enabled set: **`s3`** (`mdss_dsi` vdda + camera CSI vdd) and
-   **`s4`** (`cdc-vdda-cp`, `cdc-vdd-pa` — the codec charge pump and PA). Both
-   are our own layers. ☠️ Lead, not finding: the pmOS side of that table is a
-   live read, not a saved capture.
+3. ✅ **The rail diff is closed with NO difference.** ☠️☠️ It was published as
+   a lead for a few hours — `s3` and `s4` enabled on ours with the panel dark —
+   and the matched capture killed it: `regulator_summary` is a **tree**, and
+   the indented rows under a rail are its **child regulators**, not only its
+   consumers. Both of `s3`'s direct consumers (`camss-vdda`, `dsi-vdda`) read
+   **0**; `s3` is up because its child `l3` is, and `l3` is held by the USB
+   PHY. `s4` is up because its children `l5` (eMMC I/O) and `l7` (USB PHY PLL)
+   are. Our `s3` sits at its declared **minimum** 984 mV where the oracle
+   raises it to 1225 for its display. Leaf for leaf the two rail sets match;
+   the only extra rails are the oracle's LCDB display-bias pair at 5500 mV,
+   which **it** keeps up and we do not.
 
 ### ☠️☠️ Before anything else: the oracle has never been measured screen-off
 
@@ -359,13 +364,27 @@ oracle floor measured **31.1 mA** across four legs (minimum sample 30.2 against
 yesterday's 14.3), and the LCDB bias rails are the obvious suspect — which will
 not be named as the cause until they are measured off.
 
+### ☠️ Where the hunt actually stands: no candidate, and a target number that disagrees with itself
+
+Everything the census was meant to find is excluded — modem, UART, clocks,
+rails. **~38 mA of continuous draw remains with no hypothesis attached.**
+
+Worse, the number the goal is measured against is unresolved: the oracle's
+floor came out **31.1 mA** today across four legs (minimum sample 30.2) against
+**15.3 mA** on 2026-08-24 (minimum 14.3). Until that factor of two is
+explained, "pmOS idles at 3.5× the oracle" is not a measurement — it is two
+measurements that disagree.
+
 **Next, in order:**
 
-1. A **real screen-off leg on the oracle** (needs one power-key press first to
-   get the link back; a screen-off UT drops every network path).
-2. The same on ours, so the two are again one comparison.
-3. The **`s3`/`s4` capture** on the way back to slot b, to turn lead 3 into a
-   finding or kill it.
+1. **Settle the oracle's own floor.** Repeat the 2026-08-24 leg exactly —
+   same window, same untouched phone, and a battery in the same state (that
+   leg started at 4.05 V and ~76 %, today's at 4.35 V off a full charge). If it
+   reproduces at 15 mA, find what today's four legs had that it did not; if it
+   comes back at 31, the 3.5× framing goes and the goal is restated.
+2. Only then a new hypothesis for the continuous draw — and it will have to
+   come from an instrument that measures *level*, not events, because every
+   event-counting instrument has now been run.
 
 ☠️ **Do not poll the phone during a leg.** Measured 2026-08-25: 74 ssh logins
 in 70 minutes — waiter loops — cost **18.3 mA** on the coulomb integral and

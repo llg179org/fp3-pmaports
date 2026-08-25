@@ -36,11 +36,16 @@ premise.** The modem does not move the oracle's floor (30.8 / 31.1 / 31.1 /
 there are TWO modems, `ril_0` and `ril_1`). The debug UART is not the
 difference: the oracle runs the same clock at the same 3 686 400 Hz with
 `console=` and `earlycon=` on its cmdline, and 43 enabled clocks against our
-37. The rail diff — ranked last as cheap-but-weak — is the only lead: **`s3`**
-(`mdss_dsi` vdda + camera CSI) and **`s4`** (codec charge pump + PA) are
-enabled on ours with the panel dark and no audio playing and absent from the
-oracle's set; both are our own layers, and both stay a lead until the matching
-pmOS capture exists. ☠️☠️ **The premise: the oracle has NEVER been measured
+37. The rail diff was published as a lead — `s3` and `s4` enabled on ours with the
+panel dark — and ☠️☠️ **the matching capture killed it the same evening**:
+`regulator_summary` is a **tree**, and the indented rows are **child
+regulators**, not only consumers. Both of `s3`'s direct consumers read 0; it is
+up because its child `l3` is, held by the USB PHY, and `s4` because its
+children `l5` (eMMC I/O) and `l7` (USB PHY PLL) are. Leaf for leaf the rail
+sets **match**. So the census excluded everything it was meant to find, and
+**~38 mA of continuous draw remains with no candidate** — while the oracle's
+own floor read **31.1 mA** today against 15.3 yesterday, so the 3.5× framing
+itself is now the first thing to settle. ☠️☠️ **The premise: the oracle has NEVER been measured
 with its screen actually off.** It never blanks on its own (no inhibitor held,
 inactivity action unset), `Unity.Screen.setScreenPowerMode("off")` returns
 `true` with the panel still powered, and the `fb0/blank` write is half a blank
