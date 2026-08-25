@@ -1770,3 +1770,227 @@ A two-leg comparison on this instrument is not a comparison.
 rails, the ADSP) — seven exclusions, zero findings, ~38 mA still unaccounted for.
 Note what they share: **every one of them counts events.** The open item is in
 [`TODO.md`](TODO.md) under "Where the hunt actually stands".
+
+---
+
+## ~~An incoming call cannot wake the phone from s2idle~~ — FIXED (r66, 2026-08-22)
+
+Measured 2026-08-14 (the reason automatic sleep went off): across an 8 min sleep
+a call reached the modem, the AP never woke, and the queued event replayed on
+the button wake. Root cause: `qcom_smd_parse_edge()` requested the edge IRQ with
+no wake registration at all, so `suspend_device_irqs()` masked it; the one knob
+that existed (smp2p, with its *"to not miss phone calls"* comment) was measured
+useless — the call travels the SMD data edge, not smp2p.
+
+**The fix shipped in r66** (`wip/7.1.3/power` `8c9b2568`, on all three layers):
+the smp2p pattern mirrored into `qcom_smd_parse_edge()` — every rpmsg edge is
+`device_set_wakeup_capable()` + `dev_pm_set_wake_irq()`, disabled by default,
+armable per edge from sysfs. Verified 2026-08-22 on the device, three ways:
+
+* **differential:** disarmed windows sleep to the alarm (30 s→32, 60 s→62);
+  with the modem edge armed the same windows end on modem traffic
+  (120 s→65 s, 180 s→64 s, 180 s→4 s);
+* **live call:** armed + 300 s window, an incoming call woke the phone 15 s in
+  (modem smd-edge +35 IRQs, `suspend_stats/success` advanced) and it rang;
+* **no storm:** arming does not produce an immediate wake loop, and the default
+  stays off so nothing changes for a board that does not opt in.
+
+☠️ **The r66 patch had a teardown bug, fixed 2026-08-23 (`d0e738c107e3`, all
+three layers).** Stopping a remoteproc whose edge was **armed** oopsed on a NULL
+klist: an armed edge owns a wakeup-class child device, and
+`qcom_smd_unregister_edge()`'s child walk unregisters every child as if it were
+an smd channel, so the wakeup device was torn down twice. Disarmed edges were
+never affected. The fix drops the wakeup source before the walk; the LKML draft
+is regenerated as one patch carrying both hunks. **Deployed as r70 and verified
+on the device the same day**: with the edge armed, stopping the modem and then
+the ADSP remoteproc each returns 0, leaves the node `offline`, restarts on a
+`start` write, and the boot ends with zero `Unable to handle kernel` lines —
+the two edges that oopsed on r69. ☠️ Address a remoteproc by platform address
+or `name`, not by index: the numbering moves between boots (the ADSP was
+`remoteproc1` on one boot, `remoteproc2` on the next).
+
+☠️ Attribution counters are blind here: the plain `enable_irq_wake` path bumps
+neither the device's `wakeup_count` nor `/sys/power/pm_wakeup_irq` in s2idle —
+the differential is the instrument, not the counter. The arm knob is
+`.../4080000.remoteproc/remoteproc/remoteproc0/remoteproc0:smd-edge/power/wakeup`.
+
+Upstream: the series is staged in `lkml-drafts/smd-wake-v1/` (Assisted-by
+trailer, checkpatch/get_maintainer steps in its NOTES.md); sending is in the
+user's hands.
+
+**Still open before automatic sleep returns:** (1) a persistent boot-time arm
+for the modem edge (udev rule or oneshot — the knob resets to `disabled` per
+boot by design); (2) the ringing inhibitor — even with the AP awake, something
+must hold suspend off while the dialer rings, untested because automatic sleep
+is currently off.
+
+**Open question, not decided:** this belongs to no branch category. It is not
+FP3-specific — `qcom_smd.c` is upstream and every SMD-era Qualcomm SoC is
+affected, which with the smp2p precedent makes it unusually defensible on the
+LKML. Functionally it is the call path, so `voice` is the closest fit.
+
+☠️ **SSH does not wake the phone either**, despite `wcn36xx_rx` being wake-armed
+— it times out with `No route to host`. Useful, because a logger left running
+under `systemd-run --collect` cannot be contaminated by the observer polling it;
+and a warning for anything that assumes the device is reachable while asleep.
+**★ Closed 2026-08-25 with the end-to-end proof the r66/r70 work had never
+had.** Everything above measures the *wake*; what was never once observed was
+the whole chain, from a call placed on another continent to a phone that
+actually rings. One controlled suspend with a 420 s RTC backstop:
+
+* `PM: suspend entry (s2idle)`, then **the phone woke 113.6 s in** — not at the
+  backstop, so the RTC did not do it;
+* `bl_power` 4 → 0;
+* journal, `18:06:14 PM: suspend exit` → `18:06:15 [modem0/call0] call state
+  changed: unknown -> ringing-in (incoming-new)` → `18:07:16 terminated`.
+
+**Resume-to-ring: one second. Ringing: 61 seconds.** Chain: paging →
+`remoteproc1:smd-edge` armed wakeup source → resume → ModemManager →
+`fp3-voiced`.
+
+☠️☠️ **Both instruments chosen for this test returned EMPTY on a call that
+worked**, and if the dialling time had not been known independently it would
+have been written up as a clean failure:
+
+* `/sys/class/wakeup/*` read **+0 everywhere**. It does not attribute an s2idle
+  wake at all — `wakeup_count` advances only on `pm_wakeup_event()`, and the
+  plain `enable_irq_wake` path never calls it. The instrument that does work is
+  the **`/proc/interrupts` diff**.
+* `mmcli --voice-list-calls` answered *"No calls were found"* — read one second
+  before the call object existed.
+
+**Two instruments agreeing on nothing is not evidence of nothing.** What proved
+it was the journal, which nobody had chosen in advance.
+[`power/bringup/tools/call-wake-test.sh`](power/bringup/tools/call-wake-test.sh)
+now carries both fixes: the interrupt diff, and a re-read of the call list after
+a settle.
+
+☠️ **What is NOT closed by this, and has its own section in
+[`TODO.md`](TODO.md):** the arm knob resets to `disabled` on every boot and
+nothing arms it. This proof armed it by hand. Automatic sleep stays off until a
+boot-time arm exists.
+
+---
+
+## ✅ RECOVERED — r74 does not boot; recovered via r73, phone since moved to r76 (2026-08-23 23:22)
+
+☠️ **This heading said "back on r73, phone is up" until 2026-08-25 evening.** That
+was the state on 2026-08-23; the phone has run **r76** (`debug-int/7.1.3`
+`5aafd59e`, `#77-fp3`) since the morning of 2026-08-25, and the boot default is a
+frozen r76 snapshot. The recovery *route* below is what this section is for and
+it is unchanged — the revision numbers in it are historical.
+
+The device booted again on the r73 kernel and DTB and answered on both SSH
+links. r74 is still on `/boot` untouched for later diagnosis; the boot default
+was moved off it. What follows is kept because the *cause* is not yet fixed —
+only the boot was recovered.
+
+**How it was recovered (the route that worked, in order):**
+
+1. The phone was in **stock ABL fastboot** (`fastboot devices` →
+   `A209H47E0202`, `version-bootloader 6.A.039`, unlocked, slot `b`). ☠️ A
+   prior `fastboot getvar` had been interrupted by an outer `timeout`, which
+   froze the link exactly as `docs/deploy/README.md` warns; a `USBDEVFS_RESET`
+   on the device node (`ioctl 'U'<<8|20`) cleared it in one shot.
+2. `fastboot set_active a` → `fastboot reboot`. Slot `a` is the **Ubuntu Touch**
+   side and it boots on its own; adb came up at ~60 s as user `phablet`
+   (`sudo` password `<pw>`; `adb root` is refused, plain sudo is the way).
+3. From UT, mounted pmOS's embedded `/boot` off `system_b` (`mmcblk0p31`):
+   `losetup -o 1048576 <loop> /dev/mmcblk0p31` then `mount <loop> /tmp/pmboot`.
+   This is read-write; the msdos `/boot` is at offset 1048576.
+4. Edited `extlinux.conf`: `default postmarketOS-sleepset` → `default
+   postmarketOS-prev` (r73's `/boot/vmlinuz-r73` + `/boot/sdm632-fairphone-fp3.dtb-r73`,
+   the exact config that had run the previous hour). Backed the broken file up
+   as `extlinux.conf.pre-r73revert`. `sync`, `umount`, `losetup -d`.
+5. `adb ... sudo reboot bootloader` → `fastboot set_active b` → `fastboot
+   reboot`. pmOS came up on r73 in ~15 s; `02-boot-fallback` passes (default
+   `postmarketOS-prev`, watchdog active, 4/4 entries carry `panic=`), and the
+   running tree has **zero** `regulator-state-mem` nodes — proof it is r73, not
+   the broken r74.
+
+☠️ **Button-mapping correction, measured by the user (the earlier note here was
+inverted).** On this phone **volume-UP + power reaches EDL** (`05c6:900e`
+QUSB__BULK) and **volume-DOWN + power starts fastboot**. The lk2nd graphical
+boot menu is **not usable blind**: the screen stays black in these modes, so
+picking a menu entry by sight is not an option — recovery goes through fastboot
++ the UT-slot route above, not through the on-screen menu. The prior claim that
+volume-down reached EDL and volume-up reached the lk2nd menu was wrong.
+
+☠️ **EDL was never needed and should not be reached for.** Only one DTB was ever
+proven unbootable; three intact alternatives sat on `/boot` the whole time, and
+the slot-swap-to-UT route edits the boot config with ordinary tools. A firehose
+flash is a far bigger operation than this fault ever justified.
+
+**What broke.** The `regulator-state-mem` device-tree change (r74,
+`debug-int/7.1.3` `84241a07`) was deployed and the phone rebooted at 22:45:10.
+It never came back on USB or WiFi. The host log shows the `cdc_ncm` disconnect
+and **no re-enumeration for fifteen minutes** — and that absence is the
+informative part: `panic=10` is on all four entries and the debug layer starts
+the watchdog at probe, so a *later* hang would have produced a reboot **cycle**.
+There was no cycle, so the kernel stopped **before the watchdog device probed**.
+
+**Why, read from source after the fact — a hypothesis, not a measurement:**
+
+- `suspend_set_initial_state()` runs inside `regulator_register()`
+  (`regulator/core.c:1497`), and on this SoC the RPM rails register very early.
+  The change makes it issue 20 extra `qcom_rpm_smd_write()` calls into the RPM
+  **sleep** set right there.
+- `qcom_rpm_smd_write()` (`soc/qcom/smd-rpm.c:139`) waits on the RPM ack with
+  `RPM_REQUEST_TIMEOUT = 5 * HZ` and returns `-ETIMEDOUT`, or the RPM's own
+  `ack_status`.
+- ☠️ **`regulator_register()` treats that as fatal** — `if (ret < 0) { rdev_err;
+  return ret; }` — and `rpm_reg_probe()` returns straight out of its
+  `for_each_available_child_of_node_scoped` loop. So **one rejected or
+  timed-out sleep vote leaves every rail on the board unregistered**, not just
+  its own. No regulators means no storage, no USB and no display: exactly the
+  silent early stop that was observed. 20 rails × 5 s is also up to 100 s of
+  blocked probe before that.
+- ☠️ A NULL `smd_vreg_rpm` was checked and **ruled out**: it is assigned before
+  the registration loop (`qcom_smd-regulator.c:1530`).
+
+**What this changes about the plan.** The next attempt starts from **one** rail
+and reads the boot before adding a second. Twenty at once was the mistake, and
+the `regulator_register()` all-or-nothing behaviour is a genuine upstream
+robustness point worth writing up separately.
+
+☠️ **The isolation guardrail was followed in letter and missed in substance.**
+"Put anything risky on the non-default label" was obeyed by giving the *tracing
+arguments* their own label — but the tracing arguments were never the risk. The
+**device tree** was, and both r74 labels point at the same
+`/boot/sdm632-fairphone-fp3.dtb`. A second arm that differs only in a kernel
+flag is not an isolated arm; it is the same arm twice. Isolating a change means
+isolating **the file that changed**.
+
+☠️ Second cost, exactly as `docs/deploy/README.md` warns: `apk add` ran
+`boot-deploy`, which **rewrote `extlinux.conf` from scratch**, dropping the
+fallback label, `panic=10` and the menu timeout. It was rebuilt by hand with
+four labels and `02-boot-fallback` confirmed them (4 of 4 entries carry
+`panic=`) *after* the install and *before* the reboot — which is why three
+working alternatives exist to boot into. The pre-install file is on the device
+as `/boot/extlinux/extlinux.conf.pre-r74`.
+
+**Nothing is stranded.** `wip/7.1.3/power` `e59893af`, `integration/7.1.3`
+`4cf51780`, `debug-int/7.1.3` `84241a07`, all pushed to `fork`; the package is
+at `/mnt/1TB/pmos/work/packages/edge/aarch64/linux-fp3-7.1.3-r74.apk`.
+
+**★★ 2026-08-24 — cause found, and reverted.** A one-rail bisection probe
+answered the open question. Rebuilt the DTB with `regulator-state-mem
+{ regulator-on-in-suspend; }` on **only `pm8953_s3`**, deployed DTB-only, and it
+**boots** (~16 s), **casts the sleep vote** (`sleep smpa/3 swen=1 @ t=0.276084`
+on the `qcom_rpm_smd_write` tracepoint — measured, not assumed) and **suspends**
+(`success` 0 → 1). So `regulator-state-mem` is fully usable; the all-20 no-boot
+is the `regulator_register()` all-or-nothing behaviour tripping on **one
+specific rail** whose sleep vote the RPM rejects/times out — exactly the
+hypothesis above, now confirmed from the working side. Details:
+[`power/bringup/findings-log.md`](power/bringup/findings-log.md) (2026-08-24
+one-rail entry).
+
+☠️ **But on-in-suspend saves nothing** — the rail stays on, only the vote is made
+to exist; no bisected subset of it would lower draw. A real win needs
+`off-in-suspend`/lower `suspend-microvolt` on genuinely-unused rails, and is gated
+behind the AP-XO regression anyway. So the all-20 commit is **reverted** off all
+three branches (a no-benefit change must not ship; a no-boot one must not be the
+pinned commit). The one-rail DTB stays on the device
+(`/boot/sdm632-fairphone-fp3.dtb-1rail-s3`) for later per-rail bisection if the
+`off-in-suspend` direction is picked up. `84241a07` remains reachable in history
+(revert-on-top, not a rewrite), so the old package tarball still resolves.
