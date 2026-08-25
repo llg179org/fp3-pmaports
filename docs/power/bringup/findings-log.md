@@ -5453,3 +5453,142 @@ floor measured **31.1 mA** today across four legs (minimum sample 30.2) against
 "pmOS idles at 3.5× the oracle" is not a measurement, it is two measurements
 that disagree. That, not another subsystem hypothesis, is the next thing to
 settle.
+
+## 2026-08-25 night — a plan built from the published PM playbook, and what the playbook forbids given our constraint
+
+The census left the continuous draw with no candidate, so this is a deliberate
+reset: instead of another hypothesis of our own, work the standard developer
+playbook for idle power and see which of its instruments we have simply never
+run. Sources are listed at the end of the section and cited inline.
+
+### The constraint decides the plan before anything else
+
+The requirement is **idle consumption as low as possible, incoming calls still
+arriving, and a fast return to active**. That rules two of the biggest levers
+in the cellular playbook out on correctness grounds, not on effort:
+
+- ☠️ **PSM is unusable here.** In Power Saving Mode the UE closes the AS
+  connection while keeping its NAS registration, and is **not reachable for
+  paging** until the periodic TAU timer (T3412) brings it back; only during the
+  Active Timer (T3324) window after that is it pageable [1][2][5]. A phone that
+  cannot be paged does not ring. This retires the "PSM/eDRX reproduces the
+  radio-low saving while staying registered" question left open on 2026-08-24
+  in its PSM half.
+- **eDRX is borderline and is not ours to set.** eDRX keeps paging but stretches
+  the cycle, so a mobile-terminated call can be delayed by up to one cycle
+  [3][4]. It is granted by the network, configured over AT/QMI, and only short
+  cycles are compatible with "the phone rings promptly". It stays a maybe, not
+  a plan.
+- ★ **Fast wake is a per-device property, not a global one** — and the kernel's
+  own PM QoS documentation says so: it recommends `dev_pm_qos_expose_latency_
+  limit()` and the per-device `/sys/devices/.../power/pm_qos_resume_latency_us`
+  **instead of** a system-wide constraint through `/dev/cpu_dma_latency` [6].
+  That is exactly the correction this port shipped as r76 this morning, arrived
+  at from a measurement rather than from the document. Worth recording that the
+  two agree, and worth using the per-device knob deliberately for the modem
+  rather than rediscovering the global one.
+
+### What the playbook has that we have never run
+
+1. **Wakeup-source accounting — the canonical instrument, and we have not used
+   it once.** `/sys/kernel/debug/wakeup_sources`, or the stable-ABI
+   `/sys/class/wakeup/<name>/`, carries `active_count`, `event_count`,
+   `wakeup_count`, `expire_count`, `active_time`, `total_time`, `max_time`,
+   `last_change` and **`prevent_suspend_time`** [7][8][9]. That last column is
+   literally "who stopped the system going to sleep, and for how long", and the
+   autosleep model — sleep whenever no wakeup source is held, wake on the modem
+   — *is* the shape the requirement above describes [7].
+2. **A runtime-PM audit against the documented failure list.** Every device
+   whose `power/runtime_status` reads `active` at idle while `power/control` is
+   `auto` is a candidate; the documented ways a device gets stuck are unbalanced
+   `get`/`put`, a missing `pm_runtime_mark_last_busy()` under autosuspend, and a
+   callback returning something other than `-EAGAIN`/`-EBUSY`, which latches an
+   error state [10]. This is a mechanical sweep, not a hypothesis.
+3. **cpuidle residency, differenced.** `/sys/devices/system/cpu/cpu*/cpuidle/
+   state*/{name,time,usage}` over a window says where the idle time actually
+   goes [11]. This is the one instrument that measures a **level** rather than
+   an event, which is precisely what the census said we lacked: time parked in
+   WFI instead of power collapse is continuous draw with no event signature.
+4. ★ **A new, cheap, checkable difference: our rails are never told their
+   load.** `regulator-allow-set-load` sets `REGULATOR_CHANGE_DRMS` so the core
+   may call `set_load()`, and the RPM uses the load to choose HPM vs LPM/PFM
+   [12][13]. `drivers/regulator/qcom_smd-regulator.c` **does** implement
+   `rpm_reg_set_load()` (checked in our own tree, `.set_load` is wired into both
+   `rpm_smps_ldo_ops` and `rpm_smps_ldo_ops_fixed`) — but **the FP3 device tree
+   sets `regulator-allow-set-load` on no rail at all**, while
+   `msm8953-xiaomi-common.dtsi`, `msm8953-motorola-potter.dts`,
+   `msm8953-huawei-milan.dts`, `msm8953-lenovo-kuntao.dts` and
+   `msm8953-flipkart-rimob.dts` in the same tree do. So our rails run in their
+   default mode whatever the load.
+   ☠️ **Honest magnitude: this is not 38 mA.** HPM→LPM on an LDO is worth tens
+   to a few hundred µA, so across the five rails we actually have enabled this
+   is plausibly 0.5–2 mA. It is on the list because it is nearly free and
+   because it is a real difference from every other board, not because it can
+   close the gap.
+5. **ftrace wakeup attribution**, with the caveat the source itself gives:
+   `power/wakeup_source_activate` fires *after* the system is already awake, so
+   it names the holder and not the cause; the cause is in
+   `irq/irq_handler_entry` and `timer/timer_start`, and both need filters or
+   they drown the buffer [14].
+
+### Tonight, in order
+
+0. **(running) The headless floor.** `systemctl isolate multi-user.target` —
+   greetd and phosh gone, 43 → 39 running units, ssh and both links intact.
+   ☠️ The compositor's death turned the panel back **on** (`bl_power` 4 → 0),
+   the 2026-08-19 trap exactly; blanked by hand and proven three ways
+   (`bl_power=4`, `dpms=Off`, zero active CRTCs). Bounds what userspace above
+   the kernel can possibly be worth. Prior from the 2026-08-18 ladder: ~0.
+1. **The three censuses above at idle**, headless and with the GUI, saved as
+   captures. Cheap, and none of them needs a build.
+2. **An autosleep-shaped leg**: suspend with the modem armed as a wakeup source,
+   measured over a long window with the existing night harness. ☠️ Not without
+   that harness — the 2026-08-18 eMMC drop off the bus happened on the first
+   night the system went genuinely deep, and the harness exists to catch its
+   consequence.
+3. **The `regulator-allow-set-load` A/B** only if 1–2 leave room. It needs a DT
+   change and a build, so it goes on the **non-default** boot label, next to the
+   `postmarketOS-headless` one added today.
+4. **Morning, and it needs a human:** one incoming call, to prove the phone
+   still rings. No amount of idle current is worth a phone that does not ring,
+   and this cannot be self-tested.
+
+### Sources
+
+1. Rohde & Schwarz, *Power saving methods for LTE-M and NB-IoT devices* —
+   https://scdn.rohde-schwarz.com/ur/pws/dl_downloads/premiumdownloads/premium_dl_brochures_and_datasheets/premium_dl_whitepaper/Power-saving-methods-for-LTE-M-and-NB-IoT-devices_wp_en_3609-3820-52_v0100.pdf
+2. Nordic Semiconductor, *Power saving techniques* (nRF Connect SDK) —
+   https://nrfconnectdocs.nordicsemi.com/ncs/3.0.2/nrf/protocols/lte/psm.html
+3. Qoitech, *How to configure and evaluate eDRX for cellular IoT* —
+   https://www.qoitech.com/blog/how-to-configure-and-evaluate-edrx-for-cellular-iot/
+4. Onomondo, *eDRX and PSM for IoT* —
+   https://onomondo.com/blog/edrx-and-psm-for-lte-low-power-iot/
+5. Link Labs, *LTE eDRX and PSM explained* —
+   https://www.link-labs.com/blog/lte-e-drx-psm-explained-for-lte-m1
+6. Linux kernel, *PM Quality Of Service Interface* —
+   https://docs.kernel.org/power/pm_qos_interface.html
+7. Legato, *Manage Device Power* —
+   https://docs.legato.io/15_10/how_to_power_mgmt.html
+8. Ubuntu Wiki, *DebuggingKernelSuspend* —
+   https://wiki.ubuntu.com/DebuggingKernelSuspend
+9. LKML, *[PATCH v4] PM / wakeup: show wakeup sources stats in sysfs* —
+   https://lkml.rescloud.iu.edu/1907.1/07435.html
+10. Linux kernel, *Runtime Power Management Framework for I/O Devices* —
+    https://docs.kernel.org/power/runtime_pm.html
+11. CNX Software, *Idle CPU power management: cpuidle* —
+    https://www.cnx-software.com/2026/04/20/idle-cpu-power-management-cpuidle/
+12. Linux kernel DT binding, *regulator.yaml* —
+    https://www.kernel.org/doc/Documentation/devicetree/bindings/regulator/regulator.yaml
+13. LKML, *[RFT PATCH v2 2/2] regulator: core: Don't err if allow-set-load but
+    no allowed-modes* — https://lkml.rescloud.iu.edu/2208.3/01028.html
+14. ix5.org, *Android Kernel Suspend Debugging and Tracing* —
+    https://sx.ix5.org/info/post/android-kernel-suspend-debugging-and-tracing/
+15. Linux kernel, *System Sleep States* —
+    https://docs.kernel.org/admin-guide/pm/sleep-states.html
+16. postmarketOS pmaports MR !2187, *modemmanager: quick suspend/resume patches*
+    — https://gitlab.com/postmarketOS/pmaports/-/merge_requests/2187
+
+☠️ Two of the pages the search surfaced could not be read and nothing here
+rests on them: the eLinux *Debugging Embedded Linux (Kernel) Power Management*
+PDF and the ArchWiki *Power management/Wakeup triggers* page both returned an
+Anubis access-denied interstitial rather than content.
