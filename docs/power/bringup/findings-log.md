@@ -2812,6 +2812,62 @@ measurement.
 
 Capture: [`captures/2026-08-24_ut-coulomb-and-sleep-attempt.txt`](captures/2026-08-24_ut-coulomb-and-sleep-attempt.txt).
 
+### ★★★★ 2026-08-25 morning — the gap measured by one instrument: pmOS is ~4x the oracle, and it is a WAKEUP problem
+
+The matched pair the goal needs, both sides run by
+[`tools/idle-ab.sh`](tools/idle-ab.sh), panel proven dark on both, compositor
+running on both, WiFi associated, radio up, on battery:
+
+| | floor (p10) | median | integrated | voltage slope |
+|---|---|---|---|---|
+| **UT** (4.9.218) | 15.3 mA | 30.1 mA | **32.2 mA** (`cc_soc`) | 43.0 mV/h |
+| **pmOS r73** (7.1.3) | 54.3 mA | 148.0 mA | — (no counter) | 133.7 mV/h |
+
+**~3.5x on the floor, ~4.5x on the average**, and since pmOS has no coulomb
+counter the voltage slope is the independent witness at 134 against 43 mV/h.
+☠️ The two slopes sit on different parts of the OCV curve, so that is
+corroboration, not a conversion.
+
+**The shape matters more than the ratio: pmOS's floor is close to its documented
+58-63 mA, but its median is three times its own floor**, where UT's median is
+barely twice its floor. So this is not a load that burns continuously — it is
+something waking the phone often. First instrument, 20 s of differenced
+`/proc/interrupts` with the panel dark: `IPI1` (function call) **1927/s**,
+`arch_timer` 1037/s, rescheduling 948/s, and — with the panel off —
+**`msm_mdss` 79/s** plus `dsi_isr` 20/s, while the CPU sits 82-100 % idle.
+Nothing is computing; something is knocking.
+
+Captures: [`2026-08-25_pmos-idle-ab-run1.txt`](captures/2026-08-25_pmos-idle-ab-run1.txt),
+[`run2`](captures/2026-08-25_pmos-idle-ab-run2.txt),
+[`UT`](captures/2026-08-24_ut-idle-ab-60min.txt).
+
+#### ☠️☠️ Three instrument failures in one session, and the third produced a false accusation
+
+Worth recording together, because they rhyme: **each time the tool built to
+prevent an error committed it.**
+
+1. **The panel gate asked instead of proving.** The first pmOS hour was run with
+   the script believing it had blanked the screen; the compositor holds DRM
+   master, so the `dpms` write returned EACCES and the tool measured on. Fixed
+   by stopping the compositor, retrying, and *aborting unless the panel can be
+   proven off*.
+2. **The proof read a property, not the hardware — and I condemned a good run on
+   it.** Run 1 was banner-ed INVALID on its header saying `dpms=On`. Measured
+   afterwards: there is exactly one dpms node and the panel's own `bl_power`
+   reads **4 = FB_BLANK_POWERDOWN**. The backlight *was* down; the fb blank had
+   worked while the compositor-owned DRM property still said On. The banner is
+   withdrawn in the capture. That the two runs agreed to 0.4 mA on the floor was
+   the evidence, and I explained it away instead of following it.
+3. **`systemctl stop greetd` does not stop the compositor.** `greetd` reads
+   `inactive` while `phoc` and `phrog` keep running under its user. So both pmOS
+   hours ran with the compositor up — which is, by luck, exactly the UT
+   configuration, and is why the pair above is comparable at all. The clause was
+   in the protocol and silently did nothing.
+
+The rule all three point at is one this log already has and I did not apply:
+**a gate that has not been watched failing has proved nothing**, and its proof
+must be the hardware's own state, never the software's description of it.
+
 ---
 
 # Part II — the run-book's dated body (2026-08-15 → 2026-08-24), moved here unedited on 2026-08-24
