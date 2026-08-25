@@ -29,8 +29,29 @@ median **148–157 → 98.3 mA (−35 %)**, floor unchanged (54 → 52.9) — ex
 shape wakeup fixes predict. Burstiness (median ÷ floor) **2.75× → 1.86×**
 against the oracle's 1.97×, so pmOS now bursts LESS than UT. **The wakeup half
 of the gap is closed; what remains is ~38 mA of pure continuous draw** (52.9 vs
-15.3 mA floor), which no tracepoint can see. Next: a rail and clock census
-against the oracle — not another kernel patch. ☠️ WITHDRAWN from the entry
+15.3 mA floor), which no tracepoint can see. **THE CENSUS AGAINST THE ORACLE
+WAS THEN RUN, and it answered all three questions and unseated its own
+premise.** The modem does not move the oracle's floor (30.8 / 31.1 / 31.1 /
+31.1 mA over four legs, modems on / both `Powered=0` / back / untouched — and
+there are TWO modems, `ril_0` and `ril_1`). The debug UART is not the
+difference: the oracle runs the same clock at the same 3 686 400 Hz with
+`console=` and `earlycon=` on its cmdline, and 43 enabled clocks against our
+37. The rail diff — ranked last as cheap-but-weak — is the only lead: **`s3`**
+(`mdss_dsi` vdda + camera CSI) and **`s4`** (codec charge pump + PA) are
+enabled on ours with the panel dark and no audio playing and absent from the
+oracle's set; both are our own layers, and both stay a lead until the matching
+pmOS capture exists. ☠️☠️ **The premise: the oracle has NEVER been measured
+with its screen actually off.** It never blanks on its own (no inhibitor held,
+inactivity action unset), `Unity.Screen.setScreenPowerMode("off")` returns
+`true` with the panel still powered, and the `fb0/blank` write is half a blank
+— the LCDB bias rails stay at 5500 mV and the compositor undoes it. A real
+screen-off (new `tools/press-power-key.py`, uinput `KEY_POWER`) drops RNDIS and
+WiFi at once, which is what a suspended phone looks like. So every UT idle
+figure so far, the 15.3 mA floor included, describes a state the phone is not
+in when its screen is off; today's oracle floor read **31.1 mA**. ☠️ And 74 ssh
+logins in 70 minutes — my own waiter loops — cost **18.3 mA** on the coulomb
+integral and produced a trend that read exactly like a modem effect: do not
+poll during a leg. ☠️ WITHDRAWN from the entry
 before this one: the `msm_mdss 79/s with the display off` lead was sampled with
 the display ON; with the CRTC proven off the display subsystem raises no
 interrupts at all. ☠️ `boot-deploy` rewrites extlinux.conf on every kernel

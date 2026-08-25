@@ -312,25 +312,63 @@ both fixes predicted, since neither touches a continuous draw. Burstiness
 (median ÷ floor) went **2.75× → 1.86×** against the oracle's **1.97×**: pmOS now
 bursts *less* than UT. **The wakeup half of the gap is closed.**
 
-### What is left: ~38 mA of continuous draw, and it is not an event
+### What is left: continuous draw — and as of 2026-08-25 afternoon, an oracle number we can no longer trust
 
-52.9 mA of floor against the oracle's 15.3. No instrument used on 2026-08-25
-can see it — tracepoints count events. Next pass, in evidence order, and ☠️ **not
-starting with a kernel patch**: every one of these is a question about what the
-hardware is doing, and the oracle answers all three without a build.
+The census against slot a was run and **all three questions were answered**.
+Two of them are closed, the one ranked last produced the only lead, and the
+comparison's own premise came apart in the process. Full record:
+[`power/bringup/findings-log.md`](power/bringup/findings-log.md), captures
+`2026-08-25_ut-*`.
 
-1. **Rail census against slot a — demoted, see below.** Only **ten**
-   regulators carry a non-zero *enable* count at idle (s3/s4/s5, l3/l5/l7/l8/l13,
-   `vph_pwr`, plus a `lcdb_dummy` that is not a real regulator). That is close to
-   minimal, so a large rail saving is unlikely; still worth one oracle diff,
-   but not first. ☠️ The "66 rails" figure first published here was wrong — it
-   counted `regulator_summary`'s `open` column (consumers that called
-   `regulator_get`) instead of `use`. The same error made the camera rails read
-   as powered at idle; their `use` is 0 and camss is runtime-suspended.
-2. **The modem at idle.** Priced at ~36 mA *asleep*, never measured at idle.
-3. **Clock census.** 37 enabled with the panel dark, including the debug UART at
-   3.6864 MHz (`console=ttyMSM0,115200` on the cmdline, no serial port on this
-   phone to read it).
+1. ✅ **The modem does not move the oracle's floor.** Four 30-minute legs —
+   both modems on, both `Powered=0`, both back as a control, and one with the
+   phone untouched — gave **30.8 / 31.1 / 31.1 / 31.1 mA**. A modem registered
+   on LTE contributes nothing continuous. ☠️ There are **two** modems
+   (`/ril_0`, `/ril_1`); disabling only the first leaves the second powered.
+2. ✅ **The debug UART is not the difference.** The oracle runs the same
+   `gcc_blsp1_uart1_apps_clk` at the same 3 686 400 Hz with `console=ttyMSM0`
+   *and* `earlycon=` on its cmdline. Its clock census is **43 enabled against
+   our 37** — the oracle runs *more* clocks, not fewer.
+3. ★ **The rail diff, ranked last, is the only lead.** Two SMPS are enabled on
+   ours with the panel dark and no audio playing and are absent from the
+   oracle's enabled set: **`s3`** (`mdss_dsi` vdda + camera CSI vdd) and
+   **`s4`** (`cdc-vdda-cp`, `cdc-vdd-pa` — the codec charge pump and PA). Both
+   are our own layers. ☠️ Lead, not finding: the pmOS side of that table is a
+   live read, not a saved capture.
+
+### ☠️☠️ Before anything else: the oracle has never been measured screen-off
+
+Its panel **never blanks on its own** — `powerd`'s inactivity action is not
+`display-off` and it holds **no inhibitor** while staying lit. `Unity.Screen`'s
+`setScreenPowerMode("off")` returns **`true`** for two reason codes with the
+panel still powered. Writing `4 > /sys/class/graphics/fb0/blank` drops the MDSS
+clocks but is only half a blank: the PMI632 **LCDB bias rails stay at 5500 mV**
+(`lcdb_ldo`, `lcdb_ncp`) and the compositor undoes the write within minutes.
+A real screen-off — produced with [`power/bringup/tools/press-power-key.py`](power/bringup/tools/press-power-key.py)
+(uinput `KEY_POWER`) — took the phone off RNDIS **and** WiFi at once, which is
+what a suspended phone looks like.
+
+So **every UT idle figure quoted in this file, the 15.3 mA floor included, was
+taken in a state the phone is not in when its screen is off**, and the "3.5×
+floor" framing rests on that number. Two facts are waiting on it: today's
+oracle floor measured **31.1 mA** across four legs (minimum sample 30.2 against
+yesterday's 14.3), and the LCDB bias rails are the obvious suspect — which will
+not be named as the cause until they are measured off.
+
+**Next, in order:**
+
+1. A **real screen-off leg on the oracle** (needs one power-key press first to
+   get the link back; a screen-off UT drops every network path).
+2. The same on ours, so the two are again one comparison.
+3. The **`s3`/`s4` capture** on the way back to slot b, to turn lead 3 into a
+   finding or kill it.
+
+☠️ **Do not poll the phone during a leg.** Measured 2026-08-25: 74 ssh logins
+in 70 minutes — waiter loops — cost **18.3 mA** on the coulomb integral and
+produced a clean monotonic trend that read exactly like a modem effect. Start
+the leg with `systemd-run` and then do not touch the device until the window
+has elapsed. This is the same lesson as the `spkwatch` diagnostic, arriving
+from the host side.
 
 ☠️ **Instrument note that makes this cheap on the UT side, and a trap on both.**
 `bms/cc_soc` is a real coulomb counter (validated both directions 2026-08-24);
