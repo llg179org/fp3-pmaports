@@ -5393,3 +5393,63 @@ observation ("the phone answers nothing") was read through the hypothesis that
 was in hand ("a real screen-off suspends it") instead of being checked against
 the cheapest alternative ("it is off"). One look at the phone settled it in a
 second, and the phone was in the room.
+
+## ☠️☠️ 2026-08-25 evening — the `s3`/`s4` lead is DEAD, killed by reading the dump correctly, and the rail census closes with "no difference"
+
+The matched capture was taken on the way back to slot b, in both panel states
+(`captures/2026-08-25_pmos-census-panel-{on,dark}.txt`). It does not confirm the
+lead. It explains it away, and the explanation is another version of the
+morning's mistake.
+
+**`regulator_summary` is a TREE, not a list.** The indented rows under a rail
+are not only its consumers — they are also its **child regulators**. Read that
+way, with the panel dark:
+
+```
+    s3            1    7  ...   984mV        <- use = 1
+       1b00020.camss-vdda   0                <- released
+       1a94000.dsi-vdda     0                <- released
+       l3            1    2  ...  925mV      <- CHILD, use = 1
+          79000.phy-vdd     1                <- the USB QUSB2 PHY holds it
+    s4            2    5  ...  1036mV        <- use = 2
+       l5            3 ...                   <- CHILD: 7824900.mmc-vqmmc (eMMC I/O)
+       l7            1 ...                   <- CHILD: 79000.phy-vdda-pll (USB PHY PLL)
+```
+
+So `s3` is not held by the camera or by the display — **both of its direct
+consumers read 0**. It is up because its child `l3` is up, and `l3` is held by
+the USB PHY. `s4` is up because `l5` (eMMC I/O!) and `l7` (USB PHY PLL) are its
+children. Neither has anything to do with mdss or with the codec. The
+`cdc-vdda-cp` / `cdc-vdd-pa` provenance came from the *downstream* device tree
+and does not describe what holds these rails on our kernel.
+
+The voltages agree with this reading: our `s3` sits at **984 mV, its declared
+minimum** (`min 984 max 1240`), where the oracle raises it to **1225 mV** when
+its display is up. A rail at its floor is a rail nobody is asking anything of.
+
+**And with the tree read correctly the whole rail census closes as a
+difference.** The leaf sets match: `l3`, `l5`, `l7`, `l8`, `l13`, `s5` on both.
+The only rails the oracle has that we do not are `lcdb_ldo` / `lcdb_ncp` at
+5500 mV — the display bias, which **it** keeps up and we do not. That is the
+oracle spending more, not us.
+
+☠️ **Same error, third time in one day, and it is worth naming precisely.**
+"66 rails enabled" read the `open` column as `use`. The near-miss on the camera
+rails read `open` as `use` again. This one read a tree as a list. All three are
+the same failure: **acting on a dump's shape without reading what the shape
+is.** The cost here was three documents published with a lead in them and a
+slot switch spent to confirm it.
+
+### Where that leaves the hunt
+
+Everything the census was supposed to find is now excluded. The modem does not
+move the oracle's floor, the debug UART is identical on both, the clocks are
+*more* numerous on the oracle, and the rails match leaf for leaf. **~38 mA of
+continuous draw remains, with no candidate.**
+
+And the number the whole target rests on is itself unresolved: the oracle's
+floor measured **31.1 mA** today across four legs (minimum sample 30.2) against
+**15.3** on 2026-08-24 (minimum 14.3). Until that factor of two is explained,
+"pmOS idles at 3.5× the oracle" is not a measurement, it is two measurements
+that disagree. That, not another subsystem hypothesis, is the next thing to
+settle.
