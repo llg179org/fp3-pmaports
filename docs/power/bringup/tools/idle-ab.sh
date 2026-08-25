@@ -113,6 +113,16 @@ panel_is_off() {
 		[ -r "$p" ] || continue
 		[ "$(cat "$p" 2>/dev/null)" = 4 ] && return 0
 	done
+	# Downstream mdss (the 4.9 oracle) has no bl_power and no DRM sysfs, and
+	# ☠️ its backlight brightness is NOT a witness: measured 2026-08-25, the
+	# panel was fully powered at brightness 37-38 for 25 minutes while nothing
+	# held a "keep display on" request, and unity-system-compositor answered
+	# setScreenPowerMode("off") with `true` while leaving it powered. The one
+	# file that reports the panel itself is show_blank_event.
+	if [ -r /sys/class/graphics/fb0/show_blank_event ]; then
+		grep -q 'panel_power_on = 0' /sys/class/graphics/fb0/show_blank_event 2>/dev/null && return 0
+		return 1
+	fi
 	# Fall back to the CRTC actually being off (mainline DRM), then to a zero
 	# backlight on a kernel that has neither (UT 4.9).
 	if [ -r /sys/kernel/debug/dri/0/state ] &&
@@ -128,6 +138,21 @@ panel_is_off() {
 # compositor holds DRM master - both are refused or undone, measured 2026-08-25.
 # What does work, and is what a person does to a phone anyway, is locking the
 # session: phosh then blanks the panel itself and `bl_power` goes to 4.
+#
+# The oracle is the other way round and needs both halves of this loop. On the
+# 4.9 side, measured 2026-08-25:
+#   * it never blanks on its own. powerd's inactivity action is not set to
+#     display-off, so the panel stays lit indefinitely with NO inhibitor held
+#     (`powerd-cli listsysrequests` lists nothing on any of its three lists).
+#     Waiting is not a strategy there; 25 minutes bought nothing.
+#   * `setScreenPowerMode("off", reason)` on com.canonical.Unity.Screen returns
+#     `false` for most reasons and `true` for two of them - and the panel stays
+#     powered either way. A DBus method returning success is not a measurement.
+#   * writing 4 to /sys/class/graphics/fb0/blank DOES take it down, hwcomposer
+#     notwithstanding: show_blank_event flips to `panel_power_on = 0`, the
+#     backlight goes to 0 and all five MDSS/DSI clocks leave enabled_clocks.
+# So the loop below - write, then prove - is what works on both, and it is the
+# proof that had to change, not the write.
 for s in $(loginctl list-sessions --no-legend 2>/dev/null | awk '$4 != "-" {print $1}'); do
 	loginctl lock-session "$s" 2>/dev/null && echo "# locked session $s"
 done
