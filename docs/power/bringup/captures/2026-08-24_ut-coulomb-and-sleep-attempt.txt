@@ -42,3 +42,17 @@ is the direction to distrust.
 For comparison: pmOS on the same protocol (2026-08-19, medianed current_now)
 58-63 mA; pmOS ASLEEP with the radio low (2026-08-24) 40.8 mA. The oracle idles
 below our phone asleep.
+== captures/2026-08-24_ut-idle-ab-60min.txt
+   os=ut kernel=4.9.218-perf-ubuntutouch+ n=710 span=3596s v 4.050 -> 4.007 V
+   current_now  floor(p10)   15.3 mA   median   30.1 mA   (mean   37.1, reported only to show the burst pull)
+   cc_soc       integrated   32.2 mA over 3596s (d=105 counts = 32.13 mAh)
+
+=== 4. Canonical idle-ab.sh run on UT (the both-sides instrument), 60 min ===
+Raw samples: 2026-08-24_ut-idle-ab-60min.txt   (fit printed just above)
+floor(p10) 15.3 mA | median 30.1 mA | cc_soc integrated 32.2 mA
+The integrator agrees with the MEDIAN, not the mean (37.1) - the bursts are real
+but they are not where the phone lives. Three independent UT idle readings now:
+29.7 (cc_soc 60 min), 30.1 (median), 32.2 (cc_soc, this run). Call it ~30 mA.
+
+The matched pmOS run of the same script had NOT been taken when this was
+written: the phone went dark on the `reboot bootloader` back to slot b.
