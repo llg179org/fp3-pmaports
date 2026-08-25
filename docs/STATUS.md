@@ -44,9 +44,12 @@ pmOS capture exists. ☠️☠️ **The premise: the oracle has NEVER been measu
 with its screen actually off.** It never blanks on its own (no inhibitor held,
 inactivity action unset), `Unity.Screen.setScreenPowerMode("off")` returns
 `true` with the panel still powered, and the `fb0/blank` write is half a blank
-— the LCDB bias rails stay at 5500 mV and the compositor undoes it. A real
-screen-off (new `tools/press-power-key.py`, uinput `KEY_POWER`) drops RNDIS and
-WiFi at once, which is what a suspended phone looks like. So every UT idle
+— the LCDB bias rails stay at 5500 mV and the compositor undoes it. ☠️ RETRACTED the same
+evening: `tools/press-power-key.py` did not blank the screen, it **switched the
+phone off** (found on the offline-charging screen; a held hardware button was
+needed). The lost RNDIS/WiFi was a powered-down phone, not a suspend, and the
+suspend reading is withdrawn — the LCDB and `show_blank_event` evidence stands
+on its own. So every UT idle
 figure so far, the 15.3 mA floor included, describes a state the phone is not
 in when its screen is off; today's oracle floor read **31.1 mA**. ☠️ And 74 ssh
 logins in 70 minutes — my own waiter loops — cost **18.3 mA** on the coulomb

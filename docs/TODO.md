@@ -344,9 +344,13 @@ Its panel **never blanks on its own** — `powerd`'s inactivity action is not
 panel still powered. Writing `4 > /sys/class/graphics/fb0/blank` drops the MDSS
 clocks but is only half a blank: the PMI632 **LCDB bias rails stay at 5500 mV**
 (`lcdb_ldo`, `lcdb_ncp`) and the compositor undoes the write within minutes.
-A real screen-off — produced with [`power/bringup/tools/press-power-key.py`](power/bringup/tools/press-power-key.py)
-(uinput `KEY_POWER`) — took the phone off RNDIS **and** WiFi at once, which is
-what a suspended phone looks like.
+☠️☠️ [`power/bringup/tools/press-power-key.py`](power/bringup/tools/press-power-key.py)
+(uinput `KEY_POWER`) was written to produce a real screen-off and instead
+**switched the phone off** — found on the offline-charging screen, recovered
+only by a held hardware button. Its likely mechanism is a release that was
+never seen; the fix in the file is a hypothesis and is **not validated**. Do
+not run it unattended. There is therefore currently **no instrument** that
+takes the oracle's panel down with the compositor's agreement.
 
 So **every UT idle figure quoted in this file, the 15.3 mA floor included, was
 taken in a state the phone is not in when its screen is off**, and the "3.5×
