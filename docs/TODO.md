@@ -15,12 +15,18 @@ context to pick up later. Each entry says what was measured, not what was
 guessed. Items that are already written up elsewhere are linked rather than
 repeated.
 
-## ✅ RECOVERED — r74 does not boot; back on r73, phone is up (2026-08-23 23:22)
+## ✅ RECOVERED — r74 does not boot; recovered via r73, phone since moved to r76 (2026-08-23 23:22)
 
-The device is booting again on the r73 kernel and DTB and answers on both SSH
+☠️ **This heading said "back on r73, phone is up" until 2026-08-25 evening.** That
+was the state on 2026-08-23; the phone has run **r76** (`debug-int/7.1.3`
+`5aafd59e`, `#77-fp3`) since the morning of 2026-08-25, and the boot default is a
+frozen r76 snapshot. The recovery *route* below is what this section is for and
+it is unchanged — the revision numbers in it are historical.
+
+The device booted again on the r73 kernel and DTB and answered on both SSH
 links. r74 is still on `/boot` untouched for later diagnosis; the boot default
 was moved off it. What follows is kept because the *cause* is not yet fixed —
-only the boot is recovered.
+only the boot was recovered.
 
 **How it was recovered (the route that worked, in order):**
 

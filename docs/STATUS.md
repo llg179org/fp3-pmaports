@@ -77,29 +77,45 @@ Details: findings-log 2026-08-25 entries.**
 | last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Read that number with care: the failures were `98-camera-af-rail` and `99-suspend`, and neither is a check defect — **the camera wedged and the watchdog reset the phone mid-run** (queue item 4). ☠️ It also predates the runner fixes of 2026-08-23, so its `ok` count includes checks scored green after the reset | `tests/fp3-selftest` |
 | last camera-block run | **8 ok / 0 failed** on a fresh boot (2026-08-23 late, r73), and the same block wedged the phone earlier the same evening — the fault is intermittent, ~1 run in 2 | `tests/fp3-selftest --only camera,suspend` |
 
-☠️ The paragraph that stood here describing "three extlinux labels" was stale
-twice over; the boot-config row in the table above is the accurate one (5 labels,
-default `postmarketOS-prev`). Read `/boot/extlinux/extlinux.conf` off the device
-rather than trusting any prose copy of it.
+☠️ Two successive prose copies of the boot config stood here and **both** went
+stale — the second one, "5 labels, default `postmarketOS-prev`", contradicted the
+table directly above it while claiming to correct it. The table row is the
+current one (3 labels, default `postmarketOS` on the frozen r76 snapshot). Read
+`/boot/extlinux/extlinux.conf` off the device rather than trusting any prose copy
+of it, this sentence included.
 
 ## Branch tips
 
-| branch | tip | note |
+☠️ Read these off the fork, not off this table — `git ls-remote fork
+'refs/heads/*7.1.3*'` answers the whole thing in one command, and a local
+checkout can be behind (it was, below). Measured 2026-08-25 evening:
+
+| branch | tip on `fork` | note |
 |---|---|---|
+| `7.1.3/main` | `72138559` | the upstream `msm8953-mainline` release we sit on |
 | `wip/7.1.3/audio` | `42b7e745` | + the three SSR fixes of 2026-08-23 |
-| `integration/7.1.3` | `ecce72c3` | + icc suspend-scoped sleep-set drop knob (2026-08-24 eve) |
-| `debug-int/7.1.3` | `0c3dcfba` | tip advanced by the icc knob; ☠️ **the package still pins `8d7ecf9` (r73)** — the knob is default-off with no runtime effect, so it was **not** shipped/bumped |
-| `wip/7.1.3/power` | `3d883ecd` | + `icc_smd_rpm.sleep_bw_off` suspend-hook experiment knob (2026-08-24 eve) |
+| `wip/7.1.3/camera` | `a253e401` | ☠️ **one commit ahead of `integration`/`debug-int`**: `media: i2c: ak7375: do not power the motor up on a system resume`. The category rule is *unfinished* on it — steps 2 and 3 (cherry-pick to `integration/7.1.3`, carry to `debug-int/7.1.3`) are not done, deliberately: the autofocus regression has not been run. Do not ship until it is |
+| `wip/7.1.3/charger` | `f5da2bfd` | |
+| `wip/7.1.3/power` | `68dcadbd` | the cluster-local cpuidle PLL-relock hold (shipped as r76) |
+| `wip/7.1.3/sensor` | `cc39f522` | |
+| `wip/7.1.3/voice` | `bf453330` | |
+| `integration/7.1.3` | `9ebb552a` | |
+| `debug-int/7.1.3` | `5aafd59e` | **this is what the package pins and what the phone runs** — `pkgver=7.1.3`, `pkgrel=76`, `uname -v` → `#77-fp3` |
 
-☠️ **The device runs r73 (`8d7ecf9`), which the `linux-fp3` package still pins.**
-The three branches above advanced by one commit (the default-off icc suspend-hook
-knob, `icc_smd_rpm.sleep_bw_off`), pushed to `fork`, but `_commit` was
-deliberately **not** bumped: the knob has no runtime effect unless armed on a boot
-label, and it does not by itself reach `vlow` (which, as of the same night's
-oracle raw-read, **nothing** can — the mode never occurs on this platform).
-Bump `_commit` only when there is a reason to ship.
+`submit/7.1.3/*` exists for `audio` `f71226ac`, `camera` `7ea4a589`, `charger`
+`a800c7ec`, `i2c` `5560f875`, `power` `ca27e77f`, `sensor` `478fa63d`, `voice`
+`faac4c7d`.
 
-★★ 2026-08-24: the all-20-rails `regulator-state-mem` commit (r74,
+☠️ **The three paragraphs that stood here said the device runs r73 (`8d7ecf9`)
+and that the package still pins it.** Both were true on 2026-08-24 and false by
+the next morning: the PLL-relock redesign shipped as r76 (`5aafd59e`) and the
+phone has been on it since. This is the exact failure mode this file warns about
+in its own header — a status line that was accurate when written. Check
+`apk info -vv | grep ^linux-fp3` and `uname -v` before believing any revision
+number on this page.
+
+★★ 2026-08-24 (superseded by r76, kept for the mechanism): the all-20-rails
+`regulator-state-mem` commit (r74,
 `84241a07`) **did not boot** and is now **reverted** on all three branches
 (`wip/power` `53e51066`, `integration` `140ff98e`, `debug-int` `8d7ecf9`), pushed
 to `fork`. `linux-fp3` re-pinned to `pkgrel=75`,
@@ -119,11 +135,13 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
-## ✅ RESOLVED — r74 no-boot cause found + reverted (2026-08-24); device on r73
+## ✅ RESOLVED — r74 no-boot cause found + reverted (2026-08-24); device since moved to r76
 
-The device is up again on the r73 kernel/DTB and answers on SSH. r74 stays on
-`/boot` untouched for diagnosis; the boot default was moved off it. Kept below
-because only the boot is recovered — the *cause* is not fixed.
+The device is up and answers on SSH. ☠️ The heading and the paragraph here said
+**"device on r73"** until 2026-08-25 evening; it has run **r76** (`5aafd59e`,
+`#77-fp3`) since the morning of 2026-08-25. r74 stays on `/boot` untouched for
+diagnosis; the boot default was moved off it and is now a frozen r76 snapshot.
+Kept below because only the boot was recovered — the r74 *cause* is not fixed.
 
 **r74 does not boot.** Deployed, rebooted 22:45:10, never re-enumerated on USB or
 WiFi. The host log shows the `cdc_ncm` disconnect and **no re-enumeration** — and
