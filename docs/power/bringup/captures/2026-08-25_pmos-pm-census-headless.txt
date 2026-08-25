@@ -1,0 +1,70 @@
+# pm-census label=headless-dark window=60s kernel=7.1.3-postmarketos-qcom-msm8953 uptime=3248.60
+# panel bl_power=4 target=inactive
+=== WAKEUP_SOURCES (name active_count event_count wakeup_count expire_count active_since total_time max_time last_change prevent_suspend_time)
+name		active_count	event_count	wakeup_count	expire_count	active_since	total_time	max_time	last_change	prevent_suspend_time
+remoteproc1:smd-edge	0		0		0		0		0		0		0		0		0
+200f000.spmi:pmic@2:charger@1000	0		0		0		0		0		0		0		0		0
+tcpm-source-psy-200f000.spmi:pmic@2:typec@1500	6		9		0		0		0		1		1		14523		0
+pmi632-battery	7		7		0		0		0		17		3		3146719		0
+c200000.remoteproc	0		0		0		0		0		0		0		0		0
+pmi632-charger	2		2		0		0		0		0		0		13400		0
+alarmtimer.0.auto	0		0		0		0		0		0		0		0		0
+200f000.spmi:pmic@0:rtc@6000	0		0		0		0		0		0		0		0		0
+200f000.spmi:pmic@0:pon@800:pwrkey	0		0		0		0		0		0		0		0		0
+mmc1        	0		0		0		0		0		0		0		0		0
+mmc0        	0		0		0		0		0		0		0		0		0
+7000000.usb 	0		0		0		0		0		0		0		0		0
+deleted     	0		0		0		0		0		0		0		0		0
+=== SUSPEND_STATS
+fail=0
+failed_freeze=0
+failed_prepare=0
+failed_resume=0
+failed_resume_early=0
+failed_resume_noirq=0
+failed_suspend=0
+failed_suspend_late=0
+failed_suspend_noirq=0
+last_failed_dev=
+last_failed_errno=0
+last_failed_step=
+success=0
+mem_sleep=[s2idle]
+wakeup_count=15
+=== RUNTIME_PM: devices ACTIVE while control=auto (the ones actually holding power)
+auto      active      0-00
+auto      active      0-01
+auto      active      0-02
+auto      active      0-03
+auto      active      genpd:0:cpu0
+auto      active      genpd:0:cpu3
+auto      active      genpd:1:cpu0
+auto      active      genpd:1:cpu1
+auto      active      genpd:1:cpu2
+auto      active      genpd:1:cpu3
+auto      active      genpd:1:cpu4
+auto      active      genpd:1:cpu5
+auto      active      genpd:1:cpu6
+auto      active      genpd:1:cpu7
+on        active      7000000.usb
+on        active      79000.phy
+=== RUNTIME_PM: devices in error state (latched, never suspend again)
+=== CPUIDLE residency, differenced over 60s
+# wall=60.0s
+# cpu state name d_time_us d_usage
+0 state0 WFI                          236390      216
+0 state1 cpu-power-colla            59497477     1565
+1 state0 WFI                          786829        8
+1 state1 cpu-power-colla            59419884      255
+2 state0 WFI                            6817        7
+2 state1 cpu-power-colla            60241758      145
+3 state0 WFI                            8525        7
+3 state1 cpu-power-colla            59930392      577
+4 state0 WFI                           52781      368
+4 state1 cpu-power-colla            59714703     1436
+5 state0 WFI                           58131       96
+5 state1 cpu-power-colla            59787478     1252
+6 state0 WFI                          798211       51
+6 state1 cpu-power-colla            59155661     1159
+7 state0 WFI                         4413998      291
+7 state1 cpu-power-colla            55533089     1288

@@ -5592,3 +5592,105 @@ in the cellular playbook out on correctness grounds, not on effort:
 rests on them: the eLinux *Debugging Embedded Linux (Kernel) Power Management*
 PDF and the ArchWiki *Power management/Wakeup triggers* page both returned an
 Anubis access-denied interstitial rather than content.
+
+## ★★★ 2026-08-25 evening — the search space collapses: six exclusions, no finding, and the ADSP priced at last
+
+The night plan's first three items were run. None of them found the draw, and
+that is the result: after today the ~38 mA has almost nowhere left to be on the
+AP side, and two hypotheses that had stood for weeks are now priced and dead.
+
+### Userspace above the kernel is worth ZERO — measured on the floor, not on a marginal
+
+`systemctl isolate multi-user.target` on the running system: greetd and phosh
+gone, 43 → 39 running units, both links intact. Same protocol, same untouched
+window, panel proven dark three ways (`bl_power=4`, `dpms=Off`, zero active
+CRTCs).
+
+| | floor (p10) | median | mean |
+|---|---:|---:|---:|
+| r76, full GUI (today's aggregate) | **52.9** | 98.3 | 114.7 |
+| r76, **headless** | **52.9** | 101.3 | 116.2 |
+
+**Not one tenth of a milliamp.** This confirms the 2026-08-18 ladder, but from
+the floor directly rather than from marginals, inside one boot, with the panel
+proven down — which is exactly what that ladder could not claim.
+
+☠️ Two traps in getting there, both of which would have inverted the answer:
+the compositor's death turns the panel back **on** (`bl_power` 4 → 0), the
+2026-08-19 trap again; and `idle-ab.sh`'s own EXIT trap un-blanks the panel, so
+anything run immediately after a leg samples a lit screen. The first census run
+was thrown away for exactly that and repeated.
+
+### The CPUs are already as deep as this platform goes
+
+cpuidle residency differenced over 60 s, headless, panel dark — the one
+instrument in the playbook that measures a **level** rather than events, and
+the one this investigation had never run:
+
+```
+cpu0  WFI 0.24s   cpu-power-collapse 59.50s
+cpu1  WFI 0.79s   cpu-power-collapse 59.42s
+...
+cpu7  WFI 4.41s   cpu-power-collapse 55.53s
+```
+
+**All eight cores spend ~99 % of wall time in the deepest state the driver
+offers.** "Parked in WFI, therefore drawing continuously" is dead. And the
+wakeup-source table is clean: **no source has a non-zero `prevent_suspend_time`
+or `active_since`** — nothing is holding the system awake.
+
+### The always-on ADSP is NOT the draw — the 2026-08-19 finding is now priced
+
+RPM master stats, differenced over 60 s, headless, panel dark, on r76:
+
+| master | 60 s |
+|---|---|
+| APSS | **+920 shutdowns** — the r76 fix working, and cpuidle agrees |
+| MPSS | +156 shutdowns, XO off 41.3 s of 60 |
+| PRONTO | +540 shutdowns, XO off 44.6 s of 60 |
+| TZ | no change |
+| **LPASS** | **nothing at all — zero shutdowns, zero XO time** |
+
+That reproduces 2026-08-19 on a much later kernel: the ADSP never sleeps, where
+the oracle logged 4344 shutdowns. With everything else excluded it was the
+obvious candidate, and a Hexagon that never sleeps is the right order of
+magnitude. So it was measured, A-B-A, 30 minutes each, untouched:
+
+| leg | floor (p10) | p25 | min sample | median |
+|---|---:|---:|---:|---:|
+| A — ADSP running | 52.9 | 53.9 | 51.4 | 101.3 |
+| B — **ADSP stopped** (`remoteproc2` → offline) | **56.3** | 57.1 | 55.2 | 106.3 |
+| A′ — ADSP restarted, control | 54.6 | 55.1 | 52.6 | 100.4 |
+
+The A/A′ bracket is **52.9–54.6** and B sits **above both**. Stopping the ADSP
+does not save; it costs about 2 mA. ⇒ **`lpass-never-sleeps` is a true fact
+about the RPM handshake and is worth no current.** It stays interesting for the
+`vlow` story it once explained, and it is off the power list.
+
+☠️ Caveat kept: with the ADSP down the wcd9335 SLIMbus driver retried
+continuously (`Failed to write config e4: -12`), so leg B may carry retry churn
+rather than a clean ADSP-off state. The direction is not in doubt — there is no
+saving here — but the +2 mA is an upper bound on the cost, not a measurement of
+the ADSP itself. WCNSS and MPSS are separate remoteprocs and were untouched;
+WiFi and the modem stayed up throughout.
+
+### What is left after today
+
+Excluded, each by measurement: **userspace**, **the CPUs**, **wakeup
+blockers**, **the modem** (on the oracle's floor), **the rails** (leaf sets
+match), **the debug UART and the clock count** (the oracle runs more), and now
+**the ADSP**. Seven exclusions, zero findings.
+
+The honest reading is that the remaining draw is not visible to any AP-side
+instrument this port has, which points at SoC-level RPM-managed resources — and
+the one concrete difference still standing there is the *mode* question, not
+the on/off question: our device tree sets `regulator-allow-set-load` on no rail
+while five other msm8953 boards in the same tree do, so the RPM is never told a
+load and cannot choose LPM. Recorded with its honest magnitude in the night-plan
+section above: 0.5–2 mA, not 38.
+
+☠️ **And the target number is still unsettled**, which now matters more than any
+subsystem: the oracle's floor read **31.1 mA** across four legs today against
+**15.3** yesterday. Until that factor of two is resolved we do not know whether
+the gap is 38 mA or 22, or whether half of it is an artefact of how the oracle
+was measured.
