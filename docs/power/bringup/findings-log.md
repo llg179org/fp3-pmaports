@@ -5694,3 +5694,58 @@ subsystem: the oracle's floor read **31.1 mA** across four legs today against
 **15.3** yesterday. Until that factor of two is resolved we do not know whether
 the gap is 38 mA or 22, or whether half of it is an artefact of how the oracle
 was measured.
+
+## ★★★★ 2026-08-25 18:06 — PROVEN: an incoming call raises this phone from s2idle, and it rings
+
+The goal states the constraint as "idle consumption as low as possible, incoming
+calls still arriving". The second half had never been demonstrated. It has now,
+end to end, on r76.
+
+Method: the night queue and guardian stopped, the charger restored, then a
+single controlled suspend with a 420 s RTC backstop as the only other way out —
+so an early wake could only come from something else. The operator dialled the
+phone from elsewhere and did not observe it; the phone recorded its own answer.
+
+```
+# uptime spanned: 113.6s of a 420s backstop      <- NOT the RTC backstop
+# suspend_stats success=1 -> 2, fail=0           <- one clean suspend
+# backlight before: bl_power=4   after: bl_power=0   <- the panel came back on
+
+18:06:14 kernel: PM: suspend exit
+18:06:15 [modem0/call0] call state changed: unknown -> ringing-in (incoming-new)
+18:06:15 fp3-voiced[1032]: call 0 state=ringing-in (was -)
+18:07:16 [modem0/call0] call state changed: ringing-in -> terminated (unknown)
+```
+
+**The suspend ended at 18:06:14 and the modem announced the incoming call one
+second later; the phone rang for 61 seconds.** The whole chain works: network
+paging → the modem's SMD edge as an armed wakeup source → s2idle resume →
+ModemManager → `fp3-voiced`. **Resume-to-ring is one second.**
+
+That closes the correctness half of the goal: whatever is done to the idle
+current from here, this configuration — asleep, radio up, `remoteproc1:smd-edge`
+`power/wakeup=enabled` — is reachable.
+
+### ☠️☠️ Both instruments I chose for this came back EMPTY on a call that worked
+
+The evidence above is from the journal. The two things the test was actually
+built around said nothing, and each failure is worth keeping:
+
+1. **`/sys/class/wakeup/*/wakeup_count` does not attribute an s2idle wake.**
+   Every source read **+0** while the phone had plainly been raised. Those
+   counters track events announced with `pm_wakeup_event()`; an interrupt can
+   break the s2idle loop without announcing one. ⇒ For s2idle the instrument is
+   the **`/proc/interrupts` diff across the suspend**, not the wakeup-source
+   table. `tools/call-wake-test.sh` now takes it.
+2. **`mmcli --voice-list-calls` was read one second too early.** The resume
+   landed at 18:06:14 and the call object appeared at 18:06:15, so the script
+   printed *"No calls were found"* about a call that then rang for a minute. A
+   negative from an instrument sampled before the event exists is not a
+   negative. It now settles and re-reads, and prints the journal lines too.
+
+Had the operator not called at a moment I could correlate against, "no wakeup
+source fired, no calls found" would have read as a clean failure of the wake
+path. **Two instruments agreeing on nothing is not evidence of nothing** — it
+was evidence that both were wrong for this question.
+
+Capture: `captures/2026-08-25_call-wakes-phone-from-suspend.txt`.

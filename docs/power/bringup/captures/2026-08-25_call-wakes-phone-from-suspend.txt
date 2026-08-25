@@ -1,0 +1,29 @@
+# call-wake-test backstop=420s uptime=8602.79
+# suspend_stats success=1 fail=0
+# modem: registered
+# backlight before: 40 bl_power=4
+# ---- going to sleep now, backstop 420s ----
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Sun Jan  4 05:35:39 1970
+# ---- awake ---- rtcwake rc=0
+# uptime spanned: 113.6s of a 420s backstop
+# suspend_stats success=2 fail=0
+# backlight after: 40 bl_power=0
+# WHICH SOURCE FIRED (name  d_wakeup_count  d_event_count) - nonzero only:
+# calls seen by ModemManager:
+No calls were found
+# dmesg around the resume:
+[ 7551.874339] PM: suspend entry (s2idle)
+[ 7552.512350] PM: suspend exit
+[ 8557.089228] PM: suspend entry (s2idle)
+[ 8558.145736] PM: suspend exit
+=== journal:
+Aug 25 18:06:14 fp3 kernel: PM: suspend exit
+Aug 25 18:06:14 fp3 sh[30436]: [ 7551.874339] PM: suspend entry (s2idle)
+Aug 25 18:06:14 fp3 sh[30436]: [ 7552.512350] PM: suspend exit
+Aug 25 18:06:14 fp3 sh[30436]: [ 8557.089228] PM: suspend entry (s2idle)
+Aug 25 18:06:14 fp3 sh[30436]: [ 8558.145736] PM: suspend exit
+Aug 25 18:06:15 fp3 [1022]: <msg> [modem0/call0] call state changed: unknown -> ringing-in (incoming-new)
+Aug 25 18:06:15 fp3 fp3-voiced[1032]:   call 0 state=ringing-in (was -)
+Aug 25 18:07:16 fp3 [1022]: <msg> [modem0/call0] call state changed: ringing-in -> terminated (unknown)
+Aug 25 18:07:16 fp3 fp3-voiced[1032]:   call 0 state=terminated (was ringing-in)
