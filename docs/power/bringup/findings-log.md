@@ -5134,3 +5134,69 @@ platform for a power gap, subtract what the port itself is doing to it.
   `both_sets` only make the sleep vote *exist* at the active value. A saving
   needs `off-in-suspend` / a lower suspend voltage on genuinely-unused rails,
   which is separate work.
+
+## ★★★★★ 2026-08-25 (continued) — the aggregate: the wakeup problem is SOLVED, the floor is what is left
+
+r76 (`#77-fp3`, `debug-int/7.1.3` `5aafd59e`) carrying the cluster-local idle
+hold, with the diagnostic harness disabled and `sleep-inhibitor` slowed from
+10 Hz to 30 s. One `idle-ab` hour, same protocol as the matched pair: panel
+proven off (`bl_power=4`, waited 0 s — `loginctl lock-session` now does it),
+compositor up, WiFi up, radio up, one ssh session, on battery, all four
+experiment knobs default-off.
+
+| | floor (p10) | median | mean | ΔV over 3600 s |
+|---|---:|---:|---:|---:|
+| pmOS r73 run 1 | 53.9 | 157.3 | 146.2 | 139 mV |
+| pmOS r73 run 2 | 54.3 | 148.0 | 141.3 | 132 mV |
+| **pmOS r76** | **52.9** | **98.3** | **114.7** | **99 mV** |
+| UT 4.9 (oracle) | 15.3 | 30.1 | 32.2 (coulomb) | 43 mV |
+
+**The median fell 35 %, from ~152 to 98.3 mA. The floor did not move at all**
+(53.9 / 54.3 → 52.9). That is exactly the predicted shape: both fixes removed
+*wakeups*, and neither touched anything that draws current continuously. A
+result that had moved the floor would have meant we did not understand what we
+changed.
+
+☠️ The voltage drop is **consistent but not independent evidence** here: the r76
+leg started at 4.294 V against 4.224 / 4.170, i.e. on a pack still relaxing from
+a full charge, which moves the voltage for reasons of its own. Flagged before the
+run started, not after seeing the number.
+
+### The number that says the job is done
+
+Median ÷ floor is the burstiness of the load — how much the phone costs above
+what it costs to just sit there:
+
+| | median / floor |
+|---|---:|
+| pmOS r73 | **2.75x** |
+| pmOS r76 | **1.86x** |
+| UT oracle | **1.97x** |
+
+**pmOS now bursts less than the oracle does.** The entry above identified the gap
+as "wakeups, not a continuous load"; that half of the gap is closed, and what is
+left is a pure level difference: 52.9 mA against 15.3 mA of floor.
+
+### What this reorders, again
+
+The remaining gap is **~38 mA of continuous draw**, and none of the instruments
+used today can see it — tracepoints count events, and this is not an event. The
+next pass needs a different class of instrument: what is powered that need not
+be. The leads already on record, in the order their evidence justifies:
+
+1. **Rails.** 66 regulators enabled at idle, and the sleep-set layer already on
+   the kernel cannot help in its current form (see the "ruled out" list above) —
+   what is needed is `off-in-suspend` / a lower suspend voltage on rails that are
+   genuinely unused, which first requires knowing which those are. **The oracle
+   is the instrument**: a rail-by-rail diff against slot a, the same move that
+   settled the charger's `I_TERM` question in twenty minutes on 2026-08-12.
+2. **The modem.** Priced at ~36 mA asleep (2026-08-24) and untested at idle.
+   `mmcli --set-power-state-low` is a mechanism, not a fix; the open question is
+   whether PSM/eDRX reproduces it while staying registered.
+3. **Clocks.** 37 enabled at idle with the panel dark, including the debug UART
+   at 3.6864 MHz (`console=ttyMSM0,115200` is on the cmdline and there is no
+   serial port on this phone to read it).
+
+☠️ Do **not** start with a kernel patch this time. Every hypothesis above is a
+question about what the hardware is doing, and the oracle can answer all three
+without a build.
