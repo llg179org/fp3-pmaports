@@ -5213,3 +5213,143 @@ be. The leads already on record, in the order their evidence justifies:
 ☠️ Do **not** start with a kernel patch this time. Every hypothesis above is a
 question about what the hardware is doing, and the oracle can answer all three
 without a build.
+
+---
+
+## ★★★ 2026-08-25 afternoon — the oracle census: two leads dead, one born, and the oracle's own idle number is now in doubt
+
+Three questions were queued against slot a, to be answered without a build. All
+three were asked. What came back was not what the queue predicted, and the last
+of them put the *premise* of the whole comparison in question.
+
+### The switch, and a tool that does not work here
+
+`qbootctl -s 0` cannot set the slot on this phone: it looks for
+`/dev/bsg/ufs-bsg0` and this is eMMC, and the `-i` flag its own help advertises
+("still write the GPT headers even if the UFS bLun can't be changed") is not in
+its option string, so passing it prints the help. The documented route is the
+one that works — `fastboot set_active a` from the host, after
+`systemctl reboot --reboot-argument=bootloader`.
+
+☠️ And the reboot has to be started with `systemd-run`: a `sudo sh -c "(sleep 1;
+reboot bootloader) &"` did nothing at all and the phone was still up 90 seconds
+later with the same uptime — the same trap the runbook already records for
+long-running captures, in a place nobody thought to look for it.
+
+### 1. The debug UART is not the difference — DEAD
+
+Ubuntu Touch runs `gcc_blsp1_uart1_apps_clk` at the same **3 686 400 Hz** and
+carries `console=ttyMSM0,115200,n8` **plus** `earlycon=msm_serial_dm,0x78af000`
+on its cmdline, and idles where it does anyway. The clock census came out the
+opposite way from the guess as well: **43 enabled clocks on the oracle against
+37 on ours**. The oracle runs *more* clocks, not fewer.
+
+Two other cmdline differences are worth recording, neither yet priced:
+`lpm_levels.sleep_disabled=1`, and `trace_event=...regulator_enable,
+regulator_disable trace_buf_size=64M` — the oracle ships with regulator tracing
+compiled in and enabled.
+
+### 2. The modem does not move the oracle's floor — ANSWERED
+
+Four legs, 30 minutes each, `idle-ab.sh`, panel forced down, same protocol:
+
+| leg | floor (p10) | median | mean | coulomb (`cc_soc`) |
+|---|---:|---:|---:|---:|
+| A — both modems on, `/ril_0` registered on LTE | 30.8 | 46.7 | 59.9 | 52.5 |
+| B — both modems `Powered=0` | 31.1 | 55.5 | 72.2 | 68.5 |
+| A′ — modems back, control | 31.1 | 58.4 | 76.5 | 72.7 |
+| C — modems on, **no polling at all** | 31.1 | 50.0 | 64.3 | 54.4 |
+
+**The floor does not move: 30.8 / 31.1 / 31.1 / 31.1 mA.** A modem sitting
+registered on LTE contributes nothing to the oracle's continuous draw — and the
+continuous draw is exactly what we are hunting on our side.
+
+☠️ **There are two modems.** `list-modems` shows `/ril_0` and `/ril_1`, and
+disabling only `ril_0` leaves `ril_1` powered. A "modem off" leg run that way
+would have been half a modem, and its null result would have read as "the modem
+does not matter". Also: the ofono scripts emit **NUL bytes**, so `grep` reports
+"binary file matches" and swallows the output — `tr -d '\000'` and `grep -a`.
+
+☠️☠️ **The B-vs-A difference in the median and the coulomb integral was me.**
+The control leg A′ came out *higher* than the "expensive" modem-off leg, i.e.
+the trend was monotonic across the session and had nothing to do with the radio:
+52.5 → 68.5 → 72.7. `journalctl` on the phone counted **74 ssh logins in 70
+minutes** — my own waiter loops, each one an ssh connection plus PAM plus sudo
+plus polkit (`polkitd` 33.7 s and `dbus-daemon` 42.9 s of CPU during the run).
+The clean leg C, with the phone untouched for the whole window, came back at
+54.4. **My instrument was worth 18.3 mA**, and `idle-ab.sh`'s own header says in
+as many words: *do not poll it over that session while it runs; every packet is
+a wakeup, and on the UT side the wakeups ARE the phenomenon.* This is the
+`spkwatch` lesson of the same morning, arriving from the host side instead of
+the device side. The floor survived only because p10 samples the quiet gaps
+between the pokes.
+
+### 3. The rail diff — ranked last, and the only one that produced a lead
+
+The `use>0` sets are mostly the same (`l3` 925 mV, `l5` 1800, `l7` 1800, `l8`
+2900, `l13` 3125, `s5`). Two SMPS are enabled on ours with the panel dark and no
+audio playing, and are **not in the oracle's enabled set at all**:
+
+| rail | pmOS | UT | what the downstream DT hangs off it |
+|---|---|---|---|
+| `s3` | enabled, 984 mV | absent | `qcom,mipi-csi-vdd` (camera CSI) **and** `mdss_dsi` `vdda` |
+| `s4` | enabled, 1036 mV | absent | `cdc-vdda-cp`, `cdc-vdd-pa` — the codec charge pump and PA |
+
+Both are our own layers, mdss and audio. ☠️ The pmOS figures behind this are a
+live read from the morning, not a saved capture; the matching capture is the
+first thing to take on the way back, and until it exists this is a lead.
+
+### ☠️☠️★ What broke the premise: the oracle has never been measured with its screen actually off
+
+The oracle's panel **never blanks on its own**. `powerd`'s inactivity action is
+not set to `display-off`, and it holds **no inhibitor at all** while staying lit
+(`powerd-cli listsysrequests` prints three empty lists). It sat fully powered at
+`brightness=37` for 25 minutes. Setting the policy by hand
+(`powerd-cli settings inactivity display-off …`, rc=0) changed nothing either.
+`com.canonical.Unity.Screen.setScreenPowerMode("off", r)` returns **`true`** for
+two of its six reason codes — with the panel still powered.
+
+Writing `4 > /sys/class/graphics/fb0/blank` does drop the MDSS clocks and the
+backlight. But it is only half a blank, and two witnesses say so:
+
+- the PMI632 **LCDB bias rails stay up**: `lcdb_ldo` (`use=5`) and `lcdb_ncp`
+  (`use=1`), both at **5500 mV**, with the panel "off";
+- `show_blank_event` **flips back to `panel_power_on = 1`** on its own within
+  minutes — the compositor undoes the write.
+
+☠️ And `show_blank_event` is itself not trustworthy as the sole witness: it read
+`panel_power_on = 1` while **zero** MDSS clocks were enabled, which the display
+block cannot be. It reports the last blank *event*, not the hardware. On this
+kernel the unambiguous witness is the enabled-MDSS-clock count.
+
+So a `press-power-key.py` was written (uinput, `KEY_POWER`, one 120 ms tap) to
+produce a real screen-off the way the compositor will accept one. **It worked,
+and the host `dmesg` is the proof** — the compositor reacted, `usb-moded`
+switched the gadget off RNDIS, and the phone went silent on every path:
+
+```
+usb 1-5: USB disconnect, device number 52
+rndis_host 1-5:1.0 fp3ut: unregister 'rndis_host' ... RNDIS device
+usb 1-5: new high-speed USB device number 77 ... idProduct=0afe
+usb-storage 1-5:1.0: USB Mass Storage device detected
+```
+
+WiFi went with it. The phone is up (the gadget is enumerated) and answers
+nothing, which is what a **suspended** phone looks like.
+
+**The consequence, and it is not small.** Every UT idle number this
+investigation has ever quoted — the 15.3 mA floor of 2026-08-24 included — was
+taken with the framebuffer blanked, the LCDB bias rails powered, and the
+compositor free to undo the blank. The oracle has never been measured in the
+state a phone is actually in with its screen off, and if a real screen-off
+suspends it, then "UT idles at 15 mA *awake*" is a claim about a state that
+does not exist. The 3.5× floor ratio rests on that number.
+
+Also still unexplained: **today's oracle floor is 31.1 mA against yesterday's
+15.3**, four legs agreeing tightly, minimum sample 30.2 against 14.3. The LCDB
+bias rails are the obvious suspect and will not be named as the cause until
+they have been measured off.
+
+**Next, and the order matters:** a real screen-off leg on the oracle (needs one
+power-key press to get the link back first), then the same one on ours, then the
+`s3`/`s4` capture on the way back to slot b.
