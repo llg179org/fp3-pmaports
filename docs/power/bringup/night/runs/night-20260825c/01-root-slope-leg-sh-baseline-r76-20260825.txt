@@ -1,0 +1,3 @@
+Terminated
+suspend-slope: baseline-r76-20260825 === settle 1800s off VBUS ===
+baseline-r76-20260825 phase=settle n=0 t=8444 v=4068789 i=-66909 pll=0 nread=20

@@ -1,0 +1,16 @@
+18:27:08 # supervisor night-20260825d start poll=300s max=13h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/night-20260825d
+18:27:11 192.168.100.17 up=9973 q=active g=active cap=96 v=4411253 chg=Charging root=rw [9965] # preflight 95 
+18:27:12 # the queue reported itself finished - pulling once more and exiting
+18:27:20 # supervisor night-20260825d done; artefacts in /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/night-20260825d
+total 56
+drwxrwxr-x 2 fp3 fp3  4096 Aug 25 18:27 .
+drwxrwxr-x 9 fp3 fp3  4096 Aug 25 18:27 ..
+-rw-r--r-- 1 fp3 fp3   158 Aug 25 18:27 01-root-slope-leg-sh-baseline-r76-20260825.txt
+-rw-r--r-- 1 fp3 fp3 10010 Aug 25 18:27 guardian.log
+-rw-r--r-- 1 fp3 fp3  1731 Aug 25 18:27 jobs-night-20260825.txt
+-rw-r--r-- 1 fp3 fp3  1731 Aug 25 18:27 jobs-night-20260825b.txt
+-rw-r--r-- 1 fp3 fp3  1803 Aug 25 18:27 jobs-night-20260825c.txt
+-rw-r--r-- 1 fp3 fp3  2253 Aug 25 18:27 jobs-night-20260825d.txt
+-rw-r--r-- 1 fp3 fp3  4612 Aug 25 18:27 preflight.txt
+-rw-r--r-- 1 fp3 fp3  1246 Aug 25 18:27 queue.log
+-rw-rw-r-- 1 fp3 fp3   457 Aug 25 18:27 timeline.txt

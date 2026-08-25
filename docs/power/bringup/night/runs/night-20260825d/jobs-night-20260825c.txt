@@ -1,0 +1,34 @@
+# A-B-A on ONE descent: the r76 sleeping baseline, short.
+#
+# ☠️ The first version of this file was two full slope-leg runs, each with its
+# own descent AND its own charge wait - about fourteen hours for what is really
+# a comparison between three legs. The descent exists so both phases sit on the
+# flat part of the discharge curve; it does not need repeating three times.
+# So: one charge, one descent, three short phases back to back.
+#
+# SLOPE_CYCLES/SLOPE_SLEEP/SLOPE_SETTLE were hardcoded 6/900/1800 in
+# slope-leg.sh and are now parameters, defaults unchanged. Here each phase is
+# 4 x 600 s with a 600 s settle - about 55 min instead of 2 h 40.
+#
+# ☠️ Compare phase-A SLOPES between the three legs. The derived mA is for scale
+# only. A' is not optional: 2026-08-25 produced TWO results that were pure
+# drift and would have been published as effects without a control - the
+# oracle's "modem off costs 16 mA" and very nearly the ADSP leg.
+#
+# The configuration under test is the one the goal asks for and that was proven
+# reachable at 18:06 the same day: asleep, radio up, modem SMD edge armed as a
+# wakeup source, an incoming call raising the phone in one second.
+@preflight 95
+@charge 97 90
+
+@note A - r76 sleeping baseline, radio up, nothing cut
+@timeout 9000
+SLOPE_SLEEP=600 SLOPE_CYCLES=4 SLOPE_SETTLE=600 /root/slope-leg.sh A-baseline-r76-20260825
+
+@note B - the same with the modem stack cut, the one comparison we can make without a build
+@timeout 9000
+SLOPE_SLEEP=600 SLOPE_CYCLES=4 SLOPE_SETTLE=600 /root/slope-leg.sh B-nomodem-r76-20260825 ModemManager rmtfs tqftpserv
+
+@note A' - control, identical to A, so a drift across the night cannot be read as an effect
+@timeout 9000
+SLOPE_SLEEP=600 SLOPE_CYCLES=4 SLOPE_SETTLE=600 /root/slope-leg.sh Aprime-baseline-r76-20260825

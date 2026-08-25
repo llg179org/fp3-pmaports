@@ -1,0 +1,4 @@
+17:51:03 # supervisor night-20260825 start poll=300s max=14h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/night-20260825
+17:51:05 192.168.100.17 up=7807 q=active g=active cap=97 v=4272088 chg=Discharging root=rw [7800] # job 1 START (timeout 25200s): /root/slope-leg.sh baseline-r76-20260825 
+17:56:07 192.168.100.17 up=8109 q=active g=active cap=95 v=3785106 chg=Discharging root=rw [7800] # job 1 START (timeout 25200s): /root/slope-leg.sh baseline-r76-20260825 
+18:01:09 192.168.100.17 up=8411 q=active g=active cap=93 v=3741118 chg=Discharging root=rw [7800] # job 1 START (timeout 25200s): /root/slope-leg.sh baseline-r76-20260825 

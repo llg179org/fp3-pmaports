@@ -138,7 +138,7 @@ pinned commit). The one-rail DTB stays on the device
 `off-in-suspend` direction is picked up. `84241a07` remains reachable in history
 (revert-on-top, not a rewrite), so the old package tarball still resolves.
 
-## Where this stopped, 2026-08-23 — read this first after a long gap
+## Where this stopped, 2026-08-25 — read this first after a long gap
 
 ☠️ **The version of this section dated 2026-08-14 was still here on 2026-08-20 and
 every load-bearing sentence in it had gone false.** It said the application
@@ -152,13 +152,24 @@ that is why this one now carries its own date in the heading.
 **Update 2026-08-22: the PLL enable-failure item below is closed** — v2 fix
 (global `cpu_latency_qos` from the clk notifier), measured 27 720 transitions +
 24 916 power-collapse entries with 0 failures; the section moved to
-`TODO-DONE.md`, post-mortem in `power/bringup/findings-log.md` (Part II). Everything else in
-this summary still stands.
+`TODO-DONE.md`, post-mortem in `power/bringup/findings-log.md` (Part II).
 
-**The device is on `linux-fp3-7.1.3-r73` (`#74-fp3`, `debug-int/7.1.3`
-`818d35f1`), and the running kernel is ours.** ☠️ Read off the device
-2026-08-24; the previous revision of this line still said `r70` / `#71-fp3` /
-`1afd8034`, which is the fourth time this exact paragraph has gone stale.
+☠️ **Update 2026-08-25: that v2 fix was itself one of the two biggest wakers on
+the phone.** Correct as a *correctness* fix — zero PLL failures, and that still
+holds — but the global `cpu_latency_qos` it took barred **both** clusters from
+power collapse on every relock: 45.8 pm_qos updates/s and 128 IPIs/s on a 96 %
+idle phone, two thirds of all IPI traffic. Replaced by a cluster-local cpuidle
+hold (`wip/7.1.3/power` `68dcadbd`, shipped as r76); measured after, pm_qos
+458 → 0 per 10 s with the failure count still zero. The lesson is in the shape,
+not the patch: **a fix measured only against the fault it targets is half
+measured.**
+
+**The device is on `linux-fp3-7.1.3-r76` (`#77-fp3`, `debug-int/7.1.3`
+`5aafd59e`), and the running kernel is ours.** ☠️ Read off the device
+2026-08-25; the previous revision of this line said `r73` / `#74-fp3` /
+`818d35f1`, which is the **fifth** time this exact paragraph has gone stale —
+it has now named `r61`, `r65`, `r70`, `r73` and `r76` in turn. Do not read the
+revision off this page at all; read it off the device.
 `/boot/vmlinuz` matches the file owned by that package byte for byte.
 ☠️ **This line is the one that goes stale first** — two earlier revisions of this
 paragraph named `r61` and `r65` while the phone had long moved on, so read the
@@ -185,9 +196,19 @@ gap — but a different one.** Three of the four gates now open:
 s2idle itself works — 6/6 suspends, full duration. "Deep sleep" here means getting
 the RPM into `vlow`, not finding a suspend mode that does not exist.
 
-**Where the numbers stand:** awake, panel off, ~58–63 mA · asleep, no cuts,
-**79.1 mA** · asleep with the modem stack cut, 43.3 mA · asleep with the ADSP
-collapsing, 70.8 mA. The target is under 10.
+**Where the numbers stand (r76, 2026-08-25 — the r73 figures this replaces are
+kept in brackets so the movement is visible):** awake, panel off, **median
+98.3 mA** [was 148–157] with the **floor unchanged at 52.9** [54] · asleep, no
+cuts, 79.1 mA · asleep with the modem stack cut, 43.3 mA · asleep with the ADSP
+collapsing, 70.8 mA. The three sleeping figures are r73-era and are what
+tonight's A-B-A re-measures on r76.
+
+☠️ **Read the shape, not just the number.** The r76 win is entirely in the
+bursts — median down 35 %, floor flat — which is exactly what wakeup fixes
+predict and exactly what a *continuous-draw* fix does not. Burstiness (median ÷
+floor) went 2.75× → 1.86×, against the oracle's 1.97×, so pmOS now bursts
+**less** than UT. **The floor is the whole remaining problem**, and nothing
+found so far moves it.
 
 **What closed on 2026-08-19/20, so nobody re-runs it:** that an ADSP client holds
 LPASS (six stages, up to stopping the DSP — nothing moved); that the regulator
@@ -217,10 +238,16 @@ up so they need no re-investigation:
   substitutes for is already in the driver and merely starved;
 * automatic sleep — demonstrated working, then switched back off because an
   incoming call could not wake the phone. **The wake side is fixed and
-  call-proven as of 2026-08-22 (r66, see the next section)** — what remains
-  before switching automatic sleep back on is the second layer: something must
-  hold an inhibitor while ringing or the system re-suspends immediately, and a
-  persistent way to arm the modem edge at boot (the knob defaults to off).
+  call-proven as of 2026-08-22 (r66, see the next section), and on 2026-08-25
+  the whole ring-through was proven end to end on r76**: one controlled
+  suspend, the phone woke on the call 113.6 s into a 420 s RTC backstop and
+  **rang for 61 seconds**. That answers the ringing-inhibitor half by
+  observation — something does hold suspend off for the duration of the ring,
+  so it need not be built, only identified. What remains is the first half: a
+  **persistent way to arm the modem edge at boot** (the knob defaults to off,
+  by design, and was armed by hand for that test). Until that exists, automatic
+  sleep must not be switched back on — an unarmed edge is the 2026-08-14 state,
+  where the call reaches the modem and the AP never wakes.
 
 ## ☠️ The camera wedges the phone and the watchdog resets it — intermittently
 
@@ -286,6 +313,16 @@ off, radio up, WiFi associated, on battery, `bms/cc_soc`), against pmOS's 58-63
 mA on the same protocol. ☠️ Our best *asleep* number — the radio-low leg of the
 same day — is 40.8 mA, so **the oracle awake beats our phone asleep**. The gap
 is idle depth, not suspend depth.
+
+☠️☠️ **The target number is disputed and this heading figure must not be quoted
+alone.** "Panel off" in that measurement was never verified against the panel
+itself — the witness used was the backlight, and the oracle's panel is fully
+powered at brightness 37 with the LCDB bias rails at 5500 mV. Three readings now
+exist for the same quantity: **29.7** (2026-08-24 evening), **15.3** (2026-08-24,
+floor), **31.1** (2026-08-25, floor, four legs). Until one instrument takes the
+oracle's panel down with the compositor's agreement — and as of 2026-08-25 there
+is none — the goal is stated as a *direction*, not a threshold. See "Before
+anything else: the oracle has never been measured screen-off" below.
 
 **What this reorders.** "Reach `vlow`" was closed as a phantom earlier the same
 day; "sleep deeper" is now demoted with it. The modem lead keeps its place
@@ -385,8 +422,32 @@ not be named as the cause until they are measured off.
 
 ### ☠️ Where the hunt actually stands: no candidate, and a target number that disagrees with itself
 
-Everything the census was meant to find is excluded — modem, UART, clocks,
-rails. **~38 mA of continuous draw remains with no hypothesis attached.**
+Everything the census was meant to find is excluded. **Seven exclusions, zero
+findings: ~38 mA of continuous draw remains with no hypothesis attached.** The
+three above came from the oracle census; these four came from our own side the
+same day, and they are listed here so the count is not read as four:
+
+4. ✅ **Userspace is not it.** A headless leg (`postmarketOS-headless`,
+   `systemd.unit=multi-user.target` — no compositor, no session, no GUI at all)
+   floored at **52.9 mA**, against **52.9** with the full desktop running.
+   Identical to the tenth of a milliamp. The entire graphical stack is worth
+   nothing on this phone, which is also why `slope-leg.sh` no longer stops
+   `greetd` — the measurement does not need the phone to stop being a phone.
+5. ✅ **The CPUs are not it.** All eight cores sit at ~99 % residency in
+   `cpu-power-collapse` over a 60 s differential of
+   `cpuidle/state*/{time,usage}`. There is no core left awake to find.
+6. ✅ **Nothing is blocking suspend.** No entry in
+   `/sys/kernel/debug/wakeup_sources` carries a nonzero `prevent_suspend_time`.
+7. ✅ **The ADSP is not it, and stopping it *costs*.** A/B/A′ =
+   **52.9 / 56.3 / 54.6 mA** — the leg with the ADSP stopped is the *worst* of
+   the three. So `lpass-never-sleeps` is a true observation worth no
+   milliamps, and it is now closed as a power item.
+
+☠️ Note what these seven have in common: **every one of them counts events.**
+Interrupts, wakeups, clock enables, rail votes, residencies, service cuts. A
+continuous draw that no event-counting instrument can see is the one thing this
+whole battery of instruments is structurally unable to find, which is why item 2
+of "Next, in order" below is not "another census".
 
 Worse, the number the goal is measured against is unresolved: the oracle's
 floor came out **31.1 mA** today across four legs (minimum sample 30.2) against
@@ -404,6 +465,27 @@ measurements that disagree.
 2. Only then a new hypothesis for the continuous draw — and it will have to
    come from an instrument that measures *level*, not events, because every
    event-counting instrument has now been run.
+
+### ⏳ IN FLIGHT overnight 2026-08-25 → 26: the A-B-A on r76
+
+Started 19:31, `night-20260825-aba`, preflight PASSED, ~6 h. Three legs on ONE
+descent, `SLOPE_SLEEP=600 SLOPE_CYCLES=4 SLOPE_SETTLE=600`, recharging to 90 %
+between them:
+
+| leg | what | why |
+|---|---|---|
+| **A** | r76 sleeping baseline, radio up, nothing cut | the sleeping numbers above are all r73-era; this is the first on r76 |
+| **B** | the same with `ModemManager rmtfs tqftpserv` cut | the modem lead — the only thing that has ever moved the sleeping number |
+| **A′** | identical to A | the control |
+
+☠️ **A′ is not optional.** 2026-08-25 produced *two* results that were pure
+drift and would have been published as effects without a control. ☠️ Compare
+phase-A **slopes** between the legs; the derived mA is for scale only. ☠️ Leg B
+leaves the phone unable to receive calls for ~100 minutes. ☠️ `systemctl stop
+rmtfs` powers the modem down and a restart does not bring it back — see the
+traps at the end of the modem-lead section.
+
+Jobs file: [`power/bringup/night/jobs-2026-08-25.txt`](power/bringup/night/jobs-2026-08-25.txt).
 
 ☠️ **Do not poll the phone during a leg.** Measured 2026-08-25: 74 ssh logins
 in 70 minutes — waiter loops — cost **18.3 mA** on the coulomb integral and
@@ -2084,6 +2166,37 @@ is the focus one.
 So the blown-out centre is not the tap following the frame — it is the
 auto-exposure algorithm's own behaviour, and a separate question from the focus
 work. Not yet measured.
+
+**Confirmed 2026-08-25 one layer deeper, and the answer got worse.** The
+reading above was taken off the *PipeWire node*, which leaves open that
+libcamera has the control and PipeWire drops it. It does not. Read straight off
+libcamera on the device:
+
+```sh
+cam -c 1 --list-controls
+```
+
+**Thirteen controls, and that is all of them:** `AfMetering`, `AfMode`,
+`AfTrigger`, `AfWindows`, `AnalogueGain`, `AnalogueGainMode`, `AwbEnable`,
+`ColourTemperature`, `Contrast`, `ExposureTime`, `ExposureTimeMode`, `Gamma`,
+`LensPosition`. No AE or AWB region control of any kind. The soft ISP computes
+**whole-frame** statistics; the only per-zone concept in the whole pipeline is
+the autofocus one, and `AfWindows`/`AfMetering` are *our own* patch `0106`, not
+upstream behaviour.
+
+So there are three layers between a tap and a correctly-exposed subject, and
+**the first one is already decisive**: the control does not exist; if it did it
+could not cross PipeWire (the SPA plugin returns early for every array-typed
+control); and the app has no concept of it either.
+
+☠️ **The consequence is bigger than exposure, and it is the part worth
+carrying:** since `AfWindows` is array-typed, *it* is one of the controls the
+SPA plugin drops — so **on this phone the tap does not steer the autofocus
+either.** A tap triggers a centre-metered scan, whatever the user aimed at. Two
+separate entries in this file describe tap-focus behaviour as if the window
+reached the sensor; both are describing centre metering. Cross-reference:
+"AfWindows cannot reach the camera through PipeWire" above, which is the same
+wall seen from the other side.
 
 
 ---

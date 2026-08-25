@@ -87,15 +87,41 @@ if [ -s "$SLOPE" ]; then
 	say "moved previous slope file aside as $SLOPE.pre-$TAG"
 fi
 
-systemctl stop greetd 2>/dev/null
+# ☠️ This used to `systemctl stop greetd`, and that had two costs, both paid.
+#
+#   1. It leaves the phone with NO user interface for the whole leg: a powered
+#      panel with nothing drawing on it, a power button nobody handles, and an
+#      incoming call that ModemManager sees and nothing rings. Measured
+#      2026-08-25: the operator found the phone black and unresponsive, and it
+#      was this. Worse, greetd only comes back through restore(), so a leg
+#      killed from outside leaves the phone that way indefinitely.
+#   2. It is not even necessary. Measured the same day, one boot, panel proven
+#      dark both ways: the floor with the full GUI and the floor with phosh and
+#      greetd gone are BOTH 52.9 mA. The compositor is worth nothing at idle,
+#      so stopping it buys no accuracy - it only breaks the phone.
+#
+# What does take the panel down with the compositor alive is locking the
+# session; phosh then blanks it itself and bl_power goes to 4. So: lock, prove,
+# and leave the phone able to ring.
+for sess in $(loginctl list-sessions --no-legend 2>/dev/null | awk '$4 != "-" {print $1}'); do
+	loginctl lock-session "$sess" 2>/dev/null && say "locked session $sess"
+done
 i=0
-while [ "$i" -lt 15 ]; do
+while [ "$i" -lt 30 ]; do
 	for fb in /sys/class/graphics/fb*/blank; do [ -w "$fb" ] && echo 4 > "$fb"; done
 	sleep 2
+	[ "$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1)" = 4 ] && break
 	[ "$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)" = Off ] && break
 	i=$((i + 1))
 done
-say "dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)"
+say "panel bl_power=$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1) dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null) waited=$((i * 2))s"
+# ☠️ A gate that cannot fail is not a gate: a lit panel is worth ~24.5 mA and
+# would be read as a difference between legs.
+if [ "$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1)" != 4 ] &&
+   [ "$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)" != Off ]; then
+	say "ABORT: could not prove the panel is off"
+	exit 1
+fi
 
 echo Unknown > "$CHG/status"
 sleep 10
@@ -149,7 +175,12 @@ for s in $CUTS; do say "cut $s -> $(systemctl is-active "$s" 2>/dev/null)"; done
 
 say "cooling before the leg; temp=$(cat $BATT/temp 2>/dev/null)"
 say "launching slope leg"
-/root/suspend-slope.sh "$TAG" 900 6 1800
+# ☠️ Parameterised 2026-08-25. These were hardcoded 900/6/1800, which with the
+# descent and a charge wait made one leg a half-night and an A-B-A a night and
+# a half. The defaults are unchanged, so every earlier leg is reproduced
+# exactly; shorten them per run when the question is a comparison between legs
+# rather than an absolute number, and say in the tag that you did.
+/root/suspend-slope.sh "$TAG" "${SLOPE_SLEEP:-900}" "${SLOPE_CYCLES:-6}" "${SLOPE_SETTLE:-1800}"
 say "slope leg exited rc=$? v=$(cat $BATT/voltage_now)"
 restore
 say "done"

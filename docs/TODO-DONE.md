@@ -1726,3 +1726,47 @@ may describe both slots equally.
 
 ☠️ **Do not restart any of this by building a kernel.** Nothing here is blocked on
 code that has not been written; it is blocked on not knowing which vote is left.
+
+---
+
+## ~~Does the sleeping ADSP cost current, and is `lpass-never-sleeps` worth fixing?~~ — CLOSED 2026-08-25: it costs NEGATIVE current
+
+Carried since 2026-08-19 as the last live piece of the LPASS thread. The
+observation behind it is true and is not withdrawn: the audio DSP does not
+power-collapse in normal operation, and
+[`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md)
+names the holder (an upstream `msm8916-wcd-digital-codec` clock, not our UCM
+verb — see the first section of this file). What was still open was the only
+question that decides whether it belongs on the power track at all: **what does
+it cost?**
+
+**Measured 2026-08-25, A/B/A′ on the same protocol, panel proven dark:**
+
+| leg | floor (p10) |
+|---|---|
+| A — ADSP running as normal | **52.9 mA** |
+| B — ADSP stopped | **56.3 mA** |
+| A′ — control, back to normal | **54.6 mA** |
+
+**Stopping the ADSP makes the phone draw *more*, by ~2 mA.** Read the A→A′ drift
+(52.9 → 54.6) as the instrument's own spread at this resolution, which puts B
+outside it in the wrong direction. Whatever the ADSP costs by staying up, the
+system pays more for it being down — most plausibly because work it was doing
+falls back to the application processor, though nothing here measures that and it
+is not claimed.
+
+**So `lpass-never-sleeps` is a true observation worth no milliamps**, and it is
+closed as a *power* item. It stays open as a correctness/upstream question if
+anyone wants it, at its own page.
+
+☠️ **The A′ leg is the whole reason this is a result.** Without it, A→B alone
+reads as "+3.4 mA, stopping the ADSP is bad" with a confidence the data does not
+support; with it, the honest statement is "+2 mA against a ±1.7 mA drift". The
+same day produced two other candidate effects that turned out to be pure drift.
+A two-leg comparison on this instrument is not a comparison.
+
+☠️ **This is also the seventh of seven exclusions** on the continuous-draw hunt
+(userspace, the CPUs, wakeup blockers, the modem, the debug UART and clocks, the
+rails, the ADSP) — seven exclusions, zero findings, ~38 mA still unaccounted for.
+Note what they share: **every one of them counts events.** The open item is in
+[`TODO.md`](TODO.md) under "Where the hunt actually stands".

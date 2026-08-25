@@ -1,0 +1,8 @@
+[7780] # queue night-20260825 start jobfile=/root/night/jobs-2026-08-25.txt cap=97% v=4413199
+[7780] # preflight 95
+[7800] # preflight PASSED
+[7800] # charge: waiting for >= 97%, cap now 97%, max 90 min
+[7800] # charge: reached 97% after 0 min
+[7800] # note: r76 sleeping baseline: radio up, modem SMD edge armed, nothing cut
+[7800] # timeout is now 25200s
+[7800] # job 1 START (timeout 25200s): /root/slope-leg.sh baseline-r76-20260825

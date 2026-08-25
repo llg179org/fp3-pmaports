@@ -298,12 +298,31 @@ compositor running on both):**
 **The shape is the finding.** pmOS's floor is close to its long-documented
 58-63 mA, but its median is three times its own floor where UT's is barely
 twice. So the gap is not a load that burns continuously — it is **wakeups**.
-First evidence: with the panel dark, `IPI1` 1927/s, `arch_timer` 1037/s,
-`msm_mdss` **79/s with the display off**, at 82-100 % CPU idle.
+First evidence: with the panel dark, `IPI1` 1927/s and `arch_timer` 1037/s at
+82-100 % CPU idle. ☠️ **A third figure stood in that sentence — `msm_mdss`
+79/s "with the display off" — and it is WITHDRAWN**: that sample was taken with
+the display *on*. With the CRTC proven off the display subsystem raises no
+interrupts at all. The IPI and timer rates stand; the mdss one was an artifact
+of the instrument, not of the phone.
+
+**Where it went (2026-08-25, r76).** The wakeup half of this was chased down and
+the two biggest wakers turned out to be **ours** — the global `cpu_latency_qos`
+in our own PLL-relock guard, and a diagnostic harness (`spkwatch`) left running
+since August. After: median **148-157 → 98.3 mA (−35 %)**, floor **54 → 52.9**,
+burstiness **2.75× → 1.86×** against the oracle's 1.97×. So pmOS now bursts
+*less* than UT, the wakeup half is substantially done, and **what is left is the
+floor** — where seven separate exclusions have since produced no candidate at
+all. See TODO "Where the hunt actually stands".
 
 ☠️ Earlier readings of the oracle (22, then 29.7 mA) came from shorter windows
 and a different script; 32.2 is the one taken by the same instrument as the pmOS
-row, and only same-instrument rows belong in this table.
+row, and only same-instrument rows belong in this table. ☠️☠️ **And as of
+2026-08-25 afternoon the whole UT column is in doubt** — "panel proven dark" was
+proven with the *backlight*, which on the oracle is not a witness: its panel sits
+fully powered at brightness 37 with the LCDB bias rails at 5500 mV. The same
+instrument read the oracle's floor at **31.1 mA** across four legs the next day,
+against the 15.3 here. Do not quote this table's UT row until that factor of two
+is settled; it is item 1 of "Next, in order" in TODO.
 
 ## The work queue, in order
 
@@ -315,6 +334,21 @@ lead takes slot 1.** Items 2 and 3
 are directly under it (evidence retention, and the WiFi lever the same
 measurement has to account for); the camera wedge, which led this list yesterday,
 is now item 4.
+
+⏳ **IN FLIGHT, 2026-08-25 19:31 → ~01:30, `night-20260825-aba`.** The A-B-A
+that measures item 1 on r76: leg A (radio up, nothing cut) → leg B
+(`ModemManager rmtfs tqftpserv` cut) → leg A′ (control), one descent,
+4 × 600 s cycles with a 600 s settle, recharging to 90 % between legs.
+Preflight passed on all 14 gates. Guardian running. Two things to know before
+touching the phone: **leg B leaves it unable to receive calls for ~100 minutes**,
+and ☠️ **polling it during a leg invalidates the leg** (74 ssh logins cost
+18.3 mA on 2026-08-25 and produced a clean trend that read like a modem effect).
+Read the result from `journalctl -u night-queue` afterwards, not during.
+
+★ Two things settled the same day that bear directly on this queue: an incoming
+call **provably** raises the phone from s2idle and rings for 61 s (so the goal's
+correctness constraint is met, not merely hoped for), and seven exclusions closed
+without a single finding on the continuous-draw side. Both in TODO.
 
 1. ★★★ **TOP — the MODEM LEAD.** The `vlow`/`vmin` deep-sleep item that stood
    here is **CLOSED 2026-08-24 night**: the raw message-RAM read
