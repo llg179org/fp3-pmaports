@@ -1,0 +1,34 @@
+# The sleeping baseline this kernel has never had.
+#
+# Everything measured on 2026-08-25 was the phone AWAKE and idle, because this
+# phone never suspends on its own: logind carries no IdleAction and
+# suspend_stats/success read 0 for the whole boot. The plumbing for the target
+# configuration is nevertheless already in place and was verified before arming:
+#   * remoteproc1:smd-edge/power/wakeup = enabled - the modem's SMD edge is
+#     armed as a wakeup source, so an incoming call can raise the phone;
+#   * all eight logind inhibitors are `delay`, none blocks sleep;
+#   * a probe rtcwake -m mem -s 45 returned rc=0, success 0 -> 1, fail 0, and
+#     the link came back on its own.
+# So the leg below measures the state the goal actually asks for: asleep, radio
+# up, reachable.
+#
+# The last sleeping baseline is r64's (-35.29/-35.44/-35.77 mV/h phase-A across
+# three legs on two days, 1.4 % spread). r76 fixed the biggest waker on the
+# phone and has never been measured asleep.
+#
+# ☠️ Compare phase-A SLOPES between legs. The derived mA is for scale only, and
+# the two phases must sit on the same part of the discharge curve.
+@preflight 95
+@charge 97 90
+@note r76 sleeping baseline: radio up, modem SMD edge armed, nothing cut
+@timeout 25200
+/root/slope-leg.sh baseline-r76-20260825
+
+# The control the harness owes itself: the same leg, hours later, nothing
+# changed. ☠️ 2026-08-25 produced TWO results that were pure drift and would
+# have been published as effects without a control - the oracle's "modem off
+# costs 16 mA" and very nearly the ADSP leg. A control is not optional here.
+@charge 97 150
+@note late control - identical leg, nothing changed
+@timeout 25200
+/root/slope-leg.sh control-r76-20260825
