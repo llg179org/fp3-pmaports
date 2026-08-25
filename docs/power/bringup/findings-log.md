@@ -5353,3 +5353,43 @@ they have been measured off.
 **Next, and the order matters:** a real screen-off leg on the oracle (needs one
 power-key press to get the link back first), then the same one on ours, then the
 `s3`/`s4` capture on the way back to slot b.
+
+### ☠️☠️ CORRECTION, same evening: the phone had not suspended — it had been switched off, by me
+
+The section above reads the loss of RNDIS and WiFi as "what a suspended phone
+looks like". It was not. The user went to the phone and found it on the
+**offline-charging screen** — a green battery icon at 100 %, the display of a
+device that is powered down. `press-power-key.py`'s single 120 ms tap **shut
+the phone off**, and it took a held hardware button to bring it back.
+
+The cause is certain: nothing else happened in that second. The mechanism is
+not proven. The most likely one is that the **release was never seen** — a
+compositor may bind a freshly created uinput device only after the press has
+gone by, and `UI_DEV_DESTROY` half a second later tears the device down with
+the key still logically held. A held power key is a long press, and a long
+press is a shutdown. The tool now releases twice and waits five seconds before
+destroying the device, and it carries a ☠️ saying that fix is a hypothesis and
+has not been validated.
+
+**What this retracts.** "A real screen-off suspends the oracle, and therefore
+every UT idle figure describes a state the phone is not in" — the second half
+of that claim still stands on its own evidence (the LCDB rails at 5500 mV with
+the panel "off", and `show_blank_event` flipping back to 1), but the *suspend*
+half has no evidence at all now and is withdrawn. So is the reading of the
+`dmesg` gadget switch: RNDIS going away and `Linux File-Stor Gadget` appearing
+is what a phone that powered down onto a charger does, not a suspend.
+
+**What is untouched**, because none of it depends on this: the modem does not
+move the oracle's floor (30.8 / 31.1 / 31.1 / 31.1 mA), the debug UART is not
+the difference, the `s3`/`s4` rail lead, and the 18.3 mA my own polling cost.
+
+**Still open, and now with no instrument for it:** whether the oracle's panel
+can be taken down *with the compositor's agreement*, and what the LCDB bias
+rails are worth. Today's oracle floor of 31.1 mA against yesterday's 15.3 also
+remains unexplained.
+
+☠️ The shape of this mistake is the one this log keeps recording: an
+observation ("the phone answers nothing") was read through the hypothesis that
+was in hand ("a real screen-off suspends it") instead of being checked against
+the cheapest alternative ("it is off"). One look at the phone settled it in a
+second, and the phone was in the room.

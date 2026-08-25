@@ -20,9 +20,22 @@
 # compositor is the thing that has to agree, and that is what it listens to.
 # So: synthesise the key rather than needing a human at the phone.
 #
-# ☠️ This is a REAL power key press. Held longer, or pressed while the screen
-# is already off, it does what the hardware key does - it wakes the phone, and
-# a long press starts a shutdown. It emits one short tap and nothing else.
+# ☠️☠️ MEASURED 2026-08-25, FIRST USE: THIS SCRIPT POWERED THE PHONE OFF.
+# It sent one 120 ms tap and the phone shut down - RNDIS disconnected, the
+# gadget came back as mass storage, and the phone sat on the offline-charging
+# screen until a human held the hardware button. The cause is certain (nothing
+# else happened in that second); the mechanism is not proven, and the most
+# likely one is that the RELEASE was never seen: the compositor may bind a
+# freshly created uinput device only after the press, and UI_DEV_DESTROY half a
+# second later tears the device down with the key still logically held. A held
+# power key is a long press, and a long press is a shutdown.
+#
+# So the fix below is: release, sync, and then wait a LONG time before
+# destroying the device - and, because a stuck modifier is the failure mode,
+# send the release twice. ☠️ This is a hypothesis-driven fix and it has NOT
+# been validated. Do not run this unattended, and do not run it as part of a
+# measurement leg, until one supervised run has shown the phone blanking its
+# screen and staying up.
 #
 #   press-power-key.py            # one tap
 import fcntl, struct, sys, time
@@ -56,7 +69,12 @@ def main():
     emit(fd, EV_KEY, KEY_POWER, 1); emit(fd, EV_SYN, SYN_REPORT, 0)
     time.sleep(0.12)
     emit(fd, EV_KEY, KEY_POWER, 0); emit(fd, EV_SYN, SYN_REPORT, 0)
-    time.sleep(0.5)
+    time.sleep(0.2)
+    # ☠️ Belt and braces: a release that is not seen reads as a held key, and a
+    # held power key powers the phone off. Repeat it, then leave the device in
+    # place long enough that nothing can miss it.
+    emit(fd, EV_KEY, KEY_POWER, 0); emit(fd, EV_SYN, SYN_REPORT, 0)
+    time.sleep(5.0)
     fcntl.ioctl(fd, UI_DEV_DESTROY)
     fd.close()
 
