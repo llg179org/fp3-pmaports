@@ -1,0 +1,172 @@
+# UT oracle census, panel ON (fresh boot, lock screen)
+# uptime=76.95 433.55 panel=panel_power_on = 1 bl=38 mdssclk=5
+=== REGULATOR_SUMMARY
+ regulator                      use open bypass voltage current     min     max
+-------------------------------------------------------------------------------
+ regulator-dummy                  0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ pm8953_s1                        0    2      0     0mV     0mA     0mV     0mV 
+    4080000.qcom,mss                                                0mV     0mV
+    deviceless                                                      0mV     0mV
+ pm8953_s2_level                  1    6      0     0mV     0mA     0mV     0mV 
+    a000000.qcom,wcnss-wlan                                         0mV     0mV
+    4080000.qcom,mss                                                0mV     0mV
+    c200000.qcom,lpass                                              0mV     0mV
+    185f000.ldo                                                     0mV     0mV
+    1800000.qcom,gcc                                                0mV     0mV
+    deviceless                                                      0mV     0mV
+ pm8953_s2_floor_level            0    2      0     0mV     0mA     0mV     0mV 
+    soc:qcom,rpm-smd:rpm-regulator-smpa2:regulator-cx-cdev                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ pm8953_s2_level_ao               0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ pm8953_s3                        1    2      0  1225mV     0mA   984mV  1240mV 
+    soc:qcom,mdss_dsi@0                                          1225mV  1225mV
+    deviceless                                                      0mV     0mV
+ pm8953_s4                        0    1      0  1036mV     0mA  1036mV  2040mV 
+    deviceless                                                      0mV     0mV
+ pm8953_s7_level                  0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ pm8953_s7_level_ao               1    4      0     0mV     0mA     0mV     0mV 
+    a000000.qcom,wcnss-wlan                                         0mV     0mV
+    4080000.qcom,mss                                                0mV     0mV
+    b114000.qcom,cpu-clock-8953                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ pm8953_s7_level_so               0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l1                        0    1      0   975mV     0mA   975mV  1050mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l2                        0    1      0   975mV     0mA   975mV  1175mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l3                        3    4      0   925mV     0mA   925mV   925mV 
+    79000.qusb                                                    925mV   925mV
+    78000.ssphy                                                   925mV   925mV
+    soc:qcom,mdss_dsi@0                                           925mV   925mV
+    deviceless                                                      0mV     0mV
+ pm8953_l5                        6    4      0  1800mV     0mA  1800mV  1800mV 
+    a000000.qcom,wcnss-wlan                                      1800mV  1800mV
+    a000000.qcom,wcnss-wlan                                      1800mV  1800mV
+    7824900.sdhci                                                1800mV  1800mV
+    deviceless                                                      0mV     0mV
+ pm8953_l6                        1    2      0  1800mV     0mA  1800mV  1800mV 
+    1a94000.qcom,mdss_dsi_ctrl0                                  1800mV  1800mV
+    deviceless                                                      0mV     0mV
+ pm8953_l7                        2    5      0  1800mV     0mA  1800mV  1900mV 
+    a000000.qcom,wcnss-wlan                                      1800mV  1800mV
+    4080000.qcom,mss                                             1800mV  1800mV
+    79000.qusb                                                   1800mV  1800mV
+    78000.ssphy                                                  1800mV  1800mV
+    deviceless                                                      0mV     0mV
+ pm8953_l7_ao                     0    1      0  1800mV     0mA  1800mV  1900mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l8                        1    2      0  2900mV     0mA  2900mV  2900mV 
+    7824900.sdhci                                                2900mV  2900mV
+    deviceless                                                      0mV     0mV
+ pm8953_l9                        0    2      0  3000mV     0mA  3000mV  3300mV 
+    a000000.qcom,wcnss-wlan                                      3000mV  3300mV
+    deviceless                                                      0mV     0mV
+ pm8953_l10                       0    1      0  2800mV     0mA  2800mV  3000mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l11                       0    2      0  2950mV     0mA  2950mV  2950mV 
+    7864900.sdhci                                                2950mV  2950mV
+    deviceless                                                      0mV     0mV
+ pm8953_l12                       0    2      0  1800mV     0mA  1800mV  2950mV 
+    7864900.sdhci                                                1800mV  2950mV
+    deviceless                                                      0mV     0mV
+ pm8953_l13                       1    3      0  3125mV     0mA  3125mV  3125mV 
+    tasha-slim-pgd                                               3125mV  3125mV
+    79000.qusb                                                   3125mV  3125mV
+    deviceless                                                      0mV     0mV
+ pm8953_l16                       0    1      0  1800mV     0mA  1800mV  1800mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l17                       1    2      0  2850mV     0mA  2850mV  2850mV 
+    1a94000.qcom,mdss_dsi_ctrl0                                  2850mV  2850mV
+    deviceless                                                      0mV     0mV
+ pm8953_l19                       0    2      0  1200mV     0mA  1200mV  1350mV 
+    a000000.qcom,wcnss-wlan                                      1200mV  1300mV
+    deviceless                                                      0mV     0mV
+ pm8953_l22                       0    1      0  2800mV     0mA  2800mV  2800mV 
+    deviceless                                                      0mV     0mV
+ pm8953_l23                       0    1      0   975mV     0mA   975mV  1225mV 
+    deviceless                                                      0mV     0mV
+ pm8953_s5                        2    2      0   880mV     0mA   400mV  1140mV 
+    b018000.cpr4-ctrl                                             905mV   905mV
+    deviceless                                                      0mV     0mV
+ pm8953_s5_avs_limit              1    2      0   875mV     0mA   400mV  1140mV 
+    b018000.cpr4-ctrl                                             875mV   905mV
+    deviceless                                                      0mV     0mV
+ gfx_mem_acc_corner               0    2      0     0mV     0mA     0mV     0mV 
+    185f000.ldo                                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ msm_gfx_ldo                      0    3      0     0mV     0mA     0mV     0mV 
+    1800000.qcom,gcc-gfx                                            0mV     0mV
+    deviceless                                                      0mV     0mV
+    gdsc_oxili_gx                 0    2      0     0mV     0mA     0mV     0mV 
+       1c00000.qcom,kgsl-3d0                                        0mV     0mV
+       deviceless                                                   0mV     0mV
+ apc_mem_acc_corner               0    2      0     0mV     0mA     0mV     0mV 
+    b018000.cpr4-ctrl                                               0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_venus                       0    2      0     0mV     0mA     0mV     0mV 
+    1de0000.qcom,venus                                              0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_mdss                        1    6      0     0mV     0mA     0mV     0mV 
+    soc:qcom,mdss_dsi@0                                             0mV     0mV
+    soc:qcom,mdss_rotator                                           0mV     0mV
+    1a00000.qcom,mdss_mdp                                           0mV     0mV
+    1a96400.qcom,mdss_dsi_pll                                       0mV     0mV
+    1a94400.qcom,mdss_dsi_pll                                       0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_jpeg                        0    2      0     0mV     0mA     0mV     0mV 
+    1b1c000.qcom,jpeg                                               0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_vfe                         0    3      0     0mV     0mA     0mV     0mV 
+    1b31000.qcom,ispif                                              0mV     0mV
+    1b10000.qcom,vfe0                                               0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_vfe1                        0    3      0     0mV     0mA     0mV     0mV 
+    1b31000.qcom,ispif                                              0mV     0mV
+    1b14000.qcom,vfe1                                               0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_cpp                         0    2      0     0mV     0mA     0mV     0mV 
+    1b04000.qcom,cpp                                                0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_venus_core0                 0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ gdsc_usb30                       1    3      0     0mV     0mA     0mV     0mV 
+    7000000.ssusb                                                   0mV     0mV
+    79000.qusb                                                      0mV     0mV
+    deviceless                                                      0mV     0mV
+ eldo2_8953                       0    6      0     0mV     0mA     0mV     0mV 
+    tasha-slim-pgd                                                  0mV     0mV
+    tasha-slim-pgd                                                  0mV     0mV
+    tasha-slim-pgd                                                  0mV     0mV
+    tasha-slim-pgd                                                  0mV     0mV
+    tasha-slim-pgd                                                  0mV     0mV
+    deviceless                                                      0mV     0mV
+ dbu3                             0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ lcdb_ldo                         1    2      0  5500mV     0mA  4000mV  6000mV 
+    1a94000.qcom,mdss_dsi_ctrl0                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ lcdb_ncp                         1    2      0  5500mV     0mA  4000mV  6000mV 
+    1a94000.qcom,mdss_dsi_ctrl0                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ apc0_pwrcl_corner                2    3      0     0mV     0mA     0mV     0mV 
+    b114000.qcom,cpu-clock-8953                                     0mV     0mV
+    b114000.qcom,cpu-clock-8953                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ apc1_perfcl_corner               1    2      0     0mV     0mA     0mV     0mV 
+    b114000.qcom,cpu-clock-8953                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ gdsc_oxili_cx                    0    3      0     0mV     0mA     0mV     0mV 
+    1c00000.qcom,kgsl-3d0                                           0mV     0mV
+    1c40000.arm,smmu-kgsl                                           0mV     0mV
+    deviceless                                                      0mV     0mV
+ qusb@79000                       1    2      0     0mV     0mA     0mV     0mV 
+    200f000.qcom,spmi:qcom,pmi632@2:qcom,qpnp-smb5                                     0mV     0mV
+    deviceless                                                      0mV     0mV
+ smb5-vbus                        0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
+ qcom,smb5-vconn                  0    1      0     0mV     0mA     0mV     0mV 
+    deviceless                                                      0mV     0mV
