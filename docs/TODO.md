@@ -319,11 +319,14 @@ can see it — tracepoints count events. Next pass, in evidence order, and ☠�
 starting with a kernel patch**: every one of these is a question about what the
 hardware is doing, and the oracle answers all three without a build.
 
-1. **Rail census against slot a.** 66 regulators enabled at idle. The sleep-set
-   layer on the kernel cannot help as written; what is needed is
-   `off-in-suspend` on rails that are genuinely unused, which first requires
-   knowing which those are. Same move that settled the charger `I_TERM`
-   question in twenty minutes on 2026-08-12.
+1. **Rail census against slot a — demoted, see below.** Only **ten**
+   regulators carry a non-zero *enable* count at idle (s3/s4/s5, l3/l5/l7/l8/l13,
+   `vph_pwr`, plus a `lcdb_dummy` that is not a real regulator). That is close to
+   minimal, so a large rail saving is unlikely; still worth one oracle diff,
+   but not first. ☠️ The "66 rails" figure first published here was wrong — it
+   counted `regulator_summary`'s `open` column (consumers that called
+   `regulator_get`) instead of `use`. The same error made the camera rails read
+   as powered at idle; their `use` is 0 and camss is runtime-suspended.
 2. **The modem at idle.** Priced at ~36 mA *asleep*, never measured at idle.
 3. **Clock census.** 37 enabled with the panel dark, including the debug UART at
    3.6864 MHz (`console=ttyMSM0,115200` on the cmdline, no serial port on this

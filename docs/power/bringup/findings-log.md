@@ -5184,12 +5184,25 @@ used today can see it — tracepoints count events, and this is not an event. Th
 next pass needs a different class of instrument: what is powered that need not
 be. The leads already on record, in the order their evidence justifies:
 
-1. **Rails.** 66 regulators enabled at idle, and the sleep-set layer already on
-   the kernel cannot help in its current form (see the "ruled out" list above) —
-   what is needed is `off-in-suspend` / a lower suspend voltage on rails that are
-   genuinely unused, which first requires knowing which those are. **The oracle
-   is the instrument**: a rail-by-rail diff against slot a, the same move that
-   settled the charger's `I_TERM` question in twenty minutes on 2026-08-12.
+1. **Rails — WEAKER THAN FIRST WRITTEN, see the correction below.** Ten
+   regulators carry a non-zero enable count at idle: `s3` 984 mV, `s4` 1036 mV,
+   `s5` 795 mV, `l3` 925 mV, `l5` 1800 mV, `l7` 1800 mV, `l8` 2900 mV, `l13`
+   3125 mV, the `vph_pwr` input, and `lcdb_dummy` (a fabricated regulator, so it
+   draws nothing). That is close to a minimal set, and it makes a large rail
+   saving unlikely. Still worth one diff against slot a — the oracle answers it
+   without a build, the same move that settled the charger's `I_TERM` question
+   in twenty minutes on 2026-08-12 — but it is no longer the leading candidate.
+
+   ☠️ **The "66 regulators enabled" figure published earlier in this entry was
+   mine and it was wrong.** It came from `awk '$3>0'` over
+   `regulator_summary` without reading the header: the columns are
+   `use open bypass opmode voltage current min max`, so that counted the `open`
+   column — consumers that called `regulator_get`, not rails that are powered.
+   The same mistake nearly cost a second lead: the camera rails (`cam_af_2p85`,
+   `cam_io_1p8`, `cam2_dig_1p2`) show `open` counts and read as "the focus motor
+   is powered at idle", which would have been alarming given the 2026-08-08
+   AF-rail bug. Their `use` is 0 and camss is runtime-suspended. **Read the
+   header before the data.**
 2. **The modem.** Priced at ~36 mA asleep (2026-08-24) and untested at idle.
    `mmcli --set-power-state-low` is a mechanism, not a fix; the open question is
    whether PSM/eDRX reproduces it while staying registered.
