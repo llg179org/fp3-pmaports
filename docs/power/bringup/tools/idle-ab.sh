@@ -61,10 +61,12 @@ input_on()  { [ "$OS" = pmos ] && echo Charging > "$CHG/status" || echo 0 > "$BA
 input_state() { [ "$OS" = pmos ] && cat "$CHG/online" || cat "$BAT/input_suspend"; }
 
 BLANKED=
+COMPOSITOR=
 restore() {
 	input_on 2>/dev/null
 	for fb in $BLANKED; do echo 0 > "$fb" 2>/dev/null; done
-	echo "# restored: input=$(input_state) status=$(cat $BAT/status)"
+	for c in $COMPOSITOR; do systemctl start "$c" 2>/dev/null; done
+	echo "# restored: input=$(input_state) status=$(cat $BAT/status) compositor:${COMPOSITOR:-none}"
 }
 trap restore EXIT INT TERM
 
@@ -80,12 +82,45 @@ if { [ "$OS" = pmos ] && [ "$pre" != 1 ]; } || { [ "$OS" = ut ] && [ "$pre" != 0
 	exit 1
 fi
 
-for fb in /sys/class/graphics/fb*/blank; do
-	[ -w "$fb" ] && { echo 4 > "$fb"; BLANKED="$BLANKED $fb"; }
+# ☠️ Blanking the framebuffer is not turning the panel off, and the difference
+# was worth +24.5 mA on every floor measured before 2026-08-19. On pmOS the
+# COMPOSITOR holds DRM master and re-enables the panel behind you: writing dpms
+# under it fails with EACCES and `blank` is undone, so the run measures a lit
+# screen while believing it measured a dark one. Measured 2026-08-25: exactly
+# that, a whole wasted hour reading 157 mA median against an expected 58-63.
+#
+# So: stop the compositor first, then blank, then PROVE it went off — and abort
+# if it cannot be proven. A gate that cannot fail is not a gate.
+COMPOSITOR=
+for c in greetd lightdm sddm gdm unity8 lomiri; do
+	if systemctl is-active --quiet "$c" 2>/dev/null; then
+		systemctl stop "$c" 2>/dev/null && COMPOSITOR="$COMPOSITOR $c"
+	fi
 done
-for d in /sys/class/drm/*/dpms; do [ -w "$d" ] && echo off > "$d" 2>/dev/null; done
-sleep 5
-echo "# blanked:$BLANKED dpms=$(cat /sys/class/drm/card0/card0-DSI-1/dpms 2>/dev/null)"
+echo "# stopped compositor:${COMPOSITOR:- (none running)}"
+sleep 3
+
+i=0
+while [ "$i" -lt 10 ]; do
+	for fb in /sys/class/graphics/fb*/blank; do
+		[ -w "$fb" ] && { echo 4 > "$fb" 2>/dev/null; case " $BLANKED " in *" $fb "*) ;; *) BLANKED="$BLANKED $fb";; esac; }
+	done
+	for d in /sys/class/drm/*/dpms; do [ -w "$d" ] && echo off > "$d" 2>/dev/null; done
+	sleep 2
+	i=$((i + 1))
+	DPMS=$(cat /sys/class/drm/*/dpms 2>/dev/null | head -1)
+	BL=$(cat /sys/class/backlight/*/brightness /sys/class/leds/lcd-backlight/brightness 2>/dev/null | head -1)
+	# proof accepted from EITHER stack: the DRM connector says Off, or the
+	# panel's own backlight reads 0 on a kernel with no DRM dpms node (UT 4.9).
+	[ "$DPMS" = Off ] && break
+	{ [ -z "$DPMS" ] && [ "${BL:-x}" = 0 ]; } && break
+done
+echo "# panel: dpms='${DPMS:-<no drm dpms node>}' backlight='${BL:-?}' blanked:$BLANKED"
+if [ "$DPMS" != Off ] && ! { [ -z "$DPMS" ] && [ "${BL:-x}" = 0 ]; }; then
+	echo "# ABORT: could not prove the panel is off. A lit panel is worth ~24.5 mA"
+	echo "#        and would be read as a difference between the two systems."
+	exit 1
+fi
 
 input_off
 sleep 20
