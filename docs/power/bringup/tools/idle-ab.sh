@@ -61,12 +61,10 @@ input_on()  { [ "$OS" = pmos ] && echo Charging > "$CHG/status" || echo 0 > "$BA
 input_state() { [ "$OS" = pmos ] && cat "$CHG/online" || cat "$BAT/input_suspend"; }
 
 BLANKED=
-COMPOSITOR=
 restore() {
 	input_on 2>/dev/null
 	for fb in $BLANKED; do echo 0 > "$fb" 2>/dev/null; done
-	for c in $COMPOSITOR; do systemctl start "$c" 2>/dev/null; done
-	echo "# restored: input=$(input_state) status=$(cat $BAT/status) compositor:${COMPOSITOR:-none}"
+	echo "# restored: input=$(input_state) status=$(cat $BAT/status)"
 }
 trap restore EXIT INT TERM
 
@@ -89,36 +87,63 @@ fi
 # screen while believing it measured a dark one. Measured 2026-08-25: exactly
 # that, a whole wasted hour reading 157 mA median against an expected 58-63.
 #
-# So: stop the compositor first, then blank, then PROVE it went off — and abort
-# if it cannot be proven. A gate that cannot fail is not a gate.
-COMPOSITOR=
-for c in greetd lightdm sddm gdm unity8 lomiri; do
-	if systemctl is-active --quiet "$c" 2>/dev/null; then
-		systemctl stop "$c" 2>/dev/null && COMPOSITOR="$COMPOSITOR $c"
+# ☠️☠️ Two further corrections, both measured 2026-08-25, both by this script
+# failing at the job it exists for:
+#
+#   1. `systemctl stop greetd` does NOT stop the compositor. greetd reads
+#      inactive while `phoc` and `phrog` keep running and keep DRM master, so
+#      the clause that was supposed to release the panel silently did nothing
+#      for two whole runs. A step whose effect is not checked is not a step.
+#   2. The proof read `/sys/class/drm/*/dpms`, a property owned by the very
+#      compositor we could not stop - and on that basis a perfectly good run
+#      was declared INVALID. The panel's own `bl_power` read 4
+#      (FB_BLANK_POWERDOWN) throughout. Read the hardware, never the software's
+#      description of it.
+#
+# So the compositor is now left alone - it is running on both sides of the
+# comparison anyway, and stopping it is not the configuration a phone is in
+# during normal use. We ask for the panel off, then WAIT for the display stack
+# (ours or the compositor's own idle blank) to actually take it down, and prove
+# it from `bl_power` / the DRM CRTC's `active` flag. Abort if it cannot be
+# proven. A gate that cannot fail is not a gate.
+panel_is_off() {
+	# The panel's own power state: 4 = FB_BLANK_POWERDOWN. This is the
+	# hardware, and it is not writable by the compositor's DRM lease.
+	for p in /sys/class/backlight/*/bl_power; do
+		[ -r "$p" ] || continue
+		[ "$(cat "$p" 2>/dev/null)" = 4 ] && return 0
+	done
+	# Fall back to the CRTC actually being off (mainline DRM), then to a zero
+	# backlight on a kernel that has neither (UT 4.9).
+	if [ -r /sys/kernel/debug/dri/0/state ] &&
+	   grep -q 'active=0' /sys/kernel/debug/dri/0/state 2>/dev/null &&
+	   ! grep -q 'active=1' /sys/kernel/debug/dri/0/state 2>/dev/null; then
+		return 0
 	fi
-done
-echo "# stopped compositor:${COMPOSITOR:- (none running)}"
-sleep 3
+	BL=$(cat /sys/class/backlight/*/brightness /sys/class/leds/lcd-backlight/brightness 2>/dev/null | head -1)
+	[ -z "$(cat /sys/class/drm/*/dpms 2>/dev/null | head -1)" ] && [ "${BL:-x}" = 0 ]
+}
 
+PANEL_WAIT=${PANEL_WAIT:-240}
+echo "# asking for the panel off, then waiting up to ${PANEL_WAIT}s for the hardware to say it is"
 i=0
-while [ "$i" -lt 10 ]; do
+while [ "$i" -lt "$PANEL_WAIT" ]; do
 	for fb in /sys/class/graphics/fb*/blank; do
 		[ -w "$fb" ] && { echo 4 > "$fb" 2>/dev/null; case " $BLANKED " in *" $fb "*) ;; *) BLANKED="$BLANKED $fb";; esac; }
 	done
 	for d in /sys/class/drm/*/dpms; do [ -w "$d" ] && echo off > "$d" 2>/dev/null; done
-	sleep 2
-	i=$((i + 1))
-	DPMS=$(cat /sys/class/drm/*/dpms 2>/dev/null | head -1)
-	BL=$(cat /sys/class/backlight/*/brightness /sys/class/leds/lcd-backlight/brightness 2>/dev/null | head -1)
-	# proof accepted from EITHER stack: the DRM connector says Off, or the
-	# panel's own backlight reads 0 on a kernel with no DRM dpms node (UT 4.9).
-	[ "$DPMS" = Off ] && break
-	{ [ -z "$DPMS" ] && [ "${BL:-x}" = 0 ]; } && break
+	panel_is_off && break
+	sleep 5
+	i=$((i + 5))
 done
-echo "# panel: dpms='${DPMS:-<no drm dpms node>}' backlight='${BL:-?}' blanked:$BLANKED"
-if [ "$DPMS" != Off ] && ! { [ -z "$DPMS" ] && [ "${BL:-x}" = 0 ]; }; then
+echo "# panel: bl_power='$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1)'" \
+     "dpms='$(cat /sys/class/drm/*/dpms 2>/dev/null | head -1)'" \
+     "brightness='$(cat /sys/class/backlight/*/brightness 2>/dev/null | head -1)'" \
+     "waited=${i}s blanked:$BLANKED"
+if ! panel_is_off; then
 	echo "# ABORT: could not prove the panel is off. A lit panel is worth ~24.5 mA"
 	echo "#        and would be read as a difference between the two systems."
+	echo "#        If the session is active, lock the screen or let it idle out first."
 	exit 1
 fi
 
