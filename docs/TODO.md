@@ -306,8 +306,28 @@ measured 22.9/s — the transitions are real demand); sleep inhibitors (all
 layer, which is already on the running kernel and cannot save anything in its
 `on-in-suspend`/`both_sets` form.
 
-**Open:** the aggregate re-measurement of the matched pair on r76 with the
-harness gone — one `idle-ab` hour per side, same protocol.
+**Measured on r76 (the aggregate, one idle-ab hour, same protocol):** median
+**148–157 → 98.3 mA (−35 %)**, floor unchanged (53.9/54.3 → 52.9) — the shape
+both fixes predicted, since neither touches a continuous draw. Burstiness
+(median ÷ floor) went **2.75× → 1.86×** against the oracle's **1.97×**: pmOS now
+bursts *less* than UT. **The wakeup half of the gap is closed.**
+
+### What is left: ~38 mA of continuous draw, and it is not an event
+
+52.9 mA of floor against the oracle's 15.3. No instrument used on 2026-08-25
+can see it — tracepoints count events. Next pass, in evidence order, and ☠️ **not
+starting with a kernel patch**: every one of these is a question about what the
+hardware is doing, and the oracle answers all three without a build.
+
+1. **Rail census against slot a.** 66 regulators enabled at idle. The sleep-set
+   layer on the kernel cannot help as written; what is needed is
+   `off-in-suspend` on rails that are genuinely unused, which first requires
+   knowing which those are. Same move that settled the charger `I_TERM`
+   question in twenty minutes on 2026-08-12.
+2. **The modem at idle.** Priced at ~36 mA *asleep*, never measured at idle.
+3. **Clock census.** 37 enabled with the panel dark, including the debug UART at
+   3.6864 MHz (`console=ttyMSM0,115200` on the cmdline, no serial port on this
+   phone to read it).
 
 ☠️ **Instrument note that makes this cheap on the UT side, and a trap on both.**
 `bms/cc_soc` is a real coulomb counter (validated both directions 2026-08-24);

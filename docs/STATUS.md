@@ -15,37 +15,36 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-24 evening — ★★★★ the radio is PRICED and the modem
-lead has its answer: `mmcli --set-power-state-low` gives 40.8 mA asleep against
-a 79–83 mA baseline, i.e. the whole ~36 mA that powering the modem processor
-off gives (43.3 mA), with the modem still loaded. Mechanism: with the radio up
-the MPSS chops the crystal and aborts the AP's suspends outright; radio-low
-lets it hold XO-shutdown and the suspends run full-term. ☠️ It is a mechanism,
-not a fix — radio-low is airplane mode by another name; the open question is
-whether a power-save mode that keeps the phone REGISTERED (PSM/eDRX) reproduces
-it, which is modem configuration rather than an AP-side kernel patch. Earlier the same day: ★★★★★ the
-deep-sleep item was CLOSED: the
-`vlow` record read RAW from RPM message RAM on the working UT oracle is 0 too,
-across a window with +34 603 AP power collapses and thousands of co-proc XO
-shutdowns. `vlow` never occurs on this device/firmware at all — the target was
-a phantom, there is nothing to fix. Instrument:
-`docs/power/bringup/tools/rpmstats_raw.py` (mmap `/dev/mem`, works on both
-slots, validated byte-for-byte against pmOS debugfs). The "missing RPM
-handshake" thread closes with it — the RPM-observable handshake (vMPM
-wakeup + doorbell) exists and works on mainline; the AP-local SMD-RX-mask/flush
-is invisible to the RPM; and the oracle has all of it and still never enters
-`vlow`. The remaining deep-sleep work is the modem-lead (absolute draw:
-79–83 mA sleep baseline vs 43 mA modem-cut), per the TODO plan. Details:
-findings-log 2026-08-24 "(continued)" entry.**
+Last updated: **2026-08-25 — ★★★★★ THE GOAL (pmOS down to the UT level or
+below) took its first real step, and the two biggest wakers on the phone turned
+out to be OURS. (1) `apcs_hold_cluster()`, our own PLL-relock guard, took a
+GLOBAL `cpu_latency_qos`: 45.8 pm_qos updates/s and 128 IPIs/s on a 96 %-idle
+phone — two thirds of all IPI traffic — with both clusters barred from power
+collapse for every hold. Fixed to a cluster-local cpuidle hold (`68dcadbd`,
+shipped as r76 `#77-fp3`); measured after: pm_qos 458 → 0 per 10 s, zero PLL
+failures. (2) A diagnostic harness left running since August: `spkwatch` alone
+had burned 2.6 % of a core permanently. Disabled with ringwatch, fp3-powerlog,
+avahi and cups. AGGREGATE, one idle-ab hour, same protocol as the matched pair:
+median **148–157 → 98.3 mA (−35 %)**, floor unchanged (54 → 52.9) — exactly the
+shape wakeup fixes predict. Burstiness (median ÷ floor) **2.75× → 1.86×**
+against the oracle's 1.97×, so pmOS now bursts LESS than UT. **The wakeup half
+of the gap is closed; what remains is ~38 mA of pure continuous draw** (52.9 vs
+15.3 mA floor), which no tracepoint can see. Next: a rail and clock census
+against the oracle — not another kernel patch. ☠️ WITHDRAWN from the entry
+before this one: the `msm_mdss 79/s with the display off` lead was sampled with
+the display ON; with the CRTC proven off the display subsystem raises no
+interrupts at all. ☠️ `boot-deploy` rewrites extlinux.conf on every kernel
+install and drops the multi-label net and `panic=10` — restored by hand.
+Details: findings-log 2026-08-25 entries.**
 
 ## The device
 
 | what | value | how to check |
 |---|---|---|
-| kernel package | `linux-fp3-7.1.3-r73` | `apk info -vv \| grep ^linux-fp3` |
-| build stamp | `#74-fp3` | `uname -v` |
-| pinned commit | `debug-int/7.1.3` `818d35f1` | `grep _commit linux-fp3/APKBUILD` |
-| boot config | **4 labels** (default `postmarketOS-prev` = clean r73; + `-bothsets`, `-sleepset` [the r74 non-booting DTB], `-fallback`), md5 `e2fc5423…`, all 4 carry `panic=10` (measured 2026-08-24 after the slot round-trip) | `md5sum /boot/extlinux/extlinux.conf` |
+| kernel package | `linux-fp3-7.1.3-r76` | `apk info -vv \| grep ^linux-fp3` |
+| build stamp | `#77-fp3` | `uname -v` |
+| pinned commit | `debug-int/7.1.3` `5aafd59e` | `grep _commit linux-fp3/APKBUILD` |
+| boot config | **2 labels** (default `postmarketOS` = r76; + `postmarketOS-r73` fallback), both with `panic=10`. ☠️ Rewritten from scratch by `boot-deploy` on the 2026-08-25 r76 install, which dropped the previous four-label net and `panic=10` — restore by hand after every kernel install | `cat /boot/extlinux/extlinux.conf` |
 | last full battery | **29 ok / 2 failed / 3 skipped** (2026-08-23 17:11, r73). ☠️ Read that number with care: the failures were `98-camera-af-rail` and `99-suspend`, and neither is a check defect — **the camera wedged and the watchdog reset the phone mid-run** (queue item 4). ☠️ It also predates the runner fixes of 2026-08-23, so its `ok` count includes checks scored green after the reset | `tests/fp3-selftest` |
 | last camera-block run | **8 ok / 0 failed** on a fresh boot (2026-08-23 late, r73), and the same block wedged the phone earlier the same evening — the fault is intermittent, ~1 run in 2 | `tests/fp3-selftest --only camera,suspend` |
 
