@@ -241,11 +241,24 @@ What is established, because it was observed rather than inferred:
 * the signature above, in four separate resets;
 * `44-camera-af-windows` taking ~502 s instead of ~5 s is a **symptom** of an
   already-damaged camera and not a cause — it was read as a duration for hours;
-* a `cci ... timeout` plus `imx363 ... -110` fires **at boot**, ~13 s in, between
-  the APR audio service registering and the second remoteproc coming up, with no
-  camera client in existence. That cuts against the explanation shared by
-  the by-branch view below, 33f-2 and 33f-3, which both blame a client colliding with a
-  teardown;
+* ☠️ **RETRACTED 2026-08-25.** This bullet used to read: *"a `cci ... timeout`
+  plus `imx363 ... -110` fires at boot, ~13 s in, ... with no camera client in
+  existence. That cuts against the explanation ... which blames a client
+  colliding with a teardown."* It is **not a symptom at all** — it is our own
+  driver working as designed. `imx363_power_on()` carries a deliberate warm-up
+  loop whose comment says why: *"The very first transaction after power-up
+  reliably times out on this board (slow GPIO-switched rails)"*. So probe →
+  `power_on()` → the first `cci_read` times out (**the one `-110` in the log**)
+  → the retry 5 ms later succeeds → `imx363_identify_module()` reads the chip id
+  silently. That is exactly what the boot journal shows: **one** `imx363` line
+  and **no** "failed to read chip id" beside it. Verified on r76, boot of
+  2026-08-25 11:02:52. The argument this bullet made against the
+  client-vs-teardown explanation therefore falls with it — that explanation is
+  neither supported nor contradicted by anything here.
+  ☠️ Two details of the original observation were also wrong: it fires **97 ms
+  after the FIRST remoteproc (WCNSS) comes up**, not between the APR service and
+  the second one — the modem's remoteproc only comes up at 16.6 s. A `dev_err`
+  from a shared helper is not evidence about the caller;
 * the rate, ~3 wedges in 6 independent runs.
 
 **The current move is a hunt, not a bisect.**
