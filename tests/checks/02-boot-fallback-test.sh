@@ -32,24 +32,44 @@ fi
 
 # 1. Is there a second entry to fall back to, and do its files exist? A label
 # pointing at a missing kernel is worse than no label: it looks like a net.
-if ! grep -q '^label postmarketOS-fallback' "$CONF"; then
-	echo "FAIL: no postmarketOS-fallback label - there is only one bootable"
-	echo "      entry, so a bad kernel or command line has nothing to fall"
-	echo "      back to"
+#
+# ☠️ This used to require a label literally named `postmarketOS-fallback` and
+# files literally named `vmlinuz-fallback`. Measured 2026-08-26: it therefore
+# FAILED a config with THREE bootable entries - postmarketOS (r77),
+# postmarketOS-r76 and postmarketOS-r73 - each pointing at a kernel and dtb that
+# exist, all carrying panic=. A check that asserts a NAME instead of the PROPERTY
+# reports danger where there is none, and, far worse, would report safety for a
+# `postmarketOS-fallback` label whose kernel was a copy of the broken one.
+#
+# The property is: at least two labels, each with a kernel and an fdt that exist
+# on disk, and at least two DISTINCT kernel files among them - a second entry
+# booting the same image is not a fallback.
+kernels=$(awk '$1 == "kernel" {print $2}' "$CONF")
+fdts=$(awk '$1 == "fdt" {print $2}' "$CONF")
+nlabels=$(grep -c '^label ' "$CONF")
+missing=
+for f in $kernels $fdts; do
+	[ -e "$BOOT/$f" ] || missing="$missing $f"
+done
+distinct=$(printf '%s\n' $kernels | sort -u | wc -l)
+
+if [ "$nlabels" -lt 2 ]; then
+	echo "FAIL: only $nlabels boot label - a bad kernel or command line has"
+	echo "      nothing to fall back to"
 	echo "      cmd: see fp3-pmaports/docs/deploy/README.md, 'the fallback entry'"
 	fail=1
+elif [ -n "$missing" ]; then
+	echo "FAIL: a label points at files that do not exist:$missing"
+	echo "      A label with no kernel behind it looks like a net and is not one."
+	echo "      cmd: ls -l $BOOT"
+	fail=1
+elif [ "$distinct" -lt 2 ]; then
+	echo "FAIL: $nlabels labels but only $distinct distinct kernel image - a"
+	echo "      second entry booting the SAME image is not a fallback"
+	echo "      cmd: grep -A1 '^label' $CONF"
+	fail=1
 else
-	missing=
-	for f in vmlinuz-fallback sdm632-fairphone-fp3.dtb-fallback; do
-		[ -e "$BOOT/$f" ] || missing="$missing $f"
-	done
-	if [ -n "$missing" ]; then
-		echo "FAIL: the fallback label exists but its files do not:$missing"
-		echo "      cmd: ls -l $BOOT"
-		fail=1
-	else
-		echo "PASS: fallback entry present, with its kernel and dtb on disk"
-	fi
+	echo "PASS: $nlabels labels, $distinct distinct kernels, all files on disk"
 fi
 
 # 2. Can the menu actually be reached, and does it pick something? Without a
