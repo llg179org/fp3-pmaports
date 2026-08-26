@@ -6333,15 +6333,33 @@ Two things fall out, and both correct entries written earlier today:
    *modem-cut* arm as "part of the resume path". The real explanation is simply
    that the RPM's edge keeps working with the modem powered off. The modem's own
    edge, irq 141, has **334 counts in total** against the RPM's 50 591.
-2. ★ **The one line that appears ONLY in the battery arms — both of them, at
-   exactly +36 — is irq 140. That is WiFi.** It is absent from both cable arms.
+2. ~~★ The one line that appears ONLY in the battery arms — both of them, at
+   exactly +36 — is irq 140, WiFi, absent from both cable arms.~~
+   ☠️☠️ **WITHDRAWN within twenty minutes, and it was my own tool truncating.**
+   `wake-attrib.sh` printed `| head -8`. The eighth line of cable round 1 is
+   `IPI5 +39`, so an `irq 140 +36` would rank **ninth and be cut**. "Absent from
+   both cable arms" is therefore not supported by this capture at all — it is
+   consistent with irq 140 being present in every arm at a similar count.
+   The `head` is removed; the run has to be repeated before anything is claimed.
+   ☠️ And a second reason for suspicion was visible and I did not act on it:
+   the count is **exactly +36 in a 4-second arm and in a 32-second arm**. A fixed
+   number, not a rate — which is the signature of a per-transition cost, not of
+   something driving the wakes.
 
-**So the leading candidate is now WCNSS, not the modem and not the charger.**
-Stated at its real strength: two arms, the same +36 twice, absent twice. It is a
-lead, not a result — and ☠️ an obvious confound has to be killed first, because
-the host was **polling the phone over WiFi every 25 s while this ran.** The next
-measurement runs with the WiFi link idle and the USB link used for nothing, or
-better, with nothing polling at all.
+**There is no WCNSS lead.** It lasted twenty minutes and died on the paragraph
+above. What remains true is only the interleaved battery-vs-cable difference, and
+even that has an unkilled confound: the host was **polling the phone over WiFi
+every 25 s while this ran**. The repeat runs with the full interrupt list, over
+USB only, and with nothing polling during an arm.
+
+☠️ **This is the fourth error of one family in a single session** — a regulator
+tree read as a list, `grep --include` matched against basenames, an `awk` field
+one column off, and now a `head -8` list read as complete. Every one of them
+returned a plausible, well-formed, wrong answer from a correct command, and this
+one nearly bought a whole experiment. The rule stated after the third — *read the
+header before indexing by position* — needs its sibling: **never conclude
+"absent" from a truncated or ranked list.** If a claim is about something NOT
+being there, the output it rests on has to be complete by construction.
 
 ### The honest state of this lead
 

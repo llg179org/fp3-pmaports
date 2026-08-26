@@ -48,5 +48,10 @@
 #  2. The modem's own edge is irq 141, and it barely moves - 334 counts total
 #     against the RPM's 50591.
 #
-# ★ And the one line that appears ONLY in the battery arms, both times, at
-# exactly +36, is irq 140 - WIFI. It is absent from both cable arms.
+# ☠️☠️ WITHDRAWN: "irq 140 appears ONLY in the battery arms" is an artifact of
+# this script's own `head -8`. The 8th line of cable round 1 is IPI5 +39, so a
+# +36 would rank 9th and be cut. The capture cannot support an absence claim.
+# The `head` has been removed from the tool; this run must be repeated.
+# ☠️ A second tell was visible and ignored: +36 in a 4-second arm AND in a
+# 32-second arm is a fixed count, not a rate - the signature of a per-transition
+# cost rather than of something driving the wakes.

@@ -62,9 +62,15 @@ arm(){
 		{da=$2-a[$1]; de=$3-e[$1]; dw=$4-w[$1];
 		 if (da||de||dw) printf "    ws %-46s active+%d event+%d wakeup+%d\n", $1, da, de, dw}' \
 		/run/.wa_ws0 /run/.wa_ws1 >> "$O"
+	# ☠️ NO head. The first run of this script truncated to 8 lines and the
+	# result was nearly a finding: irq 140 showed at +36 in the battery arms and
+	# was reported ABSENT from the cable arms - where the 8th line was +39, so a
+	# +36 would have ranked 9th and been cut. A truncated list read as a complete
+	# one is the same error as a mis-indexed column, and it very nearly launched
+	# a whole experiment on an artifact.
 	awk -v sl="$sl" 'NR==FNR{a[$1]=$2; next}
 		{d=$2-a[$1]; if (d>0) printf "    irq %-12s +%-7d %.2f/s\n", $1, d, (sl>0 ? d/sl : 0)}' \
-		/run/.wa_i0 /run/.wa_i1 | sort -t+ -k2 -rn | head -8 >> "$O"
+		/run/.wa_i0 /run/.wa_i1 | sort -t+ -k2 -rn >> "$O"
 	s ""
 }
 
