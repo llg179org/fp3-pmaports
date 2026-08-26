@@ -6638,12 +6638,43 @@ this project has been scoring the goal on. Running the same fitter over all thre
 | 2026-08-25 | 4.276 V | 9848 (≈98 %) | 31.1 | 50.0 | 54.6 |
 | 2026-08-26 | 4.315 V | 9916 (≈99 %) | **69.9** | 125.9 | **61.0** |
 
-**The two instruments move together.** `current_now` is a shunt reading and
-`cc_soc` is a coulomb counter; they share no layer, and both rise by a factor of
-roughly two to four across the three runs. So this is not a gauge nonlinearity
-near full charge, which was the first and most comfortable hypothesis — the
-oracle really did draw more. ☠️ **The reference the goal is scored against varies
-by 4.5× between measurements of the same phone in the same nominal state.**
+**The two readings move together** — both rise by a factor of two to four across
+the three runs.
+
+☠️☠️ **And the conclusion first drawn from that is WITHDRAWN, within the hour, on
+this project's own written rule.** What was published here was: *"`current_now`
+is a shunt reading and `cc_soc` is a coulomb counter; they share no layer, so
+this is not a gauge nonlinearity near full charge — the oracle really did draw
+more."* **They share the whole layer.** On the oracle both come out of the same
+PMI632 QG block behind the same current-sense front end; one is its instantaneous
+output and the other its accumulator. *Two instruments that use one layer are one
+instrument*, which is written down in this project in those words, and their
+agreeing says nothing about a fault in the layer they share. The gauge
+nonlinearity was dismissed for a reason that does not exist.
+
+It is dismissed in the moment it was most convenient to dismiss it, too: a
+gauge that over-reports near full charge would explain the entire table at once,
+and would mean the 32.2 mA reference is fine.
+
+What can be said without that step is narrower and still uncomfortable:
+
+* **The reference the goal is scored against varies by 4.5× between measurements
+  of the same phone in the same nominal state**, and every high reading is at a
+  near-full pack.
+* ★ **pmOS does not do this.** The same instrument over the three pmOS captures,
+  taken at 4.224 / 4.170 / 4.294 V, gives floors of **53.9 / 54.3 / 52.9 mA** — a
+  1.4 mA spread. So whatever the variation is, it is specific to the oracle side:
+  either the oracle's idle genuinely has states, or the downstream QG gauge
+  behaves in a way our mainline gauge does not. ☠️ Note the pmOS runs never went
+  above 4.294 V, so they do not probe the region where the oracle's readings
+  climb — this is a difference between two sets of measurements, not yet a
+  controlled comparison.
+
+Distinguishing the two needs a measurement neither gauge can bias, and the
+obvious one is the pack itself: **charge back to full on an old boot and measure
+again.** If the number climbs back with the pack, it is state of charge (real or
+gauge); if it stays down, it was boot recency all along. That is the experiment
+now queued, because it is the only one that separates them.
 
 Everything in this project that cites "UT idles at 32.2 mA" is citing the lowest
 of three, taken at the lowest pack voltage of the three, and never repeated. The
