@@ -1,0 +1,52 @@
+# wake-attrib.sh 600 - INTERLEAVED cable/battery arms, r76, uptime 2030 onward,
+# same boot as the post-boot decay and the battery series.
+#
+# ☠️ THE PREDICTION REGISTERED BEFORE THIS RUN FAILED. It said that with charging
+# restored the suspends would go back to full term. They did not: the CABLE arms
+# aborted at 23 s and 76 s of 600, on a boot where the previous boot had slept
+# 602 s eight times in a row at comparable uptimes.
+
+# wake-attrib Wed Aug 26 06:14:19 CEST 2026 uptime=2030 secs=600
+== round 1 ==
+  CABLE    slept=23s of 600s  online=1 status=Charging
+    irq IPI1: +1157 50.30/s | 24: +217 9.43/s | 11: +195 8.48/s | 39: +156 6.78/s
+    irq IPI0: +115 5.00/s | 22: +115 5.00/s | IPI4: +69 3.00/s | IPI5: +39 1.70/s
+  BATTERY  slept=4s of 600s  online=0 status=Discharging
+    irq IPI1: +1111 277.75/s | 24: +212 53.00/s | 11: +185 46.25/s | 39: +167 41.75/s
+    irq 22: +119 29.75/s | IPI0: +76 19.00/s | IPI4: +49 12.25/s | *** 140: +36 9.00/s ***
+== round 2 ==
+  CABLE    slept=76s of 600s  online=1 status=Full
+    irq IPI1: +1068 14.05/s | 11: +220 2.89/s | 24: +215 2.83/s | 39: +186 2.45/s
+    irq 22: +114 1.50/s | IPI0: +99 1.30/s | IPI4: +71 0.93/s | IPI5: +37 0.49/s
+  BATTERY  slept=32s of 600s  online=0 status=Discharging
+    irq IPI1: +1093 34.16/s | 11: +224 7.00/s | 24: +217 6.78/s | 39: +189 5.91/s
+    irq 22: +117 3.66/s | IPI0: +91 2.84/s | IPI4: +44 1.38/s | *** 140: +36 1.12/s ***
+# done, charger restored: online=1 status=Charging
+
+# ☠️ NOT ONE wakeup_sources counter moved in any arm - the script prints those
+# deltas first and printed none. So the wake does not travel the
+# pm_wakeup_event() path, which is consistent with the plain enable_irq_wake
+# finding of 2026-08-25 and means the charger drivers are NOT reporting wakeups.
+
+# ---------------------------------------------------------------------------
+# ★ THE IRQ MAP, decoded from the device tree rather than assumed. GIC_SPI n
+# becomes hwirq n+32.
+#
+#   node                       GIC_SPI  hwirq   irq   whose edge
+#   /remoteproc (rpm-requests)   0xa8=168   200    24   ☠️ THE RPM
+#   remoteproc@a204000           0x8e=142   174   140   ☠️ WCNSS - THE WIFI
+#   remoteproc@4080000           0x19= 25    57   141   the modem
+#   remoteproc@c200000          0x121=289   321     -   the ADSP
+#
+# Two readings carried through several entries today are wrong because of this:
+#
+#  1. irq 24 is the busiest line in every capture and was described as
+#     "smd-edge" with the modem implied. It is the RPM's edge. That also gives
+#     a far better explanation for a note in the 2026-08-26 census capture, which
+#     put smd-edge +239 in a MODEM-CUT arm down to "the resume path": the RPM
+#     edge keeps working perfectly well with the modem powered off.
+#  2. The modem's own edge is irq 141, and it barely moves - 334 counts total
+#     against the RPM's 50591.
+#
+# ★ And the one line that appears ONLY in the battery arms, both times, at
+# exactly +36, is irq 140 - WIFI. It is absent from both cable arms.

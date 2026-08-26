@@ -6283,3 +6283,81 @@ control the whole night has been short of.
 — if the aborts persist with the cable delivering — then the variable is not
 USBIN at all, it is something the battery series did *to* the phone, and the two
 mechanisms collapse back into one unknown.
+
+---
+
+## ☠️★ 2026-08-26 06:21 — the control prediction FAILED, and decoding the IRQ map overturned a day's reading
+
+**The prediction, registered beforehand, was wrong.** It said that with charging
+restored the suspends would return to full term. Interleaved arms, uptime 2030+:
+
+| round | CABLE | BATTERY |
+|---|---|---|
+| 1 | **23 s** of 600 | **4 s** of 600 |
+| 2 | **76 s** of 600 | **32 s** of 600 |
+
+The cable arms aborted too — on a boot where the *previous* boot had slept 602 s
+eight times running at comparable uptimes. So **neither** of the two stories
+published in the last two hours survives intact: the "post-boot decay" does not
+hold (this boot never reached full term, at any uptime), and "battery vs cable"
+is not a clean switch.
+
+**What the interleaving does establish, and it is the only controlled comparison
+of the night:** within each round, on the same boot, minutes apart, **battery is
+worse than cable both times — 4 s against 23 s, and 32 s against 76 s.** A 3–6×
+effect in the same direction twice. That is real; the absolute levels drift
+wildly and are not.
+
+☠️ **Not one `wakeup_sources` counter moved in any arm.** The script prints those
+deltas before the interrupt ones and printed none, so the wake does **not** travel
+the `pm_wakeup_event()` path and the charger drivers are not reporting wakeups.
+The suspected mechanism — the PMIC charger waking the phone through the
+wakeup-source API — is therefore **not** what is happening.
+
+### ★★ The IRQ map, decoded rather than assumed — and it overturns today's reading
+
+`smd-edge` names four different edges and I had been reading the busiest one as
+the modem's. Decoded from the device tree (`GIC_SPI n` → `hwirq n+32`):
+
+| node | GIC_SPI | hwirq | irq | whose edge |
+|---|---|---|---|---|
+| `/remoteproc` (`rpm-requests`) | 168 | 200 | **24** | ☠️ **the RPM** |
+| `remoteproc@a204000` | 142 | 174 | **140** | ☠️ **WCNSS — the WiFi** |
+| `remoteproc@4080000` | 25 | 57 | **141** | the modem |
+| `remoteproc@c200000` | 289 | 321 | — | the ADSP |
+
+Two things fall out, and both correct entries written earlier today:
+
+1. **irq 24 — the busiest line in every capture — is the RPM's edge, not the
+   modem's.** The 2026-08-26 census capture explained `smd-edge +239` in a
+   *modem-cut* arm as "part of the resume path". The real explanation is simply
+   that the RPM's edge keeps working with the modem powered off. The modem's own
+   edge, irq 141, has **334 counts in total** against the RPM's 50 591.
+2. ★ **The one line that appears ONLY in the battery arms — both of them, at
+   exactly +36 — is irq 140. That is WiFi.** It is absent from both cable arms.
+
+**So the leading candidate is now WCNSS, not the modem and not the charger.**
+Stated at its real strength: two arms, the same +36 twice, absent twice. It is a
+lead, not a result — and ☠️ an obvious confound has to be killed first, because
+the host was **polling the phone over WiFi every 25 s while this ran.** The next
+measurement runs with the WiFi link idle and the USB link used for nothing, or
+better, with nothing polling at all.
+
+### The honest state of this lead
+
+Three published stories in one night, each broken by the next measurement:
+"radio up means it cannot sleep" (falsified), "it is a post-boot decay"
+(not on this boot), "it is the USBIN suspend bit" (battery is worse, but the
+cable arms abort too). What has survived every round is smaller and duller:
+
+* the abort is real, large and common;
+* it has never been seen with the modem stack cut (0 of 6);
+* battery is reproducibly worse than cable within an interleaved round;
+* the MPSS crystal churn is scenery — 2.4–2.5 shutdowns per second *asleep* in
+  every regime measured, aborted or not, battery or cable;
+* nothing reports a wakeup through the wakeup-source API.
+
+☠️ The pattern in my own errors is consistent enough to name: **each story was
+published from a run whose conditions I had not varied on purpose.** The
+interleaved run — the only one designed to vary one thing — produced the only
+claim still standing.
