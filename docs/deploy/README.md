@@ -139,8 +139,25 @@ reasons, so do not rely on the apk's install trigger to put the kernel in
   (`only one kernel release/flavor is supported`), and a device that has been
   through a rename or a parallel-package phase easily has two or three stamps
   under `/usr/share/kernel/`; and
-* `boot-deploy` regenerates the extlinux config, which fails against the FP3's
-  hand-maintained lk2nd + `extlinux.conf` (`boot-deploy failed`, exit 1).
+* `boot-deploy` regenerates the extlinux config. ☠️☠️ **This line used to say it
+  "fails against the FP3's hand-maintained lk2nd + `extlinux.conf`
+  (`boot-deploy failed`, exit 1)", and that is measurably wrong** — corrected
+  2026-08-26 against a 2026-08-23 measurement recorded in
+  [`../TODO-DONE.md`](../TODO-DONE.md). On that install `apk add` ran
+  `boot-deploy` and it **rewrote `extlinux.conf` from scratch**, dropping the
+  fallback label, `panic=10` and the menu timeout. It does not politely fail; it
+  succeeds at doing the wrong thing.
+
+  **So `apk add` in step 2 destroys the boot fallback net, silently.** The
+  config must be rebuilt by hand **after the install and BEFORE the reboot** —
+  that ordering is the whole safety margin, and it is why the r74 no-boot had
+  three working alternatives to fall back to. Verify with
+  `fp3-selftest --only boot-fallback` before rebooting; keep the pre-install file
+  (`cp extlinux.conf extlinux.conf.pre-<rev>`).
+
+  ☠️ This mattered in the worst way a doc error can: the wrong version was in the
+  file a person reads *while deploying*, telling them a destructive step was a
+  harmless one.
 
 Because every boot-critical driver is built **in** (`MMC_BLOCK`, `SDHCI_MSM`,
 `EXT4`, `F2FS` = `y`), the one initramfs boots any of these kernels, so a
@@ -159,7 +176,17 @@ ssh $D 'sudo sh -c '"'"'
   cp -n sdm632-fairphone-fp3.dtb sdm632-fairphone-fp3.dtb-fallback
 
   # 2. register the package (for apk info + the /usr/share/kernel/fp3 stamp that
-  #    01-identity checks); its mkinitfs trigger will error - that is expected
+  #    01-identity checks); its mkinitfs trigger will error - that is expected.
+  #
+  # ☠️ RUN THIS FIRST AND READ IT: apk-tools 3 re-resolves the whole `world` on a
+  # single local install and will execute deletions left over from an earlier
+  # half-finished upgrade. One such run removed the session shell and left a
+  # phone that hung after the password prompt. Look for `Purging` and for
+  # anything being removed that you did not ask about.
+  #   apk add --simulate --allow-untrusted /tmp/linux-fp3.apk
+  #
+  # ☠️ And this step REWRITES /boot/extlinux/extlinux.conf via boot-deploy (see
+  # above). Rebuild it by hand before rebooting.
   apk add --allow-untrusted /tmp/linux-fp3.apk
 
   # 3. leave exactly one flavor: drop the old package and any stale flavor stamp
