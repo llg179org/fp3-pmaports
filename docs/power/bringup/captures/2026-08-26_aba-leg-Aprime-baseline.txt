@@ -1,0 +1,20 @@
+26650 Aprime-baseline-r76-20260825: start v=4357922 cap=90% cuts='none'
+26650 Aprime-baseline-r76-20260825: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=0771d4d3-1216-49ec-919a-316bd5a8af55
+26650 Aprime-baseline-r76-20260825: cmdline=quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10
+26650 Aprime-baseline-r76-20260825: moved previous slope file aside as /home/fp3/suspend-slope.txt.pre-Aprime-baseline-r76-20260825
+26652 Aprime-baseline-r76-20260825: panel bl_power=4 dpms=Off waited=0s
+26662 Aprime-baseline-r76-20260825: off VBUS online=0 status=Discharging
+26662 Aprime-baseline-r76-20260825: load started on 8 cores
+26662 Aprime-baseline-r76-20260825: load stopped
+26692 Aprime-baseline-r76-20260825: rested v=4195206 t=264
+26692 Aprime-baseline-r76-20260825: load started on 8 cores
+26782 Aprime-baseline-r76-20260825: load stopped
+26812 Aprime-baseline-r76-20260825: rested v=4058571 t=288
+26813 Aprime-baseline-r76-20260825: load started on 8 cores
+26903 Aprime-baseline-r76-20260825: load stopped
+26933 Aprime-baseline-r76-20260825: rested v=4011663 t=311
+26933 Aprime-baseline-r76-20260825: reached target v=4011663
+26933 Aprime-baseline-r76-20260825: cooling before the leg; temp=311
+26933 Aprime-baseline-r76-20260825: launching slope leg
+32701 Aprime-baseline-r76-20260825: slope leg exited rc=0 v=3933030
+32701 Aprime-baseline-r76-20260825: done

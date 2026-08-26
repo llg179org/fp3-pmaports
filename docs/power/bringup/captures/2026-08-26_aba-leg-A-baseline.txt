@@ -1,0 +1,62 @@
+10496 A-baseline-r76-20260825: start v=4413783 cap=97% cuts='none'
+10496 A-baseline-r76-20260825: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=0771d4d3-1216-49ec-919a-316bd5a8af55
+10496 A-baseline-r76-20260825: cmdline=quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10
+10496 A-baseline-r76-20260825: moved previous slope file aside as /home/fp3/suspend-slope.txt.pre-A-baseline-r76-20260825
+10500 A-baseline-r76-20260825: dpms=Off
+10507 A-baseline-r76-20260825: off VBUS online=1 status=Not charging
+10507 A-baseline-r76-20260825: load started on 8 cores
+10507 A-baseline-r76-20260825: load stopped
+10537 A-baseline-r76-20260825: rested v=4344687 t=290
+10537 A-baseline-r76-20260825: load started on 8 cores
+13265 A-baseline-r76-20260825: start v=4349358 cap=100% cuts='none'
+13265 A-baseline-r76-20260825: kernel=7.1.3-postmarketos-qcom-msm8953 boot_id=0771d4d3-1216-49ec-919a-316bd5a8af55
+13265 A-baseline-r76-20260825: cmdline=quiet splash plymouth.ignore-serial-consoles plymouth.prefer-fbcon console=ttyMSM0,115200 pmos_boot_uuid=12b1e8f3-f7da-4c2d-aee7-b7e18a5ba10b pmos_root_uuid=57e0be16-142a-4ac7-b58a-2e5cef98a62a pmos_rootfsopts=defaults panic=10
+13268 A-baseline-r76-20260825: panel bl_power=4 dpms=Off waited=0s
+13278 A-baseline-r76-20260825: off VBUS online=0 status=Discharging
+13278 A-baseline-r76-20260825: load started on 8 cores
+13278 A-baseline-r76-20260825: load stopped
+13308 A-baseline-r76-20260825: rested v=4323277 t=271
+13308 A-baseline-r76-20260825: load started on 8 cores
+13398 A-baseline-r76-20260825: load stopped
+13428 A-baseline-r76-20260825: rested v=4217200 t=295
+13428 A-baseline-r76-20260825: load started on 8 cores
+13518 A-baseline-r76-20260825: load stopped
+13548 A-baseline-r76-20260825: rested v=4174185 t=320
+13548 A-baseline-r76-20260825: load started on 8 cores
+13638 A-baseline-r76-20260825: load stopped
+13668 A-baseline-r76-20260825: rested v=4142070 t=339
+13668 A-baseline-r76-20260825: load started on 8 cores
+13758 A-baseline-r76-20260825: load stopped
+13788 A-baseline-r76-20260825: rested v=4123190 t=355
+13788 A-baseline-r76-20260825: load started on 8 cores
+13878 A-baseline-r76-20260825: load stopped
+13908 A-baseline-r76-20260825: rested v=4110539 t=367
+13908 A-baseline-r76-20260825: load started on 8 cores
+13998 A-baseline-r76-20260825: load stopped
+14028 A-baseline-r76-20260825: rested v=4102559 t=377
+14028 A-baseline-r76-20260825: load started on 8 cores
+14118 A-baseline-r76-20260825: load stopped
+14148 A-baseline-r76-20260825: rested v=4097887 t=385
+14148 A-baseline-r76-20260825: load started on 8 cores
+14238 A-baseline-r76-20260825: load stopped
+14268 A-baseline-r76-20260825: rested v=4086598 t=391
+14268 A-baseline-r76-20260825: load started on 8 cores
+14358 A-baseline-r76-20260825: load stopped
+14388 A-baseline-r76-20260825: rested v=4076283 t=395
+14388 A-baseline-r76-20260825: load started on 8 cores
+14478 A-baseline-r76-20260825: load stopped
+14508 A-baseline-r76-20260825: rested v=4063047 t=400
+14508 A-baseline-r76-20260825: load started on 8 cores
+14598 A-baseline-r76-20260825: load stopped
+14628 A-baseline-r76-20260825: rested v=4054094 t=403
+14628 A-baseline-r76-20260825: load started on 8 cores
+14718 A-baseline-r76-20260825: load stopped
+14748 A-baseline-r76-20260825: rested v=4041637 t=405
+14748 A-baseline-r76-20260825: load started on 8 cores
+14838 A-baseline-r76-20260825: load stopped
+14868 A-baseline-r76-20260825: rested v=4029375 t=408
+14868 A-baseline-r76-20260825: reached target v=4029375
+14868 A-baseline-r76-20260825: cooling before the leg; temp=408
+14868 A-baseline-r76-20260825: launching slope leg
+18463 A-baseline-r76-20260825: slope leg exited rc=0 v=4039302
+18463 A-baseline-r76-20260825: done

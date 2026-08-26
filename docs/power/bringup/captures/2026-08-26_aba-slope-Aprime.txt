@@ -1,0 +1,27 @@
+suspend-slope: Aprime-baseline-r76-20260825 === settle 600s off VBUS ===
+Aprime-baseline-r76-20260825 phase=settle n=0 t=26957 v=4030543 i=-69427 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=1 t=27028 v=4069276 i=-62332 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=2 t=27098 v=4075991 i=-75072 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=3 t=27169 v=4080467 i=-90255 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=4 t=27239 v=4081927 i=-99410 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=5 t=27310 v=4080272 i=-92849 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=6 t=27380 v=4082705 i=-88882 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=7 t=27451 v=4084554 i=-60806 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=8 t=27521 v=4082511 i=-60577 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=settle n=9 t=27592 v=4082706 i=-60653 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 === phase A: 4 sleeps of 600s ===
+Aprime-baseline-r76-20260825 phase=A n=0 t=28283 v=4066356 i=-96740 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 A0 slept=601s of 600s
+Aprime-baseline-r76-20260825 phase=A n=1 t=28915 v=4059349 i=-95977 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 A1 slept=602s of 600s
+Aprime-baseline-r76-20260825 phase=A n=2 t=29547 v=4054094 i=-94070 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 A2 slept=602s of 600s
+Aprime-baseline-r76-20260825 phase=A n=3 t=30179 v=4048839 i=-96206 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 A3 slept=602s of 600s
+suspend-slope: Aprime-baseline-r76-20260825 phase A done suspends=4 of 4
+suspend-slope: Aprime-baseline-r76-20260825 === phase B: awake control, 4 x 600s ===
+Aprime-baseline-r76-20260825 phase=B n=0 t=30809 v=4022076 i=-123214 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=B n=1 t=31440 v=4014874 i=-95290 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=B n=2 t=32070 v=4002515 i=-98419 pll=0 nread=20
+Aprime-baseline-r76-20260825 phase=B n=3 t=32701 v=3990934 i=-106734 pll=0 nread=20
+suspend-slope: Aprime-baseline-r76-20260825 done - restoring charger and greetd

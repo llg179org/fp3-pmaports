@@ -1,0 +1,27 @@
+suspend-slope: A-baseline-r76-20260825 === settle 600s off VBUS ===
+A-baseline-r76-20260825 phase=settle n=0 t=14893 v=4044459 i=-65688 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=1 t=14964 v=4073655 i=-63857 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=2 t=15034 v=4083484 i=-64315 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=3 t=15105 v=4091367 i=-63705 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=4 t=15175 v=4092437 i=-76675 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=5 t=15246 v=4090978 i=-105590 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=6 t=15317 v=4096038 i=-96817 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=7 t=15387 v=4089907 i=-104217 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=8 t=15458 v=4093411 i=-108337 pll=0 nread=20
+A-baseline-r76-20260825 phase=settle n=9 t=15528 v=4095454 i=-76827 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 === phase A: 4 sleeps of 600s ===
+A-baseline-r76-20260825 phase=A n=0 t=15669 v=4091367 i=-107726 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 A0 slept=50s of 600s
+A-baseline-r76-20260825 phase=A n=1 t=15788 v=4089713 i=-100479 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 A1 slept=89s of 600s
+A-baseline-r76-20260825 phase=A n=2 t=15851 v=4089518 i=-100478 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 A2 slept=32s of 600s
+A-baseline-r76-20260825 phase=A n=3 t=15940 v=4088642 i=-107955 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 A3 slept=59s of 600s
+suspend-slope: A-baseline-r76-20260825 phase A done suspends=4 of 4
+suspend-slope: A-baseline-r76-20260825 === phase B: awake control, 4 x 600s ===
+A-baseline-r76-20260825 phase=B n=0 t=16571 v=4073266 i=-103530 pll=0 nread=20
+A-baseline-r76-20260825 phase=B n=1 t=17201 v=4060128 i=-92162 pll=0 nread=20
+A-baseline-r76-20260825 phase=B n=2 t=17832 v=4048158 i=-105056 pll=0 nread=20
+A-baseline-r76-20260825 phase=B n=3 t=18462 v=4037939 i=-93765 pll=0 nread=20
+suspend-slope: A-baseline-r76-20260825 done - restoring charger and greetd

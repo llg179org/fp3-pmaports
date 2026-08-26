@@ -5749,3 +5749,98 @@ path. **Two instruments agreeing on nothing is not evidence of nothing** — it
 was evidence that both were wrong for this question.
 
 Capture: `captures/2026-08-25_call-wakes-phone-from-suspend.txt`.
+
+---
+
+## 2026-08-26, 00:45 — the A-B-A finished, rc=0 on all three legs, and the headline is not a current
+
+`night-20260825-aba`, r76, one descent, `SLOPE_SLEEP=600 SLOPE_CYCLES=4
+SLOPE_SETTLE=600`. Legs A (radio up, nothing cut) → B (`ModemManager rmtfs
+tqftpserv` cut) → A′ (nominal control). Queue: 3 jobs, 0 failed, 4 h 30 m.
+Guardian: 905 lines, **zero actions** — no eMMC event, no pack emergency.
+
+### ★ The finding: with the radio up, the phone does not sleep
+
+Not "sleeps and draws more". Does not sleep. Requested 4 × 600 s per leg:
+
+| leg | modem | actually slept | of requested |
+|---|---|---|---|
+| **A** | up, registered | 50 s, 89 s, 32 s, 59 s = **230 s** | **9.6 %** |
+| **B** | stack cut | 601, 602, 602, 602 = 2407 s | **100 %** |
+| **A′** | (still down — see below) | 601, 602, 602, 602 = 2407 s | **100 %** |
+
+This is the 2026-08-24 MPSS XO-duty result arriving from a completely different
+instrument, and now on r76: with the radio up every suspend aborts early. It is
+a **categorical** difference, not a slope, and it reframes the whole modem lead —
+the "~36 mA the modem costs" is not a co-processor burning current beside a
+sleeping AP, it is **an AP that is not allowed to stay asleep**.
+
+### ☠️ Which makes the comparison this night was designed for unmeasurable
+
+You cannot compare *sleeping* currents when one arm does not sleep. Leg A's
+phase-A window is 271 s against the others' 1896 s, and `slope-fit.py` flags its
+own fit: **r² = 0.7433, "not a straight line"**. Its 52.0 mA is therefore **not a
+result** and must not be quoted. The tool caught this without being asked, which
+is the second time its phase-B control window has earned its place.
+
+✅ **The method itself is sound** — the awake control passed on all three legs:
+98.6 / 106.5 / 105.9 mA measured directly, r² 0.9951 / 0.9978 / 0.9993. The
+instrument is fine; the experimental design is what broke.
+
+### ☠️☠️ A′ was not a control — `restore()` reported success and restored nothing
+
+Predicted from reading the code at 20:30 the evening before, and it happened
+exactly as predicted. `slope-leg.sh`'s `restore()` is
+
+```sh
+for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
+```
+
+and this project's own trap says `systemctl stop rmtfs` **powers the modem down**
+while `systemctl start` does **not** bring it back — that needs an explicit
+`remoteproc` start. So leg B left the modem off, `restore()` looped three
+`systemctl start`s, swallowed their outcome, and A′ ran as a **second treatment
+leg wearing the control's name**.
+
+Confirmed after the fact three ways, and the third is the one that matters:
+
+1. `remoteproc1 4080000.remoteproc` → `offline`;
+2. `systemctl is-active ModemManager` → `inactive`;
+3. ★ **A′'s own sleep durations** — 601/602/602/602, matching B and not A.
+
+(3) is the strongest because it is *the quantity being measured*, not a
+side-channel. A control leg that reproduces the treatment's signature has
+announced itself; no external check was needed.
+
+### What B vs A′ leaves undetermined
+
+Both slept full-term with the modem down, in the same voltage band, an hour
+apart. Fitted asleep current:
+
+| leg | phase-A slope | r² | asleep |
+|---|---|---|---|
+| B (all three services stopped) | −27.73 mV/h | 0.958 | **46.5 mA** |
+| A′ (rmtfs + tqftpserv running, modem dead) | −33.17 mV/h | 0.993 | **55.3 mA** |
+
+**8.8 mA apart, 19 %.** Two readings, and this night cannot choose between them:
+
+* `rmtfs`/`tqftpserv` polling a downed modem really costs ~9 mA; or
+* the leg-to-leg scatter of this instrument is ~9 mA, in which case it cannot
+  resolve effects of that size at all.
+
+Distinguishing those is *precisely* what the control leg existed to do. Losing it
+did not only cost the A-B answer — it cost the ability to interpret the
+accidental comparison that replaced it. **A control leg is not redundancy; it is
+what makes every other number in the run mean something.**
+
+### Recovery, and the state the phone is in
+
+`echo start > .../remoteproc1/state` → `running`, but `mmcli -L` still found
+nothing and `pd-mapper` stayed `failed`. A reboot was needed; after it the modem
+enumerates about 60 s in (`/org/…/Modem/0`), with `ModemManager`, `rmtfs` and
+`tqftpserv` active. ☠️ `pd-mapper` is **still** `failed` — that is its own
+long-standing open item, not fallout from this run. Charger input was restored
+**before** the reboot, per the standing PMIC rule.
+
+Captures: `captures/2026-08-26_aba-{slope-A,slope-B,slope-Aprime}.txt`,
+`…_aba-leg-*.txt`, `…_aba-guardian.log`.

@@ -1,0 +1,27 @@
+suspend-slope: B-nomodem-r76-20260825 === settle 600s off VBUS ===
+B-nomodem-r76-20260825 phase=settle n=0 t=19611 v=4031029 i=-67825 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=1 t=19681 v=4069470 i=-63400 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=2 t=19752 v=4081440 i=-61645 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=3 t=19822 v=4085917 i=-60958 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=4 t=19893 v=4084263 i=-76293 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=5 t=19963 v=4084165 i=-61111 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=6 t=20034 v=4082997 i=-82091 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=7 t=20104 v=4083776 i=-109329 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=8 t=20175 v=4080272 i=-99258 pll=0 nread=20
+B-nomodem-r76-20260825 phase=settle n=9 t=20245 v=4076283 i=-103302 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 === phase A: 4 sleeps of 600s ===
+B-nomodem-r76-20260825 phase=A n=0 t=20937 v=4068497 i=-97198 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 A0 slept=601s of 600s
+B-nomodem-r76-20260825 phase=A n=1 t=21569 v=4064215 i=-117568 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 A1 slept=602s of 600s
+B-nomodem-r76-20260825 phase=A n=2 t=22201 v=4060517 i=-93612 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 A2 slept=602s of 600s
+B-nomodem-r76-20260825 phase=A n=3 t=22833 v=4053996 i=-101089 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 A3 slept=602s of 600s
+suspend-slope: B-nomodem-r76-20260825 phase A done suspends=4 of 4
+suspend-slope: B-nomodem-r76-20260825 === phase B: awake control, 4 x 600s ===
+B-nomodem-r76-20260825 phase=B n=0 t=23463 v=4031127 i=-111160 pll=0 nread=20
+B-nomodem-r76-20260825 phase=B n=1 t=24094 v=4022271 i=-96969 pll=0 nread=20
+B-nomodem-r76-20260825 phase=B n=2 t=24724 v=4011566 i=-99563 pll=0 nread=20
+B-nomodem-r76-20260825 phase=B n=3 t=25355 v=3996676 i=-118179 pll=0 nread=20
+suspend-slope: B-nomodem-r76-20260825 done - restoring charger and greetd
