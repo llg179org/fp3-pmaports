@@ -6129,3 +6129,55 @@ its header says the gap is a *safety* parameter rather than a settling time.
 **If it is not back by ~05:50** — comfortably past the series' own end — the
 reading flips to (2), and recovery needs a held power button, which is the one
 class of action nobody here can perform.
+
+---
+
+## ★ 2026-08-26 05:38 — prediction (1) confirmed 8/8, and the MPSS crystal is acquitted
+
+The series recorded before it was read (previous entry) said: *the running
+`srate` shares the wake probe's condition — a hand-restarted modem — so it should
+sleep full term in most or all 8 rounds.*
+
+```
+# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta
+1 2340 602 600 registered 100 1496
+2 2972 602 600 registered 100 1516
+...
+8 6764 602 600 registered  96 1462
+```
+
+**Eight of eight, 602 s of 600, modem `registered` in every round.** Combined
+with the earlier data the radio-up suspends now stand at **5 aborted / 9 full
+term**, and the split is still exactly along how the modem came up.
+
+### ★★ The bonus result: the MPSS crystal churn does NOT cause the abort
+
+`mpss_xo_delta` was recorded per round for a different reason and answers a
+question that was being circled:
+
+| | XO shutdowns | window | rate |
+|---|---|---|---|
+| census UP arm (**aborted** at 67 s) | 179 | 67 s | **2.7 /s** |
+| srate rounds 1–8 (**full term**) | 1462–1521 | 600 s | **2.4–2.5 /s** |
+
+**The same rate, either way.** The modem chops its crystal ~2.5 times a second
+whenever the radio is up, and the application processor sleeps straight through
+it in nine suspends out of nine. So the XO churn is a *constant of the radio-up
+state*, not the mechanism — and the 2026-08-24 reading that paired "radio up"
+with "suspends abort early" and "MPSS chopping the crystal" bundled two
+independent facts. One of them is a cause candidate; the other is scenery.
+
+☠️ That is the third candidate to die on this lead in one night, after the armed
+wake edge (all edges `disabled`) and time-since-boot (leg A aborted 4.3 h in).
+The remaining hypothesis is the pre-registered one and it has a decisive,
+one-reboot test.
+
+### What is left, and the test
+
+**Prediction (2), untested:** after a reboot, with the modem brought up by the
+normal boot path, suspends should abort again. If they do not, the 5–9 split is
+coincidence and the honest answer is that the rate depends on something not yet
+recorded — as written down *before* this result, so that reading cannot be
+revised now.
+
+Capture: `captures/2026-08-26_suspend-rate-8x600.txt`.

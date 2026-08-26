@@ -1,0 +1,12 @@
+# srate n=8 secs=600 start_uptime=2340 kernel=#77-fp3 SMP PREEMPT Tue Aug 25 07:29:14 UTC 2026
+# cable: online=1 status=Full
+# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta
+1 2340 602 600 registered 100 1496
+2 2972 602 600 registered 100 1516
+3 3604 602 600 registered 100 1499
+4 4236 602 600 registered 100 1521
+5 4868 602 600 registered 100 1507
+6 5500 602 600 registered 100 1471
+7 6132 602 600 registered 100 1489
+8 6764 602 600 registered 96 1462
+# done
