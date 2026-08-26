@@ -1,0 +1,49 @@
+# wirq n=4 secs=600 uptime=47 kernel=#78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# pm_debug_messages=1
+# cable online=1 Charging
+round=1 uptime=47 slept=6s of 600s  pm_wakeup_irq=141 hwirq=57 actions=smd-edge
+round=2 uptime=113 slept=9s of 600s  pm_wakeup_irq=141 hwirq=57 actions=smd-edge
+round=3 uptime=182 slept=62s of 600s  pm_wakeup_irq=141 hwirq=57 actions=smd-edge
+round=4 uptime=304 slept=5s of 600s  pm_wakeup_irq=141 hwirq=57 actions=smd-edge
+# journal (PM lines) --------------------------------
+PM: suspend of devices complete after 185.766 msecs
+PM: start suspend of devices complete after 341.740 msecs
+PM: late suspend of devices complete after 3.279 msecs
+PM: noirq suspend of devices complete after 3.221 msecs
+PM: suspend-to-idle
+Timekeeping suspended for 8.081 seconds
+PM: Triggering wakeup from IRQ 141
+PM: resume from suspend-to-idle
+PM: noirq resume of devices complete after 2.384 msecs
+PM: early resume of devices complete after 4.253 msecs
+PM: resume of devices complete after 215.694 msecs
+PM: suspend exit
+PM: suspend entry (s2idle)
+printk: Suspending console(s) (use no_console_suspend to debug)
+PM: suspend of devices complete after 190.361 msecs
+PM: start suspend of devices complete after 354.193 msecs
+PM: late suspend of devices complete after 4.581 msecs
+PM: noirq suspend of devices complete after 3.667 msecs
+PM: suspend-to-idle
+Timekeeping suspended for 61.286 seconds
+PM: Triggering wakeup from IRQ 141
+PM: resume from suspend-to-idle
+PM: noirq resume of devices complete after 2.451 msecs
+PM: early resume of devices complete after 4.023 msecs
+PM: resume of devices complete after 209.963 msecs
+PM: suspend exit
+PM: suspend entry (s2idle)
+printk: Suspending console(s) (use no_console_suspend to debug)
+PM: suspend of devices complete after 193.689 msecs
+PM: start suspend of devices complete after 350.791 msecs
+PM: late suspend of devices complete after 5.233 msecs
+PM: noirq suspend of devices complete after 4.025 msecs
+PM: suspend-to-idle
+Timekeeping suspended for 2.995 seconds
+PM: Triggering wakeup from IRQ 141
+PM: resume from suspend-to-idle
+PM: noirq resume of devices complete after 2.243 msecs
+PM: early resume of devices complete after 3.697 msecs
+PM: resume of devices complete after 209.870 msecs
+PM: suspend exit
+# done

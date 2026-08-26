@@ -6444,3 +6444,86 @@ established, and *cannot* be with the instruments in hand.
 waking IRQ directly, r77 is built and verified to carry `CONFIG_PM_DEBUG=y`, and a
 reboot also resets whatever has degraded. Deploying it is the only move that is
 not another guess.
+
+---
+
+## ★★★★★ 2026-08-26 06:45 — THE WAKER IS NAMED: IRQ 141, the modem's SMD edge, 4 of 4
+
+r77 (`#78-fp3`) shipped `CONFIG_PM_DEBUG=y`, so `/sys/power/pm_wakeup_irq` exists
+for the first time. Four suspends on a fresh boot, cable in, modem registered:
+
+| round | uptime | slept, of 600 | `pm_wakeup_irq` |
+|---|---|---|---|
+| 1 | 47 s | 6 s | **141** |
+| 2 | 113 s | 9 s | **141** |
+| 3 | 182 s | 62 s | **141** |
+| 4 | 304 s | 5 s | **141** |
+
+And the kernel says it in its own words, once per suspend:
+
+```
+PM: suspend-to-idle
+Timekeeping suspended for 8.081 seconds
+PM: Triggering wakeup from IRQ 141
+PM: resume from suspend-to-idle
+```
+
+**IRQ 141 is `hwirq 57` = `GIC_SPI 25` = `remoteproc@4080000/smd-edge` — the
+modem's SMD edge.** Not the RPM's (irq 24), not WiFi's (irq 140), not the ADSP's.
+
+### Why every earlier instrument missed it
+
+☠️☠️ **It is the quietest line in the table.** 334 counts in total, against the
+RPM edge's 50 591 — and **exactly one per suspend**, because ending the suspend is
+all it does. Hours went into ranking interrupt deltas by magnitude. **A ranking
+instrument is structurally blind to the rare event, and the rare event was the
+cause.** It sat below every truncation and would have been unremarkable in an
+untruncated list too.
+
+☠️ And the instrument that names it directly was read as "empty" for two days.
+`pm_wakeup_irq` was not returning nothing — it **did not exist**, gated behind one
+Kconfig symbol. **An absent file and a file saying "nothing" are the same bytes
+and opposite facts.**
+
+### The mechanism, and it explains the whole night
+
+The rpmsg edges all read `disabled` in `power/wakeup` — this is **not** an armed
+wake source. That is precisely why it aborts: an interrupt that fires during
+s2idle while *not* registered as a wake source is treated by the kernel as an
+unexpected wakeup and **terminates the suspend**. `PM: Triggering wakeup from
+IRQ 141` is that path.
+
+So: **the modem sends something to the AP over its SMD edge while the phone is
+asleep, and because that edge is not a wake source, the kernel aborts.** Every
+observation of the night falls out of this:
+
+* **modem stack cut → 100 % full-term sleep, 0 of 6 aborts** — no modem, no SMD
+  traffic, nothing to abort on;
+* **the abort length varies wildly and unpredictably** — it is however long until
+  the modem's next message, which depends on what the modem is doing;
+* **the MPSS crystal churn is scenery** — 2.4–2.5 shutdowns per second asleep in
+  every regime, unrelated to the messages;
+* **"post-boot decay" and "battery vs cable" were both noise** — they were
+  sampling the interval between modem messages under different labels.
+
+☠️ Four stories were published and retracted tonight before this. Every one came
+from an instrument that counts activity, asked to answer a question about a
+trigger. **Counting characterises a steady state; it does not find a cause.**
+
+### What this opens, and it is not small
+
+The r66 arm knob makes this edge a *proper* wake source, which is what lets a
+call raise the phone — but arming it does **not** stop the aborts, it only
+relabels them. The real question is now upstream-shaped and specific:
+
+**what is the modem sending, and does the AP need to wake for it?** `qcom_smd` is
+upstream and every SMD-era Qualcomm SoC has these edges. If the traffic is
+routine flow-control or a keepalive, the fix is on the AP side; if it is real
+data, the fix is modem configuration (the PSM/eDRX/paging direction).
+
+**Next measurement, and for once the instrument is obvious:** capture the rpmsg
+channel and payload for the message that arrives immediately after
+`PM: suspend-to-idle` — the wake now has a timestamp, an IRQ and a driver to
+trace from.
+
+Capture: `captures/2026-08-26_pm-wakeup-irq-names-the-waker.txt`.
