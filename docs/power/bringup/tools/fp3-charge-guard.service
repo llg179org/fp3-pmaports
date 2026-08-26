@@ -1,0 +1,18 @@
+[Unit]
+# ☠️ The charge input can be left suspended in the PMIC by a measurement that
+# died mid-window, and that bit SURVIVES A WARM REBOOT. A phone that comes back
+# up unable to charge, with nobody watching it, drains flat overnight. This
+# clears it unconditionally at every boot - it is a safety net, so it does not
+# ask what state it is in, and it must run before anything that measures.
+Description=FP3: clear any leftover PMIC charge-input suspend
+DefaultDependencies=no
+After=sysinit.target
+Before=fp3-night-ladder.service basic.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c 'for f in /sys/class/power_supply/*/input_suspend; do [ -w "$f" ] && echo 0 > "$f"; done; for s in /sys/class/power_supply/*charger*/status; do echo Charging > "$s" 2>/dev/null; done; true'
+
+[Install]
+WantedBy=sysinit.target

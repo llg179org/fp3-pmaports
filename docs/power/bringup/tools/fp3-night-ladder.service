@@ -1,0 +1,21 @@
+[Unit]
+# The ladder itself. Unlike a `systemd-run --collect` transient unit, this one
+# exists on disk, is enabled, and comes back after a reboot - and the script
+# resumes at the rung recorded in its state file rather than starting over.
+Description=FP3: unattended idle ladder (host may be switched off)
+Wants=fp3-charge-guard.service
+After=fp3-charge-guard.service network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/night-ladder.sh 8 3600
+# ☠️ TimeoutStopSec is deliberately generous: the script restores the charge
+# input in its SIGTERM trap, and killing it before that runs is the one failure
+# this whole design exists to prevent.
+KillSignal=SIGTERM
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
