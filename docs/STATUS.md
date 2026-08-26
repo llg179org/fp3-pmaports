@@ -324,6 +324,18 @@ instrument read the oracle's floor at **31.1 mA** across four legs the next day,
 against the 15.3 here. Do not quote this table's UT row until that factor of two
 is settled; it is item 1 of "Next, in order" in TODO.
 
+★ **Half of that doubt was removed on 2026-08-26, and it was a wrong file, not a
+lit panel.** One write of `4` to `fb0/blank` on the oracle moves every witness at
+once: `panel_power_on` 1 → 0, backlight 25 → 0, and `lcdb_ldo`/`lcdb_ncp`
+`state` **`enabled` → `disabled`**. What does *not* move is those rails'
+`microvolts`, which stays at 5500000 — because that file reports the rail's
+**configured** voltage, not whether it is switched on. Reading it is very
+probably where "the LCDB stays at 5500 mV through a blank" came from. So the
+oracle *can* be measured with the panel genuinely off, and the actuator was
+working the whole time. ☠️ This does **not** validate the 15.3 mA row: it removes
+one reason to disbelieve it and says nothing about the 31.1 mA. The re-measure
+that settles it is running; until it lands, the UT row stays unquotable.
+
 ## The work queue, in order
 
 Everything here is machine-doable unless the row says otherwise. Work down the
