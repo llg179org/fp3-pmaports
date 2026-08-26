@@ -6379,3 +6379,68 @@ cable arms abort too). What has survived every round is smaller and duller:
 published from a run whose conditions I had not varied on purpose.** The
 interleaved run — the only one designed to vary one thing — produced the only
 claim still standing.
+
+---
+
+## ☠️☠️☠️ 2026-08-26 06:30 — the repeat with the complete list kills the last claim standing, and the instrument with it
+
+Same script, `head` removed, run over USB with nothing polling the WiFi. Four
+interleaved arms at uptime 2722+:
+
+| round | CABLE | BATTERY |
+|---|---|---|
+| 1 | 4 s of 600 | 6 s of 600 |
+| 2 | 15 s of 600 | 14 s of 600 |
+
+**Three things, and each one removes something I published tonight.**
+
+1. **`irq 140` is present in every arm** — +35, +33, +34, +34 — cable and battery
+   alike. The withdrawal of the WCNSS lead was right, and the complete list
+   proves what the truncated one only made plausible.
+2. **The battery-vs-cable difference does not reproduce.** 4 vs 6, and 15 vs 14.
+   That was the *only* claim I said was still standing after the previous entry,
+   and it lasted one repeat. The earlier 23/4 and 76/32 were drift.
+3. ☠️☠️ **Most of the interrupt counts are per-cycle constants, not rates.**
+   `IPI1` is 1017–1139 in every arm; `irq 11` 216–249; `irq 24` 213–232; `irq
+   140` 33–35 — across windows of **4, 6, 14 and 15 seconds**, and earlier across
+   windows of 67 and 601. These are the **fixed cost of one suspend+resume**.
+
+### The instrument is the casualty, and that is the useful part
+
+If the deltas are dominated by a per-cycle constant, then **dividing them by the
+sleep duration produces a "rate" that is really just 1/duration** — which is why
+a short arm appeared to have "9× the interrupt rate" of a long one in the
+2026-08-26 census entry. It has no such thing. It has the same interrupts and
+less time.
+
+**So the `/proc/interrupts` diff across a suspend cannot attribute an s2idle wake
+here, and every reading I built on it tonight is void.** The signature to check
+for, in any counter differenced across an event: **does it scale with the window?**
+If it does not, it is measuring the event, not the interval — and the same test
+would have killed the WCNSS lead an hour earlier without needing the truncation
+argument.
+
+### Where this leaves the lead
+
+Four published stories, four retractions, in one night:
+
+| claim | killed by |
+|---|---|
+| "radio up means it cannot sleep" | a seventh suspend that slept full term |
+| "it is a post-boot decay" | this boot never reaching full term at any uptime |
+| "it is the USBIN suspend bit" | cable arms aborting too |
+| "battery is reproducibly worse than cable" | this repeat: 4/6 and 15/14 |
+
+What survives is exactly two things: **the abort is real and common**, and **it
+has never been seen with the modem stack cut (0 of 6)**. Everything else was
+built on an instrument that turns out to measure the suspend, not the sleep.
+
+☠️ **And the phone is getting worse within the session** — 356 s at uptime 780 on
+this boot, 4–15 s at uptime 2722. Something degrades. Whether that is the repeated
+USBIN toggling, accumulated state, or the sixteen suspends already run is not
+established, and *cannot* be with the instruments in hand.
+
+**The next step is not another indirect measurement.** `pm_wakeup_irq` names the
+waking IRQ directly, r77 is built and verified to carry `CONFIG_PM_DEBUG=y`, and a
+reboot also resets whatever has degraded. Deploying it is the only move that is
+not another guess.

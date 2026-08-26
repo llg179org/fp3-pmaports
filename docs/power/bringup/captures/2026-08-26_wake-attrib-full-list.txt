@@ -1,0 +1,83 @@
+# wake-attrib Wed Aug 26 06:25:51 CEST 2026 uptime=2722 secs=600
+# ☠️ interleaved, not one arm then the other: anything drifting shows as a
+# pattern in time rather than as a difference between the arms.
+== round 1 ==
+  CABLE    slept=4s of 600s  online=1 status=Charging
+    irq IPI1:        +1126    281.50/s
+    irq 11:          +230     57.50/s
+    irq 24:          +222     55.50/s
+    irq 39:          +220     55.00/s
+    irq 22:          +124     31.00/s
+    irq IPI0:        +88      22.00/s
+    irq IPI4:        +74      18.50/s
+    irq IPI5:        +43      10.75/s
+    irq 140:         +35      8.75/s
+    irq 38:          +6       1.50/s
+    irq 29:          +2       0.50/s
+    irq 113:         +2       0.50/s
+    irq 85:          +1       0.25/s
+    irq 84:          +1       0.25/s
+    irq 42:          +1       0.25/s
+    irq 41:          +1       0.25/s
+    irq 151:         +1       0.25/s
+    irq 141:         +1       0.25/s
+
+  BATTERY  slept=6s of 600s  online=0 status=Discharging
+    irq IPI1:        +1139    189.83/s
+    irq 24:          +219     36.50/s
+    irq 11:          +216     36.00/s
+    irq 39:          +176     29.33/s
+    irq 22:          +114     19.00/s
+    irq IPI0:        +88      14.67/s
+    irq IPI4:        +61      10.17/s
+    irq IPI5:        +35      5.83/s
+    irq 140:         +33      5.50/s
+    irq 38:          +3       0.50/s
+    irq 29:          +2       0.33/s
+    irq 85:          +1       0.17/s
+    irq 84:          +1       0.17/s
+    irq 42:          +1       0.17/s
+    irq 41:          +1       0.17/s
+    irq 151:         +1       0.17/s
+    irq 141:         +1       0.17/s
+
+== round 2 ==
+  CABLE    slept=15s of 600s  online=1 status=Full
+    irq IPI1:        +1084    72.27/s
+    irq 11:          +238     15.87/s
+    irq 24:          +232     15.47/s
+    irq IPI0:        +119     7.93/s
+    irq 22:          +96      6.40/s
+    irq IPI4:        +67      4.47/s
+    irq 39:          +66      4.40/s
+    irq IPI5:        +53      3.53/s
+    irq 140:         +34      2.27/s
+    irq 29:          +4       0.27/s
+    irq 38:          +3       0.20/s
+    irq 85:          +1       0.07/s
+    irq 84:          +1       0.07/s
+    irq 42:          +1       0.07/s
+    irq 41:          +1       0.07/s
+    irq 151:         +1       0.07/s
+    irq 141:         +1       0.07/s
+
+  BATTERY  slept=14s of 600s  online=0 status=Discharging
+    irq IPI1:        +1017    72.64/s
+    irq 11:          +249     17.79/s
+    irq 24:          +213     15.21/s
+    irq 22:          +90      6.43/s
+    irq IPI0:        +85      6.07/s
+    irq 39:          +83      5.93/s
+    irq IPI4:        +53      3.79/s
+    irq 140:         +34      2.43/s
+    irq IPI5:        +29      2.07/s
+    irq 29:          +5       0.36/s
+    irq 38:          +3       0.21/s
+    irq 85:          +1       0.07/s
+    irq 84:          +1       0.07/s
+    irq 42:          +1       0.07/s
+    irq 41:          +1       0.07/s
+    irq 151:         +1       0.07/s
+    irq 141:         +1       0.07/s
+
+# done, charger restored: online=1 status=Full
