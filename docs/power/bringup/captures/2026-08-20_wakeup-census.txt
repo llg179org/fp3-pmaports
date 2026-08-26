@@ -1,3 +1,37 @@
+# ☠️☠️ RETRACTED IN PART, 2026-08-26 — "six arms, all identical" was four arms
+# and two mislabelled ones, and the conclusion below does not follow.
+#
+# wakeup-census.sh cut the modem stack for its CUT arm and then restarted the
+# services with `systemctl start` before the next round's UP arm. But stopping
+# rmtfs POWERS THE MODEM DOWN and starting it does not bring it back - that
+# needs an explicit remoteproc start, which the script did not do until it was
+# fixed on 2026-08-26. So:
+#
+#   round 1 "MODEM UP"   - genuine
+#   round 1 "MODEM CUT"  - genuine
+#   round 2 "MODEM UP"   - ☠️ the modem was still DOWN. This is a cut arm.
+#   round 2 "MODEM CUT"  - the same state again
+#   round 3 "MODEM UP"   - ☠️ the modem was still DOWN. This is a cut arm.
+#   round 3 "MODEM CUT"  - the same state again
+#
+# "All six arms identical" is therefore not evidence that the modem does not
+# matter; five of the six were the same condition, so of course they agreed.
+# The one comparison this run actually contains is round 1's two arms.
+#
+# ☠️ And it is contradicted by a later, larger measurement. On 2026-08-26 a
+# 600 s request with a REGISTERED modem slept 50 / 89 / 32 / 59 s - 9.6 % of what
+# was asked - while the same phone with the modem cut slept 601 / 602 / 602 /
+# 602 s. Something does wake the application processor early. Two candidate
+# reasons this run did not see it, neither yet tested:
+#
+#   * it asked for 60 s, not 600. A wake mechanism with a period of tens of
+#     seconds to minutes can be invisible at 60 s and dominant at 600.
+#   * uptime was 2444 s and the modem's registration state was never recorded.
+#     An unregistered modem is not paged, and paging is the leading candidate.
+#
+# Nothing below is deleted: the arm lines are real readings, and the round-1 pair
+# still stands. Only the six-arm conclusion is withdrawn.
+#
 # wakeup-census.sh 3 60, first run, 2026-08-20 05:28. AP-side arms only (this run
 # predates the MPSS column).
 #

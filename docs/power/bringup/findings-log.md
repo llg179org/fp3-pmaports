@@ -4177,6 +4177,37 @@ correction to the claim this investigation carried for several days.
 
 ## ★ 2026-08-20 05:45: the modem's 36 % is not AP wakeups, and not our userspace
 
+> ☠️☠️ **UNDER REVIEW SINCE 2026-08-26 — the arm labels in this entry are wrong
+> for rounds 2 and 3, and both of its conclusions rest on them.**
+>
+> `wakeup-census.sh` restarted the cut services with `systemctl start` between
+> rounds and never restarted the modem remoteproc, so after round 1 the arms
+> labelled "modem up" were **modem-down**. Consequences, in order of how much
+> they cost:
+>
+> 1. **"Six arms, all identical, nothing wakes the AP early" is not a result.**
+>    Five of the six were the same condition. The only genuine comparison here is
+>    round 1's pair — and it asked for 60 s. On 2026-08-26 a 600 s request with a
+>    registered modem slept **9.6 %** of what it asked while the cut arm slept
+>    100 %, so something *does* wake the AP early.
+> 2. ☠️ **The MPSS table inverts.** Its headline — "the one exception is an
+>    UNCUT arm", read as proof that the modem can sleep with the stack running —
+>    is exactly backwards: round 2's "modem up" is the arm where the modem had
+>    been **powered down**. An MPSS that keeps the crystal off for 80 % of a
+>    window in which it is switched off carries no information about the running
+>    state.
+> 3. **Point 2 below — "cutting the modem stack does not cut the modem" — is now
+>    itself in doubt**, and in the opposite direction. It rests on `mmcli`
+>    reporting the radio registered on the way back in; on 2026-08-26 stopping
+>    the same three services left `remoteproc` **offline** and no modem at all,
+>    which a restart did not fix. Whether the difference is the kernel revision,
+>    the ordering, or a misread on the day is **not** settled by reasoning, and a
+>    fixed census is running to answer it.
+>
+> Nothing here is deleted — the readings are real and the raw capture carries the
+> same correction. What is withdrawn is the inference from mislabelled arms.
+
+
 Two censuses, twelve suspends, `tools/wakeup-census.sh`. Raw:
 [`captures/2026-08-20_wakeup-census.txt`](captures/2026-08-20_wakeup-census.txt)
 and [`captures/2026-08-20_mpss-census.txt`](captures/2026-08-20_mpss-census.txt).

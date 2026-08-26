@@ -45,11 +45,48 @@ say() { echo "$*" | tee -a "$OUT"; }
 
 STOPPED=""
 
+# ☠️☠️ STARTING THE SERVICES DOES NOT BRING THE MODEM BACK, and until 2026-08-26
+# this script assumed it did. `systemctl stop rmtfs` POWERS THE MODEM DOWN; the
+# matching start does not undo that - it needs an explicit remoteproc start.
+#
+# The consequence here was worse than a bad restore, because this script
+# ALTERNATES: after round 1's cut arm it restarted the services and went straight
+# into round 2's arm labelled "MODEM UP" - with the modem still down. So every
+# round after the first compared the cut state against itself, in a tool whose
+# headline safety property is that it alternates. Any earlier capture from this
+# script with rounds > 1 has to be re-read with that in mind: only round 1's
+# "MODEM UP" arm was ever genuinely modem-up.
+#
+# Returns 0 only when a modem actually enumerates. Callers must treat non-zero
+# as fatal, not as a warning: a census that continues from here is comparing two
+# copies of the same arm.
+modem_up() {
+	for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
+	# Addressed by platform address, never by index - remoteproc numbering
+	# moves between boots.
+	for r in /sys/class/remoteproc/remoteproc*; do
+		[ "$(cat "$r/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+		if [ "$(cat "$r/state" 2>/dev/null)" = offline ]; then
+			say "# modem remoteproc offline - starting it"
+			echo start > "$r/state" 2>/dev/null
+			sleep 15
+			systemctl restart ModemManager 2>/dev/null
+		fi
+	done
+	i=0
+	while [ "$i" -lt 18 ]; do
+		mmcli -L 2>/dev/null | grep -q 'Modem/' && { say "# modem up after ${i}0s"; return 0; }
+		i=$((i + 1)); sleep 10
+	done
+	say "# ☠️ NO MODEM after 180s"
+	return 1
+}
+
 restore() {
 	rc=$?
 	say ""
-	for s in $STOPPED; do systemctl start "$s" 2>/dev/null && say "# restarted $s"; done
-	sleep 8
+	modem_up || say "# ☠️ the phone is left WITHOUT A MODEM - a reboot is needed"
+	STOPPED=""
 	say "# ModemManager: $(systemctl is-active ModemManager 2>/dev/null), $(mmcli -L 2>&1 | head -1)"
 	say "# done rc=$rc"
 	exit $rc
@@ -113,9 +150,19 @@ while [ "$r" -le "$ROUNDS" ]; do
 	done
 	sleep 10
 	arm "  MODEM CUT "
-	for s in $STOPPED; do systemctl start "$s" 2>/dev/null; done
+
+	# ☠️ Fatal, not advisory. If the modem does not come back, the next round's
+	# "MODEM UP" arm would be a second cut arm under the wrong label, and the
+	# alternation this script exists for would be silently gone.
+	if ! modem_up; then
+		say "# ☠️ ABORTING after round $r: the modem did not come back, so any"
+		say "# ☠️ further round would compare the cut state against itself."
+		break
+	fi
 	STOPPED=""
-	sleep 25
+	# Give the modem time to re-register before the next MODEM UP arm; an
+	# unregistered modem is not the state we are trying to characterise.
+	sleep 60
 	r=$((r + 1))
 	say ""
 done
