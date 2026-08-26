@@ -32,6 +32,58 @@ wrapper for all of it is [`../night/`](../night/README.md).
 | [`freq-probe.sh`](freq-probe.sh) | the controlled three-phase version: baseline, cut, restored, in one boot. This is what refuted the ladder's "the modem costs 84 mA" |
 | [`de-compare.sh`](de-compare.sh), [`de-compare-fit.py`](de-compare-fit.py), [`de-switch.sh`](de-switch.sh) | one desktop environment against another, and the greetd switch that arranges it |
 
+## Comparing the two systems
+
+The goal stated 2026-08-24 is a comparison — pmOS down to the oracle's level or
+below — so the numbers on the two sides have to come from one instrument on one
+protocol, or they are two measurements rather than a comparison.
+
+| tool | the question it answers |
+|---|---|
+| [`idle-ab.sh`](idle-ab.sh) | **the instrument the goal is scored on.** The same awake-idle measurement on pmOS and on Ubuntu Touch: panel off, on battery with the cable still in, radio up. Reports the floor (p10) and the median, never a mean, and integrates `bms/cc_soc` where the gauge exists |
+| [`panel-witness.sh`](panel-witness.sh) | every candidate answer to "is the panel actually off", printed side by side, so the disagreement between them is visible instead of one being picked and called proof |
+
+☠️ **Each single panel witness has already lied once**, which is why
+`panel-witness.sh` prints all of them: the oracle sat fully powered at backlight
+brightness 37–38; `setScreenPowerMode("off")` returned `true` over a lit panel;
+`/sys/class/drm/*/dpms` is owned by the compositor and a good run was declared
+invalid on it. The one that does not lie is the panel bias rail — and ☠️ **read
+its `state`/`enable`, never its `microvolts`**: measured 2026-08-26, across a
+`blank=4` that demonstrably powered the panel down, `lcdb_ldo`/`lcdb_ncp` went
+`enabled → disabled` while `microvolts` did not move off 5500000, because that
+file reports the rail's *configured* voltage. Reading the voltage is very
+probably the origin of the claim that `fb0/blank` is only a half blank.
+
+☠️ And until 2026-08-26 `idle-ab.sh` proved the panel dark **once, at the door**,
+then measured for an hour without looking again — on the exact question it exists
+to settle. It now carries the panel state in every sample and refuses to report a
+floor from a window the panel relit inside.
+
+## Getting to the other system
+
+| tool | the question it answers |
+|---|---|
+| [`gptattr.py`](gptattr.py) | read, and flip, the Qualcomm A/B boot-control attribute bits in the GPT — the whole slot-switch mechanism on this eMMC device |
+
+☠️ **`qbootctl -s <slot>` cannot switch slots on this phone.** It aborts in a UFS
+`bLun` step (`Unable to open '/dev/bsg/ufs-bsg0'`) that has no meaning on eMMC,
+and the `-i` flag its own help text advertises for exactly that case is **not
+implemented** in the packaged build — getopt answers `unrecognized option: i`.
+Reading works, so `qbootctl` remains a useful independent check on what
+`gptattr.py` wrote. Measured 2026-08-26 on `qbootctl-0.2.2-r1`, the newest in
+Alpine edge.
+
+The attribute layout is Qualcomm's, not the generic AOSP one: priority 48–49,
+active 50, tries 51–53, successful 54, unbootable 55. ☠️ `gptattr.py dump` does
+not take that on faith — it XORs the `_a` against the `_b` attribute of every
+slotted pair and prints which fields differ, so a wrong layout shows up before
+anything is written. On this device exactly one bit differs, bit 50, and
+`active` is therefore what the bootloader reads; `gptattr.py active <slot>` flips
+that bit and nothing else, rather than rewriting priority, tries and successful
+the way a full `set_active` would. ☠️ It also surfaced that **`modem_a` is marked
+`unbootable=1 prio=0 tries=0`** — state we did not create, left untouched
+deliberately.
+
 ## Asking the RPM what it did
 
 | tool | the question it answers |

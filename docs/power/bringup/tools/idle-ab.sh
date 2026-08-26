@@ -106,7 +106,55 @@ fi
 # (ours or the compositor's own idle blank) to actually take it down, and prove
 # it from `bl_power` / the DRM CRTC's `active` flag. Abort if it cannot be
 # proven. A gate that cannot fail is not a gate.
+# The panel bias rails, where the hardware has them (the 4.9 oracle's PMI632
+# qpnp-lcdb). ☠️ Read `state`/`enable`, NEVER `microvolts`: the voltage file
+# reports the rail's CONFIGURED voltage and sits at 5500000 whether the rail is
+# on or off. Measured 2026-08-26: across a blank=4 that demonstrably powered the
+# panel down, `microvolts` did not move one digit while `enable` went 1 -> 0.
+# Reading the voltage is very probably where "fb0/blank is only a half blank,
+# the LCDB stays at 5500 mV" came from - a claim this file no longer accepts.
+# ☠️ Resolved ONCE, not per sample. Walking every regulator to match a name is
+# ~200 file opens, and at one sample every 5 s that is the instrument competing
+# with the thing it measures - on a run whose whole subject is a few tens of mA.
+# Empty on a system that has no such rail, which simply leaves the veto unarmed.
+LCDB_FILES=
+for d in /sys/class/regulator/*/; do
+	n=$(cat "$d/name" 2>/dev/null) || continue
+	case "$n" in
+	*lcdb*|*lab*|*ibb*) LCDB_FILES="$LCDB_FILES $d/state" ;;
+	esac
+done
+
+lcdb_state() {
+	for f in $LCDB_FILES; do
+		printf '%s=%s,' "$(basename "$(dirname "$f")")" "$(cat "$f" 2>/dev/null)"
+	done
+}
+lcdb_says_on() {
+	for f in $LCDB_FILES; do
+		[ "$(cat "$f" 2>/dev/null)" = enabled ] && return 0
+	done
+	return 1
+}
+
+# One compact line of everything that claims to know, for the sample stream and
+# for the end-of-window verdict.
+panel_state() {
+	printf 'ppo=%s,bl=%s,blp=%s,%s' \
+		"$(sed -n 's/.*panel_power_on = \([0-9]*\).*/\1/p' \
+			/sys/class/graphics/fb0/show_blank_event 2>/dev/null | head -1)" \
+		"$(cat /sys/class/backlight/*/brightness /sys/class/leds/lcd-backlight/brightness \
+			2>/dev/null | head -1)" \
+		"$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1)" \
+		"$(lcdb_state)"
+}
+
 panel_is_off() {
+	# ☠️ A powered bias rail vetoes every other witness. This is the hardware
+	# itself and nothing in userspace can make it read off while the panel is
+	# lit, which is more than can be said for the backlight, for a DBus return
+	# value, or for a DRM property owned by the compositor.
+	lcdb_says_on && return 1
 	# The panel's own power state: 4 = FB_BLANK_POWERDOWN. This is the
 	# hardware, and it is not writable by the compositor's DRM lease.
 	for p in /sys/class/backlight/*/bl_power; do
@@ -186,11 +234,19 @@ sleep 20
 echo "# on battery: v=$(cat $BAT/voltage_now)"
 
 c0=$([ -n "$CC" ] && cat "$CC" || echo -); v0=$(cat "$BAT/voltage_now"); t0=$(date +%s)
-echo "# t_s current_uA voltage_uV${CC:+ cc_soc}"
+# ☠️ The panel state is carried in every sample, not just checked at the start.
+# Until 2026-08-26 this loop proved the panel dark once and then measured for an
+# hour without looking again - so a panel that came back up mid-window would be
+# read as the phone drawing more current, on the exact question ("was the screen
+# really off") this instrument exists to settle. A gate at the door only.
+echo "# t_s current_uA voltage_uV${CC:+ cc_soc} panel"
+RELIT=
 while [ $(( $(date +%s) - t0 )) -lt "$WINDOW" ]; do
-	printf '%s %s %s %s\n' "$(( $(date +%s) - t0 ))" \
+	ps=$(panel_state)
+	panel_is_off || RELIT="$RELIT $(( $(date +%s) - t0 ))"
+	printf '%s %s %s %s %s\n' "$(( $(date +%s) - t0 ))" \
 		"$(cat "$BAT/current_now")" "$(cat "$BAT/voltage_now")" \
-		"$([ -n "$CC" ] && cat "$CC" || echo -)"
+		"$([ -n "$CC" ] && cat "$CC" || echo -)" "$ps"
 	sleep 5
 done
 t1=$(date +%s); v1=$(cat "$BAT/voltage_now"); c1=$([ -n "$CC" ] && cat "$CC" || echo -)
@@ -200,6 +256,17 @@ if [ -n "$CC" ]; then
 	# cc_soc is 0..10000 for 0..100 % of charge_full
 	echo "# cc_soc $c0 -> $c1 d=$((c0-c1)) full_uAh=${FULL_UAH:-?}"
 	echo "# integrated mA = (d/10000)*full_uAh/1000 * 3600/W  -- compute offline"
+fi
+# ☠️ The closing gate. An hour of samples taken behind a panel that relit is not
+# a floor measurement, and the only honest thing to do with it is to say so in
+# the file rather than to average it.
+echo "# panel at end: $(panel_state)"
+if [ -n "$RELIT" ]; then
+	echo "# ☠️ INVALID: the panel was NOT off at t =$RELIT (seconds into the window)."
+	echo "#    Do not quote a floor or a median from this run. A lit panel was"
+	echo "#    worth +24.5 mA on every floor measured before 2026-08-19."
+else
+	echo "# panel: off for all $(( W / 5 + 1 )) samples of the window"
 fi
 echo "# DONE $(date)"
 echo "# output: $OUT"

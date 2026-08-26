@@ -6527,3 +6527,100 @@ channel and payload for the message that arrives immediately after
 trace from.
 
 Capture: `captures/2026-08-26_pm-wakeup-irq-names-the-waker.txt`.
+
+## ★ 2026-08-26 08:00 — re-measuring the oracle, and the reference that was never in doubt after all
+
+The goal is scored against Ubuntu Touch, so the oracle's number is half of it.
+On 2026-08-25 afternoon that half fell over twice: "panel proven dark" turned out
+to have been proven with the *backlight*, which on the oracle is not a witness,
+and the same day's inventory read the panel bias rails still sitting at 5500 mV
+through a `blank=4` — so the standing conclusion was that **UT had never been
+measured with the screen genuinely off**, and that the 15.3 mA floor described a
+state the phone is not in when its screen is dark. Re-measuring it needed three
+things that did not exist: a way onto `slot_a` without a human at the phone, a
+witness the panel cannot lie to, and a way back.
+
+### ☠️ `qbootctl` cannot switch slots on this device, and its own help says it can
+
+`qbootctl -s a` aborts:
+
+```
+Unable to open '/dev/bsg/ufs-bsg0': No such file or directory
+Is CONFIG_SCSI_UFS_BSG is enabled in your kernel?
+SLOT _a: Failed to set active
+```
+
+That is a UFS path on an eMMC phone. Its help text advertises exactly the flag
+for this case — `-i  still write the GPT headers even if the UFS bLun can't be
+changed` — and the flag **is not implemented**: `getopt` answers `unrecognized
+option: i`. `0.2.2-r1` is the newest in Alpine edge, so there is no upgrade out
+of it. *A help text is documentation, not a capability.* Reading works fine, so
+`qbootctl` stays useful as an independent check on what something else wrote.
+
+The mechanism it was failing to reach is a GPT attribute write, so
+[`tools/gptattr.py`](tools/gptattr.py) does it directly. The layout is
+Qualcomm's, not AOSP's — priority 48–49, active 50, tries 51–53, successful 54,
+unbootable 55 — and it is **not taken on faith**: `dump` XORs the `_a` against
+the `_b` attribute of every slotted pair and prints which fields differ. On this
+phone exactly one bit differs across every well-formed pair, **bit 50**, which
+identifies `active` as what the bootloader actually reads. So the write flips
+that bit and nothing else, rather than rewriting priority/tries/successful the
+way a full `set_active` would — the change stays minimal, reversible, and does
+not invent state. `qbootctl` then read back `Current slot: _a`, from its own code
+path, before anything was rebooted.
+
+☠️ The XOR check also earned its keep immediately: it flagged bits outside the
+`active` field as differing, and the culprit was **`modem_a`, marked
+`unbootable=1 prio=0 tries=0`** where every other `_a` partition reads
+`prio=3 tries=7 ok=1`. We did not create that and do not know its reason. A full
+`set_active` would have silently cleared it; this one left it alone.
+
+### ☠️ The reboot that never happened, and ten minutes spent polling for it
+
+`fp3-ssh "sudo sh -c '(sleep 2; reboot) &'"` returned cleanly and **did nothing**
+— the backgrounded subshell dies with the ssh session. The phone was then polled
+for ten minutes for an Ubuntu Touch that was never booting, and the silence read
+exactly like a slow boot. The tell was free and was not looked at: `uptime` came
+back at **5924 s** on the same kernel. `systemctl reboot --no-block` works,
+because PID 1 does the work rather than a child of the dying session.
+
+This is the same lesson as the `stop rmtfs` one, in a cheaper form: **a step
+whose effect is not checked is not a step**, and the cost is not the failed
+step — it is the interval afterwards spent interpreting its absence as something
+else.
+
+### ★ The panel WAS provable off, and the earlier reading was the wrong file
+
+With [`tools/panel-witness.sh`](tools/panel-witness.sh) printing every candidate
+side by side, one write of `4` to `/sys/class/graphics/fb0/blank` moved all of
+them at once:
+
+| witness | before | after |
+|---|---|---|
+| `fb0/show_blank_event` | `panel_power_on = 1` | `panel_power_on = 0` |
+| `leds/lcd-backlight/brightness` | 25 | 0 |
+| `lcdb_ldo` `state` / `enable` | `enabled` / 1 | **`disabled` / 0** |
+| `lcdb_ncp` `state` / `enable` | `enabled` / 1 | **`disabled` / 0** |
+| `lcdb_ldo` **`microvolts`** | 5500000 | **5500000** |
+
+The last row is the whole correction. **`microvolts` reports the rail's
+*configured* voltage and does not move when the rail is switched off** — so a
+reading taken from it shows 5500 mV through a panel that is fully powered down.
+That is almost certainly where "`fb0/blank` is only a half blank, the LCDB stays
+at 5500 mV" came from, and with it the conclusion that the oracle had never been
+measured dark. **The actuator was working; the witness was the wrong file.**
+
+☠️ Note what this is *not*: it is not a claim that the 15.3 mA figure is right.
+It removes one reason to disbelieve it. The oracle's floor also read 31.1 mA on
+2026-08-25 against 15.3 the day before, and nothing here touches that.
+
+### ☠️ The instrument proved the panel dark at the door and never looked again
+
+`idle-ab.sh` gated on the panel once, before the window, and then sampled for an
+hour without rechecking — so a panel relit by the display stack mid-window would
+have been read as the phone drawing more current, on the exact question the
+instrument exists to settle. It now carries the panel state in **every sample**
+and prints a closing verdict, refusing to report a floor from a window the panel
+was not off through. ☠️ The rail paths are resolved once at startup rather than
+per sample: matching a regulator by name means ~200 file opens, and at one sample
+every 5 s that is the instrument competing with a subject measured in tens of mA.
