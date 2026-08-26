@@ -42,10 +42,52 @@ say() { echo "$(cut -d. -f1 /proc/uptime) $TAG: $*" >> "$LOG"; }
 # ☠️ USBIN suspend lives in the PMIC and survives a warm reboot; a leg that
 # dies without restoring it leaves a phone that will not charge. The cut
 # services come back on the same path, for the same reason.
+#
+# ☠️☠️ AND STARTING A SERVICE IS NOT ALWAYS RESTORING WHAT IT PROVIDED.
+# Measured 2026-08-26, and it cost a whole night's control leg: `systemctl stop
+# rmtfs` POWERS THE MODEM DOWN, and `systemctl start rmtfs` does NOT bring it
+# back - that needs an explicit remoteproc start. The old version of this
+# function looped `systemctl start` over $CUTS with 2>/dev/null and reported
+# nothing, so leg B left the modem off, leg A' ran with it still off, and the
+# A-B-A's control leg was a second TREATMENT leg wearing the control's name.
+# The failure was invisible in the leg log; what exposed it afterwards was A''s
+# own sleep durations matching B rather than A.
+#
+# So this now (1) restarts the modem remoteproc when the modem stack was cut,
+# (2) VERIFIES the thing itself rather than the service that provides it, and
+# (3) SAYS SO IN THE LOG either way. A restore whose outcome is not recorded is
+# indistinguishable from one that did not happen.
 restore() {
 	echo Charging > "$CHG/status" 2>/dev/null
 	for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
 	systemctl start greetd 2>/dev/null
+
+	# Only when this leg cut the modem stack. Addressed by platform address,
+	# never by index: remoteproc numbering moves between boots.
+	case " $CUTS " in *" rmtfs "*|*" ModemManager "*)
+		for r in /sys/class/remoteproc/remoteproc*; do
+			[ "$(cat "$r/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+			[ "$(cat "$r/state" 2>/dev/null)" = offline ] || continue
+			say "modem remoteproc is offline after restore - starting it"
+			echo start > "$r/state" 2>/dev/null
+			sleep 15
+			systemctl restart ModemManager 2>/dev/null
+		done
+		# The verification, and it is allowed to report failure. A leg that
+		# followed this one must not be believed if this line says NO MODEM.
+		i=0
+		while [ $i -lt 12 ]; do
+			mmcli -L 2>/dev/null | grep -q 'Modem/' && break
+			i=$((i + 1)); sleep 5
+		done
+		if mmcli -L 2>/dev/null | grep -q 'Modem/'; then
+			say "restore OK: modem enumerated"
+		else
+			say "☠️ RESTORE FAILED: no modem after $((i * 5))s."
+			say "☠️ ANY LEG THAT RAN AFTER THIS ONE IS NOT A CONTROL - it ran"
+			say "☠️ with the modem down. A reboot is needed to recover it."
+		fi
+	;; esac
 }
 trap restore EXIT INT TERM
 
