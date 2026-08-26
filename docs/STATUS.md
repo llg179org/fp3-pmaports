@@ -335,7 +335,40 @@ are directly under it (evidence retention, and the WiFi lever the same
 measurement has to account for); the camera wedge, which led this list yesterday,
 is now item 4.
 
-⏳ **IN FLIGHT, 2026-08-25 19:31 → ~01:30, `night-20260825-aba`.** The A-B-A
+### ★★★★ 2026-08-26 — the modem lead has a mechanism, and it is not current
+
+**With the radio up, the phone does not stay asleep.** Measured twice on r76 by
+two unrelated instruments the same night:
+
+| instrument | modem up | modem cut |
+|---|---|---|
+| A-B-A leg, 4 × 600 s requested | slept **230 s of 2400 (9.6 %)** | 2407 s (100 %) |
+| `wakeup-census.sh`, 600 s requested | slept **67 s** | 601 s |
+
+So "the modem costs ~36 mA asleep" was never a co-processor drawing current
+beside a sleeping AP — it is **an AP that is not allowed to stay asleep**. The
+census also shows the MPSS chopping its crystal **179 times in 67 s** and keeping
+it off 52 % of the window, which reproduces the 2026-08-24 XO-duty result from a
+different direction.
+
+☠️ **Not the armed modem edge** — every rpmsg edge read `disabled` (the arm knob
+resets each boot). That hypothesis died before it cost a measurement.
+
+☠️ **What this cost, and it was avoidable.** `systemctl stop rmtfs` powers the
+modem down and `systemctl start` does not bring it back — **recorded in the
+findings log on 2026-08-21, with the fix written out, and never put into a
+tool**. Five days later it destroyed the A-B-A's control leg. Four tools had the
+defect; `slope-leg.sh`, `wakeup-census.sh` and `ab-leg.sh` were **fatal** and are
+now fixed to verify the modem and abort rather than emit mislabelled arms. *A
+rule stated in prose is a wish; a rule in a script is a rule.*
+
+**Next:** what terminates the suspend, given no edge is wake-armed. An
+instrumented single suspend reading `pm_wakeup_irq` is running.
+
+⏳ **COMPLETED, 2026-08-25 19:31 → 2026-08-26 00:45, `night-20260825-aba`** —
+3 jobs, rc=0, 0 failed, guardian 905 lines with zero actions. Result above and in
+the findings log; ☠️ leg A′ was **not** a control (modem down) and leg A's fitted
+52.0 mA fails its own r² gate and must not be quoted. Original plan: The A-B-A
 that measures item 1 on r76: leg A (radio up, nothing cut) → leg B
 (`ModemManager rmtfs tqftpserv` cut) → leg A′ (control), one descent,
 4 × 600 s cycles with a 600 s settle, recharging to 90 % between legs.
