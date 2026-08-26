@@ -17,7 +17,21 @@
 # recorded PER ROUND rather than inferred afterwards from what the operator
 # happens to remember about the session.
 #
-#   suspend-rate.sh [n] [seconds]          (defaults 8, 600)
+#   suspend-rate.sh [n] [seconds] [gap_s]  (defaults 8, 600, 150)
+#
+# ☠️☠️ THE GAP IS A SAFETY PARAMETER, NOT A SETTLING TIME, and the first version
+# of this script got it wrong at 30 s. Measured 2026-08-26: with 8 x 600 s
+# suspends and a 30 s gap, the phone was **unreachable for over 80 minutes** on
+# both links. The USB gadget does not re-enumerate within 30 s of a resume, so a
+# host watching `lsusb` every 2 seconds saw nothing at all - and "cycling
+# normally, windows too short to catch" and "wedged in suspend" produce the
+# IDENTICAL observation from outside.
+#
+# That is not a monitoring inconvenience; it means an unattended run cannot be
+# distinguished from a dead phone, so nobody can decide whether to intervene. The
+# gap must be longer than the slowest link's own recovery - measured at ~39 s for
+# this device's RNDIS after a reboot, so 150 s carries real margin. The cost is
+# 2 minutes per round; the thing it buys is the ability to know what is happening.
 #
 # Read the output as a fraction, not as a narrative: "k of n ended early". Only
 # then ask what k depends on, and change ONE recorded variable at a time.
@@ -31,13 +45,13 @@
 # stack: `systemctl stop rmtfs` powers the modem down and would silently change
 # the very condition being measured.
 set -u
-N=${1:-8}; SECS=${2:-600}
+N=${1:-8}; SECS=${2:-600}; GAP=${3:-150}
 O=/run/srate.txt
 : > "$O"
 s(){ echo "$*" >> "$O"; }
 mreg(){ mmcli -m 0 2>/dev/null | sed -n 's/.*state: *//p' | head -1; }
 
-s "# srate n=$N secs=$SECS start_uptime=$(cut -d. -f1 /proc/uptime) kernel=$(uname -v)"
+s "# srate n=$N secs=$SECS gap=${GAP}s start_uptime=$(cut -d. -f1 /proc/uptime) kernel=$(uname -v)"
 s "# cable: online=$(cat /sys/class/power_supply/pmi632-charger/online) status=$(cat /sys/class/power_supply/pmi632-battery/status)"
 # ☠️ How the modem came up is a candidate variable in its own right and cannot be
 # recovered later: a modem started by the boot and one restarted by hand through
@@ -54,7 +68,7 @@ while [ "$i" -le "$N" ]; do
 	rtcwake -m mem -s "$SECS" >/dev/null 2>&1
 	t1=$(cut -d. -f1 /proc/uptime); x1=$(mf 'XO shutdown count')
 	s "$i $t0 $((t1-t0)) $SECS ${st:-?} $(cat /sys/class/power_supply/pmi632-battery/capacity) $(( ${x1:-0} - ${x0:-0} ))"
-	sleep 30
+	sleep "$GAP"
 	i=$((i + 1))
 done
 s "# done"
