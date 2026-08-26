@@ -140,11 +140,11 @@ cut_off() {
 
 	# Addressed by platform address, never by index: remoteproc numbering
 	# moves between boots.
-	for r in /sys/class/remoteproc/remoteproc*; do
-		[ "$(cat "$r/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
-		[ "$(cat "$r/state" 2>/dev/null)" = offline ] || continue
+	for rp in /sys/class/remoteproc/remoteproc*; do
+		[ "$(cat "$rp/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+		[ "$(cat "$rp/state" 2>/dev/null)" = offline ] || continue
 		say "modem remoteproc offline after uncut - restarting it"
-		echo start > "$r/state" 2>/dev/null
+		echo start > "$rp/state" 2>/dev/null
 		sleep 15
 		systemctl restart ModemManager 2>/dev/null
 	done

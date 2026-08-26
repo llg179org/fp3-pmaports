@@ -1,0 +1,67 @@
+# wakeup-census.sh 2 600, 2026-08-26 ~04:00, r76 (#77-fp3), uptime 686 at start.
+# Cable in. Modem verified `registered / home / lte / attached` immediately before.
+#
+# ★ THE FIRST GENUINE MODEM-UP vs MODEM-CUT COMPARISON THIS TOOL HAS PRODUCED.
+# Every earlier capture from it had mislabelled arms after round 1 (see the
+# 2026-08-20 capture's retraction header and findings-log 2026-08-26).
+#
+# ☠️ Round 2 did not run: an arithmetic syntax error at line 166 of the freshly
+# edited script - `modem_up()` used `r` as its loop variable and shadowed the
+# round counter, so `r=$((r + 1))` saw a sysfs path. Fixed the same morning in
+# all three tools that got the same edit. Round 1 is unaffected and complete;
+# the error happened after its arms were written.
+#
+# ☠️ ALL rpmsg edges read `disabled` in power/wakeup at this point (the arm knob
+# resets on every boot, and the phone had rebooted at 03:35). So the early abort
+# below is NOT the armed modem edge - that hypothesis was killed before a single
+# suspend was spent on it.
+
+# wakeup-census uptime=686 rounds=2 suspend=600s cuts='ModemManager rmtfs tqftpserv'
+# ☠️ elapsed < asked means something woke it early. That is the whole question.
+
+== round 1 ==
+  MODEM UP    asked=600s  elapsed=67s  suspends=+1  MPSS +183 shutdowns, XO +179, XO off 35104ms of 67000ms
+    irq IPI1:                  +1275
+    irq 11:                    +283
+    irq 24:                    +244
+    irq IPI4:                  +179
+    irq 39:                    +172
+    irq IPI0:                  +145
+    irq 22:                    +103
+    irq IPI5:                  +66
+  MODEM CUT   asked=600s  elapsed=601s  suspends=+1  MPSS +0 shutdowns, XO +0, XO off 0ms of 601000ms
+    irq IPI1:                  +1188
+    irq 24:                    +239
+    irq 11:                    +218
+    irq IPI4:                  +156
+    irq 39:                    +147
+    irq IPI0:                  +101
+    irq 22:                    +101
+    irq IPI5:                  +57
+# modem up after 30s
+# modem up after 00s
+# ModemManager: active,     /org/freedesktop/ModemManager1/Modem/0 [QUALCOMM INCORPORATED] 0
+# done rc=2
+
+# --- names for the numbered lines, read from /proc/interrupts the same session ---
+#   11  GIC-0  20 Level  arch_timer
+#   22  GIC-0  39 Level  arch_mem_timer
+#   24  GIC-0 200 Edge   smd-edge      (CPU0 only; 25571 total)
+#   39  GIC-0 155 Level  mmc0
+#  IPI0 Rescheduling   IPI1 Function call   IPI2 CPU stop
+#  IPI3 CPU stop NMI   IPI4 Timer broadcast IPI5 IRQ work
+#
+# READING NOTES, so the table is not over-read:
+#
+# 1. The two arms are 67 s and 601 s long, so compare RATES, not the printed
+#    totals. Every single line is ~9x faster in the MODEM UP arm. That is the
+#    signature of a phone repeatedly resuming, not of one waker.
+# 2. Both arms include one suspend AND one resume plus the surrounding awake
+#    settle, so a large part of each count is the resume path itself. This is
+#    why the CUT arm still shows smd-edge +239 with the modem powered off.
+# 3. ★ IPI4 (timer broadcast) +179 equals MPSS XO shutdown count +179 exactly.
+#    A 1:1 correspondence, unexplained, and the most specific thing in the
+#    capture.
+# 4. The MPSS chopped its crystal 179 times in 67 s (~2.7/s) and kept it off
+#    52 % of the window - reproducing the 2026-08-24 XO-duty measurement on r76
+#    from an unrelated instrument.

@@ -64,11 +64,11 @@ modem_up() {
 	for s in $CUTS; do systemctl start "$s" 2>/dev/null; done
 	# Addressed by platform address, never by index - remoteproc numbering
 	# moves between boots.
-	for r in /sys/class/remoteproc/remoteproc*; do
-		[ "$(cat "$r/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
-		if [ "$(cat "$r/state" 2>/dev/null)" = offline ]; then
+	for rp in /sys/class/remoteproc/remoteproc*; do
+		[ "$(cat "$rp/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+		if [ "$(cat "$rp/state" 2>/dev/null)" = offline ]; then
 			say "# modem remoteproc offline - starting it"
-			echo start > "$r/state" 2>/dev/null
+			echo start > "$rp/state" 2>/dev/null
 			sleep 15
 			systemctl restart ModemManager 2>/dev/null
 		fi
