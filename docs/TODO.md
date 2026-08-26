@@ -388,12 +388,13 @@ modem up, one candidate variable at a time — time since boot (the aborting arm
 were ~11 min in, the full-term one ~27), time since registration, battery vs
 cable. Running as `srate.sh 8 600`.
 
-☠️ Also re-open: exclusion 6 of the seven ("no source carries a nonzero
-`prevent_suspend_time`") did **not** reproduce — four do (`rtc`,
-`pmi632-battery`, `pmi632-charger`, `tcpm`). They are cumulative rather than
-per-suspend, so this is not yet a finding; it must be re-measured as a **delta
-across one suspend** before it is restored or withdrawn, and until then it should
-not be counted among the seven.
+☠️☠️ **A re-opening of exclusion 6 stood here for an hour and was my own column
+misread.** `prevent_suspend_time` is field **10** of
+`/sys/kernel/debug/wakeup_sources`; my probe tested field 9, `last_change`, which
+is a millisecond timestamp and nonzero for anything that has ever fired. The
+original capture reads 0 in the real column for every source. **Exclusion 6
+stands and the seven are seven.** Third column-misread of the same session — see
+findings-log 2026-08-26 for the rule that replaced it.
 
 <details><summary>The original plan, kept for the protocol</summary>
 

@@ -6019,8 +6019,25 @@ up, one condition at a time, so "sometimes" acquires a number.
    …:pmic@0:rtc@6000                   prevent=970747
 ```
 
-☠️ **Exclusion 6 of the seven — "no source carries a nonzero
-`prevent_suspend_time`" — does not reproduce.** Four do. They are cumulative
+☠️☠️ **CORRECTED 2026-08-26 05:4x — exclusion 6 was never in doubt; I misread a
+column.** `/sys/kernel/debug/wakeup_sources` has ten fields and
+`prevent_suspend_time` is the **tenth**; my probe's awk tested `$9`, which is
+`last_change` — a timestamp in milliseconds, nonzero for anything that has ever
+fired. The four "offenders" below are last-change stamps, and the original
+headless capture (`captures/2026-08-25_pmos-pm-census-headless.txt`) shows the
+real column reading **0 for every source**, exactly as the exclusion said.
+
+**Exclusion 6 stands. The seven are seven.** ☠️ And this is the third
+column-misread of the same session — after `regulator_summary` read as a flat
+list when it is a tree, and a `grep --include` pattern that matches basenames
+rather than paths. All three produced a confident wrong answer from a correct
+command. **Read the header before indexing by position**, every time; the header
+is one line and the retraction is not.
+
+The withdrawn text, kept so the error is legible:
+
+> ~~Exclusion 6 of the seven — "no source carries a nonzero
+> `prevent_suspend_time`" — does not reproduce.~~ Four do. They are cumulative
 since boot rather than per-suspend, so this is not yet a finding either way; what
 it is, is a published exclusion that the very next look contradicted. It must be
 re-measured as a delta across one suspend before it is either restored or
