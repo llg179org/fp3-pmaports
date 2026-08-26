@@ -5905,7 +5905,17 @@ remoteproc. Four stopped `rmtfs` or `ModemManager` with no awareness at all:
 | `slope-leg.sh` | **fatal** — destroyed the 2026-08-25 A′ control | fixed: remoteproc start + `mmcli` verify + a log line that names any later leg as invalid |
 | `wakeup-census.sh` | **fatal** — it *alternates*, so after round 1 every "MODEM UP" arm was modem-down | fixed: verify between rounds, and **abort** rather than run mislabelled arms |
 | `ab-leg.sh` | **fatal and worst by design** — interleaving is its entire reason to exist | fixed: verify after each uncut, abort on failure |
-| `idle-ladder.sh`, `freq-probe.sh` | restore-only damage (single arm, monotonic ladder) | guard added |
+| `idle-ladder.sh`, `freq-probe.sh` | restore-only damage (single arm, monotonic ladder) | guard added — ☠️ **and this cell said so for two hours before it was true.** The row was written with the other three; `grep -c remoteproc` on both files returned **0**. Checking a claim about your own work is the same move as checking one about the device, and it is the one people skip |
+
+☠️ **A fourth result is misattributed by the same mechanism.** `freq-probe.sh`'s
+header records that at idle-ladder stage S4, "with `ModemManager`/`rmtfs`/
+`tqftpserv` stopped", the idle **floor doubled** from ~85 to ~170 mA, the
+sample-to-sample variance collapsed, and the `apcs-cpu0-pll` warning storm went to
+**exactly zero** for the 40 minutes S4 and S5 lasted — all three reverting when
+the services came back. The observation is real and is not withdrawn. Its **name**
+is wrong: that stage had the modem **powered off**, so the honest label is
+*modem-off*, and every ladder stage after the `rmtfs` one inherited that state.
+`idle-ladder.sh` now says so in its own output when the restore fails.
 
 ☠️ **`ab-leg.sh` deserves its own line.** Its `CUT` arm runs *first*, so the
 modem is down before the first `FULL` arm ever happens: both 2026-08-20 captures

@@ -39,6 +39,28 @@ say() { echo "$*" >> "$OUT"; }
 
 # ☠️ USBIN suspend lives in the PMIC and survives a warm reboot. Restore it on
 # every exit path, and put the phone back the way it was found.
+
+# ☠️☠️ `systemctl start rmtfs` DOES NOT UNDO `systemctl stop rmtfs`: stopping it
+# powers the MODEM DOWN (rmtfs -P), and only an explicit remoteproc start brings
+# it back. Recorded in the findings log 2026-08-21; not put into any tool until
+# 2026-08-26, by which time it had destroyed an overnight control leg. Verify the
+# thing, not the service that provides it.
+modem_up_guard() {
+	for rp in /sys/class/remoteproc/remoteproc*; do
+		[ "$(cat "$rp/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+		[ "$(cat "$rp/state" 2>/dev/null)" = offline ] || continue
+		echo start > "$rp/state" 2>/dev/null
+		sleep 15
+		systemctl restart ModemManager 2>/dev/null
+	done
+	i=0
+	while [ "$i" -lt 12 ]; do
+		mmcli -L 2>/dev/null | grep -q 'Modem/' && return 0
+		i=$((i + 1)); sleep 10
+	done
+	return 1
+}
+
 restore_all() {
 	echo Charging > $CHG/status 2>/dev/null
 	nmcli radio wifi on 2>/dev/null
@@ -47,6 +69,13 @@ restore_all() {
 	         ModemManager rmtfs tqftpserv greetd; do
 		systemctl start "$s" 2>/dev/null
 	done
+	if ! modem_up_guard; then
+		# ☠️ Say it where the reader of this run will see it. A ladder stage
+		# that cut rmtfs priced MODEM-OFF, not "those services stopped", and
+		# every stage after it inherited that state.
+		say "# ☠️ NO MODEM after restore - a reboot is needed, and every stage"
+		say "# ☠️ from the rmtfs one onward measured the modem POWERED OFF."
+	fi
 }
 trap 'restore_all' EXIT INT TERM
 
