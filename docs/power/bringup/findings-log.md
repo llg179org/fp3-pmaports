@@ -6727,3 +6727,46 @@ boot, one cable state and one instrument, which none of the three historical
 captures could.
 
 Captures: `captures/2026-08-26_ut-idle-panel-proven-off-window{1,2}.txt`.
+
+## ★★ 2026-08-26 12:26 — the ladder's first two rungs: the state-of-charge hypothesis does not survive its own first test
+
+The only surviving explanation for the oracle's 4.5x spread, as of this morning,
+was state of charge: every high reading sat in a 92-99 % band and the single low
+one (2026-08-24, floor 15.3 mA, integrated 32.2 mA) was taken at 4.050 V on
+another day. `soc-ladder.sh` exists to decide it inside **one boot, one cable
+state, one instrument** — eight consecutive one-hour `idle-ab.sh` windows while
+the pack walks itself down.
+
+Two rungs are in. With the two windows measured earlier this morning that makes
+four consecutive hours, panel provably off in every sample of all four:
+
+| window | v start -> end | cc_soc at start | floor (p10) | median | integrated |
+|---|---|---|---|---|---|
+| w1 | 4.315 -> | 9916 (99 %) | 69.9 | 125.9 | 61.0 |
+| w2 | 4.282 -> | 9738 (95 %) | 71.6 | 124.2 | 64.3 |
+| ladder 1 | 4.228 -> 4.182 | 9528 (92 %) | **71.9** | 123.4 | **62.5** |
+| ladder 2 | 4.170 -> 4.149 | 9332 (89 %) | **71.9** | 127.0 | **62.7** |
+
+The fitter's own gap line between the two ladder rungs reads **`+0.0 mA`**.
+
+**So over 99 % -> 89 %, and 4.315 V -> 4.149 V, the oracle's floor does not
+move.** If the state of charge were what separates 32.2 mA from 62-64 mA, ten
+points of it and 166 mV should have shown a slope by now, and there is none —
+the four numbers are flat to within the width of a single window's noise.
+
+☠️ **This does not yet kill the hypothesis; it kills the easy version of it.**
+What remains possible is a threshold rather than a slope — something that only
+lets go lower down, and the 2026-08-24 reading was taken at 4.050 V, below every
+point on this ladder so far. The ladder walks to ~78 %, which crosses into that
+region, so the next rungs are the ones that decide it. What is already excluded
+is "the current tracks the pack" as a smooth relationship, which is how it has
+been stated here since this morning.
+
+And the alternative it strengthens is the uncomfortable one: **that the
+2026-08-24 measurement differed in something other than charge** — a different
+day, a different set of services awake, a different registration state — in
+which case the number the goal has been scored on since then is not a property
+of the oracle at all. Nothing in the captures identifies what that would be yet.
+
+The rungs are being kept at `/tmp/ladder-N.txt` on the phone; the run has six
+windows left and ends about 18:20.
