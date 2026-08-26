@@ -59,3 +59,70 @@ matter. ☠️ One of its listed facts was retracted the same day: the boot-time
 `imx363_power_on()` warm-up loop absorbing the first cold I2C transaction, which
 the driver's own comment predicts. One `-110` and no "failed to read chip id"
 beside it is exactly what a working warm-up looks like.
+
+---
+
+## 2026-08-26 — the gate is settled from the source: the entry **is** consumed, and there is a log line that proves it
+
+The previous section set a gate before spending any measurement on this: *does
+the `simple` pipeline handler use `DelayedControls` at all?* If it did not, a
+`sensorDelays` entry would be decoration and the whole lead could be dropped.
+
+Read out of `libcamera v0.7.1` (the version the `libcamera` aport builds — its
+`_pkgver`, tarball in `cache_distfiles`). **It does**, and the chain is short:
+
+`src/libcamera/pipeline/simple/simple.cpp:568`
+
+```c++
+const CameraSensorProperties::SensorDelays &delays = sensor_->sensorDelays();
+std::unordered_map<uint32_t, DelayedControls::ControlParams> params = {
+        { V4L2_CID_ANALOGUE_GAIN, { delays.gainDelay,     false } },
+        { V4L2_CID_EXPOSURE,      { delays.exposureDelay, false } },
+};
+delayedCtrls_ = std::make_unique<DelayedControls>(sensor_->device(), params);
+```
+
+Note **which two** fields are used: `exposureDelay` and `gainDelay`.
+`vblankDelay` and `hblankDelay` are read by other pipeline handlers, not by ours,
+so measuring them would buy this device nothing.
+
+**What we get today, having no entry** —
+`src/libcamera/sensor/camera_sensor_legacy.cpp:488`:
+
+```c++
+static constexpr CameraSensorProperties::SensorDelays defaultSensorDelays = {
+        .exposureDelay = 2, .gainDelay = 1, .vblankDelay = 2, .hblankDelay = 2,
+};
+...
+LOG(CameraSensor, Warning)
+        << "No sensor delays found in static properties. "
+           "Assuming unverified defaults.";
+```
+
+So the fallback is not silent: **libcamera says out loud that it is guessing.**
+That turns a source-reading argument into two things measurable on the device,
+and neither has been run yet:
+
+1. ☠️ **Confirm the warning actually fires for our camera.** If
+   `No sensor delays found in static properties` is not in the libcamera log for
+   `imx363`, then something else is supplying properties and this whole lead is
+   built on a misreading. **Run this before writing any patch** — it is the
+   cheapest possible disconfirmation and it costs one camera start.
+2. **Establish whether the delays are applied at all.** `delayedCtrls_` is only
+   driven when the pipeline finds a **frame-start event emitter**
+   (`simple.cpp:1656`: `if (frameStartEmitter) { setFrameStartEnabled(true); …
+   frameStart.connect(…) }`). If our camss/imx363 path emits no
+   `V4L2_EVENT_FRAME_SYNC`, `DelayedControls` is constructed and never applies
+   anything — the entry would be correct and inert. Read the pipeline's own
+   `Debug` log for the emitter, or check the subdev for the event.
+
+**Only if both come back positive is measuring the true delays worth the time.**
+And the measurement is then well defined: step the gain (or exposure) by a large
+amount on one frame and find how many frames later the change appears — that
+count *is* `gainDelay` / `exposureDelay`.
+
+☠️ **Two things are still not inventable and must not be guessed into a patch:**
+the delays themselves, and the test pattern modes (measured absent: the driver
+exposes no `test_pattern` control, so `testPatternModes` stays empty). Only
+`unitCellSize = { 1400, 1400 }` is safely derivable, and it is cross-checked two
+independent ways in the section above.
