@@ -20,7 +20,7 @@ import statistics as st
 
 def read(path):
     os_name, kernel, window, full_uah = "?", "?", None, None
-    t, i, v, cc = [], [], [], []
+    t, i, v, cc, temp = [], [], [], [], []
     lit = []          # sample times at which the panel was NOT off
     for line in open(path):
         line = line.rstrip("\n")
@@ -59,8 +59,19 @@ def read(path):
             tok = f[4]
             if "ppo=1" in tok or "=enabled" in tok:
                 lit.append(int(f[0]))
+        # ☠️ Temperature, carried per sample since 2026-08-26. Four oracle
+        # windows disagreed by 4.5x with nothing recorded that could name what
+        # differed between them; the pack temperature is one of the three
+        # candidates that outlived the state of charge, and it was not in any
+        # of the files. A run whose conditions were not recorded cannot be
+        # compared, only reported.
+        if len(f) > 5 and f[5] != "?":
+            try:
+                temp.append(int(f[5]) / 10.0)
+            except ValueError:
+                pass
     return dict(path=path, os=os_name, kernel=kernel, window=window,
-                full=full_uah, t=t, i=i, v=v, cc=cc, lit=lit,
+                full=full_uah, t=t, i=i, v=v, cc=cc, lit=lit, temp=temp,
                 has_panel_col=any(len(l.split()) > 4 for l in open(path)
                                   if l[:1].isdigit()))
 
@@ -87,6 +98,12 @@ def report(d):
     tag = "NOT QUOTABLE " if d["lit"] else "current_now  "
     print(f"   {tag}floor(p10) {p10:6.1f} mA   median {st.median(i):6.1f} mA"
           f"   (mean {sum(i) / len(i):6.1f}, reported only to show the burst pull)")
+    if d["temp"]:
+        print(f"   pack temp    {min(d['temp']):.1f} -> {max(d['temp']):.1f} °C"
+              f"   (median {st.median(d['temp']):.1f})")
+    else:
+        print("   ☠️ pack temp NOT RECORDED - predates 2026-08-26. This run cannot be")
+        print("      compared against another on temperature, only on the numbers.")
     if cc and d["full"]:
         dt = cc[-1][0] - cc[0][0]
         dq = (cc[0][1] - cc[-1][1]) / 10000.0 * d["full"] / 1000.0   # mAh
@@ -118,6 +135,17 @@ def main():
         for d, f in withfloor[1:]:
             print(f"   {d['os']} {f:.1f} mA  vs  {base[0]['os']} {base[1]:.1f} mA"
                   f"   -> {f - base[1]:+.1f} mA")
+            # ☠️ A gap line is a claim that these two runs differed in the thing
+            # under test and not in their conditions. Say it out loud when that
+            # cannot be checked, or when it is checkable and false: an unlabelled
+            # difference is how the 2026-08-24 oracle figure became a reference.
+            a, b = d["temp"], base[0]["temp"]
+            if not a or not b:
+                print("      ☠️ unverifiable: at least one run has no temperature column,")
+                print("         so nothing rules out a colder pack as the whole difference.")
+            elif abs(st.median(a) - st.median(b)) > 3.0:
+                print(f"      ☠️ the packs were {st.median(a):.1f} °C and "
+                      f"{st.median(b):.1f} °C: these two runs are NOT a matched pair.")
     return 0
 
 

@@ -137,6 +137,100 @@ lcdb_says_on() {
 	return 1
 }
 
+# --- the state the phone was in, not just how much it drew ------------------
+# ☠️ Added 2026-08-26, after four windows of oracle data could not be compared
+# with a fifth from another day. Every one of them recorded the state of charge
+# and nothing else about the conditions, so when the numbers disagreed by 4.5x
+# there was no way to tell a colder pack from a busier radio from a different
+# WiFi state - the three explanations that outlive the state of charge. A
+# measurement that cannot name what differed between two runs is not a
+# comparison, however carefully the current itself was sampled.
+#
+# Everything here is best-effort and CROSS-OS, and each probe prints `?` rather
+# than nothing when it finds no source: an absent line reads as "this did not
+# apply", which is the failure this block exists to stop.
+
+bat_temp() {
+	# deci-degC. mainline exposes it on the charger (added by this port), the
+	# downstream 4.9 gauge on the battery node.
+	for f in "$BAT/temp" /sys/class/power_supply/*/temp; do
+		[ -r "$f" ] && { cat "$f"; return; }
+	done
+	echo '?'
+}
+
+env_snapshot() {
+	echo "# --- environment ($1) ---"
+	echo "# uptime_s=$(cut -d' ' -f1 /proc/uptime 2>/dev/null || echo '?')" \
+	     "loadavg=$(cut -d' ' -f1-3 /proc/loadavg 2>/dev/null || echo '?')"
+	echo "# battery: temp_dC=$(bat_temp)" \
+	     "capacity=$(cat "$BAT/capacity" 2>/dev/null || echo '?')" \
+	     "v=$(cat "$BAT/voltage_now" 2>/dev/null || echo '?')" \
+	     "status=$(cat "$BAT/status" 2>/dev/null || echo '?')" \
+	     "full_uAh=${FULL_UAH:-?}"
+
+	# Thermal zones: the pack is one temperature, the SoC another, and a run
+	# that idles hot is not the same run.
+	printf '# thermal:'
+	found=
+	for z in /sys/class/thermal/thermal_zone*/; do
+		[ -r "$z/temp" ] || continue
+		printf ' %s=%s' "$(cat "$z/type" 2>/dev/null)" "$(cat "$z/temp" 2>/dev/null)"
+		found=1
+	done
+	[ -n "$found" ] || printf ' ?'
+	echo
+
+	# WiFi: /proc/net/wireless is the one file both kernels have, and it
+	# carries the signal level, not just "associated".
+	printf '# wifi:'
+	if [ -r /proc/net/wireless ]; then
+		sed -n '3,$p' /proc/net/wireless 2>/dev/null |
+			while read -r ifc _ link level rest; do
+				printf ' %s link=%s level=%s' "$ifc" "$link" "$level"
+			done
+		[ -s /proc/net/wireless ] || printf ' ?'
+	else
+		printf ' ?'
+	fi
+	echo
+
+	# The modem. ☠️ This is the device's largest known waker (IRQ 141, the SMD
+	# edge), so a run that does not record its state cannot rule it out. The
+	# two kernels expose it under different names: mainline as a remoteproc,
+	# downstream 4.9 as an msm_subsys device.
+	printf '# remote processors:'
+	found=
+	for r in /sys/class/remoteproc/remoteproc*/; do
+		[ -r "$r/state" ] || continue
+		printf ' %s=%s' "$(cat "$r/name" 2>/dev/null)" "$(cat "$r/state" 2>/dev/null)"
+		found=1
+	done
+	for s in /sys/bus/msm_subsys/devices/subsys*/; do
+		[ -r "$s/state" ] || continue
+		printf ' %s=%s' "$(cat "$s/name" 2>/dev/null)" "$(cat "$s/state" 2>/dev/null)"
+		found=1
+	done
+	[ -n "$found" ] || printf ' ?'
+	echo
+
+	# Registration is userspace and neither OS answers it the same way. Say so
+	# in the file: an unrecorded radio state is a named gap, not an absence.
+	printf '# radio registration:'
+	if command -v mmcli >/dev/null 2>&1; then
+		printf ' %s' "$(mmcli -m 0 2>/dev/null |
+			sed -n 's/.*state: *\([a-z]*\).*/\1/p' | head -1)"
+		printf ' (mmcli; needs root - blank means it refused)'
+	elif [ -d /sys/class/net/rmnet_data0 ]; then
+		printf ' rmnet_data0=%s (link state only; not registration)' \
+			"$(cat /sys/class/net/rmnet_data0/operstate 2>/dev/null)"
+	else
+		printf ' ? NOT RECORDED - no cross-OS source'
+	fi
+	echo
+	echo "# --- end environment ($1) ---"
+}
+
 # One compact line of everything that claims to know, for the sample stream and
 # for the end-of-window verdict.
 panel_state() {
@@ -239,14 +333,16 @@ c0=$([ -n "$CC" ] && cat "$CC" || echo -); v0=$(cat "$BAT/voltage_now"); t0=$(da
 # hour without looking again - so a panel that came back up mid-window would be
 # read as the phone drawing more current, on the exact question ("was the screen
 # really off") this instrument exists to settle. A gate at the door only.
-echo "# t_s current_uA voltage_uV${CC:+ cc_soc} panel"
+env_snapshot "opening"
+
+echo "# t_s current_uA voltage_uV${CC:+ cc_soc} panel temp_dC"
 RELIT=
 while [ $(( $(date +%s) - t0 )) -lt "$WINDOW" ]; do
 	ps=$(panel_state)
 	panel_is_off || RELIT="$RELIT $(( $(date +%s) - t0 ))"
-	printf '%s %s %s %s %s\n' "$(( $(date +%s) - t0 ))" \
+	printf '%s %s %s %s %s %s\n' "$(( $(date +%s) - t0 ))" \
 		"$(cat "$BAT/current_now")" "$(cat "$BAT/voltage_now")" \
-		"$([ -n "$CC" ] && cat "$CC" || echo -)" "$ps"
+		"$([ -n "$CC" ] && cat "$CC" || echo -)" "$ps" "$(bat_temp)"
 	sleep 5
 done
 t1=$(date +%s); v1=$(cat "$BAT/voltage_now"); c1=$([ -n "$CC" ] && cat "$CC" || echo -)
@@ -268,5 +364,6 @@ if [ -n "$RELIT" ]; then
 else
 	echo "# panel: off for all $(( W / 5 + 1 )) samples of the window"
 fi
+env_snapshot "closing"
 echo "# DONE $(date)"
 echo "# output: $OUT"
