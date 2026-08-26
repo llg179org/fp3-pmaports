@@ -6235,3 +6235,51 @@ reboot.
 second mechanism, it should abort at leg-A-like durations with **no upward
 trend**. If it sleeps full term, then leg A's aborts are unexplained and the
 decay is the only established phenomenon.
+
+---
+
+## ★★★★ 2026-08-26 06:1x — the aborts come back ON BATTERY, at an uptime where the cable-in phone slept through
+
+The registered prediction for this leg was: *if battery-vs-cable is the second
+mechanism, it should abort at leg-A-like durations with no upward trend.*
+
+Two of three rounds in, with USBIN suspended and everything else identical:
+
+| round | uptime | slept, of 600 | cable-in phone at the same uptime |
+|---|---|---|---|
+| 1 | 1 345 s | **161 s** | — |
+| 2 | 1 656 s | **36 s** | **601 s (full term)**, wake probe at 1 637 s |
+
+**Round 2 is nineteen seconds of uptime away from the cable-in probe that slept
+the whole 600, and it slept 36.** And the direction is wrong for a decay: 161 → 36
+is *down*, matching leg A's 50/89/32/59 and its absence of any trend.
+
+### So there are two separate things, and the second one is ours
+
+1. **A post-boot decay**, cable in: 50 → 168 → 356 → full term by ~1 600 s.
+2. **Something about running on battery** — which on this bench means **the
+   USBIN suspend bit**, not a physically absent cable — that brings the aborts
+   back at any uptime.
+
+☠️☠️ **If (2) holds, it reaches back through the whole project.** Every sleeping
+measurement here — `suspend-leg.sh`, `suspend-slope.sh`, `slope-leg.sh`, the
+A-B-A, `radiolow-20260824`, `nomodem-20260819` — suspends USBIN by design, so
+that the sample is the phone and not the cable. If suspending USBIN is itself
+what keeps waking the phone, then every one of those legs measured a device being
+woken by its own charger input, and the "asleep" numbers are not asleep numbers.
+
+**That is a large claim and it is not yet made.** What exists is two rounds and a
+contrast against a different boot. The charger and typec wakeup sources
+(`pmi632-charger`, `pmi632-battery`, `tcpm-source-psy-…typec@1500`) are the
+obvious suspects and are named here only as suspects.
+
+### The control, and its prediction, registered now
+
+As soon as the third round finishes: **restore charging and immediately run the
+same suspends again, same boot, same uptime region.** That is the interleaved
+control the whole night has been short of.
+
+**Prediction: with charging restored they go back to full term.** If they do not
+— if the aborts persist with the cable delivering — then the variable is not
+USBIN at all, it is something the battery series did *to* the phone, and the two
+mechanisms collapse back into one unknown.
