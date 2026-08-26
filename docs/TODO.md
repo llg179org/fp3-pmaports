@@ -352,7 +352,52 @@ measurements that disagree.
    come from an instrument that measures *level*, not events, because every
    event-counting instrument has now been run.
 
-### ⏳ IN FLIGHT overnight 2026-08-25 → 26: the A-B-A on r76
+### ✅ RAN, and it answered a different question than it asked — 2026-08-26
+
+The A-B-A completed (3 jobs, rc=0, guardian silent), and what it produced was not
+a current comparison at all. Full account: findings-log 2026-08-26 entries.
+
+**What it found.** The legs differ *categorically* in whether the phone stays
+asleep, not in how much it draws while asleep:
+
+| leg | modem | slept, of 4 × 600 s asked |
+|---|---|---|
+| A | up, registered | 50 + 89 + 32 + 59 = **230 s (9.6 %)** |
+| B | stack cut | 2407 s (100 %) |
+| A′ | ☠️ **still cut — not a control** | 2407 s (100 %) |
+
+A follow-up `wakeup-census` reproduced it (67 s of 600 up, 601 s cut) and added
+the modem side: **MPSS +179 XO shutdowns in 67 s**, crystal off 52 % of the
+window.
+
+☠️☠️ **But it is NOT a law, and I published it as one.** An instrumented suspend
+an hour later — modem up, registered on LTE, same kernel, cable in — **slept the
+full 601 s.** So: real, large, never seen with the modem cut (0 of 6), not the
+wake-armed edge (all edges read `disabled`), and **not universal** (1 of 6
+radio-up suspends ran full term). The claim is withdrawn from STATUS and the
+findings log.
+
+☠️ **Two casualties of the run itself.** Leg A's fitted 52.0 mA fails its own r²
+gate (0.74, window 6× too short *because* it did not sleep) and must not be
+quoted. And A′ was not a control: `restore()` restarted the services but not the
+modem — a failure this project had documented on 2026-08-21 and never put into a
+tool. Three tools are now fixed to verify and abort.
+
+**Next, and it is a rate, not another story:** n identical suspends with the
+modem up, one candidate variable at a time — time since boot (the aborting arms
+were ~11 min in, the full-term one ~27), time since registration, battery vs
+cable. Running as `srate.sh 8 600`.
+
+☠️ Also re-open: exclusion 6 of the seven ("no source carries a nonzero
+`prevent_suspend_time`") did **not** reproduce — four do (`rtc`,
+`pmi632-battery`, `pmi632-charger`, `tcpm`). They are cumulative rather than
+per-suspend, so this is not yet a finding; it must be re-measured as a **delta
+across one suspend** before it is restored or withdrawn, and until then it should
+not be counted among the seven.
+
+<details><summary>The original plan, kept for the protocol</summary>
+
+### The A-B-A on r76, as designed
 
 Started 19:31, `night-20260825-aba`, preflight PASSED, ~6 h. Three legs on ONE
 descent, `SLOPE_SLEEP=600 SLOPE_CYCLES=4 SLOPE_SETTLE=600`, recharging to 90 %
@@ -372,6 +417,8 @@ rmtfs` powers the modem down and a restart does not bring it back — see the
 traps at the end of the modem-lead section.
 
 Jobs file: [`power/bringup/night/jobs-2026-08-25.txt`](power/bringup/night/jobs-2026-08-25.txt).
+
+</details>
 
 ☠️ **Do not poll the phone during a leg.** Measured 2026-08-25: 74 ssh logins
 in 70 minutes — waiter loops — cost **18.3 mA** on the coulomb integral and
