@@ -183,17 +183,18 @@ env_snapshot() {
 
 	# WiFi: /proc/net/wireless is the one file both kernels have, and it
 	# carries the signal level, not just "associated".
-	printf '# wifi:'
-	if [ -r /proc/net/wireless ]; then
-		sed -n '3,$p' /proc/net/wireless 2>/dev/null |
-			while read -r ifc _ link level rest; do
-				printf ' %s link=%s level=%s' "$ifc" "$link" "$level"
-			done
-		[ -s /proc/net/wireless ] || printf ' ?'
-	else
-		printf ' ?'
-	fi
-	echo
+	# ☠️ The signal level, not just "associated": a weak link makes the radio
+	# retransmit and transmit harder, so two runs at -84 and at -60 dBm are not
+	# the same idle. Measured 2026-08-26: it moved 6 dB inside a 60 s window.
+	# ☠️ And do NOT test /proc/net/wireless with `test -s` - procfs files report
+	# size 0 whatever they contain, so the "nothing found" marker printed on top
+	# of a perfectly good reading. Build the string first, then judge it.
+	wl=$(sed -n '3,$p' /proc/net/wireless 2>/dev/null |
+		while read -r ifc _ link level _; do
+			printf ' %s link=%s level=%s' \
+				"${ifc%:}" "${link%.}" "${level%.}"
+		done)
+	echo "# wifi:${wl:- ?}"
 
 	# The modem. ☠️ This is the device's largest known waker (IRQ 141, the SMD
 	# edge), so a run that does not record its state cannot rule it out. The
