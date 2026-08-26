@@ -5961,3 +5961,62 @@ week ago. The night therefore re-measured a known state, lost its control, and
 its one genuinely new result came from a column nobody was designing around: the
 sleep durations. **The instrument that answered was not the instrument that was
 aimed.**
+
+
+---
+
+## ☠️☠️ 2026-08-26 04:13 — the "radio up means it cannot sleep" law is FALSIFIED one hour after it was published
+
+An instrumented single suspend, run to find *which* interrupt terminates the
+short ones, instead terminated the claim:
+
+```
+# wprobe 04:02:40  uptime=1637
+# modem:  /org/freedesktop/ModemManager1/Modem/0  (registered, lte, home)
+SLEPT=601s of 600
+```
+
+**Modem up, registered, cable in — full term.** Against five consecutive aborts
+earlier the same night: leg A's 50 / 89 / 32 / 59 s of 600 each, and the census's
+67 s of 600.
+
+**So the abort is conditional, and I published it as categorical.** The entry
+above and the STATUS block both said "with the radio up, the phone does not stay
+asleep", from n=5 in one direction and no attempt to break it. That is the
+project's own recurring failure — a first-sample confirmation removing the reason
+to keep looking — arriving from me rather than from an instrument.
+
+**What survives, stated at the strength the data supports:**
+
+* the abort is real and large when it happens (67 s of 600 requested);
+* it has **never** been seen with the modem cut (0 of 6 such arms);
+* it is **not** the wake-armed modem edge — every rpmsg edge read `disabled`;
+* it is not universal with the radio up: 1 of 6 radio-up suspends ran full term.
+
+**Candidate variables, none tested.** The aborting arms were ~11 min after boot;
+the full-term one ~27 min. Leg A was on battery, the other two cable-in. The
+modem's registration age differs the same way as uptime. The next measurement is
+therefore not another census but **a rate**: n suspends of the same length, modem
+up, one condition at a time, so "sometimes" acquires a number.
+
+### Two other things this probe returned, and one contradicts an exclusion
+
+```
+# wakeup_sources with nonzero prevent_suspend_time:
+   tcpm-source-psy-…:typec@1500        prevent=14357
+   pmi632-battery                      prevent=924382
+   pmi632-charger                      prevent=13296
+   …:pmic@0:rtc@6000                   prevent=970747
+```
+
+☠️ **Exclusion 6 of the seven — "no source carries a nonzero
+`prevent_suspend_time`" — does not reproduce.** Four do. They are cumulative
+since boot rather than per-suspend, so this is not yet a finding either way; what
+it is, is a published exclusion that the very next look contradicted. It must be
+re-measured as a delta across one suspend before it is either restored or
+withdrawn, and until then it should not be counted among the seven.
+
+`pm_wakeup_irq` reads back unreadable on this kernel, so the s2idle waker still
+has no direct AP-side witness — consistent with what the call-wake test found on
+2026-08-25. Two interrupt lines appeared that the census did not show, `140`
+(+38) and `141` (+12); their names have not been read yet.

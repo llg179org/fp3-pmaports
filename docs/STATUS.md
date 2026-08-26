@@ -337,8 +337,21 @@ is now item 4.
 
 ### ★★★★ 2026-08-26 — the modem lead has a mechanism, and it is not current
 
-**With the radio up, the phone does not stay asleep.** Measured twice on r76 by
-two unrelated instruments the same night:
+☠️☠️ **OVERCLAIMED AND CORRECTED WITHIN THE HOUR, 2026-08-26 04:13.** What is
+below was written as a categorical law — *"with the radio up, the phone does not
+stay asleep"* — on five aborted suspends from two instruments. A third
+instrument, one hour later, same kernel, same cable state, **modem registered on
+LTE, slept the full 601 s of 600 asked.** So the abort is real but
+**conditional**, and the condition is not yet named. Do not quote the law.
+
+What still stands: the abort happens, it is large when it happens (67 s of 600),
+and it never once happened with the modem cut. What does not stand: that it
+happens *whenever* the radio is up. Candidate variables, none tested — time since
+boot (the aborting arms were 11 min in, the full-term one 27 min), time since the
+modem registered, and whether the pack was on battery or the cable.
+
+**With the radio up, the phone sometimes does not stay asleep.** Measured on r76
+by two instruments the same night:
 
 | instrument | modem up | modem cut |
 |---|---|---|
