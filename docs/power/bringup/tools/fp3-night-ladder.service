@@ -8,6 +8,11 @@ After=fp3-charge-guard.service network.target
 
 [Service]
 Type=simple
+# ☠️ The path is deployment-specific, and it is not a detail: on Ubuntu Touch
+# the rootfs is mounted ro, so /usr/local/bin is unwritable and the script lives
+# in /home/phablet/fp3 instead. Measured 2026-08-26: /etc/systemd/system IS
+# writable and persistent there (bind-mounted from the userdata partition), so
+# unit files and their enable symlinks do survive a reboot on both systems.
 ExecStart=/usr/local/bin/night-ladder.sh 8 3600
 # ☠️ TimeoutStopSec is deliberately generous: the script restores the charge
 # input in its SIGTERM trap, and killing it before that runs is the one failure

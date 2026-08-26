@@ -37,6 +37,18 @@ for d in /var/log/fp3 /home/user/fp3 /home/phablet/fp3 /userdata/fp3; do
 done
 : "${OUTDIR:?no writable persistent directory found}"
 STATE="$OUTDIR/ladder.state"
+
+# ☠️ The instrument must live on persistent storage too. An earlier version
+# called /tmp/idle-ab.sh, which is tmpfs: the ladder would have resumed happily
+# after a reboot and then failed every remaining rung, because the script it
+# runs would be gone while the script running it survived. Half a design that
+# survives a reboot is not a design that survives a reboot. Resolve it next to
+# this script first, and refuse to start rather than discover it a rung later.
+SELFDIR=$(dirname "$0")
+for c in "$SELFDIR/idle-ab.sh" "$OUTDIR/idle-ab.sh" /usr/local/bin/idle-ab.sh /tmp/idle-ab.sh; do
+	[ -x "$c" ] && IDLE_AB="$c" && break
+done
+: "${IDLE_AB:?idle-ab.sh not found next to this script or in $OUTDIR - refusing to start}"
 LOG="$OUTDIR/ladder.log"
 
 say() { echo "$(date '+%F %T') $*" >> "$LOG"; }
@@ -61,7 +73,7 @@ trap 'restore_input' EXIT
 # middle costs that rung only.
 START=1
 [ -r "$STATE" ] && START=$(cat "$STATE" 2>/dev/null) && [ -n "$START" ] || START=1
-say "=== night-ladder start rounds=$ROUNDS window=${WINDOW}s resuming at rung $START outdir=$OUTDIR"
+say "=== night-ladder start rounds=$ROUNDS window=${WINDOW}s resuming at rung $START outdir=$OUTDIR instrument=$IDLE_AB"
 
 n=$START
 while [ "$n" -le "$ROUNDS" ]; do
@@ -82,7 +94,7 @@ while [ "$n" -le "$ROUNDS" ]; do
 	fi
 	say "rung $n/$ROUNDS begin: uptime=$(cut -d' ' -f1 /proc/uptime) cap=${cap}% v=$(cat "$BAT/voltage_now" 2>/dev/null) temp=$(cat "$BAT/temp" 2>/dev/null) status=$(cat "$BAT/status" 2>/dev/null)"
 
-	if /tmp/idle-ab.sh "$WINDOW" >/dev/null 2>&1 || true; then :; fi
+	"$IDLE_AB" "$WINDOW" >/dev/null 2>&1 || true
 	src=$(ls -t /tmp/idle-ab-*.txt 2>/dev/null | head -1)
 	if [ -n "$src" ] && [ -s "$src" ]; then
 		cp "$src" "$OUTDIR/rung-$n.txt"
