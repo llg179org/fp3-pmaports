@@ -1,0 +1,22 @@
+# suspend-rate.sh 3 600 150, started by a one-shot systemd unit 240 s after a
+# NORMAL boot (modem brought up by the boot path, not by hand). r76, cable in.
+# This is the decisive test for the prediction registered in findings-log
+# "2026-08-26 ~05:4x — a PREDICTION, written before the running series is read".
+
+# srate n=3 secs=600 gap=150s start_uptime=262 kernel=#77-fp3
+# cable: online=1 status=Charging
+# modem remoteproc state at start: running
+# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta
+1 262 50 600 registered 100 126
+2 462 168 600 registered 100 408
+3 780 356 600 registered 100 898
+# done
+
+# The aborts came back, as predicted. What was NOT predicted is the shape:
+#   50 -> 168 -> 356 s, monotonically increasing, at uptimes 262 / 462 / 780.
+# Together with the wake probe (uptime 1637, full term) and the 8-round series
+# (uptime 2340 onward, 8/8 full term) that is a DECAY, not a binary state.
+#
+# mpss_xo_delta / slept_s = 2.52 / 2.43 / 2.52 per second - the same constant as
+# every full-term round. The modem's crystal churn tracks how long the AP was
+# asleep and nothing else. Acquitted a second time.

@@ -6181,3 +6181,57 @@ recorded — as written down *before* this result, so that reading cannot be
 revised now.
 
 Capture: `captures/2026-08-26_suspend-rate-8x600.txt`.
+
+---
+
+## ★★★ 2026-08-26 06:02 — prediction (2) confirmed, and the phenomenon is a DECAY
+
+A one-shot systemd unit ran the same series 240 s after a **normal boot**, with
+the modem brought up by the boot path:
+
+| round | uptime | slept, of 600 | MPSS XO | XO per second asleep |
+|---|---|---|---|---|
+| 1 | 262 s | **50 s** | 126 | 2.52 |
+| 2 | 462 s | **168 s** | 408 | 2.43 |
+| 3 | 780 s | **356 s** | 898 | 2.52 |
+
+**The aborts came back.** Both registered predictions held. But the shape is
+something neither of them called: **50 → 168 → 356 s, monotonically increasing.**
+Put beside the rest of the night — full term at uptime 1637, and 8 of 8 full term
+from uptime 2340 — this is not a binary state at all. **It is a decay, and it is
+essentially gone by ~20–25 minutes after boot.**
+
+That is a much better object than the hypothesis that predicted it. A binary
+"boot modem vs restarted modem" would give a constant abort length; a decay says
+something is *draining* — a queue, a retry backoff, a registration procedure, a
+timer that stops being rearmed.
+
+☠️ **And the MPSS crystal is acquitted a second time, more strongly.** Its
+shutdown count divided by the time actually asleep is **2.52 / 2.43 / 2.52 per
+second** — identical to the 2.4–2.5 measured across eight full-term sleeps. It
+tracks how long the AP was down and nothing else.
+
+### ☠️ A correction I owe: I excluded battery-vs-cable on bad grounds
+
+The pre-registered entry killed that candidate with one line — *"cable versus
+battery dies on the census's UP arm, which aborted with the cable in"*. That arm
+was at **uptime 686**, which this result places squarely **inside the decay
+window**. Its abort is explained by the decay, so it says nothing about the
+cable, and **the candidate was never actually excluded.**
+
+This matters because leg A is the one observation the decay does *not* explain:
+it aborted at 50/89/32/59 s **4.3 hours into its boot**, with no upward trend,
+and it is the only run of the night taken **on battery**. So either the decay
+restarts, or there is a second mechanism, and the difference leg A carries is
+the charger.
+
+**Running now:** the identical 3 × 600 s series, well past the decay window, with
+USBIN suspended — the one condition leg A had and every full-term run did not.
+☠️ A `deadman` systemd timer restores the charger after 70 minutes regardless of
+what the script does, because the suspend bit lives in the PMIC and survives a
+reboot.
+
+**Prediction, registered before that series is read:** if battery-vs-cable is the
+second mechanism, it should abort at leg-A-like durations with **no upward
+trend**. If it sleeps full term, then leg A's aborts are unexplained and the
+decay is the only established phenomenon.
