@@ -337,6 +337,40 @@ is now item 4.
 
 ### ★★★★ 2026-08-26 — the modem lead has a mechanism, and it is not current
 
+### ★★★ 2026-08-26 06:02 — the suspend abort is a DECAY, and it is reproducible on demand
+
+The night's most useful result, and the cheapest experiment on the whole power
+track: **reboot, wait, suspend.** Measured with `tools/suspend-rate.sh` from a
+one-shot unit 240 s after a normal boot, modem registered, cable in:
+
+| uptime at suspend | slept, of 600 asked |
+|---|---|
+| 262 s | **50 s** |
+| 462 s | **168 s** |
+| 780 s | **356 s** |
+| 1 637 s | **601 s** (full term) |
+| 2 340 s → 6 764 s, eight rounds | **602 s every time** |
+
+**Something drains over the first ~20–25 minutes of a boot and takes the
+suspends with it.** Not a binary state, not the radio as such — a decay. A queue,
+a retry backoff, a registration procedure or a timer that stops being rearmed.
+
+**Three candidates are dead, each on measurement:** the wake-armed modem edge
+(every edge reads `disabled`), time-since-boot as a *binary* (leg A aborted 4.3 h
+in), and ★ **the MPSS crystal churn** — its shutdown count per second *asleep* is
+**2.4–2.5 in both regimes**, so it tracks how long the AP was down and nothing
+else. The 2026-08-24 reading bundled two independent facts; one was scenery.
+
+☠️ **One observation the decay does not explain:** leg A, 4.3 h into its boot,
+aborted at 50/89/32/59 s with no upward trend — and it is the only run of the
+night taken **on battery**. The identical series on battery is running now, with
+its prediction registered in the findings log beforehand and a `deadman` timer to
+restore the charger regardless of outcome.
+
+**The instrument that would end this is not built:** `pm_wakeup_irq` needs
+`CONFIG_PM_DEBUG`, staged in `0cc13b7` and not yet compiled. It is now clearly
+worth a build.
+
 ☠️☠️ **OVERCLAIMED AND CORRECTED WITHIN THE HOUR, 2026-08-26 04:13.** What is
 below was written as a categorical law — *"with the radio up, the phone does not
 stay asleep"* — on five aborted suspends from two instruments. A third
