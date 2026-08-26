@@ -5875,3 +5875,89 @@ long-standing open item, not fallout from this run. Charger input was restored
 
 Captures: `captures/2026-08-26_aba-{slope-A,slope-B,slope-Aprime}.txt`,
 `…_aba-leg-*.txt`, `…_aba-guardian.log`.
+
+---
+
+## ☠️☠️☠️ 2026-08-26 — the rule that would have saved last night was written down on 2026-08-21, in this file, and never put into a single tool
+
+Chasing the destroyed A′ control leg back through the tools produced something
+much worse than a bug. **This project already knew.** On 2026-08-21 this file
+recorded the mechanism, retracted four legs on the strength of it, and wrote the
+fix out in words:
+
+> What a valid service-pricing now requires: the modem verified `running` at cut
+> time and at leg end (one `cat /sys/class/remoteproc/*/state` in the leg
+> preamble and epilogue), and **rmtfs never stopped** while pricing anything
+> other than modem-off itself.
+
+Five days later, `night/jobs-2026-08-25.txt` cut `rmtfs` to price "the modem
+stack", `slope-leg.sh` verified nothing at either end, and the night's control
+leg was lost to **exactly** the failure this paragraph describes. Nothing new
+was learned by paying for it a second time.
+
+### The tools, audited 2026-08-26
+
+Every tool that stops a service was checked for whether it knows about the
+remoteproc. Four stopped `rmtfs` or `ModemManager` with no awareness at all:
+
+| tool | how bad | now |
+|---|---|---|
+| `slope-leg.sh` | **fatal** — destroyed the 2026-08-25 A′ control | fixed: remoteproc start + `mmcli` verify + a log line that names any later leg as invalid |
+| `wakeup-census.sh` | **fatal** — it *alternates*, so after round 1 every "MODEM UP" arm was modem-down | fixed: verify between rounds, and **abort** rather than run mislabelled arms |
+| `ab-leg.sh` | **fatal and worst by design** — interleaving is its entire reason to exist | fixed: verify after each uncut, abort on failure |
+| `idle-ladder.sh`, `freq-probe.sh` | restore-only damage (single arm, monotonic ladder) | guard added |
+
+☠️ **`ab-leg.sh` deserves its own line.** Its `CUT` arm runs *first*, so the
+modem is down before the first `FULL` arm ever happens: both 2026-08-20 captures
+contain **one condition sampled 15 and 8 times**, not two arms. The 2026-08-21
+entry above already retracted their null. What nobody did was change
+`cut_off()`, which was still `for s in $STOPPED; do systemctl start "$s"; done`
+when it was read this morning.
+
+### ★ The witness, and it was in the output all along
+
+`ab-leg.sh` prints `slept=Ns of Ms` on every arm. Both 2026-08-20 captures read
+**1802 s of 1800** and **901 s of 900** — every arm, `CUT` and `FULL` alike. As
+of 2026-08-26 we know a registered, radio-up phone sleeps **9.6 %** of what it
+asks. A full-term `FULL` arm is therefore self-evidently not a `FULL` arm.
+
+**The contamination was legible in the raw capture from the day it was taken.**
+It needed no extra instrument, no re-run and no cleverness — only a reason to
+look at the column, which arrived five days later from an unrelated measurement.
+That is the argument for printing the *state* beside every result, even when
+nobody has asked what it is for.
+
+### The method finding, which outranks the power finding
+
+This is the "a rule that lives only behind a link does not fire" failure with the
+last excuse removed: the rule was not behind a link, not in a skill, not in an
+upstream document. It was **in bold, in our own findings log, with the exact
+command to run**. It still did not fire, because a findings log is read when you
+are looking for a finding, and nobody is looking for a finding at the moment they
+schedule a night run.
+
+**A rule stated in prose is a wish. A rule in a script is a rule.** Where a
+measurement has a validity precondition, the precondition belongs in the tool as
+a gate that can fail and say why — and the retraction that discovers it is not
+finished until that gate exists. The 2026-08-21 entry ended by *stating* the
+requirement; it should have ended by *implementing* it, and this entry is what
+that cost.
+
+☠️ **Self-correction to the commit earlier this morning** (`4af923e`, "the
+2026-08-20 wakeup census had mislabelled arms"): the *mechanism* it describes —
+stopping `rmtfs` powers the modem down — was not discovered this morning. It was
+established on 2026-08-21 and is written above. What this morning genuinely adds
+is narrower and still worth having: that the census's **six-arm conclusion** and
+its **MPSS table** are affected (the 2026-08-21 note flagged only one sentence of
+that entry), and that the MPSS table's headline **inverts**, since its one
+crystal-off arm is the one where the modem had been switched off. The commit
+message reads as a fresh discovery of the mechanism. It was not.
+
+### What this does to last night's leg B
+
+Leg B cut `ModemManager rmtfs tqftpserv`, so by the 2026-08-21 rule its honest
+name is **modem-off**, not "the modem stack cut" — a state this project priced a
+week ago. The night therefore re-measured a known state, lost its control, and
+its one genuinely new result came from a column nobody was designing around: the
+sleep durations. **The instrument that answered was not the instrument that was
+aimed.**

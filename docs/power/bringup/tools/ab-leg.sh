@@ -115,7 +115,49 @@ cut_on() {
 		systemctl is-active --quiet "$s" 2>/dev/null && systemctl stop "$s" 2>/dev/null && STOPPED="$STOPPED $s"
 	done
 }
-cut_off() { for s in $STOPPED; do systemctl start "$s" 2>/dev/null; done; STOPPED=""; }
+# ☠️☠️ `systemctl start rmtfs` DOES NOT UNDO `systemctl stop rmtfs`. Stopping it
+# powers the modem DOWN, and only an explicit remoteproc start brings it back.
+#
+# That is fatal for THIS script specifically, and it took until 2026-08-26 to
+# see it. Interleaving the arms is the whole design — it is why drift is shared
+# and why this is preferable to two separate legs. But if the cut powers the
+# modem off, then from cycle 1's CUT arm onward the modem never comes back, and
+# every arm labelled FULL is a second CUT arm. The tool then delivers a
+# beautifully drift-controlled comparison of one state against itself, and the
+# null it reports looks exactly like the null the header above tells you how to
+# interpret. A design whose failure mode imitates its documented negative result
+# is the worst kind to leave unfixed.
+#
+# ☠️ The witness that catches it after the fact is already in this script's own
+# output: `slept=Ns of Ms`. With the modem UP and registered, suspends abort
+# early (measured 2026-08-26: 9.6 % of what was asked); with it down they run
+# full term. So in any past capture, a FULL arm that slept full term was not a
+# FULL arm. Check that before trusting an old ab-leg result.
+cut_off() {
+	for s in $STOPPED; do systemctl start "$s" 2>/dev/null; done
+	STOPPED=""
+	case " $CUTS " in *" rmtfs "*|*" ModemManager "*) ;; *) return 0 ;; esac
+
+	# Addressed by platform address, never by index: remoteproc numbering
+	# moves between boots.
+	for r in /sys/class/remoteproc/remoteproc*; do
+		[ "$(cat "$r/name" 2>/dev/null)" = 4080000.remoteproc ] || continue
+		[ "$(cat "$r/state" 2>/dev/null)" = offline ] || continue
+		say "modem remoteproc offline after uncut - restarting it"
+		echo start > "$r/state" 2>/dev/null
+		sleep 15
+		systemctl restart ModemManager 2>/dev/null
+	done
+	i=0
+	while [ "$i" -lt 18 ]; do
+		mmcli -L 2>/dev/null | grep -q 'Modem/' && { say "uncut OK: modem up after $((i * 10))s"; return 0; }
+		i=$((i + 1)); sleep 10
+	done
+	say "☠️ ABORT: no modem after 180s. Every remaining cycle would compare the"
+	say "☠️ cut state against itself, so this leg stops here rather than"
+	say "☠️ producing arms that are mislabelled."
+	exit 1
+}
 
 # One arm: settle briefly so the state is the state, then one suspend, then read.
 arm() {
