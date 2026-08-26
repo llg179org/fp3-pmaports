@@ -2358,10 +2358,33 @@ the gaps are here and only here:
     `SSTATE_MASK` is `GENMASK(4,1)` = `0x1e`, so the call only clears bits 4:1 —
     correct behaviour, misleading constant. Writing `0` is arithmetically
     identical, so no device time is needed. Inherited from downstream.
+
+    ✅ **Confirmed by reading, 2026-08-26** — `wcd9335.h:27` is
+    `GENMASK(4, 1)` and `wcd9335_enable_efuse_sensing()` passes `0x20`, so
+    `0x20 & 0x1e == 0`. The fix is to pass `0` and to say "clear the sense-state
+    field" in the comment rather than "select sense state 0", since `0x20` never
+    selected anything. Ready to ride the next build; not deployed.
 36. **`WCD9335_CODEC_RPM_CLK_MCLK_CFG_12P288MHZ` is `BIT(0)`**, same as
-    `_9P6MHZ`; downstream writes `0x03,0x00` for 12.288 MHz. Pre-existing
-    upstream and unused, so a maintainer may prefer deleting the define to fixing
-    it. Standalone patch, own cycle, low priority.
+    `_9P6MHZ`; downstream writes `0x03,0x00` for 12.288 MHz.
+
+    ☠️ **The words "unused" and "low priority" in the earlier version of this
+    item were wrong, and reading the two trees on 2026-08-26 settled both
+    halves.** The define *is* used — upstream's own
+    `wcd9335_codec_set_sysclk()` selects between `_12P288MHZ` and `_9P6MHZ` on
+    `wcd->mclk_rate` — so a board asking for 12.288 MHz is silently programmed
+    to 9.6 MHz. What is true is that no *in-tree machine driver* ever asks:
+    `apq8016_sbc.c` and `apq8096.c` both pass 9 600 000, which is why nothing
+    has ever failed on it. So it is a live defect with no in-tree reproducer,
+    not a dead constant, and it does not affect this phone.
+
+    The correct value is **`0`**, and the vendor source names it twice
+    independently: in `techpack/audio/asoc/codecs/wcd9335.c` both
+    `tasha_codec_probe()` paths write `{0x03, 0x00}` for
+    `TASHA_MCLK_CLK_12P288MHZ` and `{0x03, 0x01}` for `TASHA_MCLK_CLK_9P6MHZ`.
+    A maintainer may still prefer deleting the define *and* the branch that
+    uses it — that is a bigger call than the one-line correction, and it is the
+    question to put in the patch, not to decide here. Standalone patch, own
+    cycle.
 37. **The `usleep_range(1000, 1100)` before the TX-hold release has no cited
     source** and runs per-ADC on every wcd9335 board. Removing it risks the
     silent capture returning, so it costs cold-boot A/B time. The same commit
