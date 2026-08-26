@@ -6030,3 +6030,46 @@ withdrawn, and until then it should not be counted among the seven.
 has no direct AP-side witness — consistent with what the call-wake test found on
 2026-08-25. Two interrupt lines appeared that the census did not show, `140`
 (+38) and `141` (+12); their names have not been read yet.
+
+---
+
+## 2026-08-26 ~05:4x — a PREDICTION, written before the running series is read
+
+The `srate.sh 8 600` series is in flight and its output has not been looked at.
+Recording the hypothesis first, because the alternative — reading the data and
+then explaining it — is the failure this same file recorded twice today.
+
+**The six radio-up suspends, laid out by every variable that differs:**
+
+| run | uptime at suspend | power | how the modem got up | slept, of 600 |
+|---|---|---|---|---|
+| leg A ×4 | ~15 700 s (4.3 h) | **battery** | boot | 50 / 89 / 32 / 59 |
+| census UP | 686 s (11 min) | cable | boot | 67 |
+| wprobe | 1 637 s (27 min) | cable | ☠️ **`remoteproc start` + `systemctl restart ModemManager`**, 950 s earlier | **601** |
+
+**Two candidate variables die immediately.** *Time since boot* dies on leg A,
+which aborted 4.3 h into its boot — the aborts are not an early-boot artifact.
+*Cable versus battery* dies on the census's UP arm, which aborted with the cable
+in, exactly like the full-term probe.
+
+**What is left splits the six cleanly, 5–1.** Every aborting suspend had a modem
+brought up **by the boot**. The single full-term one had a modem brought up
+**by hand**, minutes earlier, by writing `start` to the remoteproc after the
+census's cut arm had powered it down. A modem re-launched mid-session is not
+obviously in the same state as one launched by the normal boot path — different
+service ordering around it, `pd-mapper` already in its permanent failure, and no
+guarantee it re-applied whatever power-save or paging configuration it had.
+
+**So, as a falsifiable prediction:**
+
+1. The running series shares the probe's condition — same session, same
+   hand-restarted modem. **It should sleep full term in most or all 8 rounds.**
+   If instead it aborts, this hypothesis is dead on arrival and the split is
+   something else or simply noisy.
+2. **After a reboot**, with the modem brought up the normal way, suspends should
+   **abort again**. That is the decisive test and it is one reboot plus one
+   suspend, so it is cheap.
+
+☠️ If (1) holds and (2) does not, the honest reading is *not* "the hypothesis
+half-worked" — it is that the split is coincidence over n=6 and the rate is what
+matters. Written down here so that reading cannot be quietly revised afterwards.
