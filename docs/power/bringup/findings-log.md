@@ -6073,3 +6073,42 @@ guarantee it re-applied whatever power-save or paging configuration it had.
 ☠️ If (1) holds and (2) does not, the honest reading is *not* "the hypothesis
 half-worked" — it is that the split is coincidence over n=6 and the rate is what
 matters. Written down here so that reading cannot be quietly revised afterwards.
+
+## ☠️ 2026-08-26 05:35 — the phone has been unreachable for ~75 minutes and I cannot tell why
+
+Stated plainly because the two possibilities call for opposite actions and
+nothing available here distinguishes them.
+
+**What is known.** `suspend-rate.sh 8 600` was started at ~04:20 under
+`systemd-run --collect`: eight suspends of 600 s with a 30 s gap between them.
+Last confirmed contact was at launch. Since then, on both links:
+
+* no FP3 on the host's USB bus at all (`lsusb`, watched every 2 s);
+* no RNDIS interface on the host;
+* `ping` to the WiFi address: 100 % loss.
+
+**The two readings, and why they are indistinguishable from here.**
+
+1. **Running exactly as designed.** Eight rounds at 630 s each is 84 minutes, so
+   the series is due to end ~05:44. The phone is unreachable for 600 s at a time
+   by construction, and ☠️ **the 30 s gap is shorter than this device's own USB
+   gadget recovery** — measured ~39 s for RNDIS after a reboot. A host watching
+   at 2 s intervals would still see nothing, because there is nothing to see.
+2. **Wedged in a suspend that will not end.** Same observation, exactly.
+
+**Weak evidence for (1), not proof:** the debug layer starts the watchdog at
+probe and `panic=10` is on the command line, so a hang *outside* suspend would
+produce a reboot cycle and the gadget would reappear. That says nothing about a
+hang *inside* s2idle, where the watchdog is stopped for the duration.
+
+**What this costs, and it is the transferable part.** The measurement was safe —
+it cuts nothing, touches no charger, and cannot leave the phone in a bad state.
+What it is not is **observable**. An unattended instrument that makes its subject
+indistinguishable from a dead one removes the operator's ability to decide
+whether to intervene, which on a phone with no console and nobody in the room is
+the only decision left. `suspend-rate.sh` now defaults its gap to **150 s**, and
+its header says the gap is a *safety* parameter rather than a settling time.
+
+**If it is not back by ~05:50** — comfortably past the series' own end — the
+reading flips to (2), and recovery needs a held power button, which is the one
+class of action nobody here can perform.
