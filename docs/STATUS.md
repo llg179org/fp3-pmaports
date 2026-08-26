@@ -337,7 +337,43 @@ is now item 4.
 
 ### ★★★★ 2026-08-26 — the modem lead has a mechanism, and it is not current
 
-### ★★★ 2026-08-26 06:02 — the suspend abort is a DECAY, and it is reproducible on demand
+### ★★★★★ 2026-08-26 06:45 — SOLVED: the modem's SMD edge ends every suspend
+
+`pm_wakeup_irq` — which exists only since r77 shipped `CONFIG_PM_DEBUG` — names
+it, 4 suspends of 4, and the kernel prints it once per suspend:
+
+```
+PM: suspend-to-idle
+Timekeeping suspended for 8.081 seconds
+PM: Triggering wakeup from IRQ 141
+```
+
+**IRQ 141 = hwirq 57 = `GIC_SPI 25` = `remoteproc@4080000/smd-edge` — the
+modem's.** The edge reads `disabled` in `power/wakeup`, and that is *why* it
+aborts: an interrupt arriving during s2idle on a source that is not registered
+for wakeup is treated as an unexpected wakeup and **terminates the suspend**.
+
+**The modem sends the AP something over SMD while the phone is asleep, and the
+kernel aborts.** Everything else falls out: modem cut → 0 aborts in 6; the abort
+length is simply the interval to the next message; the MPSS crystal churn is
+scenery; and "post-boot decay" and "battery vs cable" were that same interval
+under different labels.
+
+☠️☠️ **Why it took all night, and it is structural.** The waking line is the
+**quietest** in the table — 334 counts in total against the RPM edge's 50 591,
+exactly one per suspend, because ending the suspend is all it does. Hours were
+spent ranking interrupt deltas by magnitude; **a ranking instrument is blind to
+the rare event.** And the instrument that names it directly was read as an empty
+file for two days when it did not exist at all — one Kconfig symbol.
+
+**Next:** what is the modem sending, and must the AP wake for it? `qcom_smd` is
+upstream and every SMD-era Qualcomm SoC has these edges, so the answer is
+upstream-shaped. Trace the rpmsg channel and payload of the message arriving
+immediately after `PM: suspend-to-idle`.
+
+<details><summary>The four stories published and retracted before this one</summary>
+
+### ☠️ 2026-08-26 06:02 — "the suspend abort is a DECAY" (retracted)
 
 The night's most useful result, and the cheapest experiment on the whole power
 track: **reboot, wait, suspend.** Measured with `tools/suspend-rate.sh` from a
@@ -370,6 +406,8 @@ restore the charger regardless of outcome.
 **The instrument that would end this is not built:** `pm_wakeup_irq` needs
 `CONFIG_PM_DEBUG`, staged in `0cc13b7` and not yet compiled. It is now clearly
 worth a build.
+
+</details>
 
 ☠️☠️ **OVERCLAIMED AND CORRECTED WITHIN THE HOUR, 2026-08-26 04:13.** What is
 below was written as a categorical law — *"with the radio up, the phone does not
