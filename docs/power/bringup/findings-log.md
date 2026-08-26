@@ -6624,3 +6624,43 @@ and prints a closing verdict, refusing to report a floor from a window the panel
 was not off through. ☠️ The rail paths are resolved once at startup rather than
 per sample: matching a regulator by name means ~200 file opens, and at one sample
 every 5 s that is the instrument competing with a subject measured in tens of mA.
+
+### ★★★ The oracle's floor is not a constant — 15.3, 31.1, 69.9 mA, and both instruments agree
+
+With the panel provably off for all 721 samples of a 3601 s window, the oracle
+read **floor 69.9 mA, median 125.9 mA, integrated 61.0 mA** — against the 32.2 mA
+this project has been scoring the goal on. Running the same fitter over all three
+`idle-ab.sh` captures the oracle has ever produced:
+
+| run | start V | start `cc_soc` | floor (p10) | median | integrated |
+|---|---|---|---|---|---|
+| 2026-08-24 | 4.050 V | 7628 (≈76 %) | **15.3** | 30.1 | **32.2** |
+| 2026-08-25 | 4.276 V | 9848 (≈98 %) | 31.1 | 50.0 | 54.6 |
+| 2026-08-26 | 4.315 V | 9916 (≈99 %) | **69.9** | 125.9 | **61.0** |
+
+**The two instruments move together.** `current_now` is a shunt reading and
+`cc_soc` is a coulomb counter; they share no layer, and both rise by a factor of
+roughly two to four across the three runs. So this is not a gauge nonlinearity
+near full charge, which was the first and most comfortable hypothesis — the
+oracle really did draw more. ☠️ **The reference the goal is scored against varies
+by 4.5× between measurements of the same phone in the same nominal state.**
+
+Everything in this project that cites "UT idles at 32.2 mA" is citing the lowest
+of three, taken at the lowest pack voltage of the three, and never repeated. The
+15.3 mA floor beside it is the p10 of that same single run.
+
+☠️ Note also that today's median (125.9) sits at **twice** its own integrated
+value, where on 2026-08-24 the two agreed (30.1 vs 32.2). A median far above the
+coulomb-counter average means the sampled instants are not representative of the
+window — the phone is quiet between samples and busy at them, which is what it
+looks like when **the sampler itself is what wakes the phone**. On the day the
+two agreed, that was not happening. Whatever else is different between these
+runs, the phone's idle *structure* differs too, not just its level.
+
+What is confounded and what separates it: today's window began 3 minutes after
+boot, at 99 % on the cable, where 2026-08-24 began settled at 76 %. Boot recency
+and charge state move together across these three runs and cannot be told apart
+from them. A second window on the same boot at uptime 66 min, same protocol,
+separates the boot half of it — and is running.
+
+Capture: `captures/2026-08-26_ut-idle-panel-proven-off-window1.txt`.
