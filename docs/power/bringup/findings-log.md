@@ -6695,3 +6695,35 @@ from them. A second window on the same boot at uptime 66 min, same protocol,
 separates the boot half of it — and is running.
 
 Capture: `captures/2026-08-26_ut-idle-panel-proven-off-window1.txt`.
+
+### ★★ Boot recency is excluded: two windows on one boot, 3 min and 66 min apart, agree to 1.5 mA
+
+The first window of the day began three minutes after the oracle booted, which
+made "the phone was still settling" the cheapest explanation for its 69.9 mA
+floor. It is wrong. A second identical window on the same boot, started at
+uptime 66 min, panel off for all 721 samples:
+
+| window | uptime at start | start `cc_soc` | floor (p10) | median | integrated |
+|---|---|---|---|---|---|
+| 1 | 3 min | 9916 (≈99 %) | 69.9 mA | 125.9 mA | 61.0 mA |
+| 2 | 66 min | 9738 (≈95 %) | **71.6 mA** | 124.2 mA | **64.3 mA** |
+
+1.5 mA apart on the floor, 1.7 mA on the median. Boot recency does not move this
+number at all, and the oracle at 61–64 mA integrated is a **reproducible** state,
+not a startup transient.
+
+So of the two explanations, one is gone and the other is unproven: the readings
+still track the pack, and the only low reading this project has ever taken of the
+oracle is the 2026-08-24 one at 76 % SoC. ☠️ Both of today's windows sit at 92–99 %,
+which is a narrow band — "it tracks the pack" is at this point a correlation
+across days, not something measured inside one boot.
+
+[`tools/soc-ladder.sh`](tools/soc-ladder.sh) walks the pack down on this boot,
+one 1-hour window at a time, and turns that correlation into a curve or kills it.
+☠️ It cannot decide *real draw versus gauge artifact* — there is no second
+instrument on the oracle side, both readings being the same QG block behind one
+current-sense front end — but it can decide whether the effect exists inside one
+boot, one cable state and one instrument, which none of the three historical
+captures could.
+
+Captures: `captures/2026-08-26_ut-idle-panel-proven-off-window{1,2}.txt`.
