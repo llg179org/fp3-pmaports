@@ -352,6 +352,46 @@ measurements that disagree.
    come from an instrument that measures *level*, not events, because every
    event-counting instrument has now been run.
 
+#### ⏳ RUNNING 2026-08-26 — item 1, and it is worse than a factor of two
+
+The oracle was re-measured with the panel **provably** off (`lcdb_ldo`/`lcdb_ncp`
+`state` = `disabled` carried in every sample, not just checked at the door). It
+is not two readings that disagree, it is **three**, and they span 4.5×:
+
+| run | start V | start `cc_soc` | floor (p10) | integrated |
+|---|---|---|---|---|
+| 2026-08-24 | 4.050 V | ≈76 % | **15.3 mA** | 32.2 mA |
+| 2026-08-25 | 4.276 V | ≈98 % | 31.1 mA | 54.6 mA |
+| 2026-08-26 w1 | 4.315 V | ≈99 % | 69.9 mA | 61.0 mA |
+| 2026-08-26 w2 | 4.282 V | ≈95 % | 71.6 mA | 64.3 mA |
+
+★ **Boot recency is excluded** — w1 and w2 are the same boot at uptime 3 min and
+66 min and agree to 1.5 mA. ★ **pmOS does not do this**: 53.9 / 54.3 / 52.9 mA
+across three captures at 4.224 / 4.170 / 4.294 V, a 1.4 mA spread.
+
+So the surviving candidate is **state of charge** — and it is *unproven*, because
+all four windows above that read high sit in a narrow 92–99 % band and the only
+low one is on a different day. `tools/soc-ladder.sh` is walking the pack down on
+one boot, eight 1-hour windows, to turn the across-days correlation into a curve
+or kill it.
+
+☠️ **The ladder cannot decide real draw versus gauge artifact.** There is no
+second instrument on the oracle: `current_now` and `cc_soc` are both the PMI632
+QG block behind one current-sense front end. (This was published as
+independent confirmation and withdrawn within the hour — see findings-log.)
+
+**After the ladder, whichever way it goes:** run the same ladder on **pmOS over
+the same SoC band**. Same pack, same PMIC, but our own mainline gauge rather than
+the downstream QG algorithm — so a *hardware* nonlinearity in the shunt/ADC
+appears on both sides while a *downstream-software* artifact appears only on UT.
+It is a partial discrimination, and it is the best available without an external
+power meter, which needs a human at the phone.
+
+☠️ And note what this does to the goal's arithmetic either way: the pmOS number
+is stable and the oracle's is not, so **"pmOS idles at N× the oracle" has no
+single value** until the oracle's dependence is characterised. The comparison has
+to be made at a *matched* state of charge, which no published pair so far was.
+
 ### ✅ RAN, and it answered a different question than it asked — 2026-08-26
 
 The A-B-A completed (3 jobs, rc=0, guardian silent), and what it produced was not
