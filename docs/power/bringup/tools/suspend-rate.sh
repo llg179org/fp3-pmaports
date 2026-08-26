@@ -62,12 +62,35 @@ s "# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta"
 RPM=/sys/kernel/debug/qcom_rpm_master_stats
 mf(){ sed -n "s/^[[:space:]]*$1[[:space:]]*:[[:space:]]*//p" "$RPM/MPSS" 2>/dev/null | head -1; }
 
+# ☠️ Sum every CPU column, but STOP before the trailing text fields - a
+# /proc/interrupts row ends with the controller, hwirq, type and name, and one of
+# those is numeric. Indexing by position without allowing for that is the
+# 2026-08-26 column-misread in another costume.
+irqs(){ awk 'NR>1 {s=0; for(i=2;i<=NF-3;i++) if ($i ~ /^[0-9]+$/) s+=$i; print $1, s}' /proc/interrupts | sort; }
+
+# ☠️ Per-round interrupt deltas, because the phenomenon this script found is a
+# DECAY: the abort gets shorter the further from boot, so the waker is something
+# that drains. A per-round diff shows which line shrinks WITH the abort instead
+# of scaling with time asleep - the latter is scenery (the MPSS crystal churn was
+# measured at a constant 2.4-2.5 shutdowns per second asleep, in both regimes).
+# Normalise before comparing rounds: a round that slept 50 s and one that slept
+# 356 s cannot have their raw totals compared.
+IRQS=${IRQS:-1}
+
 i=1
 while [ "$i" -le "$N" ]; do
 	x0=$(mf 'XO shutdown count'); t0=$(cut -d. -f1 /proc/uptime); st=$(mreg)
+	[ "$IRQS" = 1 ] && irqs > /run/.sr_irq0
 	rtcwake -m mem -s "$SECS" >/dev/null 2>&1
 	t1=$(cut -d. -f1 /proc/uptime); x1=$(mf 'XO shutdown count')
-	s "$i $t0 $((t1-t0)) $SECS ${st:-?} $(cat /sys/class/power_supply/pmi632-battery/capacity) $(( ${x1:-0} - ${x0:-0} ))"
+	slept=$((t1 - t0))
+	s "$i $t0 $slept $SECS ${st:-?} $(cat /sys/class/power_supply/pmi632-battery/capacity) $(( ${x1:-0} - ${x0:-0} ))"
+	if [ "$IRQS" = 1 ]; then
+		irqs > /run/.sr_irq1
+		awk -v sl="$slept" 'NR==FNR{a[$1]=$2; next}
+			{d=$2-a[$1]; if (d>0) printf "    irq %-12s +%-7d %.2f/s\n", $1, d, (sl>0 ? d/sl : 0)}' \
+			/run/.sr_irq0 /run/.sr_irq1 | sort -t+ -k2 -rn | head -8 >> "$O"
+	fi
 	sleep "$GAP"
 	i=$((i + 1))
 done
