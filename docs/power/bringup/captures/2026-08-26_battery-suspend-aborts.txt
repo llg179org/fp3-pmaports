@@ -1,0 +1,24 @@
+# suspend-rate.sh 3 600 150 with USBIN SUSPENDED (on battery), same boot as the
+# post-boot decay series, started well past the decay window. r76.
+# Charger restored on exit by the wrapper's trap; a deadman timer stood behind it.
+
+# srate n=3 secs=600 gap=150s start_uptime=1345 kernel=#77-fp3
+# cable: online=0 status=Discharging
+# modem remoteproc state at start: running
+# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta
+1 1345 161 600 registered 100 392
+2 1656  36 600 registered 100  87
+3 1842  20 600 registered 100  49
+# done
+
+# Compare against the SAME boot with the cable delivering:
+#   uptime 1637 -> slept 601 s of 600 (full term)
+# Round 2 here is 19 seconds of uptime away from that and slept 36.
+#
+# Trend is DOWNWARD (161 -> 36 -> 20), the opposite of the post-boot decay
+# (50 -> 168 -> 356), and it matches leg A's trendless 50/89/32/59 - which was
+# also the only earlier run taken on battery.
+#
+# mpss_xo_delta / slept_s = 2.43 / 2.42 / 2.45 per second. The MPSS crystal churn
+# is the same constant here as in every full-term round on the cable. Acquitted a
+# third time: it tracks time asleep and nothing else.
