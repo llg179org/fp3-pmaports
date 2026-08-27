@@ -168,6 +168,44 @@ A 6-minute traced window found no function with that period — too short. ☠�
 current↔trace correlation is a dead end: instantaneous samples cannot be
 correlated against continuous event counts, and best-of-13-shifts inflates r.
 
+**5e. ★★★★ 2026-08-27 EVENING — THE BURST HAS AN OWNER: THE MPSS CORE.** The
+"~30 mA still unexplained" above is now attributed, and the ~15 mA of it that was
+never the wlan is the same actor. `burst-master.sh` samples the RPM's per-master
+record — shutdown count, XO shutdown count, XO-off duration, active-core bitmask —
+alongside the current. Its **burst/quiet split answered "not me" for the sixth
+time, and the answer was in the same file**: a master that is up a third of the
+time has a median of zero on *both* sides of a split by current. Split by the
+candidate **cause** instead, over two independent windows:
+
+| | window 1 | window 2 |
+|---|---|---|
+| MPSS core up | 62/189 = **33 %** | 69/189 = **37 %** |
+| median with MPSS up | 166 mA | 158 mA |
+| median with MPSS down | 74 mA | 67 mA |
+| **difference** | **+92 mA** | **+91 mA** |
+
+The two sides each drift 7–8 mA between windows and the difference moves by 1 mA.
+The 2×2 with PRONTO is close to additive — both down **63 mA**, PRONTO alone
+108 mA, MPSS alone 163 mA, both 188 mA — and the two are not the same variable
+(they agree on 107 of 189 samples). At 35 % duty, MPSS carries ~32 mA of the
+median: the size of the residual.
+
+This reconciles the flat modem A-B-A′: `mmcli --disable` stops the **RF**, not the
+**MSS core**. And it puts one suspect on both fronts at once, since the same
+subsystem's SMD edge terminates every suspend (IRQ 141).
+
+☠️ Correlation over two windows, not an intervention; the duty cycle is
+point-sampled at 2 s; and the instrument does **not** resolve the ~15 mA wlan
+effect known to be present, so its *nulls* rule nothing out at that scale — only
+its separations count. The intervention (A-B-A′ on `mmcli --disable`, comparing
+**MPSS duty**, not current) is running.
+
+**5f. And one for the floor, not the burst: LPASS never releases the crystal.**
+`LPASS_xopct` is 0 in all 189 samples of both windows, and its `XO total duration`
+is **9.4 s against 5½ hours of uptime**. Constant, so it cannot be the burst — but
+a master that never lets the XO go is exactly the shape of the standing `vlow = 0`
+item. First suspect is a userspace sensor consumer holding the ADSP up.
+
 **6. Instruments written today**, all in `power/bringup/tools/`:
 `night-ladder.sh` (+ its two units, reboot-surviving, charge-input-safe),
 `ladder-summary.py` (integrates I·V, not just I), `burst-profile.py`,

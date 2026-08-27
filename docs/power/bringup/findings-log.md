@@ -7423,3 +7423,50 @@ With the radio entirely off, leg B still ran a median of **83 mA against a floor
 of 53**, 97 of 181 samples still bursts. **~30 mA of burst survives with wlan off,
 the modem excluded, the cores collapsed and the panel dark.** The census is
 running again with both radios down to see which rails still move.
+
+## 2026-08-27 evening — the awake burst has an owner, and it is the MPSS core
+
+Six instruments had now answered "not me" about the awake current burst: a
+tracer, a machine-state sampler with no tracepoints at all, an A-B-A′ on the
+modem RF, a rail census whose shortlist had to be retracted, and — first — the
+RPM master sampler's own burst/quiet split.
+
+☠️ **That sixth "no" was wrong, and the evidence refuting it was in the same
+file.** Splitting the capture by the current and taking each master's median
+cannot see a master that is up a third of the time: its median is 0 on *both*
+sides. Split by the candidate cause instead — condition on the master and report
+the current — and it separates at once, over two independent windows:
+
+| | window 1 | window 2 |
+|---|---|---|
+| MPSS core up | 33 % of samples | 37 % |
+| median with it up | 166 mA | 158 mA |
+| median with it down | 74 mA | 67 mA |
+| **difference** | **+92 mA** | **+91 mA** |
+
+The 2×2 against PRONTO is close to additive: both down **63 mA**, PRONTO alone
+108, MPSS alone 163, both 188. They are not the same variable — they agree on 107
+of 189 samples. At ~35 % duty MPSS carries about 32 mA of median, which is the
+size of the residual that the wlan cut left behind.
+
+**The method lesson is the exact converse of the one recorded a day earlier.**
+That one said: rank a trace and you describe the background, so *split it by the
+thing you are explaining*. True — and it made the split-by-effect the only tool
+in use, which is blind to any cause that is intermittent rather than intense.
+**Split by the effect to test a story; split by the cause to find one.** Both
+directions, every time.
+
+Three smaller things fell out of the same evening:
+
+* ☠️ **A rail name is not a rail.** Two PMICs, twenty colliding names — two `l1`,
+  two `s3`, two `l9`. The census line "`s1` is the MSS supply, by citation from
+  five other msm8953 boards" never established *which* `s1`, and the citation
+  resolved a name, not a thing. `burst-rail.sh` now records the parent device.
+* ☠️ **`discharge-run.sh` cut the charge input through `input_suspend`** — the
+  Ubuntu Touch path, which does not exist on mainline. The write went nowhere.
+  A twenty-hour run would have measured a phone on the charger and produced an
+  OCV curve from it. Found by reading the node list before the run, not after.
+* **LPASS never releases the crystal**: `XO total duration` 9.4 s against 5½ hours
+  of uptime, `LPASS_xopct` = 0 in every sample of both windows. Constant, so not
+  the burst — but the right shape for the standing `vlow = 0` item, and it belongs
+  to the floor.

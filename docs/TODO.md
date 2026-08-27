@@ -505,9 +505,43 @@ witness read twice). Both on a proven-dark panel with the charge input cut.
    The old census line "the CPUs are not it" was about the floor; they are not the
    burst either.
 
+##### ★★★★ 2026-08-27 evening — the burst has an owner: the MPSS core
+
+`burst-master.sh` asks the RPM what each master did, per sample. Its own
+burst/quiet split answered "not me" for the sixth time — **and the answer was in
+the same file.** A master that is up a third of the time has a median of zero on
+*both* sides of a split by current. Split by the candidate **cause** instead:
+
+| | window 1 | window 2 |
+|---|---|---|
+| MPSS core up | 33 % of samples | 37 % |
+| median, MPSS up | 166 mA | 158 mA |
+| median, MPSS down | 74 mA | 67 mA |
+| **difference** | **+92 mA** | **+91 mA** |
+
+with both MPSS and PRONTO down the floor is **63 mA**, PRONTO alone ≈ +45 mA, and
+the two are not the same variable (they agree on 107 of 189 samples). **Split by
+the effect to test a story; split by the cause to find one.** Both directions are
+needed and this investigation had only ever used the first.
+
 **Next, in order:**
 
-1. ⏳ **`burst-modem-ab.sh`** — A-B-A' on the RF with `mmcli --disable`, never the
+1. ⏳ **the intervention** — `burst-master-knob.sh modem …`, A-B-A′ on
+   `mmcli --disable` where what is compared is **MPSS's duty cycle**, not the
+   current. The earlier current-only A-B-A′ was flat (2 mA against a 3 mA
+   spread) and that told us nothing about whether the MSS core kept waking.
+   ☠️ Never through `/sys/class/remoteproc`.
+2. ⏳ **LPASS never releases the crystal** — `XO total duration` 9.4 s against
+   5½ hours of uptime, `LPASS_xopct` = 0 in all 189 samples of both windows. It
+   is constant, so it cannot be the burst; it is the right shape for the standing
+   `vlow = 0` item and it belongs to the **floor**. First suspect is a userspace
+   sensor consumer holding the ADSP up (`iio-sensor-proxy` for phosh's
+   auto-rotate); test it as a knob run and read `LPASS_xopct`, not the current.
+3. ⏳ **what wakes MPSS 35 % of the time**, given that disabling the RF does not
+   stop it. It is the same subsystem whose SMD edge terminates every suspend
+   (IRQ 141), so the awake front and the suspend front now have one suspect
+   between them.
+4. ⏳ *(superseded, kept for the trail)* **`burst-modem-ab.sh`** — A-B-A' on the RF with `mmcli --disable`, never the
    remoteproc (restarting that costs audio until reboot and a mixer write
    afterwards oopses the kernel). The modem is the last thing on this phone that
    can spend hundreds of mA without waking a CPU, and it is independently the
