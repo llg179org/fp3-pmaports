@@ -11,6 +11,28 @@
 > use. Measurements and the corrected attribution of the "second latch":
 > findings-log Part II (the former run-book) entries 2026-08-21 12:10 and 2026-08-22 10:30.
 
+## ☠️☠️ 2026-08-27: THE CLOSING BANNER IS FALSE ON THE DEVICE TODAY
+
+The banner above says the LPASS "now duty-cycles and re-enters XO shutdown within
+~30 s of audio use", closed on r64. Measured 2026-08-27 on r77 (`#78-fp3`), across
+five independent `burst-master.sh` windows of 189 samples each:
+
+* `LPASS_xopct` — the percentage of each 2 s interval the DSP had the crystal shut
+  down — is **0 in every sample of every window**;
+* `XO total duration` is **9.4 s against 5½ hours of uptime**, i.e. **0.05 %**;
+* the oracle, over a 565 s awake-idle window, is **97.1 %**.
+
+That is 80× better than the 0.12 s the page was opened on, and still not sleep.
+So the two latches were real and neither of them was the whole thing — **the DSP
+is still awake essentially all the time**, and the sentence that closed this page
+would have been believed for as long as nobody re-measured it.
+
+☠️ **And it must not now be re-sold as a power lever.** The work below already
+priced it: with the DSP *stopped entirely*, the current moved ~4 %, inside the
+instrument's own spread. LPASS remains a correctness item and a sufficient
+explanation for `vlow` = 0 — not a lever on the floor. The re-opening is about the
+banner being false, not about the number being valuable.
+
 ## The finding
 
 **LPASS shut down twice since boot, for 0.12 s in total.** On the vendor stack,

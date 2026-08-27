@@ -228,6 +228,15 @@ never sleeps here at all**: 9.4 s of XO-off in 5½ hours against the oracle's 97
 Constant, which is why no burst instrument ever saw it; they were all built to
 find things that change.
 
+☠️☠️ **The LPASS half is a re-opening, not a discovery, and it is worth less than
+it looks.** `power/bringup/leads/lpass-never-sleeps.md` was **closed on
+2026-08-22** with the sentence "the LPASS now duty-cycles and re-enters XO
+shutdown within ~30 s of audio use" — false on the device today, five windows out
+of five. But the same page already **priced** it: with the DSP stopped outright
+the current moved ~4 %, inside the instrument's spread. So this is a correctness
+item and an explanation for `vlow` = 0, **not** a lever on the floor, and the
+measurement queue must not be re-ordered around it.
+
 ☠️ The plan of record was to spend a slot switch re-taking this. **Before
 measuring, grep the captures** — they are indexed by date and question, not by
 what they contain.
