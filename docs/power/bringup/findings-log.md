@@ -7470,3 +7470,46 @@ Three smaller things fell out of the same evening:
   of uptime, `LPASS_xopct` = 0 in every sample of both windows. Constant, so not
   the burst — but the right shape for the standing `vlow = 0` item, and it belongs
   to the floor.
+
+## 2026-08-27 evening — the oracle comparison was already in the repository
+
+Two interventions had by then ruled out every Linux-side lever on the MPSS
+finding: disabling the radio (`mmcli --disable`) and stopping the modem daemon
+both left the MSS core's duty cycle at 34–38 %, and the modem's own SMD edge read
+zero through the leg where the daemon was stopped. The next question was whether
+the oracle pays the same, and that looked like it needed a slot switch.
+
+It did not. `2026-08-24_ut-master-stats-idle-before.txt` / `-after.txt` are a
+before/after pair taken on **Ubuntu Touch, slot a, cable in, screen off, over a
+565 s awake-idle window** — captured for the `vlow` investigation and never read
+for this. Two snapshots of `xo_accumulated_duration` are not a worse instrument
+than sampling; for a duty cycle they are a better one, because the difference *is*
+the integral.
+
+| master | oracle awake | pmOS awake (3 windows) |
+|---|---|---|
+| APSS | 100 % | 100 % |
+| PRONTO | 23.2 % | 24.7–26.7 % |
+| **MPSS** | **6.3 %** | **34.0–36.4 %** |
+| **LPASS** | **2.9 %** | **100.0 %** |
+
+PRONTO matches, which is the control that makes the other two readable: the
+comparison is not systematically shifted by the different kernels or the cable.
+
+Two gaps, and they are not the same size:
+
+1. **MPSS is awake 5–6× more on pmOS.** The XO *shutdown rate* is about the same
+   on both (oracle 3.1/s; pmOS 2.5–3/s), so the modem is not being woken more
+   often — **each awake stretch is longer**. At the measured +91 mA that gap is
+   worth roughly 25 mA of median on its own.
+2. ☠️ **LPASS never sleeps on pmOS at all.** The oracle's ADSP shuts the crystal
+   13.7 times a second and is off it 97 % of the time; ours has accumulated
+   **9.4 s of XO-off in 5½ hours**. It is constant, so it never showed up in any
+   burst analysis — the whole day's instruments were built to find things that
+   *change*.
+
+**The lesson is not about the modem.** The measurement that decided the front had
+been sitting in `captures/` for three days, taken for a different question, and
+the plan of record was to spend a slot switch re-taking it. ☠️ **Before measuring,
+grep the captures.** They are indexed by date and question, not by what they
+happen to contain.
