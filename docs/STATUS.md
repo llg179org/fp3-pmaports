@@ -221,6 +221,15 @@ window from 2026-08-24** (slot a, cable in, screen off), taken for the `vlow` wo
 | **MPSS** | **6.3 %** | **34.0–36.4 %** |
 | **LPASS** | **2.9 %** | **100.0 %** |
 
+☠️☠️ **AND THE TWO SYSTEMS DO NOT RUN THE SAME MODEM FIRMWARE.** Read off the
+device: both modem partitions carry MPSS build **325768** (the 2021-10-25
+`SDM632.LA.2.1-00015` metabuild that also supplies the RPM, TZ and bootloader on
+either slot), while pmOS loads its own rootfs copy, build **425464**. So the 6.3 %
+and the 34–36 % were measured on different modem images, and that sentence belongs
+next to those numbers wherever they appear. It is also the only difference left
+after every Linux-side lever came back flat — the swap procedure and its rollback
+are in `TODO.md`, not run, because it rewrites firmware and needs a reboot.
+
 PRONTO matching is the control that makes the rest readable. **MPSS is awake 5–6×
 more on pmOS at the same XO shutdown rate** — each awake stretch is longer, not
 more frequent — which at the measured +91 mA is ~25 mA of median. ☠️ And **LPASS
