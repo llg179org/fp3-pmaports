@@ -524,6 +524,53 @@ the two are not the same variable (they agree on 107 of 189 samples). **Split by
 the effect to test a story; split by the cause to find one.** Both directions are
 needed and this investigation had only ever used the first.
 
+##### ★★★★ 2026-08-27 — the two systems do not run the same modem firmware
+
+Read off the device, not guessed:
+
+| where | modem build |
+|---|---|
+| `modem_a` **and** `modem_b` partitions (`verinfo/ver_info.txt`) | `MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.**325768**.1.329896.1` |
+| `/lib/firmware/qcom/msm8953/fairphone/fp3/modem.mbn` (what pmOS loads) | `MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.**356774**.1.**425464**.1` |
+
+Both slots' vendor firmware sets are the 2021-10-25 `SDM632.LA.2.1-00015` metabuild
+(`Meta_Build_ID` identical on a and b), and every other piece the phone runs — RPM,
+TZ, the bootloader — comes from those partitions on **both** systems. Only the
+modem image is different, and it is different because pmOS loads its own copy from
+the rootfs.
+
+**This is both a confound and a candidate.** A confound, because the oracle's MPSS
+duty (6.3 %) and ours (34–36 %) were measured on *different modem builds*, and that
+must be said wherever those two numbers appear together. A candidate, because a
+modem image paired with an RPM and TZ it was not built against is exactly the kind
+of thing that changes sleep negotiation, and it is the only difference left after
+every Linux-side lever came back flat.
+
+**The experiment, not yet run** (it needs a firmware file swap and a reboot, so it
+is the user's call):
+
+```sh
+F=/lib/firmware/qcom/msm8953/fairphone/fp3
+mount -o ro /dev/disk/by-partlabel/modem_b /tmp/m
+cp -a $F/modem.mbn $F/modem.mbn.425464bak          # rollback is this file
+cp /tmp/m/image/modem.b* $F/                        # 45 MB, split image
+cp /tmp/m/image/modem.mdt $F/modem.mbn              # the DT names modem.mbn;
+                                                    # qcom_mdt_load reads the
+                                                    # metadata here and pulls
+                                                    # modem.bNN beside it
+umount /tmp/m && reboot
+```
+
+then `mmcli -m 0` must reach `registered`, and `burst-master.sh 360` gives the
+MPSS duty to compare against the 34–36 % measured on 425464. **Rollback is
+restoring `modem.mbn` from the `.bak` and deleting the `modem.b*` files.** ☠️ Check
+`mba.mbn` too: the partition's is byte-for-byte the same size as ours, and MBA is
+what authenticates the modem image — if the swap fails to boot the modem, that
+pairing is the first thing to look at.
+
+☠️ Do not run this while a measurement is in flight, and record `capacity` and
+`voltage_now` before the reboot: it is a new boot, so it is a new baseline.
+
 **Next, in order:**
 
 1. ⏳ **the intervention** — `burst-master-knob.sh modem …`, A-B-A′ on
