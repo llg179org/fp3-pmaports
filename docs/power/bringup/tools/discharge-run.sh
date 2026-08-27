@@ -105,10 +105,33 @@ fi
 # ☠️ The charge input is cut ONCE and stays cut. idle-ab.sh cuts and restores it
 # per window; a discharge that let it back in between samples would be measuring
 # the charger.
-for f in /sys/class/power_supply/*/input_suspend; do
-	[ -w "$f" ] && echo 1 > "$f" 2>/dev/null
-done
-say "# charge input cut: status=$(cat "$BAT/status")"
+#
+# ☠️☠️ AND THE CUT IS NOT THE SAME ON BOTH SYSTEMS. `input_suspend` is the Ubuntu
+# Touch path (`pmi632-battery/input_suspend`); on mainline that file DOES NOT
+# EXIST, and the loop above wrote to nothing at all - a twenty-hour run that would
+# have measured a phone on the charger and called it a discharge curve. On pmOS
+# the input is cut through the charger node's `status`. Found by reading the node
+# list on the device, 2026-08-27, before the run rather than after it.
+cut_input() {
+	done_any=0
+	for f in /sys/class/power_supply/*/input_suspend; do
+		[ -w "$f" ] && echo 1 > "$f" 2>/dev/null && done_any=1
+	done
+	for s in /sys/class/power_supply/*charger*/status; do
+		[ -w "$s" ] && echo Unknown > "$s" 2>/dev/null && done_any=1
+	done
+	return $((1 - done_any))
+}
+cut_input || { say "# STOP: found nothing to cut the charge input with"; exit 1; }
+sleep 5
+st=$(cat "$BAT/status" 2>/dev/null || echo '?')
+say "# charge input cut: status=$st"
+# ☠️ Prove the cut, do not assume it. Every sample of a run that kept charging is
+# a sample of the charger.
+[ "$st" = Discharging ] || {
+	say "# STOP: still '$st' after the cut - every sample would read the cable"
+	exit 1
+}
 
 # ☠️ bl_power is in every row, not just at the start. The compositor re-enables
 # the panel on any input, and over twenty hours something will touch it. A column

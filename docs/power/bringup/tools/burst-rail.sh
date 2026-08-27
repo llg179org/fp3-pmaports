@@ -58,8 +58,17 @@ say "# rails=$(ls -d /sys/class/regulator/regulator.* 2>/dev/null | wc -l)"
 sampler(){
 	{
 		echo "# t_s cur_mA v_mV then one token per rail as regulator.N=<E|D><f|n|i|?>"
+		# ☠️ THE NAME IS NOT UNIQUE. This phone has two PMICs and twenty of
+		# the rail names collide - there are two `l1`, two `s3`, two `l9`.
+		# A header that carries only the name lets a finding be attributed to
+		# the wrong PMIC, which is how "s1 is the MSS supply" got written down
+		# on 2026-08-27 without anything establishing which s1 it was. So the
+		# parent device goes in the header too, and it is the parent, not the
+		# name, that identifies a rail.
 		for d in /sys/class/regulator/regulator.*; do
-			[ -r "$d/name" ] && echo "# name $(basename "$d") $(cat "$d/name")"
+			[ -r "$d/name" ] || continue
+			par=$(readlink -f "$d/device" 2>/dev/null)
+			echo "# name $(basename "$d") $(cat "$d/name") ${par:-?}"
 		done
 	} > "$OUT/rails.txt"
 	t=0

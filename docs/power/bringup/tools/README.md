@@ -52,6 +52,7 @@ protocol, or they are two measurements rather than a comparison.
 | [`burst-wlan-ab.sh`](burst-wlan-ab.sh) | A-B-A' on the wlan radio. ☠️ Exists because `wlan_pps` being flat excludes *traffic* and nothing else — a radio with power-save off sits in receive whether or not a packet arrives. Refuses to start if the ssh session is on the wlan link |
 | [`burst-knob-ab.sh`](burst-knob-ab.sh) | the generic A-B-A': `burst-knob-ab.sh <label> <off> <on> <state> <expected-off> [window]`. ☠️ Written to stop the third copy — the modem and wlan scripts are the same twenty lines with a different verb, and duplication is how this directory once got two panel-blanking implementations that disagreed. Refuses to label a leg "off" unless the state command confirms it |
 | [`burst-rail.sh`](burst-rail.sh) + [`burst-rail-fit.py`](burst-rail-fit.py) | **the instrument of last resort**: `state` and `opmode` for all ~57 regulators on every sample, split by burst/quiet. ☠️ `opmode` is the point — a rail need not switch off to stop costing, it drops to idle/LPM, and an enabled/disabled census would call such a rail "constant". ☠️ Output is a correlation, never an attribution: no per-rail current exists here (`requested_microamps` is what a consumer asked for, and is 0) |
+| [`burst-master.sh`](burst-master.sh) + [`burst-master-fit.py`](burst-master-fit.py) | **the fourth instrument on the same burst, and the first three all said "not me"**: per sample, each RPM master's shutdown count, XO shutdown count, XO-off duration and active-core bitmask, split by burst/quiet. The column that carries the answer is the **XO-off percentage** — a master that holds the crystal through the burst and releases it through the quiet is the owner, whatever its transition counts say. ☠️ The tick is the 19.2 MHz XO, not the sleep clock; measured, `/19.2e6` lands inside uptime and `/32768` is three orders out. ☠️ It only reads — restarting the modem remoteproc costs audio until the next reboot |
 | [`discharge-run.sh`](discharge-run.sh) | **one continuous discharge from a full pack to the phone switching itself off.** ☠️ Deliberately the one instrument here with *no* capacity floor: it measures the pack, not the system, and `capacity` is what is under test. Refuses to start below 97 %, or with the panel up. Settles the pack's true capacity, the OCV→SoC curve and the mapping's lower leg in one run |
 
 ☠️ **Compare energy across the two systems, not mA.** `current_now` is current,
@@ -103,6 +104,15 @@ key press had woken the panel: the control came back with all 195 samples instea
 of 179, median 109 instead of 102, p90 261 instead of 213 — and a ready-made
 story ("re-enabling the modem cost something") sitting right there. **Prove a
 filter by feeding it a file you know it must shorten.**
+
+☠️☠️ **A rail name is not a rail.** This phone has two PMICs and **twenty of the
+rail names collide** — there are two `l1`, two `s3`, two `l9`. A census that
+records only `name` therefore hands every finding a coin flip over which chip it
+is about, and on 2026-08-27 that produced "`s1` is the MSS supply, by citation
+from five other msm8953 boards" — a sentence whose subject was never established.
+The identity of a rail is its **parent device**, so `burst-rail.sh` now writes
+that into the header and `burst-rail-fit.py` prints `name@parent`. A citation that
+resolves the name is not evidence about the thing.
 
 ☠️ **Packets are not power.** A flat packet counter excludes traffic and excludes
 nothing else. The same shape recurs: `capacity` is not charge, `current_now` is

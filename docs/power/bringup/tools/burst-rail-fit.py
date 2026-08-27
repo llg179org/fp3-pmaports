@@ -28,7 +28,12 @@ def load(path):
     names, start = {}, 0
     for line in text.splitlines():          # ☠️ two passes: window_from is at the END
         if line.startswith("# name "):
-            _, _, key, label = line.split(None, 3)
+            # `# name regulator.N <rail> <parent-path>`; the parent is what
+            # makes the rail unique - twenty names collide across the two PMICs
+            parts = line.split(None, 4)
+            key, label = parts[2], parts[3]
+            if len(parts) > 4 and parts[4] != "?":
+                label = "%s@%s" % (label, parts[4].rstrip("/").split("/")[-1])
             names[key] = label
         elif line.startswith("#") and "window_from=" in line:
             start = int(line.split("window_from=")[1].split()[0])
