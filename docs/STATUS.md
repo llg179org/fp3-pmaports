@@ -250,6 +250,25 @@ measurement queue must not be re-ordered around it.
 measuring, grep the captures** — they are indexed by date and question, not by
 what they contain.
 
+**5h. ⏳ RUNNING SINCE 2026-08-27 17:57 — the full instrumented discharge.**
+`discharge-gate.sh` waited for the charger to **terminate** (`status=Full`,
+cap 100 %, 4.372 V, 27.5 °C) and handed the unit to `discharge-run.sh 10`. The
+panel is down (`bl_power=4`, `dpms=Off`) and the charge input cut is **proven**
+(`status=Discharging`) — that is the code path fixed the same afternoon, which had
+been writing to `input_suspend`, a file that does not exist on mainline.
+
+It runs to power-off, ~20 h, and ends with a flat phone. Nothing else may touch the
+device while it runs. It settles three things at once: the pack's real capacity
+against the 3 060 000 µAh nameplate, the OCV→SoC curve including the lower leg
+where the oracle ladder has no data, and the **~30-point gauge optimism** — the one
+user-facing bug on this list. It is also the only way to resolve the standing
+2.12× / 1.20× / 1.13× contradiction, where the charge column and the current
+integral of the *same run* disagree by nearly a factor of two.
+
+Analysis is `discharge-fit.py`, written and validated on a synthetic 20 h pack
+**before** the run, because this is the one instrument here whose capture cannot
+simply be retaken.
+
 **6. Instruments written today**, all in `power/bringup/tools/`:
 `night-ladder.sh` (+ its two units, reboot-surviving, charge-input-safe),
 `ladder-summary.py` (integrates I·V, not just I), `burst-profile.py`,
