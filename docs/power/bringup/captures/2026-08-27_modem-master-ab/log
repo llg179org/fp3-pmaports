@@ -1,0 +1,12 @@
+# burst-master-knob 2026-08-27 16:14:12 knob=modem window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# --- leg A: state=registered
+# leg A -> /var/log/fp3/bmknob-modem-1787840052/A (189 samples)
+# applying off: mmcli -m 0 --disable
+# --- leg B: state=disabled
+# leg B -> /var/log/fp3/bmknob-modem-1787840052/B (189 samples)
+# restoring: mmcli -m 0 --enable
+# state after restore: registered
+# --- leg Ap: state=registered
+# leg Ap -> /var/log/fp3/bmknob-modem-1787840052/Ap (187 samples)
+# /var/log/fp3/bmknob-modem-1787840052

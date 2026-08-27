@@ -200,6 +200,17 @@ env_snapshot() {
 	# fix that "closed" this blind spot was tested only on the oracle. The
 	# nl80211 path works on both. A fallback that was never seen to fire is not a
 	# fallback.
+	# ☠️ THREE SOURCES WERE TRIED BEFORE ONE WORKED, AND THE FIRST TWO WERE
+	# BELIEVED WITHOUT BEING RUN. /proc/net/wireless needs CONFIG_CFG80211_WEXT
+	# (pmOS does not build it), `iw` is not installed, and `wpa_cli` is installed
+	# but has no control socket because NetworkManager runs the supplicant on the
+	# D-Bus interface instead. What answers is nmcli's CACHED list - no rescan, so
+	# the instrument does not transmit to measure a receive.
+	if [ -z "$wl" ] && command -v nmcli >/dev/null 2>&1; then
+		w=$(nmcli -t -f IN-USE,SIGNAL,SSID,RATE dev wifi 2>/dev/null |
+			sed -n 's/^\*://p' | head -1)
+		[ -n "$w" ] && wl=" wlan signal=${w%%:*} $(echo "$w" | cut -d: -f2-)"
+	fi
 	if [ -z "$wl" ] && command -v iw >/dev/null 2>&1; then
 		for ifc in /sys/class/net/wl*; do
 			[ -e "$ifc" ] || continue
