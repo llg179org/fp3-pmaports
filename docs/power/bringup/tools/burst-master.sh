@@ -41,7 +41,13 @@
 set -u
 W=${1:-360}
 IV=2
+# ☠️ The mainline module and the downstream 4.9 driver put this in different
+# places AND spell the keys differently. Take the first that exists; the raw text
+# of one file is copied into the capture at both ends of the run, so a capture
+# whose parse came out empty still carries the format that defeated it. A capture
+# is worth more than the parser that read it.
 D=/sys/kernel/debug/qcom_rpm_master_stats
+[ -d "$D" ] || D=/sys/kernel/debug/rpm_master_stats
 OUT=/var/log/fp3/burst-master-$(date +%s)
 mkdir -p "$OUT"
 BAT=$(dirname "$(ls /sys/class/power_supply/*/capacity 2>/dev/null | head -1)")
@@ -72,6 +78,10 @@ say "# masters:$FILES"
 # and that is the line that terminates every suspend on this phone.
 MODEM_IRQ=$(awk '/smd-edge/ && $(NF-2) == 57 {l=$1; sub(":","",l); print l}' /proc/interrupts | head -1)
 IRQS=$(awk -F: '/smd|smp2p|glink|qcom-ipcc|ipa/ {gsub(/ /,"",$1); print $1}' /proc/interrupts | tr '\n' ' ')
+for m in $MASTERS; do
+	[ -r "$D/$m" ] && { echo "=== $m (raw, at start)"; cat "$D/$m"; } >> "$OUT/masters-raw.txt" 2>/dev/null
+done
+
 say "# modem edge irq=${MODEM_IRQ:-?}  all edge irqs:${IRQS:- none found}"
 irq_row(){   # total over the listed irqs, then the modem edge alone
 	awk -v want="$IRQS" -v one="${MODEM_IRQ:--1}" \
@@ -137,5 +147,8 @@ echo "# window_from=$((waited + IV))  # samples before this mark saw a lit panel
 	>> "$OUT/master.txt"
 say "# idle-ab rc=$rc panel-wait=${waited}s -> window_from=$((waited + IV))"
 [ -n "$src" ] && say "# $(grep '^# panel:' "$src" | tr '\n' '|')"
+for m in $MASTERS; do
+	[ -r "$D/$m" ] && { echo "=== $m (raw, at end)"; cat "$D/$m"; } >> "$OUT/masters-raw.txt" 2>/dev/null
+done
 say "# done: $(grep -vc '^#' "$OUT/master.txt") master samples"
 say "# $OUT"
