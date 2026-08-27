@@ -37,8 +37,11 @@ counter per row, so the next capture answers it directly.
 identifies the edge by hwirq 57, not by 141, which is what it happened to be on
 the boot where it was first named.
 
-One more thing found while taking the inventory, not yet chased: **`pd-mapper` is
-in `failed`** (`status=1/FAILURE`, 29 ms of CPU). It serves the protection-domain
-registry that QMI clients look services up in, and a failed registry is the shape
-of a thing that gets retried. It is also a candidate for the separate finding that
-**LPASS never releases the crystal**.
+☠️ One thing found while taking the inventory and **immediately withdrawn**:
+`pd-mapper` is in `failed`, which looks like a retry loop and therefore like a
+waker. It is not — it is a **known and closed item** (`TODO.md`, "`pd-mapper.service`
+is permanently failed", 2026-08-14): the FP3 firmware ships zero `.jsn`
+protection-domain maps, so it exits with `no pd maps available`, burns its five
+restarts and stops for good. It is not running, so it cannot be waking anything.
+Checking the existing write-up cost one grep; publishing it as a lead would have
+cost a measurement.
