@@ -61,6 +61,11 @@ warm reboot — restore before any reboot, on both systems.
 * **Run instruments under `systemd-run --unit=… --collect`, never in the
   foreground over ssh.** An ssh timeout once killed a probe mid-script and left
   the modem and the ADSP unbound with nothing to rebind them.
+* ☠️ **Never reinstall an instrument on the device while a run that invokes it is
+  in flight.** The A-B-A′ wrappers exec `/usr/local/bin/<tool>` once per leg, so
+  replacing the file between legs silently makes the legs incomparable — and the
+  capture carries no record that it happened. Stage the new version locally, and
+  install it after the unit has exited.
 * **Do not poll the phone while a leg is running.** 74 ssh logins in 70 minutes
   measured **18.3 mA** — the observer was a fifth of the thing observed. Poll at
   400–700 s, or not at all, and read the capture when the unit exits.

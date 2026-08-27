@@ -194,6 +194,25 @@ env_snapshot() {
 			printf ' %s link=%s level=%s' \
 				"${ifc%:}" "${link%.}" "${level%.}"
 		done)
+	# ☠️ AND ON MAINLINE THAT FILE IS EMPTY. /proc/net/wireless only exists with
+	# CONFIG_CFG80211_WEXT, which pmOS does not build; every pmOS capture from
+	# 2026-08-26 and -27 recorded `wifi: ?` with the link plainly associated - the
+	# fix that "closed" this blind spot was tested only on the oracle. The
+	# nl80211 path works on both. A fallback that was never seen to fire is not a
+	# fallback.
+	if [ -z "$wl" ] && command -v iw >/dev/null 2>&1; then
+		for ifc in /sys/class/net/wl*; do
+			[ -e "$ifc" ] || continue
+			ifc=$(basename "$ifc")
+			lnk=$(iw dev "$ifc" link 2>/dev/null)
+			case "$lnk" in
+				*"Not connected"*|"") continue ;;
+			esac
+			lvl=$(echo "$lnk" | sed -n 's/.*signal: *\(-*[0-9]*\).*/\1/p')
+			ssid=$(echo "$lnk" | sed -n 's/.*SSID: *//p' | head -1)
+			wl="$wl $ifc level=${lvl:-?} ssid=${ssid:-?}"
+		done
+	fi
 	echo "# wifi:${wl:- ?}"
 
 	# The modem. ☠️ This is the device's largest known waker (IRQ 141, the SMD

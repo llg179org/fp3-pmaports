@@ -59,6 +59,21 @@ for m in $MASTERS; do
 done
 say "# masters:$FILES"
 
+# ☠️ WHO TALKS TO THE MODEM IS NOT THE SAME QUESTION AS WHETHER THE MODEM IS UP,
+# and only one of the two is visible from this side. The AP sees the modem's
+# messages as interrupts on the SMD/smp2p/glink edges - the same family as IRQ 141,
+# which terminates every suspend on this phone. Sampling those counters next to
+# the master state separates "the MSS core woke because the AP poked it" from "the
+# MSS core woke on its own and the AP never heard about it". Neither answer was
+# reachable before, and they lead to opposite fixes.
+IRQS=$(awk -F: '/smd|smp2p|glink|qcom-ipcc|ipa/ {gsub(/ /,"",$1); print $1}' /proc/interrupts | tr '\n' ' ')
+say "# edge irqs:${IRQS:- none found}"
+irq_sum(){
+	awk -v want="$IRQS" 'BEGIN{n=split(want,w," "); for(i=1;i<=n;i++) k[w[i]]=1}
+	     {l=$1; sub(":","",l); if(l in k){s=0; for(i=2;i<=NF;i++) if($i ~ /^[0-9]+$/) s+=$i; t+=s}}
+	     END{print t+0}' /proc/interrupts
+}
+
 # one awk over all four files; four cats per sample was the cost that broke
 # burst-rail.sh's first version, and this reads more per file than that did
 snap(){
@@ -74,8 +89,10 @@ snap(){
 sampler(){
 	hdr="# t_s cur_mA v_mV"
 	for m in $MASTERS; do hdr="$hdr ${m}_sd ${m}_xosd ${m}_xopct ${m}_cores"; done
+	hdr="$hdr edge_irq_per_s"
 	echo "$hdr" > "$OUT/master.txt"
 	prev=$(snap)
+	pirq=$(irq_sum)
 	t=0
 	while [ $t -lt "$((W + 300))" ]; do
 		sleep $IV
@@ -83,6 +100,7 @@ sampler(){
 		cur=$(cat "$BAT/current_now" 2>/dev/null || echo 0)
 		vol=$(cat "$BAT/voltage_now" 2>/dev/null || echo 0)
 		now=$(snap)
+		nirq=$(irq_sum)
 		echo "$t $(( (cur<0 ? -cur : cur) / 1000 )) $((vol/1000)) $(
 			echo "$prev|$now" | awk -v iv="$IV" -F'|' '{
 				np=split($1,p," "); nn=split($2,c," ");
@@ -90,8 +108,8 @@ sampler(){
 					# duration ticks are the 19.2 MHz XO: /19200 = ms, /(192000*iv) = %
 					printf "%d %d %d %s ", c[i]-p[i], c[i+1]-p[i+1],
 					       (c[i+2]-p[i+2])/(192000*iv), c[i+3];
-				}}')" >> "$OUT/master.txt"
-		prev=$now
+				}}') $(( (nirq - pirq) / IV ))" >> "$OUT/master.txt"
+		prev=$now; pirq=$nirq
 	done
 }
 
