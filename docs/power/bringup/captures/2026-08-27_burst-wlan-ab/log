@@ -1,0 +1,14 @@
+# burst-wlan-ab 2026-08-27 13:41:28 window=360s wlan-addr=192.168.100.17
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# A begin: wlan=enabled/up 13:41:28
+# A done: 179 samples <- /var/log/fp3/burst-attrib-1787830888
+# A end:   wlan=enabled/up
+# wlan disabled -> disabled/down
+# B begin: wlan=disabled/down 13:47:59
+# B done: 181 samples <- /var/log/fp3/burst-attrib-1787831279
+# B end:   wlan=disabled/down
+# wlan re-enabled -> enabled/up
+# Ap begin: wlan=enabled/up 13:54:44
+# Ap done: 179 samples <- /var/log/fp3/burst-attrib-1787831684
+# Ap end:   wlan=enabled/up
+# done: /var/log/fp3/burst-wlan-ab-1787830888

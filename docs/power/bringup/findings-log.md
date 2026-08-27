@@ -7355,3 +7355,71 @@ which is an argument for not treating one as contamination on sight.
 or not a packet arrives. Packets are what the interface carries; power is what the
 radio spends listening. `burst-wlan-ab.sh` takes the radio down with `nmcli radio
 wifi off` and refuses to start if the ssh session is on the wlan link.
+
+## ★★★★ 2026-08-27 14:00 — wlan is worth ~15 mA of median, and the rails say the same thing
+
+First real hit on front two. A-B-A' with `nmcli radio wifi off`, three 360 s
+`burst-attrib` legs, panel dark for all 73 idle-ab samples of each. Working:
+[`captures/2026-08-27_burst-wlan-ab/analysis.md`](captures/2026-08-27_burst-wlan-ab/analysis.md).
+
+| leg | wlan | floor | median | p90 | burst share |
+|---|---|---|---|---|---|
+| A | on | 53 | 99 | 221 | 67.6 % |
+| **B** | **off** | 53 | **83** | **198** | 53.6 % |
+| A' | on | 53 | 98 | 217 | 59.8 % |
+
+**Median: baseline spread 1.0 mA against a 15.5 mA effect — fifteen times the
+spread.** p90: 4.0 against 21.0. ☠️ The mean (4.9 vs 6.5) and the energy (23.8 vs
+27.4 mW) do **not** clear their own spread, so "wlan costs 27 mW" is not a
+measurement; the median and p90 are. Nothing at all on the floor. Same shape as
+the PSI watch: it moves the typical sample, not the biggest bursts. B is n=1.
+
+### ☠️ The obvious fix was dead before it was built
+
+"Power save must be off — turn it on" is wrong here. `wcn36xx` with `debug_mask`
+= `WCN36XX_DBG_PMC` prints **`Entered BMPS`**: beacon-mode power save works. What
+it also prints is churn — **8 entries in 180 s, in clusters**, each implying a
+preceding exit, and between exit and re-entry the radio is in full receive. With
+`wlan_pps` at 1–3, background broadcast (ARP, mDNS, IPv6 RA) is enough to keep
+interrupting it. ☠️ Some of that may be ours: the dev host is on the phone's own
+wlan subnet.
+
+### The rail census agrees, at the rail
+
+`burst-rail.sh` (57 regulators, `state` **and** `opmode`, 186 samples): **72 of 81
+readings are constant and 9 move with the current.** Three are identifiable from
+the `regulator_summary` consumer tree, and they are exactly the right three:
+`l9` = `a204000.remoteproc.iris-vddpa` (515 mA requested max), `l19` =
+`iris-vddrfa` (100 mA), `l7` = `iris-vddxo`. `a204000.remoteproc` is WCNSS and
+`iris` is the WCN36xx transceiver — **the WiFi RF and PA rails**, moving 30 → 17 %
+and 31 → 22 % between burst and quiet. Two instruments, two layers, one answer.
+
+☠️ The other four movers — `l1`, `l4`, `s1`, `l18`, all at 43 % against 20-23 % —
+have **no consumer listed anywhere in `regulator_summary`** and `num_users` = 0.
+They are not attributable from sysfs and are not being guessed at here.
+
+### ☠️☠️ And the first version of that census was wrong in two ways
+
+It printed a confident shortlist (`regulator-dummy`, `l15`, `l2`, `l18`, `l7`,
+`l5`) that has been **retracted**:
+
+1. **The labels were off by the gaps.** The capture wrote a bare vector with a
+   name list in the header; three regulators have no readable `state`, so the
+   vector was 54 long against 57 names and every label after the first gap was
+   wrong. The fix is that every reading now carries its own key
+   (`regulator.12/state=E`), and the parser refuses to invent one — a key missing
+   from a sample is a *hole*, not a value. Names are not unique either: two PMICs,
+   so two `l1`, `l2`, `l3`.
+2. **The instrument loaded what it measured.** 57 directories × 2 `cat`s = 114
+   forks per sample; the run returned **156 samples where 180 were due**, so one
+   sweep took over two seconds. The "under 1 ms" figure had been measured with a
+   single globbed `cat`, which is not what the loop did. Two `grep -H .` calls per
+   sample now, and the re-run returned 186. **Measure the loop you wrote, not the
+   one you meant.**
+
+### What is left
+
+With the radio entirely off, leg B still ran a median of **83 mA against a floor
+of 53**, 97 of 181 samples still bursts. **~30 mA of burst survives with wlan off,
+the modem excluded, the cores collapsed and the panel dark.** The census is
+running again with both radios down to see which rails still move.

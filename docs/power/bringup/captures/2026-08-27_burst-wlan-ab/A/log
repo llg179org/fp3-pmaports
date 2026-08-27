@@ -1,0 +1,8 @@
+# burst-attrib 2026-08-27 13:41:28 window=360s interval=2s bat=/sys/class/power_supply/pmi632-battery
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# cpus=8 idle-states=2
+# sampler pid=60356, handing the window to idle-ab.sh
+# idle-ab rc=0 panel-wait=0s -> window_from=2
+# # panel: bl_power='4' dpms='Off' brightness='40' waited=0s blanked: /sys/class/graphics/fb0/blank|# panel: off for all 73 samples of the window|
+# done: 179 attrib samples
+# /var/log/fp3/burst-attrib-1787830888

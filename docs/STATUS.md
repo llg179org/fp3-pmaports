@@ -15,9 +15,9 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-27 (13:30) — the matched ladders landed, the gauge was
-caught lying by 30 points, and the awake burst has now been excluded from both
-software and the CPU. The modem A-B-A' is running.**
+Last updated: **2026-08-27 (14:20) — the matched ladders landed, the gauge was
+caught lying by 30 points, and front two has its first real hit: wlan is worth
+~15 mA of median, confirmed at the rail. ~30 mA of burst still unexplained.**
 
 **1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
 each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
@@ -124,12 +124,43 @@ trace and you describe the background; split it by the thing you are explaining
 and you test it.** (It is still a real ~26 mA of median as item 5 says — a steady
 tax, not the burst.)
 
-What can spend hundreds of mA here without waking a CPU: the panel (proven dark
-every sample), wlan (flat), and **the modem** — independently the thing that
-terminates every suspend (IRQ 141). `burst-modem-ab.sh` is the A-B-A' on it,
-`mmcli --disable` only, never the remoteproc (restarting that costs audio until
-reboot). If the modem is flat too, the next instrument is a **rail census timed to
-the burst**, not another profiler.
+**5c. ★★★★ WLAN IS THE FIRST REAL HIT — ~15 mA of median, and the rails agree.**
+A-B-A' with `nmcli radio wifi off`, panel dark in all three legs:
+
+| leg | wlan | floor | median | p90 |
+|---|---|---|---|---|
+| A | on | 53 | 99 | 221 |
+| **B** | **off** | 53 | **83** | **198** |
+| A' | on | 53 | 98 | 217 |
+
+Median: **1.0 mA of baseline spread against a 15.5 mA effect.** p90: 4.0 against
+21.0. ☠️ The mean (4.9 vs 6.5) and the energy (23.8 vs 27.4 mW) do NOT clear their
+spread — the median and p90 are the measurement, "wlan costs 27 mW" is not. Floor
+untouched. B is n=1.
+
+☠️ **The obvious fix was dead before it was built.** `wcn36xx` with `debug_mask` =
+`WCN36XX_DBG_PMC` prints `Entered BMPS`: power save works. What it shows instead
+is **churn — 8 entries in 180 s, in clusters**, each implying an exit, and between
+exit and re-entry the radio is in full receive. Background broadcast at 1–3 pps is
+enough. Some of it may be ours: the dev host is on the phone's wlan subnet.
+
+**The rail census says the same thing at the rail.** 57 regulators, `state` AND
+`opmode`, 186 samples: **72 of 81 readings constant, 9 move.** Three are
+identifiable and are exactly the right three — `l9` = `iris-vddpa` (515 mA
+requested max), `l19` = `iris-vddrfa`, `l7` = `iris-vddxo`, i.e. the WCN36xx RF
+and PA rails. ☠️ The other four movers (`l1`, `l4`, `s1`, `l18`, 43 % vs 20-23 %)
+have no consumer anywhere in `regulator_summary` and are not being guessed at.
+
+☠️☠️ **The first version of that census was retracted** — labels off by the gaps
+(bare vector against a header name list, three regulators with no readable
+`state`), and the instrument loaded what it measured (114 forks/sample, 156
+samples where 180 were due). Now every reading carries its own key and it is two
+`grep -H .` per sample; the re-run returned 186.
+
+**5d. WHAT IS STILL UNEXPLAINED: ~30 mA of burst.** With the radio entirely off,
+leg B still ran median **83 against a floor of 53**, 97 of 181 samples still
+bursts — with the modem excluded, the cores collapsed and the panel dark. The
+census is being repeated with both radios down.
 
 Also live and unexplained: a real **~81 s period on pmOS that the oracle does not
 have** (harmonic at 162 s; oracle ±0.03), strong in ladder rungs 1-4, weak after.
