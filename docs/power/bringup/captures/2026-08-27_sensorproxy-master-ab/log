@@ -1,0 +1,12 @@
+# burst-master-knob 2026-08-27 16:59:35 knob=sensorproxy window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# --- leg A: state=active
+# leg A -> /var/log/fp3/bmknob-sensorproxy-1787842775/A (187 samples)
+# applying off: systemctl stop iio-sensor-proxy
+# --- leg B: state=inactive
+# leg B -> /var/log/fp3/bmknob-sensorproxy-1787842775/B (187 samples)
+# restoring: systemctl start iio-sensor-proxy
+# state after restore: active
+# --- leg Ap: state=active
+# leg Ap -> /var/log/fp3/bmknob-sensorproxy-1787842775/Ap (184 samples)
+# /var/log/fp3/bmknob-sensorproxy-1787842775
