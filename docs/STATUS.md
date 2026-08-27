@@ -279,9 +279,20 @@ itself, no tracepoints; the fit splits by burst/quiet and names which of three
 verdicts the data supports), `burst-modem-ab.sh` (A-B-A' on the RF),
 `discharge-run.sh` (**the one instrument here with no capacity floor** — it
 measures the pack, and `capacity` is what is under test; refuses to start below
-97 % or with the panel up). ☠️ `idle-ab.sh` records `wifi: ?` on pmOS: the most obvious periodic-task
-suspect is the one field the instrument leaves blank. Worth closing before
-hunting further.
+97 % or with the panel up), and — added 2026-08-27 — `burst-master.sh` +
+`burst-master-fit.py` (the RPM's per-master record beside the current, split both
+by the effect and by the cause), `burst-master-knob.sh` (A-B-A′ judged on a
+master's duty cycle rather than on the current), `burst-knob-ab.sh`,
+`burst-rail.sh` + `burst-rail-fit.py`, `discharge-gate.sh` and `discharge-fit.py`.
+
+☑️ **`idle-ab.sh`'s `wifi: ?` is closed** (2026-08-27). It had been "closed" once
+before, on the oracle only: `/proc/net/wireless` needs `CONFIG_CFG80211_WEXT`,
+which pmOS does not build, so every pmOS capture kept printing `?` with the link
+plainly associated. `iw` is not installed; `wpa_cli` is installed but has no
+control socket because NetworkManager drives the supplicant over D-Bus. The
+cached `nmcli` list answers, without a rescan — an instrument must not transmit in
+order to measure a receive. ☠️ **A fallback that was never watched to fire is not
+a fallback.**
 
 Standing from 2026-08-25: the two biggest wakers found so far were both OURS
 (`apcs_hold_cluster()`'s global `cpu_latency_qos`, fixed in r76; and a `spkwatch`
