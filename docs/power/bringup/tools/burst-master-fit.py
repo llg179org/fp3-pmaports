@@ -97,6 +97,24 @@ for path in sys.argv[1:]:
     # other way - by the candidate cause, and report the current - and MPSS
     # separates 166 mA from 74 mA. Both directions are needed: split by the effect
     # to test a story, split by the cause to find one.
+    # a correlation table, because it is what was computed by hand on the first
+    # capture and it is what pointed at MPSS_cores before any split did
+    def corr(a, b):
+        ma, mb = statistics.mean(a), statistics.mean(b)
+        num = sum((x - ma) * (y - mb) for x, y in zip(a, b))
+        da = sum((x - ma) ** 2 for x in a) ** 0.5
+        db = sum((y - mb) ** 2 for y in b) ** 0.5
+        return num / (da * db) if da and db else None
+    print("\n   correlation with the current (r), and the range of each column:")
+    for i, name in enumerate(cols):
+        if i < 2:
+            continue
+        v = [r[i] for r in rows]
+        if len(set(v)) < 2:
+            print("   %-16s constant = %s" % (name, v[0]))
+            continue
+        print("   %-16s r=%+.2f   min=%-6s max=%s" % (name, corr(cur, v), min(v), max(v)))
+
     print("\n   conditioned on each master being up (the split by cause):")
     print("   %-16s %5s %8s %8s %8s" % ("condition", "n", "p10", "median", "p90"))
     conds = []
