@@ -483,6 +483,42 @@ biggest such wakers found so far were both ours (`apcs_hold_cluster()`'s global
 `cpu_latency_qos`, and a `spkwatch` harness left running since August). Nothing
 says there is not a third.
 
+##### ⏳ OPEN — front two, 2026-08-27: the burst is not code and not the CPU
+
+Opened and immediately narrowed, by two instruments that share no mechanism (this
+matters: the standing lesson here is that two witnesses on one layer are one
+witness read twice). Both on a proven-dark panel with the charge input cut.
+
+1. **The trace says no.** `burst-source.sh`, 24 321 `workqueue_execute_start` +
+   `timer_expire_entry` events against 71 current samples on one clock. Split each
+   event into the 5 s bin ending at a current sample, then split those bins by
+   whether the sample was a burst: **313 events per burst bin against 316 per
+   quiet bin**, every top function at the same per-bin rate, the 1 % difference
+   pointing the wrong way. ☠️ `psi_avgs_work` is 4 897 of ~9 000 workqueue
+   executions and looks exactly like the answer — it is flat from end to end.
+   **Rank a trace and you describe the background; split it by the thing you are
+   explaining and you test it.**
+2. **The machine says no.** `burst-attrib.sh`, no tracepoints at all, 180 samples,
+   current 53 → 473 mA (**9×**): `busy_pct` 1 vs 1, power-collapse residency
+   **99 vs 100 %**, wakes 77/s vs 77/s, both cpufreq policies pinned identically,
+   wlan 2 vs 2 pps. **The cores are collapsed 99 % of the time during the burst.**
+   The old census line "the CPUs are not it" was about the floor; they are not the
+   burst either.
+
+**Next, in order:**
+
+1. ⏳ **`burst-modem-ab.sh`** — A-B-A' on the RF with `mmcli --disable`, never the
+   remoteproc (restarting that costs audio until reboot and a mixer write
+   afterwards oopses the kernel). The modem is the last thing on this phone that
+   can spend hundreds of mA without waking a CPU, and it is independently the
+   thing that terminates every suspend (IRQ 141, the SMD edge).
+2. If the modem is flat too, **a rail census timed to the burst** — not another
+   profiler. Every profiling instrument available has now been run and all of them
+   agree the power is not a running instruction.
+3. Still unattached to any of this: the **~81 s pmOS-only period**. Close the
+   `wifi: ?` blind spot in `idle-ab.sh` first — the most obvious periodic-task
+   suspect is the one field the instrument leaves blank.
+
 #### ⏳ OPEN, and it is now the highest-value instrument work here — a coulomb counter on mainline
 
 The oracle exports `cc_soc` + `full_uAh=3060000`; mainline exports no `cc_soc`

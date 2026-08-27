@@ -7260,3 +7260,98 @@ power-collapse residency and WFI usage summed over all eight CPUs, both cpufreq
 policies, and the wlan packet counters, all sampled alongside the current. If a
 burst carries no CPU-busy and no residency signature, the next instrument is a
 rail and not a profiler.
+
+## ★★★ 2026-08-27 13:20 — and it is not the CPU either: the burst spends power with the cores collapsed
+
+`burst-attrib.sh`, written an hour after the trace answered "no", asks the machine
+about itself instead of profiling it: CPU-busy from `/proc/stat`, cpuidle
+power-collapse residency and WFI usage summed over all eight cores, both cpufreq
+policies, the wlan packet counters — **no tracepoint at all**, so it could have
+disagreed with the trace and did not. 360 s, panel dark for the whole window,
+charge input cut, 180 samples. Working:
+[`captures/2026-08-27_burst-attrib/analysis.md`](captures/2026-08-27_burst-attrib/analysis.md).
+
+    floor(p10)=53   median=103   p90=222   max=473 mA      burst 111 / quiet 69
+
+| column | burst | quiet | ratio |
+|---|---|---|---|
+| **`busy_pct`** | **1.0** | **1.0** | 1.00× |
+| **`pc_res_pct`** (all 8 CPUs) | **99** | **100** | 0.99× |
+| `wfi_per_s` | 77 | 77 | 1.00× |
+| `pc_per_s` | 437 | 453 | 0.96× |
+| `f0_kHz` / `f4_kHz` | 1 228 800 | 1 228 800 | 1.00× |
+| `wlan_pps` | 2 | 2 | 1.00× |
+
+**A 9× swing in current across which the machine does not move.** The cores are
+in power-collapse 99 % of the time *during the burst*, at the same frequency,
+waking at the same rate, doing the same 1 % of work. The older census line "the
+CPUs are not it" was about the floor; it turns out they are not the burst either.
+
+So the burst is **not code**. That is now established twice by instruments that
+share no mechanism — a tracer and a sysfs sampler — which is the only kind of
+agreement worth having here, and it is the opposite of the mistake this
+investigation has made before, where two witnesses turned out to be one witness
+read twice.
+
+**What can spend hundreds of milliamps on this phone without waking a CPU:** the
+panel (proven dark, re-proven on every sample), wlan (flat at 2 pps), and the
+modem — which is independently the thing that terminates every suspend here
+(IRQ 141, the SMD edge). `burst-modem-ab.sh` puts the A-B-A' on exactly that,
+using `mmcli --disable` for the RF and never touching the remoteproc, because
+restarting that costs audio until the next reboot and a mixer write afterwards
+oopses the kernel. If the modem comes back flat too, what is left is a rail that
+nothing in `/sys` attributes, and the next instrument is a rail census timed to
+the burst — not another profiler.
+
+## 2026-08-27 13:40 — the modem is worth nothing, and the pack voltage says the burst is real
+
+A-B-A' with `mmcli --disable` (never the remoteproc — restarting that costs audio
+until reboot), three 360 s `burst-attrib` legs, panel proven dark for all 73
+idle-ab samples of every leg. Working:
+[`captures/2026-08-27_burst-modem-ab/analysis.md`](captures/2026-08-27_burst-modem-ab/analysis.md).
+
+| leg | modem | floor | median | p90 |
+|---|---|---|---|---|
+| A | registered | 53 | 99 | 214 |
+| **B** | **disabled** | **53** | **97** | **213** |
+| A' | registered | 53 | 102 | 213 |
+
+**A↔A' baseline spread 3 mA, A−B difference 2 mA.** The RF is excluded. So the
+burst is not code, not the CPU, not wlan traffic, not the panel, and not the
+modem.
+
+### ★ And it is real power, on a witness that was in the capture all along
+
+The gauge could have been inventing a 9× swing that nothing in the machine
+accompanies — a serious possibility, and the column that settles it had simply not
+been read: **the pack voltage sags with the burst, on every leg, at a consistent
+implied resistance.** A: ΔI 102 mA / ΔV 16 mV = 156 mΩ. B: 100 / 18 = 179 mΩ.
+A': 102 / 20 = 196 mΩ. Medians of interleaved samples, so discharge drift cancels;
+156–196 mΩ is entirely plausible for an aged cell plus connector and traces. Real
+load, not a reporting artefact.
+
+### ☠️ The bug a button press exposed, and what it would have cost
+
+The operator woke the phone with a key during A' to see which OS was running.
+idle-ab handled it correctly — it waited 30 s for the panel to go back down
+(`waited=30s` against `0s` on A and B) and all 73 of its own samples were dark.
+
+`burst-attrib`'s sampler, though, starts *before* idle-ab has the panel, and marks
+the real start with a `# window_from=` line written at the END of the file,
+because the wait is only known when idle-ab returns. `burst-attrib-fit.py` read
+the file in one sequential pass and therefore set the cutoff **after** keeping
+every row. The filter silently did nothing: A' came back with all 195 samples, the
+first sixteen lit.
+
+Fixed with two passes. **A' median 109 → 102, p90 261 → 213.** Uncorrected, the
+control leg reads 7 mA worse than A and the ready-made story — "re-enabling the
+modem cost something" — is sitting right there waiting to be believed. The general
+form: **a mark that is written but not honoured is worse than no mark**, because
+the output looks filtered. And it took an unplanned interruption to expose it,
+which is an argument for not treating one as contamination on sight.
+
+**Next:** wlan. `wlan_pps` is flat at 2 vs 2 across every burst, and that excludes
+*traffic* and nothing else — a radio with power-save off sits in receive whether
+or not a packet arrives. Packets are what the interface carries; power is what the
+radio spends listening. `burst-wlan-ab.sh` takes the radio down with `nmcli radio
+wifi off` and refuses to start if the ssh session is on the wlan link.

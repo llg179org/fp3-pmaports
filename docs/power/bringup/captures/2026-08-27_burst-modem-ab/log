@@ -1,0 +1,14 @@
+# burst-modem-ab 2026-08-27 13:19:25 window=360s modem=0
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# A begin: modem-state=registered 13:19:25
+# A done: 179 samples <- /var/log/fp3/burst-attrib-1787829565
+# A end:   modem-state=registered
+# modem disabled -> state=disabled
+# B begin: modem-state=disabled 13:25:55
+# B done: 179 samples <- /var/log/fp3/burst-attrib-1787829955
+# B end:   modem-state=disabled
+# modem re-enabled -> state=registered
+# Ap begin: modem-state=registered 13:32:35
+# Ap done: 195 samples <- /var/log/fp3/burst-attrib-1787830355
+# Ap end:   modem-state=registered
+# done: /var/log/fp3/burst-modem-ab-1787829565

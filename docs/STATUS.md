@@ -15,8 +15,9 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-27 (10:20) — the matched ladders landed, the gauge was
-caught lying by 30 points, and the burst hunt is mid-run.**
+Last updated: **2026-08-27 (13:30) — the matched ladders landed, the gauge was
+caught lying by 30 points, and the awake burst has now been excluded from both
+software and the CPU. The modem A-B-A' is running.**
 
 **1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
 each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
@@ -105,6 +106,31 @@ is `DefaultMemoryPressureWatch=no` in
 `psimon`, 11 → 6 fds; the residue is systemd's own `init.scope` watches. **The
 file is currently REMOVED — the phone is back on stock behaviour (A' state).**
 
+**5b. ★★★ AND THE BURST IS NOT CODE AND NOT THE CPU.** Two instruments sharing no
+mechanism, both on a dark panel with the charge input cut:
+
+* **the trace** (`burst-source.sh`, 24 321 workqueue+timer events against 71
+  current samples): splitting every event into the 5 s bin ending at each current
+  sample, **burst bins 313 events, quiet bins 316** — every top function at the
+  same per-bin rate, the 1 % difference pointing the wrong way.
+* **the sysfs sampler** (`burst-attrib.sh`, no tracepoints, 180 samples, current
+  53 → 473 mA = **9×**): `busy_pct` **1 vs 1**, power-collapse residency **99 vs
+  100 %**, wakes 77/s vs 77/s, both cpufreq policies pinned identically, wlan 2
+  pps vs 2 pps. **The cores are collapsed 99 % of the time during the burst.**
+
+☠️ The trap avoided: `psi_avgs_work` is 4 897 of ~9 000 workqueue executions and
+looks exactly like an answer — until the split shows it flat end to end. **Rank a
+trace and you describe the background; split it by the thing you are explaining
+and you test it.** (It is still a real ~26 mA of median as item 5 says — a steady
+tax, not the burst.)
+
+What can spend hundreds of mA here without waking a CPU: the panel (proven dark
+every sample), wlan (flat), and **the modem** — independently the thing that
+terminates every suspend (IRQ 141). `burst-modem-ab.sh` is the A-B-A' on it,
+`mmcli --disable` only, never the remoteproc (restarting that costs audio until
+reboot). If the modem is flat too, the next instrument is a **rail census timed to
+the burst**, not another profiler.
+
 Also live and unexplained: a real **~81 s period on pmOS that the oracle does not
 have** (harmonic at 162 s; oracle ±0.03), strong in ladder rungs 1-4, weak after.
 A 6-minute traced window found no function with that period — too short. ☠️ The
@@ -116,7 +142,12 @@ correlated against continuous event counts, and best-of-13-shifts inflates r.
 `ladder-summary.py` (integrates I·V, not just I), `burst-profile.py`,
 `burst-source.sh` (wraps idle-ab rather than duplicating its panel logic — the
 first version duplicated it and aborted where idle-ab succeeded in the same
-minute). ☠️ `idle-ab.sh` records `wifi: ?` on pmOS: the most obvious periodic-task
+minute), `burst-attrib.sh` + `burst-attrib-fit.py` (the machine measured about
+itself, no tracepoints; the fit splits by burst/quiet and names which of three
+verdicts the data supports), `burst-modem-ab.sh` (A-B-A' on the RF),
+`discharge-run.sh` (**the one instrument here with no capacity floor** — it
+measures the pack, and `capacity` is what is under test; refuses to start below
+97 % or with the panel up). ☠️ `idle-ab.sh` records `wifi: ?` on pmOS: the most obvious periodic-task
 suspect is the one field the instrument leaves blank. Worth closing before
 hunting further.
 

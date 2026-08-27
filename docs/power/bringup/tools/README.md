@@ -47,6 +47,10 @@ protocol, or they are two measurements rather than a comparison.
 | [`burst-source.sh`](burst-source.sh) | the current and the kernel's own `workqueue_execute_start` + `timer_expire_entry` on **one clock**, so a burst can be laid against the work that ran during it. Wraps `idle-ab.sh` rather than re-implementing the panel proof. ☠️ Its current figures are tracer-inflated and are never an idle number — what survives the overhead is the structure |
 | [`burst-profile.py`](burst-profile.py) | floor / median / p90 / p99, the share of samples at ≥1.5× floor, the excess over floor, and the autocorrelation peak lag — the shape of a window, where a fit gives its level |
 | [`burst-attrib.sh`](burst-attrib.sh) | **written because the tracer answered "no"**: CPU-busy from `/proc/stat`, cpuidle power-collapse residency and WFI usage, both cpufreq policies and the wlan packet counters, sampled alongside the current with **no tracepoint at all**. Decides whether a burst is the CPU being awake or something that costs power without running code |
+| [`burst-attrib-fit.py`](burst-attrib-fit.py) | splits a `burst-attrib` capture by the thing it is explaining — the current — and prints every other column on both sides of that split, then says which of the three verdicts the data supports: code running, an idle-depth burst, or neither. Drops everything before the `# window_from=` mark |
+| [`burst-modem-ab.sh`](burst-modem-ab.sh) | A-B-A' on the modem RF with `mmcli --disable`. ☠️ Never the remoteproc: restarting that costs audio until the next reboot and a mixer write afterwards oopses the kernel |
+| [`burst-wlan-ab.sh`](burst-wlan-ab.sh) | A-B-A' on the wlan radio. ☠️ Exists because `wlan_pps` being flat excludes *traffic* and nothing else — a radio with power-save off sits in receive whether or not a packet arrives. Refuses to start if the ssh session is on the wlan link |
+| [`discharge-run.sh`](discharge-run.sh) | **one continuous discharge from a full pack to the phone switching itself off.** ☠️ Deliberately the one instrument here with *no* capacity floor: it measures the pack, not the system, and `capacity` is what is under test. Refuses to start below 97 %, or with the panel up. Settles the pack's true capacity, the OCV→SoC curve and the mapping's lower leg in one run |
 
 ☠️ **Compare energy across the two systems, not mA.** `current_now` is current,
 and two runs rarely cover the same part of the pack: measured 2026-08-26/27, the
@@ -87,6 +91,21 @@ wakeups in six minutes is to name the biggest one as the cause; the split by
 burst/quiet is what stops that, and it costs one pass over the same file. **Always
 split the trace by the thing you are explaining before you rank it** — a ranking
 alone is a picture of the background, not of the event.
+
+☠️☠️ **A mark that is written but not honoured is worse than no mark**, because
+the output looks filtered. `burst-attrib` writes its `# window_from=` cutoff at the
+END of the capture (it only learns the panel wait when idle-ab returns), and the
+first `burst-attrib-fit.py` read the file in one sequential pass — setting the
+cutoff after it had already kept every row. Measured 2026-08-27, on a leg where a
+key press had woken the panel: the control came back with all 195 samples instead
+of 179, median 109 instead of 102, p90 261 instead of 213 — and a ready-made
+story ("re-enabling the modem cost something") sitting right there. **Prove a
+filter by feeding it a file you know it must shorten.**
+
+☠️ **Packets are not power.** A flat packet counter excludes traffic and excludes
+nothing else. The same shape recurs: `capacity` is not charge, `current_now` is
+not energy, an event count is not a level. Ask what the field is a count OF before
+reading it as the thing you care about.
 
 ☠️ **A rung that produced nothing still looks like a rung.** Prove the instrument
 on the target system with a short window before arming a night: the first pmOS

@@ -28,6 +28,14 @@
 # owns the panel proof, the charge cut and the window; this samples alongside it.
 # Duplicating the panel logic is how burst-source.sh got a worse copy of it.
 #
+# ☠️ AND BECAUSE OF THAT, THE TWO WINDOWS DO NOT START TOGETHER. idle-ab first asks
+# for the panel and waits up to 240 s for the hardware to agree; its window opens
+# only after that. A sampler started at the same moment would spend its first
+# `waited` seconds measuring a LIT PANEL - worth ~24.5 mA, which is most of the
+# floor - and then stop `waited` seconds early. So the sampler runs long, is
+# stopped when idle-ab returns, and writes `# window_from=<t>` from idle-ab's own
+# reported wait. Anything before that mark is not part of the measurement.
+#
 #   burst-attrib.sh [seconds]        (default 360)
 set -u
 W=${1:-360}
@@ -69,7 +77,7 @@ sampler(){
 	pres=$(sum_idle_time 1); pwfi=$(sum_idle_usage 0); ppc=$(sum_idle_usage 1)
 	set -- $(netcnt); pnet=$(( ${1:-0} + ${2:-0} ))
 	t=0
-	while [ $t -lt "$W" ]; do
+	while [ $t -lt "$((W + 300))" ]; do
 		sleep $IV
 		t=$((t + IV))
 		cur=$(cat "$BAT/current_now" 2>/dev/null || echo 0)
@@ -96,11 +104,18 @@ spid=$!
 say "# sampler pid=$spid, handing the window to idle-ab.sh"
 /usr/local/bin/idle-ab.sh "$W" >/dev/null 2>&1
 rc=$?
+kill $spid 2>/dev/null
 wait $spid 2>/dev/null
 
 src=$(ls -t /tmp/idle-ab-*.txt 2>/dev/null | head -1)
 [ -n "$src" ] && cp "$src" "$OUT/current.txt"
-say "# idle-ab rc=$rc"
+# mark where the measurement really begins: idle-ab prints how long the panel took
+waited=0
+[ -n "$src" ] && waited=$(sed -n 's/.*waited=\([0-9]*\)s.*/\1/p' "$src" | head -1)
+[ -z "$waited" ] && waited=0
+echo "# window_from=$((waited + IV))  # samples before this mark saw a lit panel" \
+	>> "$OUT/attrib.txt"
+say "# idle-ab rc=$rc panel-wait=${waited}s -> window_from=$((waited + IV))"
 [ -n "$src" ] && say "# $(grep '^# panel:' "$src" | tr '\n' '|')"
 say "# done: $(grep -vc '^#' "$OUT/attrib.txt") attrib samples"
 say "# $OUT"
