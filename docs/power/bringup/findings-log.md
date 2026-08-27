@@ -6770,3 +6770,493 @@ of the oracle at all. Nothing in the captures identifies what that would be yet.
 
 The rungs are being kept at `/tmp/ladder-N.txt` on the phone; the run has six
 windows left and ends about 18:20.
+
+## ★★★ 2026-08-26 22:20 — the full eight-rung ladder: state of charge is dead as an explanation, and so is the threshold version of it
+
+The 12:26 entry above reported two rungs and said the next ones would decide it.
+They have. The ladder was restarted at 14:07 as a reboot-surviving systemd unit
+(`night-ladder.sh`, after the first attempt was lost to an accidental power-off)
+and ran all eight rungs to term, finishing 22:10:24 with the charge input
+restored. One boot, one cable state, one instrument, 8 × 3600 s, panel off
+throughout.
+
+| rung | v start -> end | floor (p10) | median | integrated |
+|---|---|---|---|---|
+| 1 | 4.262 -> 4.156 | 76.6 | 129.4 | 58.9 |
+| 2 | 4.172 -> 4.139 | 75.2 | 131.8 | 64.3 |
+| 3 | 4.132 -> 4.109 | 70.5 | 128.7 | 62.8 |
+| 4 | 4.099 -> 4.075 | 71.7 | 128.2 | 62.5 |
+| 5 | 4.068 -> 4.050 | **71.0** | 122.6 | **63.1** |
+| 6 | 4.044 -> 4.012 | 71.3 | 120.2 | 64.0 |
+| 7 | 4.011 -> 3.978 | 69.0 | 128.2 | 62.8 |
+| 8 | 3.981 -> 3.967 | 72.3 | 121.3 | 63.4 |
+
+**94 % -> 69 %, 4.262 V -> 3.967 V, and neither number moves.** The floor sits
+between 69.0 and 76.6 mA with no monotonic trend, and the integrated draw
+between 58.9 and 64.3 mA — a spread narrower than one window's own noise. If
+charge were what separates 32.2 mA from 62-64 mA, 25 points of it and 295 mV
+would have shown it.
+
+☠️ **And the threshold version dies on rung 5.** The 2026-08-24 reading — floor
+15.3 mA, integrated 32.2 mA — was taken at 4.050 V, which was below every point
+the 12:26 entry had. Rung 5 spans 4.068 -> 4.050 V, exactly there, and reads
+**71.0 mA floor / 63.1 mA integrated**. Same pack voltage, same phone, same
+instrument, 4.6× apart. There is no region of the pack where the oracle draws
+15 mA.
+
+So the surviving explanation is the uncomfortable one stated on 2026-08-25:
+**the 2026-08-24 capture differed in something other than charge** — a different
+set of services awake, a different registration state, something not yet named —
+and therefore **the 15.3 mA oracle floor that THE GOAL has been scored against
+since then is not a property of the oracle.** The reproducible oracle figure, now
+across ten consecutive hours today plus the two windows this morning, is
+**69-77 mA floor / 59-64 mA integrated**. Against pmOS's own 52.9 mA floor /
+98.3 mA integrated from 2026-08-25, the floor gap is not 3.5× against us — it is
+**in our favour**, and what remains is the burst behaviour, not a continuous-draw
+deficit. ☠️ That reframing rests on the 08-24 capture being an outlier rather
+than the others being one; what makes it the outlier is that it is a single
+window and these are ten.
+
+Next: the same ladder on pmOS, from the same pack mark. The pack is being charged
+back to the UT rung-1 state (94 %, 4.394 V, cable attached) **on the UT side**
+before the slot is switched, so pmOS boots onto a pack already at the mark rather
+than starting its rung 1 after a long charge under a different power stack.
+
+Captures: `captures/2026-08-26_ut-night-ladder/rung-{1..8}.txt` + `ladder.log`.
+
+## ★★★★ 2026-08-27 08:00 — the matched pmOS ladder: the gap over eight hours is 12.9 % of energy, and it is entirely burst, not floor
+
+The oracle's eight rungs (2026-08-26 14:07-22:10) were answered by eight of our
+own, 23:10:33 -> 07:13:41, from the same pack mark: the pack was charged back to
+94 % / 4.394 V **on the UT side** before the slot switch, so pmOS booted onto a
+pack already at the mark rather than measuring after a long charge under a
+different power stack. Panel provably off in every sample of all sixteen rungs.
+
+| | UT (oracle) | pmOS | pmOS vs UT |
+|---|---|---|---|
+| **energy** (I*V integrated) | **525.6 mW** | **593.5 mW** | **+12.9 %** |
+| current (integrated) | 129.0 mA | 154.1 mA | +19.5 % |
+| floor (p10), rung mean | 72.2 mA | 56.9 mA | **-21 %** |
+| median, rung mean | 126.3 mA | 161.8 mA | +28 % |
+| `capacity` over the run | 94 -> 69 (25 pt) | 92 -> 63 (29 pt) | +14 % |
+| voltage over the run | 295 mV | 442 mV | see below |
+| coulomb counter | 62.7 mA / 16.4 % | **not available** | - |
+
+**The shape is the one the wakeup work predicted.** Our floor is 21 % BELOW the
+oracle's and has been since the 2026-08-25 fixes; our median is 28 % above it.
+pmOS sits quieter and wakes more expensively, and the net over a night is
+**12.9 % more energy** - not the 3.5x that the retracted 15.3 mA figure implied,
+and not a continuous-draw deficit at all.
+
+☠️ **Four ways to get this number wrong, all of them live here:**
+
+* **mA is not the comparison.** `current_now` is current, and the two ladders did
+  not cover the same part of the pack - pmOS spanned 4.150 -> 3.708 V against the
+  oracle's 4.262 -> 3.967 V. At a lower pack voltage the same power draws more
+  current, so mA-to-mA hands pmOS a penalty it did not earn: **+19.5 % in current
+  is +12.9 % in energy**, and 6.6 points of the "gap" were the discharge curve.
+  `ladder-summary.py` now integrates I*V for exactly this reason.
+* **mV/h is not the comparison either**, and it is the worst of the three: 442 vs
+  295 mV looks like a 50 % difference and is mostly the Li-ion curve steepening
+  below 3.9 V, where only pmOS ran.
+* **`capacity` is not one instrument.** The oracle's percentage comes from the
+  downstream QG stack, ours from our own mainline gauge - the one that needed
+  four separate fixes in August. Two different estimators are being subtracted.
+* ☠️☠️ **The coulomb counter does not exist on our side.** pmOS mainline exports
+  no `cc_soc` and reports `full_uAh=?`, so the one hardware-integrated
+  measurement is oracle-only. On the oracle, where both exist, they disagree by
+  **2.056x** over the same eight hours (integrated 1030.6 mAh vs coulomb
+  501.2 mAh) - and in the direction that rules out sampling shortfall, because
+  too few samples under-count. The likeliest reading is that **the sampling
+  itself wakes the phone**: a sysfs read every ~5 s brings it up, so `current_now`
+  measures the awake-and-idle draw while the counter integrates in hardware with
+  sleep included. That ratio **must not be carried over to pmOS to "correct" its
+  figure** - it is a property of how often a system wakes, which is the very
+  thing under comparison. Every number in the table above is therefore
+  integrated-against-integrated, never integrated-against-coulomb.
+
+Standing consequence: **getting a coulomb counter on the mainline side is now the
+highest-value instrument work in this area.** Without it, our absolute draw is
+known only through an estimator that the oracle proves can be off by 2x, and the
+comparison survives only because both sides are read the same wrong way.
+
+Secondary, and cheap to check next: the pmOS floor rises monotonically across the
+run, 54.9 -> 58.4 mA, while the oracle's does not (76.6 -> 72.3, drifting down).
+Over a 442 mV drop a constant-power load would raise current by ~11 %; the
+observed rise is 6.4 %, so this is consistent with a flat load and needs no
+separate explanation - but it is worth restating in mW before anyone hunts it.
+
+Captures: `captures/2026-08-26_pmos-night-ladder/rung-{1..8}.txt` + `ladder.log`,
+against `captures/2026-08-26_ut-night-ladder/`. Tool: `tools/ladder-summary.py`.
+
+## ★★★ 2026-08-27 09:00 — the awake bursts have a period on pmOS and none on the oracle: ~81 s
+
+The ladders left a specific question behind: our floor is 21 % below the oracle's
+and our median 28 % above it, so whatever separates the two systems lives in the
+bursts. [`tools/burst-profile.py`](tools/burst-profile.py) asks what those bursts
+look like, on data already captured — no device time at all.
+
+| | floor (p10) | median | p99 | samples ≥1.5× floor | excess over floor | autocorrelation |
+|---|---|---|---|---|---|---|
+| pmOS rung 1 | 55.1 | 153.3 | 354.9 | 66.0 % | **92.8 mA (63 % of the draw)** | **lag 16 = 81 s, r=+0.54** |
+| UT rung 1 | 77.2 | 129.4 | 302.3 | 66.7 % | 55.9 mA (43 % of the draw) | none (r=+0.07) |
+
+**Both systems burst on two thirds of their samples — the difference is how big
+the bursts are and whether they are scheduled.** On pmOS 63 % of the entire draw
+sits above the floor, against 43 % on the oracle, and the pmOS excess carries a
+**period the oracle does not have at all**.
+
+**It is a real period, not an alias.** Pooled over all eight rungs the
+autocorrelation peaks at lag 16 (81 s, mean r=+0.30) *and* again at lag 32
+(162 s), which is its harmonic. The oracle's eight rungs give ±0.03 at both lags —
+not a weaker signal, no signal.
+
+☠️ **It is strong in the first four rungs and weak after.** r = +0.54 / +0.49 /
++0.51 / +0.39 for rungs 1-4 (23:10-03:12), then +0.19 / +0.05 / +0.05 / +0.20.
+Something ran every ~81 s for about four hours and then largely stopped, or
+changed character. Nothing in the rungs' own environment snapshots differs across
+that boundary — same three remote processors running, comparable loadavg — so the
+cause is not visible in what was captured. ☠️ And `idle-ab.sh` records `wifi: ?`
+on this system, so the one obvious candidate for a periodic network task is
+exactly the field the instrument does not fill in. That is a gap to close before
+hunting.
+
+☠️ **A phase-fold nearly became an over-reading.** Binning every 16th sample makes
+all eight rungs look periodic (amplitudes ±11 to ±58 mA), but with 44 samples per
+bin and a per-sample σ of ~81 mA the standard error of a bin mean is ~12 mA, so
+16 bins produce ~19 mA of spread from chance alone. By that test rungs 4 and 6 are
+noise and the fold adds nothing the autocorrelation did not already say. **The
+weaker instrument agreed with the stronger one only because it was allowed to.**
+
+☠️ **And a high sample is not a wakeup count.** `current_now` is what the pack
+delivered at that instant, ~5 s apart; several wakeups inside one interval read as
+one sample, and anything with a period under ~10 s is aliased outright. This can
+say "there is an 81 s period" and can never say "there is nothing faster".
+
+**Next, and it needs the phone:** what runs every ~81 s. `systemctl list-timers
+--all`, the periodic wakers in `/proc/timer_list`, and the WiFi power-save/scan
+interval are the three candidates that fit both the period and the disappearance.
+☠️ The phone is on the oracle slot for the gauge cross-check as of 09:00, so this
+waits for the switch back.
+
+Tool: [`tools/burst-profile.py`](tools/burst-profile.py).
+
+## ★★★★★ 2026-08-27 09:27 — the two gauges disagree by 30 POINTS on the same pack, and it is probably ours that is wrong
+
+The ladders were compared in `capacity` points all week without anyone knowing
+what the two percentages mean relative to each other. Measured now, the direct
+way: stop the charge, walk the pack down to the **bottom of the pmOS ladder**
+(63 %, not a convenient number), let it settle 300 s, read it, switch slots, read
+the same pack on the oracle.
+
+| | reading | source |
+|---|---|---|
+| pmOS 09:22:51 | **cap=63 %**, ocv 3.735 V, `charge_now/charge_full` = 63.1 % | our mainline gauge |
+| UT 09:27 / 09:29 / 09:30 | **cap=33 / 34 / 34 %**, `cc_soc` 3389 → 3434 | the downstream QG |
+
+**Thirty points, on one pack, minutes apart, with nothing between the readings
+but a reboot.** The oracle's figure is stable across three reads and its slow rise
+is the charger, which was reconnected before the switch.
+
+☠️ **The oracle's two numbers are NOT independent confirmation.** `capacity` and
+`cc_soc` are the same PMI632 QG block behind one current-sense front end — this
+page established that on 2026-08-26 and it applies here. One witness read twice.
+
+**The one independent handle is the OCV: 3.735 V**, measured after 300 s of rest
+with the charge input open. On a cell of this chemistry that is roughly the
+25-35 % region; 63 % would want something near 3.85-3.90 V. A 120-165 mV gap is
+far more than rest-state IR sag explains. So the evidence points at **our** gauge
+being the wrong one, not the oracle's — but "points at" is the correct strength:
+the OCV→SoC mapping is pack-specific and this one has not been characterised.
+
+### What this invalidates
+
+* **The `capacity` row of the ladder comparison is void.** "pmOS 92 → 63 (29 pt)
+  against UT 94 → 69 (25 pt), so pmOS is 14 % worse" compares two scales that are
+  30 points apart. It is withdrawn, and with it the `capacity`-derived runtime
+  estimate (32.0 h against 27.6 h).
+* **The energy figure is untouched** — 525.6 mW against 593.5 mW comes from
+  `current_now` and `voltage_now`, not from either gauge — and the voltage travel
+  was already saying the same thing: pmOS fell 442 mV where the oracle fell 295.
+* ☠️ **The ladders did not cover the same physical part of the pack**, whatever the
+  percentages said. That does not break the comparison (the oracle's own ladder
+  proved the floor does not depend on charge state), but every sentence of the
+  form "at the same state of charge" written this week needs rereading.
+
+### And this is a user-visible bug, not only a measurement problem
+
+If our gauge says 63 % where the pack holds ~33 %, the phone tells its owner it
+has twice the battery it has, and it will do so right up to the point it dies. That
+outranks the idle-current work in user impact and belongs in `qcom_smbx`/the QG
+path, where four separate gauge faults were already fixed in August.
+
+**What decides it, and nothing short of it will:** one full, instrumented
+discharge on pmOS from a known-full pack to shutdown, with `current_now`
+integrated over the whole run, against what `capacity` claims at each point. That
+also produces the OCV→SoC curve this pack has never had.
+
+Capture: `captures/2026-08-27_gauge-crosscheck.txt`.
+
+## ★★★ 2026-08-27 10:40 — systemd's PSI watch costs ~26 mA of MEDIAN and nothing at all on the floor
+
+The ladders left the awake bursts as the one front that does not wait on the
+modem. `burst-source.sh` traced a window and `psi_avgs_work` came out the most
+frequent work on the system at **12.88/s** — and the oracle (4.9, upstart) has no
+PSI at all, so it is exactly the shape of thing that could separate the two.
+
+**A-B-A', 8-minute windows, panel proven off in all 97 samples of each:**
+
+| leg | PSI watch | `psimon` | pressure fds | floor (p10) | median | mean |
+|---|---|---|---|---|---|---|
+| A | on | 3 | 11 | 57.5 | 160.2 | 158.6 |
+| **B** | **off** | **1** | **6** | 57.8 | **130.2** | 144.1 |
+| A' | on | 3 | 11 | 57.2 | 152.9 | 146.2 |
+
+**The floor does not move** — 57.2 to 57.8 across all three, which is what a
+wakeup cost should look like: it buys nothing while the phone is already quiet.
+The **median** falls 26.4 mA against the mean of the two baselines (156.6), which
+is 3.6× the baselines' own spread (7.3 mA).
+
+☠️ **The mean and the median disagree, and that is information.** Baseline means
+158.6 / 146.2 (12.4 mA apart), B at 144.1 — a 8.3 mA drop, inside the baselines'
+own variation. So this suppresses the *typical* sample without touching the big
+bursts. Anyone reading only the mean would find nothing here; anyone reading only
+the median would overstate it.
+
+☠️ **Two baseline legs is not a variance estimate.** The "3.6×" rests on a single
+difference, n=2. This is a lead worth repeating, not a number to attach a p-value
+to or to turn into a default.
+
+### What the knob actually is, after two mis-namings
+
+☠️ **It is not `systemd-oomd`.** Stopping the service does not stop it — the
+`.socket` restarts it immediately — and even with the unit `inactive` all three
+`psimon` threads and all 11 pressure fds remained. **systemd itself** holds them:
+pid 1 and the user manager for their `init.scope`, plus one `memory.pressure`
+each for journald, logind, nsresourced, timesyncd and udevd.
+
+The manager-level knob is `DefaultMemoryPressureWatch=no`
+(`/etc/systemd/system.conf.d/50-fp3-no-psi-watch.conf`). It needs a **reboot** —
+`daemon-reexec` leaves already-started units watching — and it is a **partial**
+subtraction: `psimon` 3 → 1, fds 11 → 6. The residue is systemd's own
+`init.scope` watches, which this setting does not reach. Whatever the full
+subtraction is worth, it is more than the 26 mA measured here.
+
+☠️ **Both mis-namings were caught by a gate, not by a wrong conclusion.** The
+first refused to measure a leg where the service had not stopped; the second made
+the witness `psimon` rather than `is-active`, and that is what exposed that the
+suspect was wrong. A leg gated on `systemctl is-active` would have measured
+nothing while reporting everything.
+
+### Instrument notes from the same run
+
+☠️ **The current↔trace correlation was a dead end, and the reason generalises.**
+`current_now` is an instantaneous sample every ~5 s; event counts are continuous.
+Correlating a snapshot against a 5 s bin cannot work, and searching 13 time shifts
+for the best r inflates it — chance alone gives ~+0.25 at n=71. The +0.30s it
+produced mean nothing.
+
+☠️ **`burst-source.sh` first duplicated `idle-ab.sh`'s panel logic and the copy
+was worse than the original**: it wrote `fb*/blank` but not the DRM `dpms`, so it
+aborted on a phone where `idle-ab.sh` took the panel down with `waited=0s` in the
+same minute. It now wraps `idle-ab.sh` instead. Duplicating a working instrument
+to save one exec is how you get two instruments that disagree.
+
+☠️ Reassuring, and worth recording: the traced window read floor 57.5 / median
+144.2 against the ladder's 56.9 / 161.8, so **the tracer's overhead does not
+move the floor**.
+
+Captures: `captures/2026-08-27_psi-watch-ab/{A-psi-on,B-psi-off,Ap-psi-on}.txt`,
+`captures/2026-08-27_burst-source/`.
+
+## ★★★★ 2026-08-27 11:00 — the pmOS ladder rendered on the oracle's scale: ~2× the charge, and the top of the column is contested
+
+With the gauges known to be ~30 points apart, the pmOS ladder was re-expressed in
+oracle percent by mapping its **voltages** through the oracle ladder's own
+V→`capacity` points, anchored below by the one cross-check reading.
+
+**The mapping.** From the UT ladder, under load (~126 mA median): 4.262 V→94 %,
+4.172→89, 4.132→85, 4.099→82, 4.068→79, 4.044→76, 4.011→73, 3.981→70,
+3.967→69. Below that the ladder has no data at all; the single anchor is the
+2026-08-27 cross-check — **3.735 V OCV → 33.5 %**, placed at 3.716 V to match the
+ladder's under-load voltages (~19 mV of IR sag at 126 mA).
+
+| rung | pmOS `cap` | pmOS V start→end | **UT cap of pmOS** |
+|---|---|---|---|
+| 1 | 92 % | 4.150 → 4.058 | 86.8 → 77.8 % |
+| 2 | 88 % | 4.015 → 3.955 | 73.4 → 67.3 %* |
+| 3 | 84 % | 3.982 → 3.884 | 70.1 → 57.2 %* |
+| 4 | 80 % | 3.875 → 3.826 | 56.1 → 49.0 %* |
+| 5 | 76 % | 3.833 → 3.780 | 50.1 → 42.5 %* |
+| 6 | 72 % | 3.788 → 3.737 | 43.7 → 36.5 %* |
+| 7 | 68 % | 3.756 → 3.707 | 39.1 → 33.5 %* |
+| 8 | 64 % | 3.685 → 3.708 | ~33.5 %** |
+
+\* below 3.967 V the oracle ladder never went; those rows hang off the single
+anchor. \*\* measured endpoint.
+
+### The two deltas, side by side
+
+| | UT ladder | pmOS ladder |
+|---|---|---|
+| own `cap` | 94 → 69 = **25 pt** | 92 → 63 = **29 pt** |
+| own voltage | 4.262 → 3.967 = **295 mV** | 4.150 → 3.708 = **442 mV** |
+| coulomb | 92.4 → 76.0 = **16.5 %** | none on this system |
+| **on the oracle's scale** | 25 pt (by definition) | **86.8 → 33.5 = 53 pt** |
+
+**So over the same eight hours the pmOS ladder moved roughly twice the charge the
+oracle's did, while our own gauge reported 29 points against the oracle's 25.**
+The voltage travel says the same thing without any mapping: 442 mV against
+295 mV, ending 259 mV lower than the oracle ever went.
+
+### ☠️ The top of that column does not add up, and it must be said
+
+The oracle read **94 % at 22:59** with the cable in, immediately before the slot
+switch; the pmOS ladder began at 23:10:33. The mapping wants 86.8 % at that
+moment — a 7.2-point fall, **220 mAh, which needs 1202 mA sustained for 11
+minutes.** A boot does not cost that:
+
+| the 11-minute window | mAh | points |
+|---|---|---|
+| idle at the UT ladder's 126 mA | 23.1 | 0.75 |
+| idle at the pmOS ladder's 162 mA | 29.7 | 0.97 |
+| a generous 500 mA boot | 91.7 | 3.00 |
+| an implausible 800 mA boot | 146.7 | 4.79 |
+| **what the mapping requires** | **220** | **7.2** |
+
+So the start point has two estimates ~6 points apart: **~93 % by the time
+budget, 86.8 % by the voltage mapping.** It cannot be resolved from what was
+captured, because **the two systems' `voltage_now` readings have never been
+compared on the same pack under the same load** — at the cross-check the oracle
+was charging.
+
+☠️ **A constant voltage offset is excluded.** Shifting pmOS voltages by the
++90 mV that would put the start at 93 % puts the *end* at ~44 %, where 33.5 %
+was measured. Whatever the discrepancy is, it is not a fixed calibration bias.
+
+☠️ **Retracted from the entry of an hour earlier:** I explained the 94 → 87 gap
+by "boot and two probe rungs in 11 minutes". The arithmetic above kills that —
+idle costs 0.9 points there, and even an absurd boot costs under 5. The mapping
+stands on the voltages; the time-based justification I attached to it was wrong.
+
+**What survives regardless of which start is right:** 86.8 → 33.5 = 53 points,
+or 93 → 33.5 = 59.5 points. Both are close to twice the oracle's 25, so the
+conclusion does not rest on the contested row.
+
+### ★ THE PROTOCOL FIX, for every comparison ladder from here on
+
+The whole ambiguity exists because the two ladders' starting points were never
+tied together by a measurement. They can be, cheaply, and it costs one step:
+
+> **Before the slot switch, on the UT side, with the charge input OFF and the
+> pack rested, record `capacity` AND `voltage_now`. After the switch, the first
+> rung of the pmOS ladder must open at the same voltage — and its own percentage
+> is then pinned to that oracle percentage by construction.**
+
+Both halves matter. With the charge input on, the reading is inflated by the
+charger and is not the pack (4.379 V charging against 4.262 V the moment the
+input was cut — 117 mV of it was the charger). And without the voltage, the
+percentage alone cannot be carried across two gauges that disagree by 30 points.
+
+If the first rung does **not** open at that voltage, the difference is real
+consumption between the two readings and must be logged as such — not absorbed
+silently into the ladder.
+
+## ☠️☠️ 2026-08-27 11:20 — the charge-based 2× and the current-based 1.2× cannot both be true
+
+Putting the two ladders' totals on one page exposes a contradiction that each
+measure hides on its own. Same eight hours, same phone, three yardsticks:
+
+| yardstick | UT | pmOS | ratio |
+|---|---|---|---|
+| `capacity`, on the oracle's scale | 25 pt = 765 mAh | **53 pt = 1622 mAh** | **2.12×** |
+| integrated `current_now` | 1030.6 mAh | 1231.8 mAh | **1.20×** |
+| energy (I·V) | 525.6 mW | 593.5 mW | **1.13×** |
+| coulomb counter | 16.5 % = 505 mAh | none | — |
+
+**If pmOS really moved 1622 mAh in eight hours that is a 203 mA average, and its
+own current integral measured 154 mA — a 49 mA hole.** The charge-based and the
+current-based readings of the *same run* disagree by a factor of ~1.8, and no
+amount of care about which floor or median to quote touches that.
+
+Candidates, none tested:
+
+* **The extrapolated leg of the mapping.** Below 3.967 V the oracle ladder has no
+  data and the column is a straight line to one anchor. Five of the eight pmOS
+  rungs live entirely down there. If that line is wrong, the 53 points are wrong.
+* ☠️ **The pack's real capacity is unknown.** Both gauges compute against
+  `charge_full = 3 060 000 µAh`, the *nameplate*. This pack is years old. Every
+  "points → mAh" number on this page, on both systems, inherits that assumption —
+  and a smaller true capacity shrinks the mAh on **both** sides, so it changes the
+  absolute figures without obviously fixing the ratio.
+* **The sampling distortion**, already known to be 2.056× on the oracle between
+  integrated current and the coulomb counter, and unmeasurable on pmOS because
+  there is no counter there.
+
+☠️ **What must NOT be said until this is resolved: "pmOS uses twice the power".**
+The charge column says 2.12×, the current and energy columns say 1.13-1.20×, and
+they are measurements of one run. The honest statement is that **pmOS is worse by
+somewhere between 13 % and 112 %, and the instruments disagree about where in that
+range** — which is the same conclusion the missing mainline coulomb counter has
+been forcing all day, now with a second, independent demonstration of it.
+
+**What would decide it:** the full instrumented discharge already queued in
+`TODO.md` — one run from a known-full pack to shutdown, integrating `current_now`
+throughout against what `capacity` claims. That yields the pack's true usable
+capacity, the OCV→SoC curve, and the mapping's lower leg, all three of which are
+assumptions today.
+
+## ☠️☠️ 2026-08-27 13:00 — the second front opens and the tracer answers "no"
+
+The awake burst is the other half of the pmOS bill: our floor is *better* than the
+oracle's on every rung (56.9 vs 72.6 mA) and our median is *worse* on every rung
+(162.0 vs 126.3). We sit quieter and we wake more expensively. So: what wakes us?
+
+`burst-source.sh` recorded 360 s with the panel proven dark for all 73 samples,
+the charge input cut, and every `workqueue_execute_start` and
+`timer_expire_entry` on the same clock as the current — 24 321 events against 71
+current samples. Capture and full working:
+[`captures/2026-08-27_burst-source/analysis.md`](captures/2026-08-27_burst-source/analysis.md).
+
+The current behaved exactly as the ladder said it would: floor 57.5, median 144.2,
+p90 310.7, max 409.4 mA, and **46 of 71 samples (65 %) at or above 1.5× floor**. A
+7× swing inside six minutes, reproduced in a window small enough to trace.
+
+**And the event rate does not move with it.** Splitting every event into the 5 s
+bin that ends at each current sample, then splitting those bins by whether the
+sample was a burst:
+
+| | burst bins (n=46) | quiet bins (n=25) |
+|---|---|---|
+| events per 5 s bin | **313** | **316** |
+| `psi_avgs_work` | 63.2 | 65.1 |
+| `vmstat_update` | 17.9 | 19.4 |
+| `delayed_vfree_work` | 9.2 | 10.8 |
+
+Every top function at the same per-bin rate, the 1 % total difference pointing the
+*wrong* way. A carpet of wakeups that does not change cannot be what makes the
+current change. **Counting work is finished as a line of attack on the burst.**
+
+Worth recording separately, because it is a real number about the carpet even
+though it is not the burst: `psi_avgs_work` is 4 897 of the ~9 000 workqueue
+executions in the window — ~13/s, i.e. roughly 26 cgroups each waking every 2 s —
+and it is flat at 105–151 per 10 s bin from end to end. That is consistent with
+the A-B-A' that priced the systemd PSI watch at ~26 mA of *median* and nothing on
+the floor: a steady tax, not a burst.
+
+☠️ **The trap this nearly walked into.** With 24 321 wakeups in six minutes the
+instinct is to rank them and name the top one as the cause — and `psi_avgs_work`
+at over half of all workqueue work is a *very* convincing thing to name. The split
+by burst/quiet is the only thing that stops it, and it costs one extra pass over
+the same file. Rank a trace and you have described the background; split it by the
+thing you are explaining and you have tested it.
+
+**What this leaves.** Either the power goes somewhere that is not a running
+instruction (a rail, a radio), or the CPU is awake without emitting either
+tracepoint — a spin, an RCU stall, an interrupt storm serviced without a
+workqueue. One trace cannot separate those. `burst-attrib.sh` was written for this
+fork and uses **no tracepoint at all**: CPU-busy from `/proc/stat`, cpuidle
+power-collapse residency and WFI usage summed over all eight CPUs, both cpufreq
+policies, and the wlan packet counters, all sampled alongside the current. If a
+burst carries no CPU-busy and no residency signature, the next instrument is a
+rail and not a profiler.

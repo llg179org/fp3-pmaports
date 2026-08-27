@@ -42,6 +42,56 @@ protocol, or they are two measurements rather than a comparison.
 |---|---|
 | [`idle-ab.sh`](idle-ab.sh) | **the instrument the goal is scored on.** The same awake-idle measurement on pmOS and on Ubuntu Touch: panel off, on battery with the cable still in, radio up. Reports the floor (p10) and the median, never a mean, and integrates `bms/cc_soc` where the gauge exists |
 | [`panel-witness.sh`](panel-witness.sh) | every candidate answer to "is the panel actually off", printed side by side, so the disagreement between them is visible instead of one being picked and called proof |
+| [`night-ladder.sh`](night-ladder.sh) | N consecutive `idle-ab.sh` windows, unattended, driven from the phone so the host may be switched off. Resumes at the rung it reached after a reboot, restores the charge input on every exit path including SIGTERM at shutdown, and stops at a capacity floor rather than measuring the pack flat. Ships with [`fp3-night-ladder.service`](fp3-night-ladder.service) and [`fp3-charge-guard.service`](fp3-charge-guard.service) |
+| [`ladder-summary.py`](ladder-summary.py) | **what a night cost**, where `idle-ab-fit.py` answers what an hour costs. Integrates I·V as well as I, sums rungs rather than differencing endpoints, and on the oracle prints the integrated-to-coulomb ratio |
+| [`burst-source.sh`](burst-source.sh) | the current and the kernel's own `workqueue_execute_start` + `timer_expire_entry` on **one clock**, so a burst can be laid against the work that ran during it. Wraps `idle-ab.sh` rather than re-implementing the panel proof. ☠️ Its current figures are tracer-inflated and are never an idle number — what survives the overhead is the structure |
+| [`burst-profile.py`](burst-profile.py) | floor / median / p90 / p99, the share of samples at ≥1.5× floor, the excess over floor, and the autocorrelation peak lag — the shape of a window, where a fit gives its level |
+| [`burst-attrib.sh`](burst-attrib.sh) | **written because the tracer answered "no"**: CPU-busy from `/proc/stat`, cpuidle power-collapse residency and WFI usage, both cpufreq policies and the wlan packet counters, sampled alongside the current with **no tracepoint at all**. Decides whether a burst is the CPU being awake or something that costs power without running code |
+
+☠️ **Compare energy across the two systems, not mA.** `current_now` is current,
+and two runs rarely cover the same part of the pack: measured 2026-08-26/27, the
+matched ladders spanned 4.150 → 3.708 V on pmOS against 4.262 → 3.967 V on the
+oracle, and at a lower pack voltage the same power draws more current. The gap
+read **+19.5 % in mA and +12.9 % in mW** — 6.6 points of it was the discharge
+curve. mV/h is worse again: 442 against 295 mV looks like 50 % and is mostly the
+Li-ion curve steepening below 3.9 V, where only one of the two ran.
+
+☠️☠️ **The coulomb counter exists on one side only.** `cc_soc` +
+`full_uAh=3060000` on the 4.9 oracle; on mainline no `cc_soc` and `full_uAh=?`.
+Where both exist they disagree by **2.056×** over eight hours — and in the
+direction that rules out sampling shortfall, since too few samples under-count.
+The likeliest reading is that **the sampling itself wakes the phone**: a sysfs
+read every ~5 s brings it up, so `current_now` measures the awake-and-idle draw
+while the counter integrates in hardware with sleep included. Do **not** carry
+that ratio to pmOS to "correct" a figure — it is a property of how often a system
+wakes, which is the quantity under comparison. Compare integrated to integrated.
+
+☠️ **TIE THE START POINTS, or the comparison inherits a gauge disagreement it
+cannot see.** Measured 2026-08-27: the two systems' `capacity` readings are **30
+points apart** on the same pack (pmOS 63 % against UT 33 %), so two ladders that
+both "started at ~93 %" did not start from the same pack state. Before the slot
+switch, on the source system, with the **charge input OFF and the pack rested**,
+record `capacity` AND `voltage_now`; the first rung on the target system must open
+at that same voltage. Both halves are needed: charging inflates the reading (4.379 V
+charging against 4.262 V the moment the input was cut), and a percentage alone
+cannot cross two gauges that disagree. If the first rung does not open at that
+voltage, the difference is real consumption between the two readings — log it,
+never absorb it into the ladder.
+
+☠️☠️ **A flat carpet of wakeups cannot explain a burst, and counting them will
+never say so.** Measured 2026-08-27: while the current swung 57.5 → 409 mA and two
+thirds of the samples were bursts, the traced event rate in the burst bins and in
+the quiet bins was **313 vs 316 per 5 s** — every top function at the same per-bin
+rate, the 1 % difference pointing the wrong way. The instinct on seeing 24 321
+wakeups in six minutes is to name the biggest one as the cause; the split by
+burst/quiet is what stops that, and it costs one pass over the same file. **Always
+split the trace by the thing you are explaining before you rank it** — a ranking
+alone is a picture of the background, not of the event.
+
+☠️ **A rung that produced nothing still looks like a rung.** Prove the instrument
+on the target system with a short window before arming a night: the first pmOS
+attempt returned 44 lines and zero samples, and a second one was needed to show
+that the cause was the observer's own timeout rather than the phone.
 
 ☠️ **Each single panel witness has already lied once**, which is why
 `panel-witness.sh` prints all of them: the oracle sat fully powered at backlight

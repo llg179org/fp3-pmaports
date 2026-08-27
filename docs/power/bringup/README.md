@@ -37,6 +37,10 @@ below came from reading a single-sided observation as if it were a difference.
 | **`powerlog-pmos.sh` / `powerlog-ut.sh`** | one line a minute, identical fields on both operating systems, so a night on one can be laid against a night on the other. In the [FP3 skills](https://github.com/llg179org/Claude-skills-Fairphone3) repository; their output is in [`../`](../README.md) |
 | **the oracle slot** | slot_a runs Fairphone's own 4.9 kernel on the same hardware and the same pack. Any "is this normal?" question about the phone has an answer 80 seconds away, across `fastboot set_active` |
 | ~~the two clocks~~ | ☠️ **retracted, see Step 2a.** Wall clock against `/proc/uptime` cannot detect a suspend: `/proc/uptime` reports boottime, which includes suspended time |
+| **the ladder** (`night-ladder.sh` + `idle-ab.sh`) | N consecutive one-hour windows, unattended, on the phone. It survives a reboot (rung number on persistent storage), restores the charge input on **every** exit path, and stops at a capacity floor. Built 2026-08-26 after an eight-hour run was lost to an accidental power-off: the run was a transient `systemd-run --collect` unit, the rungs were in tmpfs, and the host was the only thing that knew it existed |
+| **`ladder-summary.py`** | what a *night* cost, as against `idle-ab-fit.py`'s what an *hour* costs. Integrates I·V, because `current_now` is current and two runs over different parts of the pack cannot be compared in mA. ☠️ Sums the rungs rather than differencing the endpoints — the pack charges for the ~20 s between two rungs |
+| **the start-point tie** (protocol, not a tool) | ☠️ Before a slot switch, on the UT side, **charge input OFF and the pack rested**, record `capacity` AND `voltage_now`; the first rung on the other system must open at that voltage. Without it the two ladders' start points are untied and the comparison inherits a 30-point gauge disagreement it cannot see. Charging inflates the reading — 4.379 V charging against 4.262 V the moment the input was cut, 117 mV of it the charger |
+| **the coulomb counter, on one side only** | `cc_soc` + `full_uAh` exist on the 4.9 oracle and **not** on mainline. It is the only hardware-integrated charge measurement available anywhere on this device, and it is the reason the oracle can check an instrument that pmOS cannot |
 | **the suspend counter, differenced** | `/sys/power/suspend_stats/success` read before and after a window. The delta is sound; the absolute value is not, since it counts from boot |
 | **`dmesg`'s PM lines** | the `PM: suspend entry (s2idle)` / `PM: suspend exit` pair. The printk clock stops while suspended, so the sleep does not appear as a gap — the pair itself is the evidence |
 | **runtime PM state, both sides** | `/sys/bus/*/devices/*/power/runtime_status`, tallied on each OS. The totals are not comparable; the `active` **list** is |
@@ -51,6 +55,13 @@ All of it in [`../`](../README.md), which says what each file is worth:
 `2026-08-11_ut_discharge-charge.txt` and `2026-08-12_pmos_idle-discharge.txt`
 are the matched nights, `2026-08-13_pmos_camera-hold-idle-cost.txt` is the
 three-phase experiment that ends this page.
+
+The **matched ladders** that superseded all of the single-window comparisons are
+in [`captures/`](captures/): `2026-08-26_ut-night-ladder/` (the oracle, 14:07 →
+22:10) against `2026-08-26_pmos-night-ladder/` (23:10 → 07:13), eight one-hour
+rungs each, `rung-{1..8}.txt` plus the run's own `ladder.log`. Summarise either
+with `tools/ladder-summary.py <dir>/rung-*.txt`; the current numbers they yield
+are in [`../README.md`](../README.md).
 
 ---
 
@@ -568,6 +579,22 @@ is in [`findings-log.md`](findings-log.md) and
 | "the held ADSP session is the deep-sleep lever" | the leg prices it at ~4 %, against a baseline that reproduces to 1.4 %. A real mechanism worth almost nothing |
 | "`ip link add … type rmnet mux_id 1` returned `Invalid argument`, so the kernel refuses it" | the device's `ip` is **busybox**, which never sent the mux-id attribute. Real `iproute2` did it first time. ☠️ A negative from the wrong tool |
 | "the package search page says those packages are not in Alpine" | it says so because the scrape was wrong. The APKINDEX has them. ☠️ A failed query is not a negative result |
+
+Added 2026-08-25/27, when the comparison against the oracle was rebuilt. The
+full account is in [`findings-log.md`](findings-log.md):
+
+| claim | what it turned out to be |
+|---|---|
+| "the oracle's floor is 15.3 mA, so pmOS draws 3.5× what it should" | **withdrawn.** One window, 2026-08-24. An eight-rung ladder over 94 % → 69 % put the oracle's floor at 69–77 mA throughout, and rung 5 covers exactly that capture's 4.050 V at 71.0 mA. The goal had been scored against an outlier for two days |
+| "the spread in the oracle's readings tracks state of charge" | it does not, and the ladder was built to decide it inside one boot, one cable state, one instrument. Over 25 points of charge and 295 mV neither the floor nor the integrated draw moves. ☠️ The threshold version — "it only lets go lower down" — died on the same data |
+| "`s3` and `s4` are enabled on ours with the panel dark, so there is a rail difference" | `regulator_summary` is a **tree**: the indented rows are child regulators, not only consumers. `s3` is up because its child `l3` is (USB PHY), `s4` because `l5` (eMMC I/O) and `l7` (USB PHY PLL) are. Leaf for leaf the rail sets match |
+| "the oracle's idle numbers describe the phone with its screen off" | they never did. It never blanks on its own, `setScreenPowerMode("off")` returns `true` with the panel still powered, and `fb0/blank` is half a blank — the LCDB bias rails stay at 5500 mV. ☠️ And the instrument written to fix it, `press-power-key.py`, **switched the phone off** rather than blanking it |
+| "pmOS costs 19.5 % more over a night" | in current, yes; in **energy, 12.9 %**. The two ladders ran over different parts of the pack, and at a lower pack voltage the same power draws more current. 6.6 points of the gap were the discharge curve |
+| "the 94 % → 87 % gap at the start of the pmOS ladder is the boot and two probe rungs" | the arithmetic kills it: 7.2 points is 220 mAh, needing **1202 mA for 11 minutes**, where idle costs 0.9 and even an implausible 800 mA boot costs 4.8. The voltage mapping stands; the time-based justification attached to it was wrong. ☠️ Retracted an hour after publishing it |
+| "a constant `voltage_now` offset between the two systems would explain the contested start" | it would not: the +90 mV that puts the start at 93 % puts the end at ~44 %, where 33.5 % was measured. Whatever it is, it is not a fixed calibration bias |
+| "the two ladders started from the same pack state because both began at ~94 / 92 %" | the gauges are **30 points apart**, so two similar percentages are not a shared state. The start points were never tied by a measurement, and that is now a protocol step rather than an argument |
+| "integrated `current_now` is a charge measurement" | on the oracle it can be checked, and it is **2.056× the coulomb counter** over the same eight hours — too large to be sampling shortfall, which under-counts. The likeliest reading is that the sampling itself wakes the phone. ☠️ On pmOS there is no counter, so this cannot be checked at all |
+| "the panel-off write fails on pmOS — `dpms: Permission denied` proves it" | it proves nothing: the script's `-w` test always says yes to root, so the message is noise. The panel goes down immediately (`bl_power=4`, `dpms=Off`, `waited=0s`). ☠️ The run that "showed" the failure had been killed by the observer's own 200 s timeout, mid-way through a 240 s wait |
 
 ## Where the story continues
 

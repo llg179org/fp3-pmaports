@@ -1,0 +1,28 @@
+# gauge cross-check, same pack, both gauges - 2026-08-27 08:45:44
+## pmOS side
+# charge input opened at 08:45:45; waiting for pmOS to read exactly 63 %
+#   08:45:45  cap=65%  v=3749098  Discharging
+#   08:47:45  cap=65%  v=3775763  Discharging
+#   08:49:46  cap=65%  v=3778877  Discharging
+#   08:51:46  cap=65%  v=3742675  Discharging
+#   08:53:46  cap=65%  v=3776736  Discharging
+#   08:55:47  cap=65%  v=3781213  Discharging
+#   08:57:47  cap=65%  v=3747346  Discharging
+#   08:59:47  cap=65%  v=3775958  Discharging
+#   09:01:48  cap=64%  v=3723017  Discharging
+#   09:03:48  cap=64%  v=3771287  Discharging
+#   09:05:48  cap=64%  v=3735473  Discharging
+#   09:07:49  cap=64%  v=3739755  Discharging
+#   09:09:49  cap=64%  v=3755910  Discharging
+#   09:11:50  cap=64%  v=3705888  Discharging
+#   09:13:50  cap=64%  v=3726909  Discharging
+#   09:15:50  cap=64%  v=3735473  Discharging
+#   09:17:51  cap=63%  v=3746568  Discharging
+# settling 300s before the reading
+pmos 09:22:51 cap=63 v=3710170 ocv=3734559 status=Discharging temp=254 charge_now=1931472 charge_full=3060000 online=0 uptime=2834.36
+# charge input restored: Charging
+## switching to slot a (Ubuntu Touch)
+# asked for the bootloader at 09:22:52, waiting for a fastboot device
+ut   09:24:59 
+ut   09:27:00 cap=33 v=3877363 ocv= status=Charging temp=265 cc_soc=3389 charge_now= charge_full=3060000 uptime=199.81
+ut   09:29:00 cap=34 v=3951909 ocv= status=Charging temp=265 cc_soc=3411 charge_now= charge_full=3060000 uptime=320.45

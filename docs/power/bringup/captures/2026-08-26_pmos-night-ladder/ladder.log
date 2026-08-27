@@ -1,0 +1,27 @@
+2026-08-26 23:02:09 === night-ladder start rounds=1 window=120s resuming at rung 1 outdir=/var/log/fp3 instrument=/usr/local/bin/idle-ab.sh
+2026-08-26 23:02:09 rung 1/1 begin: uptime=96.50 cap=92% v=4279289 temp=257 status=Charging
+2026-08-26 23:05:28 signal caught - restoring charge input and exiting
+2026-08-26 23:07:39 === night-ladder start rounds=1 window=120s resuming at rung 1 outdir=/var/log/fp3 instrument=/usr/local/bin/idle-ab.sh
+2026-08-26 23:07:39 rung 1/1 begin: uptime=427.21 cap=92% v=4304397 temp=259 status=Charging
+2026-08-26 23:10:02 rung 1 done -> /var/log/fp3/rung-1.txt (24 samples)
+2026-08-26 23:10:02 === night-ladder finished at rung 1 of 1
+2026-08-26 23:10:02 charge input restored: Not charging
+2026-08-26 23:10:33 === night-ladder start rounds=8 window=3600s resuming at rung 1 outdir=/var/log/fp3 instrument=/usr/local/bin/idle-ab.sh
+2026-08-26 23:10:33 rung 1/8 begin: uptime=600.67 cap=92% v=4268389 temp=258 status=Charging
+2026-08-27 00:10:57 rung 1 done -> /var/log/fp3/rung-1.txt (712 samples)
+2026-08-27 00:10:57 rung 2/8 begin: uptime=4224.57 cap=88% v=4067135 temp=249 status=Not charging
+2026-08-27 01:11:21 rung 2 done -> /var/log/fp3/rung-2.txt (712 samples)
+2026-08-27 01:11:21 rung 3/8 begin: uptime=7848.35 cap=84% v=3944319 temp=249 status=Not charging
+2026-08-27 02:11:44 rung 3 done -> /var/log/fp3/rung-3.txt (712 samples)
+2026-08-27 02:11:44 rung 4/8 begin: uptime=11472.28 cap=80% v=3897411 temp=246 status=Not charging
+2026-08-27 03:12:08 rung 4 done -> /var/log/fp3/rung-4.txt (712 samples)
+2026-08-27 03:12:08 rung 5/8 begin: uptime=15095.70 cap=76% v=3874833 temp=242 status=Not charging
+2026-08-27 04:12:32 rung 5 done -> /var/log/fp3/rung-5.txt (712 samples)
+2026-08-27 04:12:32 rung 6/8 begin: uptime=18719.37 cap=72% v=3758440 temp=236 status=Not charging
+2026-08-27 05:12:56 rung 6 done -> /var/log/fp3/rung-6.txt (712 samples)
+2026-08-27 05:12:56 rung 7/8 begin: uptime=22343.60 cap=68% v=3774401 temp=232 status=Not charging
+2026-08-27 06:13:18 rung 7 done -> /var/log/fp3/rung-7.txt (711 samples)
+2026-08-27 06:13:18 rung 8/8 begin: uptime=25965.39 cap=64% v=3687787 temp=225 status=Not charging
+2026-08-27 07:13:41 rung 8 done -> /var/log/fp3/rung-8.txt (711 samples)
+2026-08-27 07:13:41 === night-ladder finished at rung 8 of 8
+2026-08-27 07:13:41 charge input restored: Not charging

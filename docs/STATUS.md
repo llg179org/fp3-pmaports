@@ -15,56 +15,120 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-25 — ★★★★★ THE GOAL (pmOS down to the UT level or
-below) took its first real step, and the two biggest wakers on the phone turned
-out to be OURS. (1) `apcs_hold_cluster()`, our own PLL-relock guard, took a
-GLOBAL `cpu_latency_qos`: 45.8 pm_qos updates/s and 128 IPIs/s on a 96 %-idle
-phone — two thirds of all IPI traffic — with both clusters barred from power
-collapse for every hold. Fixed to a cluster-local cpuidle hold (`68dcadbd`,
-shipped as r76 `#77-fp3`); measured after: pm_qos 458 → 0 per 10 s, zero PLL
-failures. (2) A diagnostic harness left running since August: `spkwatch` alone
-had burned 2.6 % of a core permanently. Disabled with ringwatch, fp3-powerlog,
-avahi and cups. AGGREGATE, one idle-ab hour, same protocol as the matched pair:
-median **148–157 → 98.3 mA (−35 %)**, floor unchanged (54 → 52.9) — exactly the
-shape wakeup fixes predict. Burstiness (median ÷ floor) **2.75× → 1.86×**
-against the oracle's 1.97×, so pmOS now bursts LESS than UT. **The wakeup half
-of the gap is closed; what remains is ~38 mA of pure continuous draw** (52.9 vs
-15.3 mA floor), which no tracepoint can see. **THE CENSUS AGAINST THE ORACLE
-WAS THEN RUN, and it answered all three questions and unseated its own
-premise.** The modem does not move the oracle's floor (30.8 / 31.1 / 31.1 /
-31.1 mA over four legs, modems on / both `Powered=0` / back / untouched — and
-there are TWO modems, `ril_0` and `ril_1`). The debug UART is not the
-difference: the oracle runs the same clock at the same 3 686 400 Hz with
-`console=` and `earlycon=` on its cmdline, and 43 enabled clocks against our
-37. The rail diff was published as a lead — `s3` and `s4` enabled on ours with the
-panel dark — and ☠️☠️ **the matching capture killed it the same evening**:
-`regulator_summary` is a **tree**, and the indented rows are **child
-regulators**, not only consumers. Both of `s3`'s direct consumers read 0; it is
-up because its child `l3` is, held by the USB PHY, and `s4` because its
-children `l5` (eMMC I/O) and `l7` (USB PHY PLL) are. Leaf for leaf the rail
-sets **match**. So the census excluded everything it was meant to find, and
-**~38 mA of continuous draw remains with no candidate** — while the oracle's
-own floor read **31.1 mA** today against 15.3 yesterday, so the 3.5× framing
-itself is now the first thing to settle. ☠️☠️ **The premise: the oracle has NEVER been measured
-with its screen actually off.** It never blanks on its own (no inhibitor held,
-inactivity action unset), `Unity.Screen.setScreenPowerMode("off")` returns
-`true` with the panel still powered, and the `fb0/blank` write is half a blank
-— the LCDB bias rails stay at 5500 mV and the compositor undoes it. ☠️ RETRACTED the same
-evening: `tools/press-power-key.py` did not blank the screen, it **switched the
-phone off** (found on the offline-charging screen; a held hardware button was
-needed). The lost RNDIS/WiFi was a powered-down phone, not a suspend, and the
-suspend reading is withdrawn — the LCDB and `show_blank_event` evidence stands
-on its own. So every UT idle
-figure so far, the 15.3 mA floor included, describes a state the phone is not
-in when its screen is off; today's oracle floor read **31.1 mA**. ☠️ And 74 ssh
-logins in 70 minutes — my own waiter loops — cost **18.3 mA** on the coulomb
-integral and produced a trend that read exactly like a modem effect: do not
-poll during a leg. ☠️ WITHDRAWN from the entry
-before this one: the `msm_mdss 79/s with the display off` lead was sampled with
-the display ON; with the CRTC proven off the display subsystem raises no
-interrupts at all. ☠️ `boot-deploy` rewrites extlinux.conf on every kernel
-install and drops the multi-label net and `panic=10` — restored by hand.
-Details: findings-log 2026-08-25 entries.**
+Last updated: **2026-08-27 (10:20) — the matched ladders landed, the gauge was
+caught lying by 30 points, and the burst hunt is mid-run.**
+
+**1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
+each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
+pmOS 23:10-07:13, the pack charged back to 94 % / 4.394 V **on the UT side**
+before the slot switch. **Energy 525.6 mW (UT) vs 593.5 mW (pmOS) = +12.9 %.**
+Floor 72.2 → **56.9 mA (ours is 21 % BELOW the oracle's)**, median 126.3 → 161.8
+(+28 %). **We sit quieter and wake more expensively.** ☠️ Compare energy, not mA:
+the ladders covered different parts of the pack and 6.6 of the 19.5 mA-points were
+the discharge curve. ☠️ And +12.9 % is a LOWER BOUND — see 3.
+
+**1b. THE SAME LADDERS AS CHARGE MOVED.** UT `cap` 94→69 = **25 pt**, voltage
+4.262→3.967 = **295 mV**, coulomb 92.4→76.0 = **16.5 %**. pmOS `cap` 92→63 =
+**29 pt**, voltage 4.150→3.708 = **442 mV**, no coulomb. **On the oracle's scale
+the pmOS ladder moved 86.8 → 33.5 ≈ 53 pt — roughly TWICE the charge** while our
+gauge claimed 29 against 25. The voltage travel says it unmapped: 442 vs 295 mV,
+ending 259 mV below anywhere the oracle went. ☠️ The oracle-scale column maps pmOS
+voltages through the UT ladder's V→`cap` points, anchored below by the 3.735 V OCV
+→ 33.5 % cross-check; **below 3.967 V the oracle ladder has no data** and those
+rows hang off that one anchor. ☠️ Its top row is contested by ~6 points (86.8 % by
+voltage vs ~93 % by time budget — 7.2 pt would need 1202 mA for 11 min, where an
+implausible 800 mA boot costs 4.8); a constant offset is excluded (the +90 mV that
+fixes the start puts the end at 44 %). The conclusion survives either way (53 or
+59.5 pt, both ≈2× the oracle's 25). ☠️ RETRACTED: my "boot + two probe rungs
+explain the 94→87 gap" — the arithmetic kills it.
+
+**1c. ★ PROTOCOL, mandatory for every comparison ladder from here on:** before the
+slot switch, on the source system, **charge input OFF and pack rested**, record
+`capacity` AND `voltage_now`; the first rung on the target system must open at that
+voltage. That pins the two ladders' start points by construction instead of leaving
+them untied across gauges 30 points apart. Charging inflates the reading (4.379 V
+charging vs 4.262 V the moment the input was cut — 117 mV was the charger). If the
+first rung does not open there, the gap is real consumption between the two
+readings and gets logged, never absorbed.
+
+**2. ☠️☠️ OUR FUEL GAUGE IS ~30 POINTS OPTIMISTIC, and this outranks the idle
+work.** Same pack, minutes apart, across one slot switch: **pmOS 63 % / ocv
+3.735 V against UT 33-34 %** (`cc_soc` 3389). The oracle's two numbers are NOT
+independent (one QG block); the independent handle is the OCV, and 3.735 V after
+300 s of rest is the 25-35 % region. ☠️ Then a **reboot moved our own reading
+63 % → 51 %** on an unchanged pack — an integration fault's signature. **The
+phone tells its owner it has twice the battery it has.** This voids the
+`capacity` row of the ladder comparison and the runtime estimate from it (32.0 vs
+27.6 h); it does NOT touch the energy figure. Decided only by one full
+instrumented discharge to shutdown — which also yields the OCV→SoC curve this
+pack has never had.
+
+**3. ☠️☠️ THE ORACLE HAS A COULOMB COUNTER AND WE DO NOT.** Where both exist they
+disagree **2.056×** over the same eight hours (integrated 1030.6 mAh vs coulomb
+501.2 mAh) — the direction rules out sampling shortfall, since too few samples
+under-count. Likeliest: **the sampling itself wakes the phone.** That ratio must
+not be carried to pmOS to "correct" its numbers — it is a property of how often a
+system wakes, the very quantity under test. Consequence: if our wake-rate is
+higher, our distortion is LOWER, so the true gap is **between +12.9 % and
++132 %**. Narrowing it needs a mainline coulomb counter, now the
+highest-value instrument work here.
+
+**4. WITHDRAWN: the 15.3 mA oracle floor** and the "3.5× against us" framing THE
+GOAL was scored on for two days. One window (08-24); the state-of-charge story
+died on its own test — over 94 % → 69 % the oracle's floor does not move
+(69.0-76.6 mA, no trend) and rung 5 covers exactly that capture's 4.050 V at
+**71.0 mA**. Reproducible oracle figure: 69-77 mA floor / 59-64 mA integrated.
+
+**5. THE AWAKE-BURST HUNT (front two) — first measured result.** systemd's PSI
+watch costs **~26 mA of median and nothing on the floor.** A-B-A', 8-min windows,
+panel proven off in all 97 samples of each:
+
+| leg | PSI watch | `psimon` | fds | floor | median | mean |
+|---|---|---|---|---|---|---|
+| A | on | 3 | 11 | 57.5 | 160.2 | 158.6 |
+| **B** | **off** | **1** | **6** | 57.8 | **130.2** | 144.1 |
+| A' | on | 3 | 11 | 57.2 | 152.9 | 146.2 |
+
+☠️ **The mean and median disagree and that is the finding**: the median drops
+26.4 mA against the baselines' 156.6 (3.6× their own 7.3 mA spread) while the
+mean drops 8.3 mA, inside baseline variation. It suppresses the *typical* sample,
+not the big bursts. ☠️ **Two baselines is not a variance estimate** (n=2) — repeat
+before attaching a number to it or making it a default.
+
+☠️ **The knob is NOT `systemd-oomd`** — stopping it does nothing (`.socket`
+restarts it, and even `inactive` left all 3 `psimon` + 11 fds). **systemd itself**
+holds them: pid 1 and the user manager for `init.scope`, plus one
+`memory.pressure` each for journald/logind/nsresourced/timesyncd/udevd. The knob
+is `DefaultMemoryPressureWatch=no` in
+`/etc/systemd/system.conf.d/50-fp3-no-psi-watch.conf`, it needs a **reboot**
+(`daemon-reexec` leaves started units watching), and it is **partial**: 3 → 1
+`psimon`, 11 → 6 fds; the residue is systemd's own `init.scope` watches. **The
+file is currently REMOVED — the phone is back on stock behaviour (A' state).**
+
+Also live and unexplained: a real **~81 s period on pmOS that the oracle does not
+have** (harmonic at 162 s; oracle ±0.03), strong in ladder rungs 1-4, weak after.
+A 6-minute traced window found no function with that period — too short. ☠️ The
+current↔trace correlation is a dead end: instantaneous samples cannot be
+correlated against continuous event counts, and best-of-13-shifts inflates r.
+
+**6. Instruments written today**, all in `power/bringup/tools/`:
+`night-ladder.sh` (+ its two units, reboot-surviving, charge-input-safe),
+`ladder-summary.py` (integrates I·V, not just I), `burst-profile.py`,
+`burst-source.sh` (wraps idle-ab rather than duplicating its panel logic — the
+first version duplicated it and aborted where idle-ab succeeded in the same
+minute). ☠️ `idle-ab.sh` records `wifi: ?` on pmOS: the most obvious periodic-task
+suspect is the one field the instrument leaves blank. Worth closing before
+hunting further.
+
+Standing from 2026-08-25: the two biggest wakers found so far were both OURS
+(`apcs_hold_cluster()`'s global `cpu_latency_qos`, fixed in r76; and a `spkwatch`
+harness left running since August) — median 148-157 → 98.3 mA. The census against
+the oracle excluded the modem (30.8/31.1/31.1/31.1 mA over four legs), the debug
+UART, and the `s3`/`s4` rails (☠️ `regulator_summary` is a **tree** — indented
+rows are child regulators; leaf for leaf the rail sets match). ☠️ 74 ssh logins in
+70 minutes cost 18.3 mA: do not poll during a leg. ☠️ `boot-deploy` rewrites
+extlinux.conf on every kernel install. ☠️ `pkill -f` matches its own command line
+— it bit again today.**
 
 ## The device
 

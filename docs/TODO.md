@@ -352,7 +352,13 @@ measurements that disagree.
    come from an instrument that measures *level*, not events, because every
    event-counting instrument has now been run.
 
-#### ⏳ RUNNING 2026-08-26 — item 1, and it is worse than a factor of two
+#### ✅ CLOSED 2026-08-27 — item 1: both ladders ran, and the premise was the thing that was wrong
+
+> **Read the closing block at the end of this item first.** Everything between
+> here and it is the reasoning as it stood while the question was open, kept
+> because the wrong turns in it are the point.
+
+#### the state as it stood 2026-08-26 — worse than a factor of two
 
 The oracle was re-measured with the panel **provably** off (`lcdb_ldo`/`lcdb_ncp`
 `state` = `disabled` carried in every sample, not just checked at the door). It
@@ -391,6 +397,147 @@ power meter, which needs a human at the phone.
 is stable and the oracle's is not, so **"pmOS idles at N× the oracle" has no
 single value** until the oracle's dependence is characterised. The comparison has
 to be made at a *matched* state of charge, which no published pair so far was.
+
+#### ✅ THE ANSWER, 2026-08-26/27 — both ladders, and the 4.5× was an outlier
+
+Eight rungs on the oracle (14:07-22:10) and eight on pmOS (23:10-07:13), the pack
+charged back to the oracle's rung-1 mark **on the UT side** before the slot
+switch so pmOS booted onto a pack already there.
+
+**State of charge is dead as an explanation, in both its versions.** Over
+94 % -> 69 % and 4.262 -> 3.967 V the oracle's floor does not move (69.0-76.6 mA,
+no monotonic trend) and its integrated draw does not either (58.9-64.3 mA) — a
+spread narrower than one window's own noise. ☠️ And the threshold version dies on
+**rung 5**, which spans 4.068 -> 4.050 V, exactly the 2026-08-24 capture's
+voltage, and reads **71.0 mA floor / 63.1 mA integrated** against that capture's
+15.3 / 32.2. Same phone, same pack voltage, same instrument, 4.6× apart.
+
+So **the 15.3 mA row above is withdrawn**, and with it the "3.5× against us"
+framing. The reproducible oracle figure, over ten consecutive hours, is
+**69-77 mA floor / 59-64 mA integrated**.
+
+**The matched comparison, which is what item 1 existed to make possible:**
+
+| over 8 h | UT | pmOS | pmOS vs UT |
+|---|---|---|---|
+| **energy (I·V)** | **525.6 mW** | **593.5 mW** | **+12.9 %** |
+| current (integrated) | 129.0 mA | 154.1 mA | +19.5 % |
+| floor (p10) | 72.2 mA | **56.9 mA** | **−21 %** |
+| median | 126.3 mA | 161.8 mA | +28 % |
+
+Our floor is *below* the oracle's; our median is above it. The night costs 12.9 %
+more energy, and the deficit is **burst behaviour, not continuous draw**.
+
+☠️ **Compare energy, not mA** — the ladders covered different parts of the pack
+(pmOS 4.150 -> 3.708 V), and 6.6 of those 19.5 points were the discharge curve.
+
+#### ⏳ OPEN — the goal, stated by the operator 2026-08-27: usable behaviour AND good battery
+
+The target in the operator's words: **an incoming call must not wait more than
+1 second, and the phone should still idle well.** That is a product requirement,
+not a measurement, and it decides the call-wake ↔ deep-sleep trade that has been
+sitting on the "waiting on a human" list since 2026-08-23.
+
+☠️ **First, what this is NOT.** The eight-hour ladders measured the phone
+**awake** — `idle-ab.sh` is an awake-idle instrument and pmOS never suspended
+during those eight hours, because automatic sleep is off. So the ladder's "+28 %
+median" is awake burstiness (timers, daemons, IPIs), **not** wakeups out of
+suspend. Two separate axes, and only one of them was measured:
+
+| axis | where it stands | what is reachable |
+|---|---|---|
+| awake, idle, panel off | floor 56.9 mA, median 161.8 mA (2026-08-27 ladder) | trimming the bursts |
+| asleep (s2idle) | **switched off on purpose** | 43.3 mA, measured 2026-08-19 with the modem stack cut |
+
+☠️ **And the power-saving setting is not the knob it looks like.** phosh's
+`sleep-inactive-battery-type` is `'nothing'` — a decision, not an unexamined
+default. Turning it on does not give a quieter phone today: the modem's SMD edge
+(IRQ 141) **terminates every suspend**, 4 of 4, after 5 / 9 / 62 / 5 s out of 600
+asked. The aggressiveness is not mis-set; the suspend itself fails.
+
+**What is already solved:** call-wake works. r66 arms every rpmsg edge and a live
+call raised the phone 15 s into a 300 s suspend window. The 1-second requirement
+does not depend on that path.
+
+**What is already excluded:** the ring is not ours. With `ModemManager` and
+`rmtfs` both stopped the modem-edge poke rate stayed inside the baseline spread
+(+24 / +33 / +20 / +31 across four legs), so no AP-side userspace policy quiets
+it, and arming the edge only relabels the aborts rather than stopping them.
+
+**The next measurement, and it is specific:** capture the rpmsg channel and
+payload of the message that arrives immediately after `PM: suspend-to-idle`. The
+wake now has a timestamp, an IRQ (141 = `hwirq 57` = `GIC_SPI 25` =
+`remoteproc@4080000/smd-edge`) and a driver to trace from. If the traffic is
+routine flow-control or a keepalive, the fix is AP-side and `qcom_smd` is
+upstream, so it would be an upstreamable one; if it is real data, the fix is
+modem configuration (PSM / eDRX / paging).
+
+**Then, and only then, the trade can be designed rather than guessed:** an
+inhibitor held while ringing, or arming the edge conditionally (screen off, no
+long sleep wanted), with the 1-second call latency as the acceptance test.
+
+Second front, independent of the modem and available now: **the awake burstiness
+itself**. Our floor is 21 % below the oracle's and our median 28 % above it, so
+whatever wakes the phone while it is awake is worth more than it looks. The two
+biggest such wakers found so far were both ours (`apcs_hold_cluster()`'s global
+`cpu_latency_qos`, and a `spkwatch` harness left running since August). Nothing
+says there is not a third.
+
+#### ⏳ OPEN, and it is now the highest-value instrument work here — a coulomb counter on mainline
+
+The oracle exports `cc_soc` + `full_uAh=3060000`; mainline exports no `cc_soc`
+and `full_uAh=?`. On the oracle, where both exist, integrated `current_now` and
+the coulomb counter disagree by **2.056×** over the same eight hours (1030.6 vs
+501.2 mAh) — and in the direction that rules out sampling shortfall, because too
+few samples under-count. The likeliest reading is that **the sampling itself
+wakes the phone**: a sysfs read every ~5 s brings it up, so `current_now` measures
+the awake-and-idle draw while the counter integrates in hardware, sleep included.
+
+Consequences, both live:
+
+* ☠️ **That ratio must not be carried to pmOS to "correct" its numbers.** It is a
+  property of how often a system wakes, which is the quantity under comparison.
+  Every figure in the table above is integrated-against-integrated.
+* **Our absolute draw is known only through an estimator the oracle proves can be
+  2× off.** The comparison survives because both sides are read the same wrong
+  way; nothing else does. Whether the PMI632 QG block can expose a raw count to
+  mainline — and what it would take in `qcom_smbx`/the QG driver — is unanswered.
+
+#### ☠️☠️ OPEN, and it outranks the idle work — OUR GAUGE IS ~30 POINTS OPTIMISTIC
+
+Measured 2026-08-27, the direct way: the pack was walked down to the **bottom of
+the pmOS ladder** (63 %), rested 300 s with the charge input open, read, then the
+slot was switched and the same pack read on the oracle.
+
+| | reading |
+|---|---|
+| pmOS, 09:22:51 | **cap=63 %**, ocv **3.735 V**, `charge_now/charge_full` 63.1 % |
+| UT, 09:27 / 09:29 / 09:30 | **cap=33 / 34 / 34 %**, `cc_soc` 3389 → 3434 |
+
+☠️ The oracle's two numbers are **not** independent — `capacity` and `cc_soc` are
+one QG block behind one front end. The independent handle is the **OCV**: 3.735 V
+after 300 s of rest is roughly the 25-35 % region on this chemistry, where 63 %
+would want 3.85-3.90 V. That points at ours being wrong, and "points at" is the
+right strength — this pack's OCV→SoC curve has never been characterised.
+
+**Why this outranks the idle current:** if the phone says 63 % while the pack
+holds ~33 %, it tells its owner it has twice the battery it has, right up until it
+dies. Four gauge faults were already fixed in `qcom_smbx`/the QG path in August;
+this is a fifth, and it is the user-visible one.
+
+**What it invalidates:** the `capacity` row of the ladder comparison (94→69 vs
+92→63 "so pmOS is 14 % worse") and the runtime estimate derived from it. **Not**
+the energy figure — 525.6 vs 593.5 mW comes from `current_now`/`voltage_now`, and
+the voltage travel already agreed (442 mV against 295).
+
+**What decides it, and nothing short of it will:** one full instrumented discharge
+on pmOS from a known-full pack to shutdown, `current_now` integrated across the
+whole run against what `capacity` claims at each point. It also yields the OCV→SoC
+curve this pack has never had. ☠️ Needs the ladder harness's capacity floor
+**disabled deliberately** for that one run, and someone aware the phone will end
+it switched off.
+
+Capture: `power/bringup/captures/2026-08-27_gauge-crosscheck.txt`.
 
 ### ✅ RAN, and it answered a different question than it asked — 2026-08-26
 
