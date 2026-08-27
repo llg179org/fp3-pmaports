@@ -206,6 +206,32 @@ is **9.4 s against 5½ hours of uptime**. Constant, so it cannot be the burst �
 a master that never lets the XO go is exactly the shape of the standing `vlow = 0`
 item. First suspect is a userspace sensor consumer holding the ADSP up.
 
+**5g. ★★★★★ 2026-08-27 — THE ORACLE COMPARISON, AND IT NEEDED NO SLOT SWITCH.**
+Both Linux-side levers on the MPSS finding came back flat — `mmcli --disable`
+(36/34/34 %) and stopping `ModemManager` (38/36/37 %), with the modem's own SMD
+edge reading **zero** through the leg with the daemon stopped. So the MSS core
+wakes on a schedule Linux neither sets nor sees. The question became whether the
+oracle pays it too, and the answer was already committed: a 565 s **UT awake-idle
+window from 2026-08-24** (slot a, cable in, screen off), taken for the `vlow` work.
+
+| master | oracle awake | pmOS awake (3 windows) |
+|---|---|---|
+| APSS | 100 % | 100 % |
+| PRONTO | 23.2 % | 24.7–26.7 % |
+| **MPSS** | **6.3 %** | **34.0–36.4 %** |
+| **LPASS** | **2.9 %** | **100.0 %** |
+
+PRONTO matching is the control that makes the rest readable. **MPSS is awake 5–6×
+more on pmOS at the same XO shutdown rate** — each awake stretch is longer, not
+more frequent — which at the measured +91 mA is ~25 mA of median. ☠️ And **LPASS
+never sleeps here at all**: 9.4 s of XO-off in 5½ hours against the oracle's 97 %.
+Constant, which is why no burst instrument ever saw it; they were all built to
+find things that change.
+
+☠️ The plan of record was to spend a slot switch re-taking this. **Before
+measuring, grep the captures** — they are indexed by date and question, not by
+what they contain.
+
 **6. Instruments written today**, all in `power/bringup/tools/`:
 `night-ladder.sh` (+ its two units, reboot-surviving, charge-input-safe),
 `ladder-summary.py` (integrates I·V, not just I), `burst-profile.py`,

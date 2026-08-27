@@ -87,6 +87,22 @@ warm reboot — restore before any reboot, on both systems.
   then *looks* filtered. `burst-attrib.sh` appends its `# window_from=` cutoff at
   the **end**, so every reader of it needs two passes.
 
+## 3b. Before measuring, grep the captures
+
+`captures/` is indexed by date and by the question that prompted each run, not by
+what the file happens to contain. ☠️ On 2026-08-27 the plan of record was to spend
+a **slot switch** re-taking an oracle measurement that had been committed three
+days earlier for a different investigation — two snapshots that answered the
+question better than the sampling run being planned. One `grep -rl` over
+`captures/` cost seconds.
+
+```sh
+grep -rln '<the field or counter you are about to sample>' docs/power/bringup/captures/
+```
+
+Ask it of the *field*, not of the topic. The capture that answers you was taken by
+someone chasing something else.
+
 ## 4. Attribution discipline
 
 * Rank a trace and you describe the background; split it by the thing you are
