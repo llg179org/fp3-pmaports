@@ -7911,3 +7911,61 @@ modem to do** — attach state, DRX/paging cycle, and which QMI services hold it
 `mmcli -m 0` reports `packet service state: attached` on pmOS; whether the oracle
 attaches a bearer at idle is the first thing to compare, and unlike the duty itself
 it is a one-line read on each side.
+
+## ★★★★★ 2026-08-28 — the cost is **LTE**, and 2G reproduces the oracle's 6.3 % on our own phone
+
+A-B-A′ on the access technology (`--set-allowed-modes`), MPSS duty as the measure,
+3 × 360 s, 184 samples each —
+[`captures/2026-08-28_2gonly-master-ab/`](captures/2026-08-28_2gonly-master-ab/):
+
+| leg | access tech | current median | **MPSS cores up** | PRONTO | edge IRQ/s |
+|---|---|---|---|---|---|
+| A | `lte` | 98.5 mA | **34.8 %** | 24.5 % | 34.7 |
+| B | **`gsm, gprs`** | **54.0 mA** | **6.5 %** | 12.5 % | 35.0 |
+| A′ | `lte` | 101.0 mA | **34.2 %** | 19.6 % | 35.6 |
+
+A and A′ agree to **0.6 points** and 2.5 mA — unlike the radio-low run this is a
+clean two-sided A/B, and the phone stayed **registered and able to receive calls**
+throughout leg B.
+
+**6.5 % is the oracle's 6.3 %.** The number that has anchored this whole
+investigation as "what a well-behaved modem costs" is reproduced on *our* phone, on
+*our* kernel, on *our* stack, by one change: leaving LTE. And at 54.0 mA the median
+lands **below** the oracle's 55–64 mA `cc_soc` band.
+
+☠️ **2G is an instrument here, not a proposal.** The networks are being switched
+off; nothing about this suggests shipping a 2G-only phone. What it buys is that the
+cost now has a name and a layer.
+
+### The question this turns into, and it is not the one we had this morning
+
+**Was the oracle on LTE during its 565 s window?** Its capture records no radio
+state at all — that was flagged this morning as a hole about *power* state, and
+`--set-power-state-low` closed that half (a powered-down modem reads 0.0 %, and
+6.3 % is not 0 %). But **access technology was never in the capture either**, and
+it is now the deciding variable:
+
+- oracle on **LTE** at 6.3 % → there is a real LTE idle-configuration difference to
+  find, and it is worth everything spent on it;
+- oracle on **2G/3G** at 6.3 % → the "oracle is five times better" result collapses
+  into "the oracle was on a cheaper RAT", and the comparison has to be rebuilt.
+
+Either way the next measurement is the same and it is one line on the oracle side:
+`access tech`, beside `signal quality` and the serving cell. ☠️ This is the third
+variable in a row that the 08-24 window did not record; the retake must write the
+modem's full state into the capture rather than beside it.
+
+### ★★ And it decouples the two fronts — which kills a plan made an hour ago
+
+`edge_irq_per_s` is **34.7 / 35.0 / 35.6** across the three legs. The modem SMD
+edge rings at the same rate on LTE and on 2G, while the core's awake duty moves by
+a factor of five. So the ~1-per-2-s IPCRTR signal ring is **not** what keeps the
+core awake, and it is **not** RAT-dependent.
+
+The plan written into `TODO.md` this afternoon assumed the opposite — that if the
+modem stopped waking, the ring would stop too, and suspend residency would come
+back with it. **It will not.** The awake-duty front and the suspend-residency front
+are independent, and each needs its own fix. That is worse news than it looks: the
+consumption target is reachable without touching the ring, but the *responsiveness*
+target — sleeping while still able to take a call — is a separate problem that this
+result does nothing for.
