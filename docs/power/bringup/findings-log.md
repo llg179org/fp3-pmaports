@@ -8116,3 +8116,38 @@ acquit that: a QMI client's registrations live in the *modem*, and killing the
 client does not necessarily release them. The test that separates the two is a boot
 where ModemManager never runs at all, with the modem brought online by hand — and
 that is next.
+
+## ☠️★★★ 2026-08-28 — ModemManager is acquitted: the modem does it with no client at all
+
+The test the 2026-08-27 null result could not perform. ModemManager **masked** and
+the phone rebooted, so on this boot no client has ever configured this modem; the
+radio was brought up by hand with a single
+`qmicli -d qrtr://0 --dms-set-operating-mode=online`, and it registered on **LTE
+within 10 s**. Nothing else was sent — no indication registrations, no signal
+thresholds, no bearer.
+
+| window | span | **MPSS awake** | edge IRQ/s |
+|---|---|---|---|
+| first | 234 s | **29.1 %** | 39.1 |
+| second | 372 s | **37.1 %** | 41.0 |
+
+Same band as every LTE measurement on this system (33.3 / 34.8 / 34.2 / 35.0 /
+36.0 / 36.8 %). **A modem that no userspace client has ever spoken to, beyond being
+told to come online, keeps its core awake a third of the time.**
+
+So the search inverts a second time, and this is the sharper statement of it:
+
+> It is not that pmOS asks the modem for something expensive. It is that the vendor
+> stack asks it for something *cheap*, and we never ask.
+
+The candidate the evidence names, and it is on the working side: `qrtr-lookup` on
+pmOS lists an **IPA control service (49)** offered by the modem with nobody talking
+to it, the IPA hardware is probed (`7900000.ipa`, driver `ipa`) and no channel is
+ever brought up — while the oracle runs `ipacm` and `ipacm-diag` and holds
+`rmnet_data2` fully established. A modem whose hardware data path was never
+negotiated has a reason to keep its core serviceable.
+
+☠️ **The decisive test is on the oracle, not on us**: stop `ipacm` there and
+re-measure. Proving a mechanism by removing it from the system that works is
+stronger than adding a guess to the system that does not — and it is the only
+direction available, because pmOS has no `ipacm` to start.

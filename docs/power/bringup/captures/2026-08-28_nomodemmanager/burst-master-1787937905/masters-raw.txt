@@ -1,0 +1,120 @@
+=== APSS (raw, at start)
+APSS:
+	Last shutdown @ 1949402882
+	Last bringup req @ 1949580005
+	Last bringup ack @ 1949608529
+	Last wakeup idx: 1850077091
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 21722
+	Last wake transition duration: 25796
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 1913
+	Active cores bitmask: 0x1
+=== LPASS (raw, at start)
+LPASS:
+	Last shutdown @ 1731484242
+	Last bringup req @ 1731424477
+	Last bringup ack @ 1731469902
+	Last wakeup idx: 894936451
+	Last XO shutdown enter @ 1731544769
+	Last XO shutdown exit @ 1731464523
+	XO total duration: 1019428929
+	Last sleep transition duration: 7411
+	Last wake transition duration: 7033
+	XO shutdown count: 56
+	Wakeup reason: 0x0
+	Shutdown count: 71
+	Active cores bitmask: 0x0
+=== MPSS (raw, at start)
+MPSS:
+	Last shutdown @ 1957882047
+	Last bringup req @ 1957599250
+	Last bringup ack @ 1957599360
+	Last wakeup idx: 1957598194
+	Last XO shutdown enter @ 1957894291
+	Last XO shutdown exit @ 1957584603
+	XO total duration: 1205549189
+	Last sleep transition duration: 17207
+	Last wake transition duration: 18460
+	XO shutdown count: 147
+	Wakeup reason: 0x0
+	Shutdown count: 150
+	Active cores bitmask: 0x0
+=== PRONTO (raw, at start)
+PRONTO:
+	Last shutdown @ 1958476160
+	Last bringup req @ 1958243250
+	Last bringup ack @ 1958243360
+	Last wakeup idx: 1958242258
+	Last XO shutdown enter @ 1958487239
+	Last XO shutdown exit @ 1958235175
+	XO total duration: 795602898
+	Last sleep transition duration: 11921
+	Last wake transition duration: 13207
+	XO shutdown count: 527
+	Wakeup reason: 0x0
+	Shutdown count: 527
+	Active cores bitmask: 0x0
+=== APSS (raw, at end)
+APSS:
+	Last shutdown @ 6609468524
+	Last bringup req @ 6609744990
+	Last bringup ack @ 6609759247
+	Last wakeup idx: 4985969344
+	Last XO shutdown enter @ 0
+	Last XO shutdown exit @ 0
+	XO total duration: 0
+	Last sleep transition duration: 12230
+	Last wake transition duration: 12434
+	XO shutdown count: 0
+	Wakeup reason: 0x0
+	Shutdown count: 13271
+	Active cores bitmask: 0x1
+=== LPASS (raw, at end)
+LPASS:
+	Last shutdown @ 1731484242
+	Last bringup req @ 1731424477
+	Last bringup ack @ 1731469902
+	Last wakeup idx: 894936451
+	Last XO shutdown enter @ 1731544769
+	Last XO shutdown exit @ 1731464523
+	XO total duration: 1019428929
+	Last sleep transition duration: 7411
+	Last wake transition duration: 7033
+	XO shutdown count: 56
+	Wakeup reason: 0x0
+	Shutdown count: 71
+	Active cores bitmask: 0x0
+=== MPSS (raw, at end)
+MPSS:
+	Last shutdown @ 6608451972
+	Last bringup req @ 6607453623
+	Last bringup ack @ 6607453736
+	Last wakeup idx: 6607453280
+	Last XO shutdown enter @ 6608466742
+	Last XO shutdown exit @ 6607439562
+	XO total duration: 4388051365
+	Last sleep transition duration: 19778
+	Last wake transition duration: 21746
+	XO shutdown count: 759
+	Wakeup reason: 0x0
+	Shutdown count: 762
+	Active cores bitmask: 0x0
+=== PRONTO (raw, at end)
+PRONTO:
+	Last shutdown @ 6610234070
+	Last bringup req @ 6611982736
+	Last bringup ack @ 6611982847
+	Last wakeup idx: 6611982278
+	Last XO shutdown enter @ 6610245190
+	Last XO shutdown exit @ 6611975084
+	XO total duration: 4234082808
+	Last sleep transition duration: 12044
+	Last wake transition duration: 13382
+	XO shutdown count: 2700
+	Wakeup reason: 0x1
+	Shutdown count: 2701
+	Active cores bitmask: 0x1
