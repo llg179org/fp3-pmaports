@@ -169,11 +169,24 @@ A and A′ 0.6 points apart. **6.5 % is the oracle's 6.3 %**, and 54.0 mA is *be
 its 55–64 mA band. ☠️ 2G is an instrument, not a proposal — the networks are being
 switched off.
 
-**So the deciding unknown is now whether the oracle's 565 s window was on LTE.** Its
-capture records no access technology (nor signal, nor serving cell). On LTE at
-6.3 % there is a real LTE idle-configuration difference to find; on 2G/3G at 6.3 %
-the whole "five times better" comparison collapses into a RAT difference. One line
-on the oracle side decides it.
+**The slot switch settled it, and inverted the search.** One instrument on both
+systems within half an hour, same operator and cell (`captures/2026-08-28_modem-window-both/`):
+
+| | pmOS | oracle |
+|---|---|---|
+| access technology / registration | `lte`, registered | `lte`, registered |
+| data context | **none** — `rmnet_ipa0` DOWN, 0 bytes | **active** — `rmnet_data2`, 10.124.125.20 |
+| **MPSS awake** | **34.8 %** | **6.1 %** |
+
+6.1 % reproduces the 2026-08-24 figure to a fifth of a point, this time with the
+radio state in the same file as the counters. So **LTE is not intrinsically
+expensive on this hardware** — and **the cheaper system is the one doing more.**
+The question is no longer what we hold that they release, but what they set up that
+we never do: the vendor stack runs `netmgrd` and `ipacm` to build the IPA data
+path, and on pmOS the IPA is probed and no channel is ever brought up.
+
+☠️ Signal does not explain it and points the wrong way — ofono `Strength = 12–15`
+against ModemManager's `78 %`.
 
 ☠️ **And the two fronts are independent.** `edge_irq_per_s` is 34.7 / 35.0 / 35.6
 across all three legs: the modem's SMD-edge ring is the same on LTE and on 2G while
