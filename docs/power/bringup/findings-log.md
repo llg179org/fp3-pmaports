@@ -7815,3 +7815,46 @@ a proof: 63 is a conditional median over samples where two bitmask bits were cle
 median. A conditional median excludes the very bursts an integral includes. Read it
 as a consistency check that no large term is missing — which is what it is good
 for, and what T0 wrongly concluded the opposite of this morning.
+
+## ☠️☠️★★★ 2026-08-28 — the modem-firmware candidate is dead: both systems run the *same* build, and the difference was a metadata file read against an image
+
+The swap was staged and about to run. Reading the images first killed it.
+
+| witness | says |
+|---|---|
+| `modem_b/verinfo/ver_info.txt`, `"modem"` field | `MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.**325768**.1.329896.1` |
+| `modem_b/image/modem.b12`, compiled-in `QC_IMAGE_VERSION_STRING` | `MPSS.TA.3.1.C1-**425464**` |
+| `modem_b/image/modem.b12`, compiled-in GEN_PACK string | `…GEN_PACK-1.356774.1.**425464**.1` |
+| our rootfs `modem.mbn`, same two strings | `MPSS.TA.3.1.C1-425464` / `…GEN_PACK-1.356774.1.425464.1` |
+| `modem_a` (the slot the oracle boots), compiled-in string | `MPSS.TA.3.1.C1-425464` |
+
+**Both partitions and our rootfs copy carry the same modem build.** The `325768`
+that the 2026-08-27 entry read as "the oracle's firmware" is the **metabuild**
+number — `ver_info.txt` reports `Meta_Build_ID: SDM632.LA.2.1-00015-STD.PROD-1.325768.0.329896.1`
+and its `"modem"` field simply mirrors it. It is package metadata written at flash
+time, not a statement about the image beside it. ☠️ And our own image contains the
+string `GEN_PACK-1.325768.1.329896.1` too, among a dozen other embedded build
+strings — so grepping for it would have "confirmed" the difference from either side.
+
+☠️ **The error is the one this log keeps recording in new costumes: two witnesses at
+different layers, read as one comparison.** A metadata file on one side and the
+binary's own version string on the other are not two readings of the same thing.
+The rule that would have caught it: *ask the same question of both sides with the
+same instrument.* Here that is one command — `strings -a … | sed -n
+'s/^QC_IMAGE_VERSION_STRING=//p'` — and run against both it answers in seconds.
+
+**The swap was not performed** (there is nothing to swap), the rootfs is untouched,
+and no `.bak` exists. `modem-fw-swap.sh` stays in the tree with this finding in its
+header, because the next person to notice `ver_info.txt` will have the same idea.
+
+### What this leaves
+
+Every candidate under the MPSS duty differential is now spent: three Linux-side
+levers flat, the modem's own SMD edge silent in the daemon-less leg, and now the
+firmware identical. That promotes the item flagged this morning from a caveat to
+**the top of the list**: the oracle's 6.3 % was measured in a 565 s window whose
+radio state was never recorded, and the same session ran both ofono modems
+`Powered=false` later that day. Before anything further is built on that number it
+has to be retaken on slot a with `mmcli`/ofono state written into the capture — and
+if the oracle's modem was disabled, the differential this whole line of work rests
+on does not exist.

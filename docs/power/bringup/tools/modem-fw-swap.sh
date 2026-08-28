@@ -38,7 +38,7 @@ M=/tmp/.modemmnt
 ver() {
 	# The build string lives in the image as plain text; grep it out of whichever
 	# file is currently in place rather than trusting a marker file we wrote.
-	strings -a "$1" 2>/dev/null | sed -n 's/.*\(MPSS\.TA\.[0-9A-Za-z.\-]*GEN_PACK-[0-9.]*\).*/\1/p' | head -1
+	strings -a "$1" 2>/dev/null | sed -n 's/^QC_IMAGE_VERSION_STRING=//p' | head -1
 }
 
 state() {
