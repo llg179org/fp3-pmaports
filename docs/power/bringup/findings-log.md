@@ -8207,7 +8207,7 @@ Everything nameable in userspace on both sides has now been tested:
 |---|---|
 | our client (ModemManager) masked, modem online by one QMI command | **29–37 %** — the modem does it with no client at all |
 | their IPA daemon (`ipacm`, `ipacm-diag`) killed | **6.4 %** — still cheap without it |
-| their data manager (`netmgrd`) killed | *(running)* |
+| their data manager (`netmgrd`) killed | **5.3 %** — lower still |
 | a live PDP context on our side | 35.0 / 36.0 / 36.8 % — worth nothing |
 | the AP's own sleep | not a variable: APSS is awake 100 % on **both** systems |
 
@@ -8216,3 +8216,40 @@ interface** — the downstream `rmnet_ipa`/`ipa` driver performs a handshake wit
 modem that mainline's `ipa` driver may not, and the pmOS side does expose an
 unexplored `modem` node under `/sys/devices/platform/soc@0/7900000.ipa/`. That is
 the next thing to read, and it is on our side of the phone.
+
+## ☠️★★★★ 2026-08-28 night — elimination has run out: no userspace daemon on either side explains it
+
+The last vendor daemon: `netmgrd` killed and verified at 0, on top of `ipacm` and
+`ipacm-diag` already down — **MPSS awake 5.3 %**, lower than the 8.0 % baseline.
+
+So the oracle's modem is cheap with **every one of its data daemons dead**, and
+ours is expensive with **no client having ever spoken to it**. Both APs are awake
+100 % of the time. Both run the same modem firmware, on the same network, on the
+same cell, on the same hardware.
+
+**That is the end of what elimination can do.** Nine candidates have been tested
+and every one is dead:
+
+| candidate | verdict |
+|---|---|
+| our Linux-side levers (`mmcli --disable`, ModemManager stop, iio-sensor-proxy) | flat |
+| our client at all — masked from boot, modem online by one QMI command | **29–37 %** |
+| a live PDP context on our side | flat (35.0 / 36.0 / 36.8 %) |
+| their IPA daemon (`ipacm`, `ipacm-diag`) | **6.4 %** without it |
+| their data manager (`netmgrd`) | **5.3 %** without it |
+| modem firmware build | identical on both (425464) |
+| access technology | both `lte`, recorded |
+| modem power state | a powered-down modem reads 0.0 %, not 6 % |
+| the AP's own sleep | APSS awake 100 % on both |
+
+☠️ **The next instrument has to observe rather than subtract.** Every remaining
+question is about what the modem itself is doing during its awake time, and nothing
+on the AP side can answer it — the modem's SMD edge is silent through the legs
+where our duty is 35 %, so it is not telling us. That is the DIAG path: QCSuper is
+in the workspace, and on pmOS every DIAG channel is UNBOUND while the oracle's
+Android `diag` driver is bound and drained.
+
+**Read the negative correctly**: it is not "there is nothing to find". Two systems
+that differ five-fold on the same hardware differ *somewhere*, and every place a
+subtraction could reach has now been checked. The remaining place is inside the
+modem, which is exactly where the one instrument never used points.
