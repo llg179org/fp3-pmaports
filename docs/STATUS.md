@@ -634,9 +634,39 @@ arrive. ☠️ Today the modem edge (`4080000.remoteproc/…/remoteproc0:smd-edg
 own merits — neither system sleeps, so it is headroom below *both* — but it is not
 where the pmOS-minus-UT difference lives.
 
-**One experiment sits under both fronts**: the modem firmware build (ours 425464
-from the rootfs, the oracle's 325768 from the partition, on an RPM/TZ from the same
-2021 metabuild). It is a file copy with a `.bak`, not a partition write.
+☠️☠️ **And that experiment is dead — the same afternoon, before it ran.** Both
+modem partitions *and* our rootfs copy carry the same image:
+`QC_IMAGE_VERSION_STRING=MPSS.TA.3.1.C1-425464`, `GEN_PACK-1.356774.1.425464.1`, on
+`modem_a` and `modem_b` alike. The `325768` that looked like the oracle's firmware
+is the **metabuild** number out of `verinfo/ver_info.txt` — package metadata whose
+`"modem"` field mirrors `Meta_Build_ID` — and our own image embeds that string too,
+so a grep confirms the difference from either side. Nothing was written; the swap
+script keeps a do-not-run banner and the finding.
+
+**Two witnesses at different layers, read as one comparison.** The rule that
+catches it: ask the same question of both sides with the same instrument.
+
+### What is left, and it is one thing
+
+Every candidate under the MPSS duty is now spent — three Linux-side levers flat,
+the modem's SMD edge silent in the daemon-less leg, and the firmware identical. So
+the caveat becomes the item: **the oracle's 6.3 % was measured in a 565 s window
+whose radio state was never recorded**
+(`2026-08-24_ut-master-stats-idle-before/after.txt`, 72 lines each, no `mmcli`, no
+ofono), and the same session ran both ofono modems `Powered=false` later that day.
+No second clean UT witness exists — the only other snapshot with an uptime is 201 s
+after a boot, where the modem is still registering.
+
+Running now, and cheaper than a slot switch, is the test from our own side: an
+A-B-A′ on `mmcli --set-power-state-low` measured as **MPSS duty**, not current.
+`--disable` did not move it (36/34/34 %); if radio-low does, then 34–36 % is what a
+*registered* modem costs and the oracle's 6.3 % is a modem that was not registered
+— which would mean the differential this line of work rests on does not exist.
+
+**Measured baseline for the responsiveness side** (r78, edge armed, firmware
+425464): six `rtcwake -m mem -s 600` cycles slept **60 / 2 / 9 / 6 / 6 / 19 s**,
+median 7.5 s, residency ~2.8 %. That is the number any fix has to beat while
+keeping the call-wake path.
 
 ## The work queue, in order
 
