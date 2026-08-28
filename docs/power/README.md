@@ -159,6 +159,20 @@ systems, same pack mark, panel provably off in all sixteen rungs, run
 back to back on the same day: the oracle 14:07-22:10, pmOS 23:10-07:13 after the
 pack was charged back to 94 % / 4.394 V **on the UT side** before the slot switch.
 
+☠️☠️ **CORRECTED 2026-08-28 — the energy row below is contaminated, and the
+answer is ~2×.** The 17.94 h discharge to power-off gave this pack a **measured
+voltage → charge curve**, including below 3.967 V where the oracle ladder has no
+data and five of the eight pmOS rungs live. Reading each ladder's own voltage
+travel off it: **oracle 623–651 mAh, pmOS 1308–1335 mAh, ratio 2.05–2.10×** —
+i.e. the charge column's 2.12× survives, and it was never an artefact of the
+single OCV anchor. Four handles on the same two ladders now line up: the oracle's
+voltage travel (623–651) and its own hardware coulomb counter (**501 mAh**) agree;
+its `current_now` integral (**1031 mAh**) does not, because sampling `current_now`
+wakes a phone that would otherwise sleep. On pmOS the two handles agree to 8 %, as
+they must, since pmOS barely sleeps. **So both the energy and the current rows
+below were integrated against an inflated oracle.** Account: `bringup/findings-log.md`,
+2026-08-28.
+
 | over 8 h, idle, panel off | UT (oracle) | pmOS | pmOS vs UT |
 |---|---|---|---|
 | **energy (I·V integrated)** | **525.6 mW** | **593.5 mW** | **+12.9 %** |
@@ -169,8 +183,11 @@ pack was charged back to 94 % / 4.394 V **on the UT side** before the slot switc
 | coulomb counter | 62.7 mA / 16.4 % | **not available** | — |
 
 **Our floor is below the oracle's and our median is above it**: pmOS sits quieter
-and wakes more expensively, and the net over a night is 12.9 % more energy. Repeat
-with `tools/ladder-summary.py` over a run's rung files.
+and wakes more expensively. ☠️ The "+12.9 % over a night" that used to close this
+paragraph is **withdrawn** — see the correction above; the pack says ~2×. The floor
+and median rows are unaffected, because they are distributions of the same
+instrument on each system rather than an integral compared across them. Repeat with
+`tools/ladder-summary.py` over a run's rung files.
 
 **The same two ladders as charge moved, which is the other half of the picture:**
 
@@ -183,10 +200,15 @@ with `tools/ladder-summary.py` over a run's rung files.
 
 pmOS moved **roughly twice the charge** in the same eight hours while its own
 gauge reported 29 points against 25 — and the voltage travel says it without any
-mapping (442 mV against 295, ending 259 mV below anywhere the oracle went). The
-oracle-scale column maps pmOS voltages through the UT ladder's own V→`capacity`
-points, anchored below by the 3.735 V OCV → 33.5 % cross-check. ☠️ Below 3.967 V
-the oracle ladder has no data; those rows hang off that single anchor.
+mapping (442 mV against 295, ending 259 mV below anywhere the oracle went).
+
+✅ **Confirmed 2026-08-28, and the anchor is gone.** The oracle-scale column used to
+map pmOS voltages through the UT ladder's own V→`capacity` points, hanging below
+3.967 V off the single 3.735 V OCV → 33.5 % cross-check. That extrapolation has
+been replaced by a **measured** curve for this pack, read at each ladder's own
+endpoints: **623–651 mAh against 1308–1335 mAh, 2.05–2.10×**, where the mapped
+estimate said 2.12×. Two independent routes to the same number, three percent
+apart.
 
 ☠️ **The top of that column is contested by ~6 points** — 86.8 % by the voltage
 mapping against ~93 % by the time budget (the 7.2-point fall it wants would need
@@ -210,12 +232,19 @@ percentage alone cannot cross two gauges that disagree by 30 points. If the firs
 rung does **not** open at that voltage, the gap is real consumption between the
 two readings and gets logged as such, never absorbed into the ladder.
 
-☠️ **Compare energy, not mA.** The two ladders did not cover the same part of the
-pack (pmOS 4.150 → 3.708 V against the oracle's 4.262 → 3.967 V), and at a lower
-pack voltage the same power draws more current: **+19.5 % in current is +12.9 % in
-energy**, so 6.6 points of that "gap" were the discharge curve. mV/h is worse
-still — 442 vs 295 mV looks like 50 % and is mostly the Li-ion curve steepening
-below 3.9 V, where only pmOS ran.
+☠️ **Compare charge through the measured curve — energy was not the safe choice
+either.** The half of this that stands: the two ladders did not cover the same part
+of the pack (pmOS 4.150 → 3.708 V against the oracle's 4.262 → 3.967 V), so raw mA
+and raw mV/h are both wrong (442 vs 295 mV looks like 50 % and is mostly the Li-ion
+curve steepening below 3.9 V, where only pmOS ran). ☠️☠️ **The half that was wrong,
+until 2026-08-28: "so compare energy".** Energy is `current_now` × `voltage_now`
+integrated, so it inherits everything wrong with `current_now` — and on the oracle
+`current_now` is contradicted by that phone's own coulomb counter by 2.056×,
+because reading it every few seconds wakes a phone that would otherwise be asleep.
+**The instrument that does not have this problem is the pack**: convert each
+ladder's voltage travel to mAh through the curve measured on 2026-08-28
+(`captures/2026-08-28_discharge-to-shutdown/`) and compare those. Doing that gives
+2.05–2.10×, against the 12.9 % the energy comparison reported.
 
 ☠️☠️ **The oracle has a coulomb counter and we do not.** `cc_soc` +
 `full_uAh=3060000` on the 4.9 side; on mainline there is no `cc_soc` and
