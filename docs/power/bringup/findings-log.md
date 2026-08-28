@@ -7720,3 +7720,46 @@ cost a day: **an outlier that flatters the other side is still an outlier.** Fou
 windows existed; the gap was priced off one of them, and the one chosen was the one
 that made the problem look biggest. Quote the median of the windows you have, or
 say you only have one.
+
+## ★★★★ 2026-08-28 — T1/T2 answered from the discharge already on disk: the OCV table's *shape* is right, its *scale* is not, and there is no cutoff to fix
+
+Both open charger items turn out to be one item, and it needed no new measurement —
+only the 17.94 h discharge integrated against the DT.
+
+**T2 first, because it dissolves.** `voltage_min_design` is ignored because nothing
+is supposed to act on it in the kernel: `qcom_smbx.c` has no low-voltage cutoff,
+`VOLTAGE_MIN_DESIGN` is not even among its properties (only `qcom_smbb.c`, a
+different PMIC, exports it), and on mainline the low-battery shutdown is UPower's
+policy, driven by `capacity`. So the phone ran to 2.864 V not because a cutoff was
+missing but because **the percentage it hands UPower never fell below 35 %** — the
+same single defect. There is no separate T2.
+
+**T1, priced against the DT rather than guessed.** The `ocv-capacity-table-0` in
+`sdm632-fairphone-fp3.dts` spans `4375600 → 100 %` down to `3000000 → 0 %`, i.e. a
+full sweep of that table is a full pack by construction. What this pack actually
+delivered across that same span, integrated from `current_now`:
+
+| pack terminal voltage (under ~122 mA) | delivered |
+|---|---|
+| first below 3.600 V | 1758 mAh (48 % shown) |
+| first below 3.500 V | 1984 mAh (41 % shown) |
+| **first below 3.400 V** — `voltage-min-design` | **2076 mAh** (39 % shown) |
+| first below 3.000 V — the table's 0 % | 2175 mAh (36 % shown) |
+| to shutdown, 2.864 V | 2185 mAh (35 % shown) |
+
+**A full sweep of the table yields 2175 mAh against a declared 3 060 000 µAh.** One
+table-percent is worth **21.8 mAh on this pack, not 30.6**. That is the whole
+defect, and it is a scale error, not a shape error: the table's voltage→relative-SoC
+mapping is untouched by it, and the 35 % floor is exactly `1 − 2185/3060`.
+
+☠️ **Do not fix this by editing `charge-full-design-microamp-hours`.** It is a
+*design* value, the OCV table was characterised against it, and this is one aged
+2019-era pack — writing a measurement into a nameplate property makes the gauge
+right on this phone and wrong as a statement about the hardware, and it is
+unsendable upstream. The correct fix is the one T1 already named: learn
+`charge_full` separately from `charge_full_design` and integrate the gauge against
+the learned value, which is what every real gauge does and what the vendor's own
+`cc_soc`/`full_uAh` pair does downstream.
+
+Usable capacity to the declared cutoff is **2076 mAh**, and that is the number a
+learned `charge_full` should converge to.
