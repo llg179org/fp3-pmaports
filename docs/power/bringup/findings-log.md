@@ -7653,3 +7653,70 @@ IPCRTR sends on that edge in 120 s, against 276 `rpm_requests` on a different on
 **So one experiment now sits under both fronts at once** — the MPSS awake duty and
 the suspend residency — and it is a file copy in the rootfs with a `.bak`, not a
 partition write.
+
+## ☠️☠️ 2026-08-28 — T0's residual was an artefact: the oracle does not sleep either, and its "~30 mA" was the low outlier of four
+
+T0, written this morning, closed on a coincidence: the unowned residual (44 mA) had
+the same size as the distance between the oracle's `current_now` integral and what
+its pack actually spent (48–52 mA), and the entry read that as *the oracle wins the
+unexplained half by being asleep*. Two re-reads of material already in `captures/`
+break both halves of that sentence.
+
+**The oracle does not sleep on this device.** `2026-08-24_ut-coulomb-and-sleep-attempt.txt`,
+in the repository since the 24th, states it in its own conclusion: with the full
+documented recipe applied (ssusb wakeup off, both ofono modems `Powered=false`,
+`wakeup_count` handshake) UT managed **2 completed suspends out of 120 attempts** in
+a 603 s window — 93 s asleep, 15 % of the window. Its author wrote "there is no 'UT
+sleeping current' to compare against, because the oracle does not sleep on this
+device". So "pmOS never suspends" is a real inefficiency — a phone that slept would
+beat both — but it is **not a differential against the oracle**, and it cannot be
+the missing term in a pmOS-minus-UT gap.
+
+**And the oracle's idle number is not 30 mA.** Four UT windows exist, all by the
+vendor coulomb counter (`cc_soc`, the one gauge that passed both a known-positive
+and a known-negative control):
+
+| window | start V | cc_soc Δ | integrated |
+|---|---|---|---|
+| 2026-08-24, 60 min | 4.051 V | 105 | **32.2 mA** |
+| 2026-08-25, 30 min | 4.296 V | 89 | 54.6 mA |
+| 2026-08-26 #1, 60 min, panel proven off | 4.331 V | 199 | 61.0 mA |
+| 2026-08-26 #2, 60 min, panel proven off | 4.287 V | 210 | 64.3 mA |
+
+Three of the four sit at **55–64 mA**. The one that says 32 is the earliest, the
+only one taken on a half-empty pack, and the only one whose own write-up carries a
+warning that the pack was still relaxing — and it is the one that got quoted, as
+"~30 mA", into the sentence "the oracle idles below our phone asleep". ☠️ **The
+flattering outlier is the one that travelled.** It became the headline because it
+was the most striking, not because it was the most defensible, and every later
+comparison inherited it.
+
+### What the gap actually is, re-stated on the surviving numbers
+
+pmOS never sleeps, so a `current_now` median taken while sampling **is** its true
+draw; UT sleeps between samples, so its `current_now` median (125 mA on the 08-26
+windows) is an awake-only figure and only `cc_soc` prices the window. Comparing
+like with like:
+
+| | idle, panel dark, radio up |
+|---|---|
+| pmOS (`current_now` median, 08-25, two windows) | 98–101 mA |
+| oracle (`cc_soc`, three windows) | 55–64 mA |
+| **gap** | **~40 mA (1.67×, not 2×)** |
+
+Against that gap the MPSS differential is not a partial term — it is most of it.
+The modem master is awake 34–36 % on pmOS and 6.3 % on the oracle, and an awake
+MPSS costs +91 mA measured two independent ways, so the differential is
+`(0.35 − 0.063) × 91 ≈ 26 mA` = **~65 % of the 40 mA**. There is no 44 mA orphan
+to explain; there is one term, and the rest is within the spread of the windows.
+
+**This does not change what to do next, it sharpens it.** The remaining candidate
+under the MPSS duty is the modem firmware build difference (ours 425464 from the
+rootfs, the oracle's 325768 from the partition, on an identical 2021 RPM/TZ) — and
+that is a rootfs file copy with a `.bak`, not a partition write.
+
+☠️ The methodological item, which is the second time this month the same shape has
+cost a day: **an outlier that flatters the other side is still an outlier.** Four
+windows existed; the gap was priced off one of them, and the one chosen was the one
+that made the problem look biggest. Quote the median of the windows you have, or
+say you only have one.
