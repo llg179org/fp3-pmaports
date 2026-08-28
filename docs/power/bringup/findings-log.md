@@ -7513,3 +7513,55 @@ been sitting in `captures/` for three days, taken for a different question, and
 the plan of record was to spend a slot switch re-taking it. ☠️ **Before measuring,
 grep the captures.** They are indexed by date and question, not by what they
 happen to contain.
+
+## 2026-08-28 — the three-yardstick contradiction resolves, and the honest number is ~2×, not 13 %
+
+The 17.94 h discharge was run for the pack's capacity. It also produced the thing
+the ladder comparison had been missing since it was taken: a **measured
+voltage → charge curve for this pack**, including below 3.967 V, where the oracle
+ladder has no data at all and where five of the eight pmOS rungs live.
+
+Reading each ladder's own voltage travel off that curve turns the disputed charge
+column into a measurement:
+
+| | oracle ladder 4.262 → 3.967 V | pmOS ladder 4.150 → 3.708 V | ratio |
+|---|---|---|---|
+| raw terminal voltage, as the ladders recorded it | 623 mAh | 1308 mAh | **2.10×** |
+| IR-corrected OCV (R = 175 mΩ) | 651 mAh | 1335 mAh | **2.05×** |
+
+**The 2.12× survives.** It was not an artefact of the missing lower leg, nor of
+the single OCV anchor the estimate hung on — the two agree to within 3 %.
+
+Now put the four independent handles on the *same two ladders* side by side:
+
+| handle | oracle | pmOS |
+|---|---|---|
+| voltage travel through the measured curve | **623–651 mAh** | **1308–1335 mAh** |
+| hardware coulomb counter (`cc_soc`) | **501 mAh** | — (mainline exports none) |
+| `current_now` integral | **1031 mAh** | ~1218 mAh |
+
+☠️ **The oracle's `current_now` integral is the outlier, and it always was.** Its
+own coulomb counter and the pack's own voltage both put that ladder at 500–650 mAh;
+the integral says 1031. That 2.056× disagreement was already recorded — with the
+right explanation, that **sampling `current_now` wakes a phone that would otherwise
+be asleep**, so the integral measures the awake draw and the counter measures the
+truth. What was missing was a reason to believe one side over the other. The
+voltage now supplies it, from the cell itself.
+
+On pmOS the same two handles agree to 8 % (1218 against 1308–1335) — as they must,
+because pmOS barely sleeps, so sampling it costs almost nothing.
+
+**Consequence, and it is the headline of the whole comparison:** the energy figure
+of +12.9 % and the current-integral figure of +20 % were **integrated against an
+inflated oracle**. Corrected, pmOS costs the pack roughly **twice** what Ubuntu
+Touch does over the same eight hours. The earlier note "compare energy, not mA"
+was right about mA and wrong about energy: **both** were built on the same
+contaminated oracle integral.
+
+☠️ **What this does not license.** The curve is one discharge, at ~110 mA median
+and 21–27 °C, against ladders that ran at 126 and 162 mA; a single 175 mΩ was used
+for the whole range. The two readings of it bracket 2.05–2.10× and the earlier
+estimate said 2.12×, so the *conclusion* is robust, but "2.05×" is not a
+three-digit number. And the oracle still has no measured curve of its own — this
+one is the pack's, taken on pmOS, applied to both, which is legitimate only
+because it is the same cell.
