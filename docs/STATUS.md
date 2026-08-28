@@ -735,11 +735,27 @@ nothing ever brings a channel up.
 ModemManager's `78 %` — the oracle does not read stronger, and a weaker signal
 costs a modem more.
 
-**Running now (18:58):** `bmknob-bearer`, A-B-A′ on `--simple-connect
-apn=internet.vodafone.net`. The connect already works — `rmnet_ipa0` came up with
-a `qmapmux0.0` mux and the modem reads `connected`. If the duty falls toward 6 %,
-the fix is that pmOS should establish the context: userspace, no kernel change,
-and it takes idle from 98–101 mA to ~57.
+☠️ **19:22 — the PDP-context hypothesis is dead.** The connect works on pmOS
+(`rmnet_ipa0` up with a `qmapmux0.0` mux, modem `connected`) and the A-B-A′ is
+**flat: 35.0 / 36.0 / 36.8 %**, against 34.8 % with no bearer at all
+(`captures/2026-08-28_bearer-master-ab/`). The edge ring does not move either
+(36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
+the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
+bitmask is the measure, which is why the instrument records it.
+
+**Running now (19:25) — the QMI-client test.** ModemManager masked and the phone
+rebooted, so no client has ever configured this modem on this boot; brought online
+by hand with a single `qmicli -d qrtr://0 --dms-set-operating-mode=online`, which
+registered on **LTE within 10 s**. Two 360 s duty windows.
+
+- ~6 % → **ModemManager is the cause**, and the fix is which QMI indications it
+  leaves standing (signal thresholds, serving-system reports) — userspace.
+- ~35 % → the modem does this by itself with no client configuration at all, and
+  the difference has to be something the *vendor* stack actively asks for.
+
+☠️ The 2026-08-27 "ModemManager stopped" null result (38/36/37 %) does not decide
+it: a QMI client's registrations live in the modem and outlive the client. Only a
+boot where it never ran does.
 
 ### (superseded) The deciding unknown, and it is one line on the oracle
 
