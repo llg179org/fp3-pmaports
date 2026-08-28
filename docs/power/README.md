@@ -153,7 +153,35 @@ in, and comparing across regimes is the mistake this page exists to prevent.
 Idle here means display off, WiFi associated, one SSH session open. Unless a row
 says *asleep*, it is not a measurement of a sleeping phone.
 
-### ★★★★★ The answer, as of 2026-08-28: it is the modem's awake time, and nothing else
+### ★★★★★ The answer, as of 2026-08-28 evening: it is the modem's awake time on **LTE**
+
+**2G reproduces the oracle's number on our own phone.** A-B-A′ on the access
+technology, MPSS duty as the measure, 184 samples a leg, the phone registered and
+call-capable throughout:
+
+| leg | access tech | current median | **MPSS core up** | edge IRQ/s |
+|---|---|---|---|---|
+| A | `lte` | 98.5 mA | **34.8 %** | 34.7 |
+| B | `gsm, gprs` | **54.0 mA** | **6.5 %** | 35.0 |
+| A′ | `lte` | 101.0 mA | **34.2 %** | 35.6 |
+
+A and A′ 0.6 points apart. **6.5 % is the oracle's 6.3 %**, and 54.0 mA is *below*
+its 55–64 mA band. ☠️ 2G is an instrument, not a proposal — the networks are being
+switched off.
+
+**So the deciding unknown is now whether the oracle's 565 s window was on LTE.** Its
+capture records no access technology (nor signal, nor serving cell). On LTE at
+6.3 % there is a real LTE idle-configuration difference to find; on 2G/3G at 6.3 %
+the whole "five times better" comparison collapses into a RAT difference. One line
+on the oracle side decides it.
+
+☠️ **And the two fronts are independent.** `edge_irq_per_s` is 34.7 / 35.0 / 35.6
+across all three legs: the modem's SMD-edge ring is the same on LTE and on 2G while
+the core's duty moves five-fold. The ring is not what keeps the core awake, so
+fixing the consumption will **not** hand back the suspend residency. Each front
+needs its own fix.
+
+### The arithmetic underneath it
 
 Everything below this block is the trail that led here and is kept for its
 caveats; **this is the current state.**
