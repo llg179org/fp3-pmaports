@@ -3190,3 +3190,73 @@ measurement that needs the current kernel. **T2 is not a separate item** — the
 no low-voltage cutoff in `qcom_smbx.c` and there should not be; on mainline the
 shutdown is UPower's policy driven by `capacity`, so fixing the percentage fixes
 the 2.864 V run too.
+
+## ★★★★★ 2026-08-28 evening — the road to halving pmOS, in order
+
+The target in numbers: idle **98–101 mA → ≤50 mA**, call-wake preserved. It rests
+on **one** term — the modem core is awake **33–36 %** against the oracle's **6.3 %**
+— because with the core down this phone idles at **57.5 mA**, inside the oracle's
+own 55–64 mA band. There is no second term behind the gap.
+
+☠️ **2G is an instrument, not a mode.** The `2gonly` A-B-A′ answers whether the
+cost is RAT/DRX-dependent, which names *where* a fix would live. The networks are
+being switched off; nothing here proposes shipping it.
+
+### 1. ⏳ The decisive fork — is it our stack's configuration or the modem's own?
+
+Boot with **`ModemManager` masked from boot**, then 2 × 360 s of MPSS duty.
+- duty still 33–36 % → the modem behaves this way on its own NV/EFS configuration,
+  and the fix is a QMI/NV request we never send;
+- duty drops → our stack asks for it, and the fix is in what ModemManager requests.
+
+☠️ The 2026-08-27 "ModemManager stop" A-B-A′ (38/36/37 %, flat) does **not** answer
+this: a daemon stopped mid-run does not un-configure what it already set. The boot
+is the difference. ☠️ Keep `rmtfs`/`tqftpserv` running — without EFS the modem does
+not run at all, and a crash-looping modem is a third state, not a control.
+*Cost: one reboot + ~20 min.*
+
+### 2. ⏳ The matched QMI census, both sides — one slot switch, three questions
+
+- which QMI services each stack opens and **which indications it registers for**;
+  a short DRX preference or a dense NAS event report is exactly the shape of thing
+  that keeps a modem awake while sending the AP nothing;
+- **retake the oracle's 565 s window with the radio state written into the
+  capture** — today's `--set-power-state-low` result rules out a powered-down
+  modem (that reads 0.0 %), but the registration state is still undocumented;
+- ☠️ **signal quality and serving cell on both sides.** The two measurements are
+  from different days; a modem in poor coverage stays awake more. This is a live
+  confound and neither side has ever recorded it.
+*Cost: one slot switch, ~40 min. The first step that needs one.*
+
+### 3. ⏳ Only if 1 and 2 name nothing — the DIAG side
+
+QCSuper is in the workspace and the DIAG channels exist (all UNBOUND). The question
+is what the modem firmware does during its awake windows. Hours, not minutes.
+
+### 4. ⏳ The fix, and on today's evidence it is not a kernel patch
+
+A QMI request pmOS never sends (power-save / DRX preference), an indication
+registration to drop, or an NV item. All three are userspace. The 28-commit power
+layer fixed the floor and the wakeup count (median −35 %, `cluster-pc` and
+`system-pc` from zero); **none of it touches the modem core.**
+
+### 5. ⏳ The responsiveness half, which probably resolves with 4
+
+Even at UT's consumption the phone never sleeps: `suspend_stats/success = 0`,
+`IdleAction=ignore`, `sleep-inactive-battery-type='nothing'` — not blocked, never
+requested. And when requested it holds ~7.5 s, because the armed modem edge rings
+about every 2 s (IPCRTR, signal-level). ☠️ That channel is also how a call arrives,
+so the channel is not a lever — but the ring is the modem's own behaviour, so if 4
+stops the modem waking, it likely stops the ring. **Then** enable the idle-suspend
+policy and re-measure residency *and* call-wake latency on the same configuration.
+
+☠️ Expectation correction: **the oracle does not sleep either** (2 completed
+suspends of 120). Sleep is headroom below *both*, not the difference between them,
+and halving does not need it — the modem term alone takes 98–101 mA to ~57.
+
+### 6. ⏳ For the report, not for the physics — T1
+
+The gauge divides by the nameplate: this pack yields 2175 mAh across the OCV
+table's full span against a declared 3060, so `capacity` floors at 35 % and UPower
+never acts. Until that is fixed, "we halved the consumption" cannot be converted
+into runtime. Design settled above; validation costs a pack cycle.
