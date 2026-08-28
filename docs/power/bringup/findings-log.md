@@ -7790,3 +7790,28 @@ tests the same lever from our own side: if our MPSS duty drops, the story holds
 whatever the oracle was doing at 13:39 on the 24th; if it does not, the oracle
 window has to be retaken with `mmcli`/ofono state recorded in the capture itself
 before anything further is built on 6.3 %.
+
+## ★★★ 2026-08-28 — the two sides now agree on one arithmetic, and it leaves nothing over
+
+Putting the corrected numbers side by side, the whole idle picture closes on the
+terms already measured, with no unnamed remainder:
+
+| | mA | how it was measured |
+|---|---|---|
+| SoC floor — MPSS *and* PRONTO both down | **63** | pmOS, 2×2 conditional median, `burst-master.sh` |
+| oracle idle, whole-window integral | **55–64** | UT, `cc_soc`, three windows |
+| pmOS idle, sampled median | **98–101** | pmOS, `current_now`, two windows |
+| MPSS duty differential, 35.2 % vs 6.3 %, × 91 mA | **26** | conditional split by cause, two windows 1 mA apart |
+
+`63 + 26 = 89`, against a measured 98–101; and the oracle sits **at the floor**.
+So the reading is: *the oracle idles at what this SoC costs when its two radios'
+cores are asleep, and pmOS idles at that same floor plus a modem core that is awake
+five to six times as often.* The ~10 mA still unaccounted is inside the spread of
+every term in the table and is not worth a hypothesis.
+
+☠️ These are not the same *kind* of number and the agreement must not be quoted as
+a proof: 63 is a conditional median over samples where two bitmask bits were clear,
+55–64 is an unconditional integral over an hour, and 98–101 is an unconditional
+median. A conditional median excludes the very bursts an integral includes. Read it
+as a consistency check that no large term is missing — which is what it is good
+for, and what T0 wrongly concluded the opposite of this morning.
