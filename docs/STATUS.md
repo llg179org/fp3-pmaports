@@ -349,7 +349,7 @@ checkout can be behind (it was, below). Measured 2026-08-25 evening:
 |---|---|---|
 | `7.1.3/main` | `72138559` | the upstream `msm8953-mainline` release we sit on |
 | `wip/7.1.3/audio` | `42b7e745` | + the three SSR fixes of 2026-08-23 |
-| `wip/7.1.3/camera` | `a253e401` | ☠️ **one commit ahead of `integration`/`debug-int`**: `media: i2c: ak7375: do not power the motor up on a system resume`. The category rule is *unfinished* on it — steps 2 and 3 (cherry-pick to `integration/7.1.3`, carry to `debug-int/7.1.3`) are not done, deliberately: the autofocus regression has not been run. Do not ship until it is |
+| `wip/7.1.3/camera` | `a253e401` | ✅ **resolved — verified 2026-08-28.** The row used to say this branch was one commit ahead with `media: i2c: ak7375: do not power the motor up on a system resume` and the category rule unfinished. Both twins exist: `fork/integration/7.1.3 c015d445`, `fork/debug-int/7.1.3 2c76a60d`, so the fix is in the kernel the phone runs — confirmed on the device after six suspend/resume cycles: `cam_af_2p85` `disabled`, `ak7375` `runtime_active_time` **0 ms** against 18 187 s suspended over an 18 297 s uptime |
 | `wip/7.1.3/charger` | `f5da2bfd` | |
 | `wip/7.1.3/power` | `68dcadbd` | the cluster-local cpuidle PLL-relock hold (shipped as r76) |
 | `wip/7.1.3/sensor` | `cc39f522` | |
@@ -657,11 +657,40 @@ ofono), and the same session ran both ofono modems `Powered=false` later that da
 No second clean UT witness exists — the only other snapshot with an uptime is 201 s
 after a boot, where the modem is still registering.
 
-Running now, and cheaper than a slot switch, is the test from our own side: an
-A-B-A′ on `mmcli --set-power-state-low` measured as **MPSS duty**, not current.
-`--disable` did not move it (36/34/34 %); if radio-low does, then 34–36 % is what a
-*registered* modem costs and the oracle's 6.3 % is a modem that was not registered
-— which would mean the differential this line of work rests on does not exist.
+### ★★★★★ And the test from our own side answered it — the differential is real
+
+A-B-A′ on `mmcli --set-power-state-low`, measured as **master duty** rather than
+current (`captures/2026-08-28_radiolow-master-ab/`, 3 × 360 s):
+
+| leg | state | current median | **MPSS cores up** | PRONTO (control) |
+|---|---|---|---|---|
+| A | `on` | 128.0 mA | 51.6 % | 25.8 % |
+| B | **`low`** | **57.5 mA** | **0.0 %** | 24.2 % |
+| A′ | `on` | 88.5 mA | 29.3 % | 23.9 % |
+
+☠️ A and A′ are 22 points apart — the modem's duty is not stationary, so no *shift*
+could be read off this baseline. What survives is that leg B is a **floor**, not a
+shift: the core bitmask was clear in 186 of 186 samples, and zero has no spread.
+
+**Two results.** (1) With the modem core down this phone idles at **57.5 mA**,
+inside the oracle's own 55–64 mA `cc_soc` band — so the modem duty is the *whole*
+idle difference and there is no pmOS overhead hiding behind it. (2) A powered-down
+modem reads **0.0 %**, so the oracle's **6.3 % cannot have been a `Powered=false`
+modem**: the hole flagged this morning is closed without a slot switch.
+
+☠️ `mmcli --disable` did *not* move the duty (36/34/34 %) while `--set-power-state-low`
+takes it to zero. "Disabled" stops the radio's use; "low" powers the core down. Two
+knobs that look like one lever act on different layers — the same shape as the
+`ver_info.txt` misreading, in the other direction.
+
+### What is left, and it is one question
+
+Same firmware, same SoC, same RPM and TZ; both modems powered and registered; one
+keeps its core down 94 % of the time and the other 50–70 %. That is **what the two
+stacks ask the modem to do** — attach state, DRX/paging cycle, which QMI services
+hold it. `mmcli -m 0` says `packet service state: attached` on pmOS. Whether the
+oracle attaches a bearer at idle is a one-line read on each side, and it is the
+next measurement.
 
 **Measured baseline for the responsiveness side** (r78, edge armed, firmware
 425464): six `rtcwake -m mem -s 600` cycles slept **60 / 2 / 9 / 6 / 6 / 19 s**,
