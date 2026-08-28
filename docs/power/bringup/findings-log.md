@@ -8010,3 +8010,56 @@ oracle decides it: its access technology.** That is the slot switch, and it is n
 are not necessarily released when the client dies — so that null result does not
 acquit the stack either. Only a boot with the client never started would, and even
 that leaves the modem unregistered, which is its own expensive state.
+
+## ★★★★★ 2026-08-28 — the oracle does LTE at 6.1 % **with a live data connection**, and that settles the question the wrong way round
+
+The slot switch, with one instrument (`modem-window.sh`) run on both systems inside
+half an hour — [`captures/2026-08-28_modem-window-both/`](captures/2026-08-28_modem-window-both/):
+
+| | pmOS (slot b, r78) | oracle (slot a, UT 4.9.218) |
+|---|---|---|
+| window | 600 s | 600 s |
+| access technology | **`lte`** | **`lte`** |
+| registration | `registered` | `registered` |
+| EPS attach | `packet service state: attached` | `ConnectionManager Attached = true` |
+| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `/ril_0/context1 Active = 1`, `rmnet_data2`, 10.124.125.20, `internet.vodafone.net` |
+| **MPSS awake** | **34.8 %** | **6.1 %** |
+| LPASS awake | 100 % | 3.0 % |
+| operator / cell | (not read) | One HU, MCC 216 MNC 70, CellId 1470762 |
+
+**6.1 % reproduces the 2026-08-24 figure of 6.3 % to within a fifth of a point** —
+and this time the capture carries `Technology = lte` and `Status = registered` in
+the same file as the counters, so the number is no longer hostage to an unrecorded
+variable. That was the whole point of building one instrument for both sides.
+
+### What this kills, and what it leaves
+
+**Killed: "this modem simply costs 5× on LTE."** The same modem, the same firmware,
+the same operator and cell, twenty minutes apart, does LTE at 6.1 % under one stack
+and 34.8 % under ours. The cost is not intrinsic to LTE on this hardware.
+
+**Killed the other way round: "pmOS keeps something up that the oracle doesn't."**
+The oracle is doing *more*, not less — it holds an established PDP context with a
+real address on `rmnet_data2`, while pmOS has no bearer at all and an interface
+that is `DOWN` with zero bytes through it. **The cheaper system is the one with the
+data connection running.**
+
+That inverts the search. The question is no longer what we hold that they release;
+it is **what they set up that we never do**. The obvious candidate is the one the
+process list names: the vendor stack runs `netmgrd` and `ipacm` to build the IPA
+data path, and the modem is told the AP's path exists. On pmOS the IPA hardware is
+probed (`7900000.ipa`, driver `ipa`) but nothing ever brings a channel up. A modem
+whose data path was never completed has an obvious reason to stay out of deep idle
+DRX, and it is exactly the shape of thing that costs power while sending the AP
+nothing — which is what the SMD-edge census found in August.
+
+☠️ Signal is not the explanation and points the wrong way if it were: ofono reports
+`Strength = 12–15`, ModemManager `78 %`. Whatever the scaling, the oracle is not
+reading *stronger*, and a weaker signal costs a modem more, not less.
+
+### The next measurement, and it is cheap
+
+**Connect a data context on pmOS and re-measure the duty.** If bringing up
+`internet.vodafone.net` takes MPSS from 34.8 % toward 6 %, the fix is that pmOS
+should establish the context — userspace, no kernel change, and it would take the
+idle draw from 98–101 mA to about 57 without touching 2G or the radio state.

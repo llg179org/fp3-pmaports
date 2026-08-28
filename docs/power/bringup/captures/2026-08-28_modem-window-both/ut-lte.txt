@@ -1,0 +1,234 @@
+# modem-window stack=ut secs=600 2026-08-28 18:44:52
+# kernel=4.9.218-perf-ubuntutouch+ #1 SMP PREEMPT Wed Jul 1 23:32:52 CEST 2026
+# uptime=124
+# BEFORE ------------------------------------------------------------
+#   --- ofono /ril_0
+#         Online = 1
+#         Powered = 1
+#     [ /ril_0 ]
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470732
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 15
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- ofono /ril_1
+#     [ /ril_1 ]
+#         Online = 1
+#         Powered = 1
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470732
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 15
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- rfkill
+#     0: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     1: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4414367 (/sys/class/power_supply/battery/voltage_now)
+# cc_soc=9989
+# cap=100
+# t0=125
+BEFORE APSS
+BEFORE 	shutdown_req:0x9F5F4DD2
+BEFORE 	wakeup_ind:0x9A5371F9
+BEFORE 	bringup_req:0x9F5FD560
+BEFORE 	bringup_ack:0x9F60FE45
+BEFORE 	xo_last_entered_at:0x0
+BEFORE 	xo_last_exited_at:0x0
+BEFORE 	xo_accumulated_duration:0x0
+BEFORE 	last_sleep_transition_duration:0x3579
+BEFORE 	last_wake_transition_duration:0x334c
+BEFORE 	xo_count:0x0
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0xc66
+BEFORE 	active_cores:0x1
+BEFORE 		core0
+BEFORE MPSS
+BEFORE 	shutdown_req:0x9F825BE3
+BEFORE 	wakeup_ind:0x9F7EDC06
+BEFORE 	bringup_req:0x9F7EDD64
+BEFORE 	bringup_ack:0x9F7EDDD5
+BEFORE 	xo_last_entered_at:0x9F828950
+BEFORE 	xo_last_exited_at:0x9F7EA402
+BEFORE 	xo_accumulated_duration:0x4351FCCF
+BEFORE 	last_sleep_transition_duration:0x42f5
+BEFORE 	last_wake_transition_duration:0x4c2a
+BEFORE 	xo_count:0x165
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x1a8
+BEFORE 	active_cores:0x0
+BEFORE PRONTO
+BEFORE 	shutdown_req:0x9F8E1416
+BEFORE 	wakeup_ind:0x9F8C38E5
+BEFORE 	bringup_req:0x9F8C39EA
+BEFORE 	bringup_ack:0x9F8C3A59
+BEFORE 	xo_last_entered_at:0x9F8E3244
+BEFORE 	xo_last_exited_at:0x9F8C1F9D
+BEFORE 	xo_accumulated_duration:0x4499F35D
+BEFORE 	last_sleep_transition_duration:0x24c7
+BEFORE 	last_wake_transition_duration:0x29ac
+BEFORE 	xo_count:0x2e2
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x2e2
+BEFORE 	active_cores:0x0
+BEFORE TZ
+BEFORE 	shutdown_req:0x0
+BEFORE 	wakeup_ind:0x0
+BEFORE 	bringup_req:0x0
+BEFORE 	bringup_ack:0x0
+BEFORE 	xo_last_entered_at:0x0
+BEFORE 	xo_last_exited_at:0x0
+BEFORE 	xo_accumulated_duration:0x0
+BEFORE 	last_sleep_transition_duration:0x0
+BEFORE 	last_wake_transition_duration:0x0
+BEFORE 	xo_count:0x0
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x0
+BEFORE 	active_cores:0x0
+BEFORE LPASS
+BEFORE 	shutdown_req:0x9F905647
+BEFORE 	wakeup_ind:0x9F49EB15
+BEFORE 	bringup_req:0x9F8FC7FC
+BEFORE 	bringup_ack:0x9F8FED4A
+BEFORE 	xo_last_entered_at:0x9F907243
+BEFORE 	xo_last_exited_at:0x9F8FD5BC
+BEFORE 	xo_accumulated_duration:0x40F71327
+BEFORE 	last_sleep_transition_duration:0x1dc4
+BEFORE 	last_wake_transition_duration:0x1e5e
+BEFORE 	xo_count:0x324
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x35f
+BEFORE 	active_cores:0x0
+# t1=725
+AFTER APSS
+AFTER 	shutdown_req:0x34E448871
+AFTER 	wakeup_ind:0x34A29CBC7
+AFTER 	bringup_req:0x34E48CA74
+AFTER 	bringup_ack:0x34E4905A8
+AFTER 	xo_last_entered_at:0x0
+AFTER 	xo_last_exited_at:0x0
+AFTER 	xo_accumulated_duration:0x0
+AFTER 	last_sleep_transition_duration:0x28af
+AFTER 	last_wake_transition_duration:0x2a26
+AFTER 	xo_count:0x0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x9bd4
+AFTER 	active_cores:0x1
+AFTER 		core0
+AFTER MPSS
+AFTER 	shutdown_req:0x34E272A78
+AFTER 	wakeup_ind:0x34E238266
+AFTER 	bringup_req:0x34E238417
+AFTER 	bringup_ack:0x34E238487
+AFTER 	xo_last_entered_at:0x34E2756B3
+AFTER 	xo_last_exited_at:0x34E234B4B
+AFTER 	xo_accumulated_duration:0x2C7F15315
+AFTER 	last_sleep_transition_duration:0x4260
+AFTER 	last_wake_transition_duration:0x4a5a
+AFTER 	xo_count:0x8d2
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x928
+AFTER 	active_cores:0x0
+AFTER PRONTO
+AFTER 	shutdown_req:0x34E46B4DC
+AFTER 	wakeup_ind:0x34E446ADF
+AFTER 	bringup_req:0x34E446E9A
+AFTER 	bringup_ack:0x34E446F09
+AFTER 	xo_last_entered_at:0x34E46D405
+AFTER 	xo_last_exited_at:0x34E445193
+AFTER 	xo_accumulated_duration:0x25400DDCF
+AFTER 	last_sleep_transition_duration:0x2523
+AFTER 	last_wake_transition_duration:0x2a34
+AFTER 	xo_count:0x17bf
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x17c1
+AFTER 	active_cores:0x0
+AFTER TZ
+AFTER 	shutdown_req:0x0
+AFTER 	wakeup_ind:0x0
+AFTER 	bringup_req:0x0
+AFTER 	bringup_ack:0x0
+AFTER 	xo_last_entered_at:0x0
+AFTER 	xo_last_exited_at:0x0
+AFTER 	xo_accumulated_duration:0x0
+AFTER 	last_sleep_transition_duration:0x0
+AFTER 	last_wake_transition_duration:0x0
+AFTER 	xo_count:0x0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x0
+AFTER 	active_cores:0x0
+AFTER LPASS
+AFTER 	shutdown_req:0x34E44347F
+AFTER 	wakeup_ind:0x34E10E9C6
+AFTER 	bringup_req:0x34E43E98C
+AFTER 	bringup_ack:0x34E440D8C
+AFTER 	xo_last_entered_at:0x34E447FC1
+AFTER 	xo_last_exited_at:0x34E43F668
+AFTER 	xo_accumulated_duration:0x2DB2CAB82
+AFTER 	last_sleep_transition_duration:0x26d2
+AFTER 	last_wake_transition_duration:0x1d08
+AFTER 	xo_count:0x23c0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x2444
+AFTER 	active_cores:0x0
+# AFTER -------------------------------------------------------------
+#   --- ofono /ril_0
+#         Online = 1
+#         Powered = 1
+#     [ /ril_0 ]
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470762
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 12
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- ofono /ril_1
+#     [ /ril_1 ]
+#         Online = 1
+#         Powered = 1
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470762
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 12
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- rfkill
+#     0: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     1: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4414756 (/sys/class/power_supply/battery/voltage_now)
+# cc_soc=10057
+# cap=100
+# done
