@@ -7969,3 +7969,44 @@ are independent, and each needs its own fix. That is worse news than it looks: t
 consumption target is reachable without touching the ring, but the *responsiveness*
 target — sleeping while still able to take a call — is a separate problem that this
 result does nothing for.
+
+## 2026-08-28 — three things ruled out before the slot switch, and the hypothesis that is left
+
+**3G does not exist here.** The `3gonly` A-B-A′ aborted on its own guardrail: with
+`--set-allowed-modes=3g` the modem went `searching` for 40 s and then sat at
+`enabled` with an empty access technology for the rest of a 64 s probe. The
+operator has switched UMTS off. So the RAT ladder on this network is **LTE or 2G**,
+with nothing in between, and the 2G leg is the only comparison available.
+
+**No data flows over the cellular link.** `rmnet_ipa0` is `DOWN` with **zero bytes
+in either direction** across a 60 s window, `ipa_lan0` is down, and `mmcli
+--list-bearers` returns nothing. The modem is EPS-attached and idle. Whatever costs
+28 points of duty, it is not user traffic.
+
+**And "enabled but unregistered" is not the control it looked like.** The 29.3 %
+leg of the radio-low run was a modem *searching* for a network, which is expensive
+work in its own right. The only clean pair is **LTE registered 34.8 %** against
+**2G registered 6.5 %**.
+
+### What is left
+
+Both legs: same modem, same firmware, same stack, same kernel, idle, attached, no
+traffic, decent signal (76–84 %). One is five times the other. Two readings survive:
+
+1. **This modem simply costs 5× on LTE.** LTE idle keeps a wider receive chain and
+   a different DRX rhythm than GSM paging, and 35 % may be what an LTE-camped
+   MSM8953 modem costs — in which case **the oracle's 6.3 % means the oracle was
+   not on LTE**, and the entire "the oracle is five times better" result is a RAT
+   difference that no amount of pmOS work can close.
+2. **Something in our LTE setup keeps the modem out of RRC idle** — a short paging
+   DRX, a standing QMI indication registration that survives the client, a
+   measurement report cadence. Then there is a real fix, and it is userspace.
+
+☠️ These are not distinguishable from this side of the phone. **One line on the
+oracle decides it: its access technology.** That is the slot switch, and it is next.
+
+☠️ Note against reading 1 too quickly: stopping ModemManager did not move the duty
+(38/36/37 %), but a QMI client's indication registrations live in the *modem* and
+are not necessarily released when the client dies — so that null result does not
+acquit the stack either. Only a boot with the client never started would, and even
+that leaves the modem unregistered, which is its own expensive state.
