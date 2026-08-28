@@ -1,0 +1,148 @@
+# idle-ab Fri Aug 28 18:58:54 CEST 2026 os=pmos window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# locked session c1
+# asking for the panel off, then waiting up to 240s for the hardware to say it is
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+# panel: bl_power='4' dpms='Off' brightness='40' waited=235s blanked: /sys/class/graphics/fb0/blank
+# on battery: v=4327559
+# --- environment (opening) ---
+# uptime_s=353.81 loadavg=0.29 0.43 0.25
+# battery: temp_dC=283 capacity=99 v=4327559 status=Discharging full_uAh=?
+# thermal: cpu4-thermal=32300 cpu5-thermal=32300 cpu6-thermal=33000 cpu7-thermal=32000 cpu0-thermal=33000 gpu-thermal=31400 pmi632-thermal=37000 pmi632-battery=28300 pm8953-thermal=34954
+# wifi: wlan signal=45 HUAWEI-2.4G-V8qK:130 Mbit/s
+# remote processors: 4080000.remoteproc=running a204000.remoteproc=running adsp=running
+# radio registration:  (mmcli; needs root - blank means it refused)
+# --- end environment (opening) ---
+# t_s current_uA voltage_uV panel temp_dC
+1 -120697 4313351 - ppo=,bl=40,blp=4,regulator.2=, 283
+6 -58288 4324445 - ppo=,bl=40,blp=4,regulator.2=, 283
+11 -53863 4327948 - ppo=,bl=40,blp=4,regulator.2=, 283
+16 -101013 4311404 - ppo=,bl=40,blp=4,regulator.2=, 283
+21 -54626 4321720 - ppo=,bl=40,blp=4,regulator.2=, 283
+26 -153808 4297585 - ppo=,bl=40,blp=4,regulator.2=, 283
+31 -240631 4275786 - ppo=,bl=40,blp=4,regulator.2=, 283
+36 -306854 4276175 - ppo=,bl=40,blp=4,regulator.2=, 283
+41 -131988 4314129 - ppo=,bl=40,blp=4,regulator.2=, 283
+46 -57373 4323277 - ppo=,bl=40,blp=4,regulator.2=, 283
+51 -57830 4312767 - ppo=,bl=40,blp=4,regulator.2=, 283
+56 -53710 4321915 - ppo=,bl=40,blp=4,regulator.2=, 283
+61 -53100 4320747 - ppo=,bl=40,blp=4,regulator.2=, 283
+66 -53558 4319968 - ppo=,bl=40,blp=4,regulator.2=, 283
+71 -53405 4319190 - ppo=,bl=40,blp=4,regulator.2=, 283
+76 -52795 4319190 - ppo=,bl=40,blp=4,regulator.2=, 283
+82 -98266 4304397 - ppo=,bl=40,blp=4,regulator.2=, 283
+87 -53863 4314518 - ppo=,bl=40,blp=4,regulator.2=, 283
+92 -57678 4314324 - ppo=,bl=40,blp=4,regulator.2=, 283
+97 -224609 4266054 - ppo=,bl=40,blp=4,regulator.2=, 283
+102 -196685 4273839 - ppo=,bl=40,blp=4,regulator.2=, 283
+107 -212402 4273255 - ppo=,bl=40,blp=4,regulator.2=, 283
+112 -54473 4315686 - ppo=,bl=40,blp=4,regulator.2=, 283
+117 -52795 4309847 - ppo=,bl=40,blp=4,regulator.2=, 282
+122 -107574 4304008 - ppo=,bl=40,blp=4,regulator.2=, 282
+127 -53710 4315102 - ppo=,bl=40,blp=4,regulator.2=, 283
+132 -63934 4311015 - ppo=,bl=40,blp=4,regulator.2=, 282
+137 -53863 4312572 - ppo=,bl=40,blp=4,regulator.2=, 282
+142 -53863 4307706 - ppo=,bl=40,blp=4,regulator.2=, 282
+147 -145416 4297196 - ppo=,bl=40,blp=4,regulator.2=, 282
+152 -184936 4283182 - ppo=,bl=40,blp=4,regulator.2=, 283
+158 -244598 4260215 - ppo=,bl=40,blp=4,regulator.2=, 282
+163 -227813 4261772 - ppo=,bl=40,blp=4,regulator.2=, 282
+168 -106048 4298947 - ppo=,bl=40,blp=4,regulator.2=, 282
+173 -153961 4273839 - ppo=,bl=40,blp=4,regulator.2=, 282
+178 -155181 4280457 - ppo=,bl=40,blp=4,regulator.2=, 282
+183 -192260 4274812 - ppo=,bl=40,blp=4,regulator.2=, 282
+188 -54626 4303619 - ppo=,bl=40,blp=4,regulator.2=, 282
+193 -138244 4288826 - ppo=,bl=40,blp=4,regulator.2=, 281
+198 -53558 4306344 - ppo=,bl=40,blp=4,regulator.2=, 281
+203 -181732 4285907 - ppo=,bl=40,blp=4,regulator.2=, 281
+208 -90789 4303424 - ppo=,bl=40,blp=4,regulator.2=, 281
+213 -54016 4310431 - ppo=,bl=40,blp=4,regulator.2=, 281
+218 -157470 4283571 - ppo=,bl=40,blp=4,regulator.2=, 281
+223 -110321 4283960 - ppo=,bl=40,blp=4,regulator.2=, 281
+228 -167694 4289605 - ppo=,bl=40,blp=4,regulator.2=, 281
+233 -53863 4306538 - ppo=,bl=40,blp=4,regulator.2=, 281
+239 -53405 4306733 - ppo=,bl=40,blp=4,regulator.2=, 281
+244 -53710 4304592 - ppo=,bl=40,blp=4,regulator.2=, 281
+249 -105133 4292719 - ppo=,bl=40,blp=4,regulator.2=, 281
+254 -244445 4255154 - ppo=,bl=40,blp=4,regulator.2=, 281
+259 -124664 4275980 - ppo=,bl=40,blp=4,regulator.2=, 281
+264 -153808 4273255 - ppo=,bl=40,blp=4,regulator.2=, 281
+269 -242614 4264497 - ppo=,bl=40,blp=4,regulator.2=, 281
+274 -53100 4303619 - ppo=,bl=40,blp=4,regulator.2=, 281
+279 -175628 4293887 - ppo=,bl=40,blp=4,regulator.2=, 280
+284 -153656 4284155 - ppo=,bl=40,blp=4,regulator.2=, 281
+289 -109710 4276564 - ppo=,bl=40,blp=4,regulator.2=, 281
+294 -157165 4284350 - ppo=,bl=40,blp=4,regulator.2=, 281
+299 -53710 4286296 - ppo=,bl=40,blp=4,regulator.2=, 280
+304 -194702 4278121 - ppo=,bl=40,blp=4,regulator.2=, 281
+309 -76446 4290773 - ppo=,bl=40,blp=4,regulator.2=, 281
+315 -186920 4279873 - ppo=,bl=40,blp=4,regulator.2=, 280
+320 -53863 4303035 - ppo=,bl=40,blp=4,regulator.2=, 280
+325 -106201 4286101 - ppo=,bl=40,blp=4,regulator.2=, 280
+330 -54626 4296612 - ppo=,bl=40,blp=4,regulator.2=, 280
+335 -153350 4272866 - ppo=,bl=40,blp=4,regulator.2=, 280
+340 -177612 4265859 - ppo=,bl=40,blp=4,regulator.2=, 280
+345 -153045 4277732 - ppo=,bl=40,blp=4,regulator.2=, 280
+350 -134735 4279289 - ppo=,bl=40,blp=4,regulator.2=, 280
+355 -124206 4284739 - ppo=,bl=40,blp=4,regulator.2=, 280
+# WINDOW=360s v 4327559 -> 4285907
+# panel at end: ppo=,bl=40,blp=4,regulator.2=,
+# panel: off for all 73 samples of the window
+# --- environment (closing) ---
+# uptime_s=713.66 loadavg=0.20 0.24 0.21
+# battery: temp_dC=280 capacity=99 v=4265664 status=Discharging full_uAh=?
+# thermal: cpu4-thermal=31700 cpu5-thermal=31400 cpu6-thermal=32000 cpu7-thermal=31000 cpu0-thermal=32300 gpu-thermal=30700 pmi632-thermal=37000 pmi632-battery=28000 pm8953-thermal=35198
+# wifi: wlan signal=44 HUAWEI-2.4G-V8qK:130 Mbit/s
+# remote processors: 4080000.remoteproc=running a204000.remoteproc=running adsp=running
+# radio registration:  (mmcli; needs root - blank means it refused)
+# --- end environment (closing) ---
+# DONE Fri Aug 28 19:09:12 CEST 2026
+# output: /tmp/idle-ab-1787936334.txt
+# restored: input=1 status=Not charging

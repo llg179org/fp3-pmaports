@@ -8094,8 +8094,10 @@ context and we hold none, so bring one up and see. It was set up on pmOS in one
 command — `mmcli -m 0 --simple-connect="apn=internet.vodafone.net"` succeeded,
 `rmnet_ipa0` came up with a `qmapmux0.0` mux, and the modem read `connected`.
 
-**Leg A, 600 s, bearer connected: MPSS awake 35.0 %.** Against 34.8 % measured with
-no bearer at all forty minutes earlier. The data context is worth nothing.
+**Flat, all three legs:** connected **35.0 %**, disconnected **36.0 %**,
+reconnected **36.8 %** (`captures/2026-08-28_bearer-master-ab/`), against 34.8 %
+measured with no bearer at all forty minutes earlier. The data context is worth
+nothing, and the edge ring does not move either (36.2 / 35.6 / 37.4 per second).
 
 ☠️ **And the current column of that leg is unusable** — the phone was charging, so
 `cur_mA` is charge current and its p10 reads 0.0. The duty is the measure here and
