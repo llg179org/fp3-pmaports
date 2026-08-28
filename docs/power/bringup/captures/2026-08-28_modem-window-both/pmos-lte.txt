@@ -1,0 +1,212 @@
+# modem-window stack=pmos secs=600 2026-08-28 18:30:14
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# uptime=23663
+# BEFORE ------------------------------------------------------------
+#   --- mmcli -m 0
+#                |      firmware revision: MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.356774.1.425464.1  1  [Aug 04 2021 08:00:00]
+#                |                current: gsm-umts, lte
+#                |                  state: registered
+#                |            power state: on
+#                |            access tech: lte
+#                |         signal quality: 78% (recent)
+#                |                current: allowed: 2g, 3g, 4g; preferred: 4g
+#                |                current: egsm, dcs, pcs, g850, utran-1, utran-4, utran-5, utran-8, 
+#                |            operator id: 21670
+#                |          operator name: vodafone HU
+#                |           registration: home
+#                |   packet service state: attached
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4413394 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=98
+# t0=23663
+BEFORE [APSS]
+BEFORE APSS:
+BEFORE 	Last shutdown @ 454914748406
+BEFORE 	Last bringup req @ 454914758782
+BEFORE 	Last bringup ack @ 454914765014
+BEFORE 	Last wakeup idx: 454914651876
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 12683
+BEFORE 	Last wake transition duration: 2163
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 396725
+BEFORE 	Active cores bitmask: 0x1
+BEFORE [MPSS]
+BEFORE MPSS:
+BEFORE 	Last shutdown @ 454907047181
+BEFORE 	Last bringup req @ 454912086984
+BEFORE 	Last bringup ack @ 454912087097
+BEFORE 	Last wakeup idx: 454912086556
+BEFORE 	Last XO shutdown enter @ 454907061570
+BEFORE 	Last XO shutdown exit @ 454912072844
+BEFORE 	XO total duration: 248464589800
+BEFORE 	Last sleep transition duration: 19467
+BEFORE 	Last wake transition duration: 21526
+BEFORE 	XO shutdown count: 57706
+BEFORE 	Wakeup reason: 0x1
+BEFORE 	Shutdown count: 58255
+BEFORE 	Active cores bitmask: 0x1
+BEFORE [PRONTO]
+BEFORE PRONTO:
+BEFORE 	Last shutdown @ 454929722515
+BEFORE 	Last bringup req @ 454924651721
+BEFORE 	Last bringup ack @ 454924651832
+BEFORE 	Last wakeup idx: 454924650660
+BEFORE 	Last XO shutdown enter @ 454929733842
+BEFORE 	Last XO shutdown exit @ 454924642738
+BEFORE 	XO total duration: 335349511745
+BEFORE 	Last sleep transition duration: 12402
+BEFORE 	Last wake transition duration: 14279
+BEFORE 	XO shutdown count: 211251
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 211280
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [TZ]
+BEFORE TZ:
+BEFORE 	Last shutdown @ 0
+BEFORE 	Last bringup req @ 0
+BEFORE 	Last bringup ack @ 0
+BEFORE 	Last wakeup idx: 0
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 0
+BEFORE 	Last wake transition duration: 0
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 0
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [LPASS]
+BEFORE LPASS:
+BEFORE 	Last shutdown @ 1246687193
+BEFORE 	Last bringup req @ 1246590193
+BEFORE 	Last bringup ack @ 1246590303
+BEFORE 	Last wakeup idx: 1246564648
+BEFORE 	Last XO shutdown enter @ 1246693722
+BEFORE 	Last XO shutdown exit @ 1246559828
+BEFORE 	XO total duration: 182930820
+BEFORE 	Last sleep transition duration: 6762
+BEFORE 	Last wake transition duration: 7174
+BEFORE 	XO shutdown count: 49
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 64
+BEFORE 	Active cores bitmask: 0x0
+# t1=24263
+AFTER [APSS]
+AFTER APSS:
+AFTER 	Last shutdown @ 466449767849
+AFTER 	Last bringup req @ 466451228887
+AFTER 	Last bringup ack @ 466451242945
+AFTER 	Last wakeup idx: 466432742217
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 12281
+AFTER 	Last wake transition duration: 12408
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 406784
+AFTER 	Active cores bitmask: 0x1
+AFTER [MPSS]
+AFTER MPSS:
+AFTER 	Last shutdown @ 466445291604
+AFTER 	Last bringup req @ 466450567188
+AFTER 	Last bringup ack @ 466450567301
+AFTER 	Last wakeup idx: 466450566901
+AFTER 	Last XO shutdown enter @ 466445306033
+AFTER 	Last XO shutdown exit @ 466450553188
+AFTER 	XO total duration: 255970131015
+AFTER 	Last sleep transition duration: 19404
+AFTER 	Last wake transition duration: 21516
+AFTER 	XO shutdown count: 59183
+AFTER 	Wakeup reason: 0x1
+AFTER 	Shutdown count: 59733
+AFTER 	Active cores bitmask: 0x1
+AFTER [PRONTO]
+AFTER PRONTO:
+AFTER 	Last shutdown @ 466450767017
+AFTER 	Last bringup req @ 466450541877
+AFTER 	Last bringup ack @ 466450541988
+AFTER 	Last wakeup idx: 466450541478
+AFTER 	Last XO shutdown enter @ 466450778086
+AFTER 	Last XO shutdown exit @ 466450534466
+AFTER 	XO total duration: 343797968521
+AFTER 	Last sleep transition duration: 11955
+AFTER 	Last wake transition duration: 13024
+AFTER 	XO shutdown count: 216649
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 216679
+AFTER 	Active cores bitmask: 0x0
+AFTER [TZ]
+AFTER TZ:
+AFTER 	Last shutdown @ 0
+AFTER 	Last bringup req @ 0
+AFTER 	Last bringup ack @ 0
+AFTER 	Last wakeup idx: 0
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 0
+AFTER 	Last wake transition duration: 0
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 0
+AFTER 	Active cores bitmask: 0x0
+AFTER [LPASS]
+AFTER LPASS:
+AFTER 	Last shutdown @ 1246687193
+AFTER 	Last bringup req @ 1246590193
+AFTER 	Last bringup ack @ 1246590303
+AFTER 	Last wakeup idx: 1246564648
+AFTER 	Last XO shutdown enter @ 1246693722
+AFTER 	Last XO shutdown exit @ 1246559828
+AFTER 	XO total duration: 182930820
+AFTER 	Last sleep transition duration: 6762
+AFTER 	Last wake transition duration: 7174
+AFTER 	XO shutdown count: 49
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 64
+AFTER 	Active cores bitmask: 0x0
+# AFTER -------------------------------------------------------------
+#   --- mmcli -m 0
+#                |      firmware revision: MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.356774.1.425464.1  1  [Aug 04 2021 08:00:00]
+#                |                current: gsm-umts, lte
+#                |                  state: registered
+#                |            power state: on
+#                |            access tech: lte
+#                |         signal quality: 89% (recent)
+#                |                current: allowed: 2g, 3g, 4g; preferred: 4g
+#                |                current: egsm, dcs, pcs, g850, utran-1, utran-4, utran-5, utran-8, 
+#                |            operator id: 21670
+#                |          operator name: vodafone HU
+#                |           registration: home
+#                |   packet service state: attached
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4412810 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=99
+# done
