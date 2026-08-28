@@ -7565,3 +7565,91 @@ estimate said 2.12×, so the *conclusion* is robust, but "2.05×" is not a
 three-digit number. And the oracle still has no measured curve of its own — this
 one is the pack's, taken on pmOS, applied to both, which is legitimate only
 because it is the same cell.
+
+## ★★★★★ 2026-08-28 — T0, the re-pricing: the named terms cover half the gap, and the other half is that pmOS never sleeps at all
+
+The 2× is now a measured number, so every term that was sized against the old
+"+12.9 % of 593 mW" has to be re-priced against it. This costs no device time —
+it is arithmetic over measurements already taken — and it was run first for that
+reason.
+
+**The gap, in the pack's own currency.** Both ladders ran 8.05 h; read through the
+measured discharge curve:
+
+| | oracle | pmOS | gap |
+|---|---|---|---|
+| charge spent over 8.05 h | 623–651 mAh | 1308–1335 mAh | **684 mAh** |
+| as an average current | 77–81 mA | 162–166 mA | **85.0 mA** |
+
+**The named terms, converted to the same currency.** ☠️ The gap is an *integral*,
+so a term may only be counted at its effect on the **mean**, not on the median —
+and for two of the three that is a much smaller and much less certain number:
+
+| term | effect on the median | effect on the **mean** | of the 85 mA gap | established? |
+|---|---|---|---|---|
+| MPSS awake duty (35.2 % vs the oracle's 6.3 %, × 91 mA) | — | **26.4 mA** | 31 % | ✅ two windows, 1 mA apart |
+| systemd PSI watch | 26.4 mA | 8.3 mA (baseline spread 12.4) | 10 % | ❌ inside its own spread, n=2 |
+| wlan radio | 15.5 mA | 6.6 mA (baseline spread 4.9) | 8 % | ❌ inside its own spread |
+| **sum of point estimates** | | **41.3 mA** | **49 %** | only the first is established |
+
+☠️ Two corrections that pull in opposite directions and roughly cancel: pmOS's
+`current_now` integral under-reads the pack by 7–9 %, so these terms should be
+scaled up by ~1.08 (→ 44.6 mA, 52 %); and the wlan term is **not** a differential —
+the oracle had wlan associated too, so whatever it pays is subtracted from our 6.6
+and the honest differential is smaller, possibly zero.
+
+**So the answer to the question T0 was set to ask is: no, they do not cover it.
+At least 44 mA — over half the gap, and closer to 70 % of it if only the
+established term is counted — is not in any of the three.** That was the trigger to
+say so rather than to distribute the remainder over the named terms.
+
+### And the missing term was found in four sysfs reads
+
+```
+/sys/power/suspend_stats/success = 0     (uptime 3 h 06)
+/sys/power/suspend_stats/fail    = 0
+logind IdleAction                = ignore
+gsd-power sleep-inactive-battery-type = 'nothing'
+```
+
+**pmOS has never suspended once on this boot, and nothing in the stack ever asks
+it to.** Not blocked — `systemd-inhibit --list` shows eight inhibitors and every
+one of the `sleep` ones is `delay`, none is `block`. Simply never requested. Every
+"idle" figure ever taken on this phone, including all sixteen ladder rungs, is an
+**awake-idle** figure by construction.
+
+★ **And the residual has the right size for exactly that.** On the oracle, the
+distance between what its `current_now` integral says (129 mA — the awake draw,
+because sampling wakes it) and what the pack says it actually spent (77–81 mA) is
+**48–52 mA**. The residual T0 cannot account for is **44 mA**. Those are the same
+quantity within their error bars: *the half of the gap that has no named owner is
+the half the oracle wins by being asleep.*
+
+### What this reframes
+
+The remaining work is not a hunt for another 44 mA of leak. It is one trade, and
+it was measured and written down on **2026-08-22**, six days before it became the
+headline:
+
+* modem SMD edge **armed** → an incoming call raises the phone from s2idle and it
+  rings (proven 2026-08-25, resume at 18:06:14, call object at 18:06:15) — but the
+  edge's own ~one-per-2-s inbound ring re-wakes the phone within seconds of every
+  suspend, so residency is zero;
+* modem SMD edge **disarmed** → suspends hold 3/3, and calls do not arrive.
+
+☠️ Today that edge reads **`enabled`** — `soc@0/4080000.remoteproc/…/remoteproc0:smd-edge/power/wakeup`,
+the modem's, while the other three smd-edge nodes read `disabled`. So the phone is
+in the armed half of the trade and paying for it, with the sleep it buys switched
+off anyway at the policy layer.
+
+**The oracle proves the trade is resolvable**, because it does both at once: MPSS
+awake 6.3 % of the time, and it takes calls. The one difference left between the
+two sides after every Linux-side lever came back flat is the **modem firmware
+build** — ours 425464 from the rootfs, the oracle's 325768 from the partition,
+against an RPM and TZ that come from that same 2021 metabuild on both. The inbound
+ring is the modem firmware's own behaviour: the AP-side send census found only 2
+IPCRTR sends on that edge in 120 s, against 276 `rpm_requests` on a different one.
+
+**So one experiment now sits under both fronts at once** — the MPSS awake duty and
+the suspend residency — and it is a file copy in the rootfs with a `.bak`, not a
+partition write.

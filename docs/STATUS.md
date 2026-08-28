@@ -591,6 +591,45 @@ working the whole time. ☠️ This does **not** validate the 15.3 mA row: it re
 one reason to disbelieve it and says nothing about the 31.1 mA. The re-measure
 that settles it is running; until it lands, the UT row stays unquotable.
 
+## ★★★★★ 2026-08-28 — T0: half the gap has no owner, and the reason is that pmOS never suspends
+
+**The gap, re-priced against the measured 2× (both ladders 8.05 h, read through
+the pack's own discharge curve):** oracle 623–651 mAh, pmOS 1308–1335 mAh —
+**684 mAh, i.e. 85.0 mA of average current.**
+
+| term | effect on the mean | of the gap | established? |
+|---|---|---|---|
+| MPSS awake duty (35.2 % vs 6.3 %, × 91 mA) | **26.4 mA** | 31 % | ✅ |
+| systemd PSI watch | 8.3 mA (spread 12.4) | 10 % | ❌ n=2, inside spread |
+| wlan radio | 6.6 mA (spread 4.9) | 8 % | ❌ inside spread, and not a differential |
+| **sum** | **41.3 mA** | **49 %** | |
+
+☠️ The gap is an integral, so terms count at their effect on the **mean**, not the
+median — the PSI watch and wlan were both priced on the median (26 and 15 mA) and
+neither clears its own spread on the mean.
+
+**≥44 mA — over half — is not in any named term.** And it was found in four sysfs
+reads: `/sys/power/suspend_stats/success = 0` at 3 h of uptime, `IdleAction=ignore`,
+`gsd-power sleep-inactive-battery-type='nothing'`. **pmOS has never suspended, and
+nothing ever asks it to** — not blocked (all eight inhibitors are `delay`, none
+`block`), simply never requested. ★ The oracle's own distance between its awake
+integral (129 mA) and what the pack says it spent (77–81 mA) is **48–52 mA**: the
+unowned half of the gap is the half the oracle wins by being asleep.
+
+**This reframes the remaining work as one trade**, measured 2026-08-22 and now the
+headline: modem SMD edge armed → calls raise the phone from s2idle (proven
+2026-08-25) but its ~1-per-2-s inbound ring kills every suspend; disarmed →
+suspends hold 3/3 and calls do not arrive. ☠️ Today the modem edge
+(`4080000.remoteproc/…/remoteproc0:smd-edge`) reads **`enabled`** while the other
+three read `disabled` — we are in the armed half and paying for it with the sleep
+it buys switched off at the policy layer.
+
+**The oracle resolves the trade** (MPSS awake 6.3 % *and* it takes calls), and the
+only difference left is the **modem firmware build** — 425464 from our rootfs vs
+325768 from the partition, against an RPM/TZ that come from the same 2021 metabuild
+on both. So one experiment sits under both fronts, and it is a file copy with a
+`.bak`, not a partition write.
+
 ## The work queue, in order
 
 Everything here is machine-doable unless the row says otherwise. Work down the
