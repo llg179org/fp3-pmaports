@@ -22,7 +22,18 @@ caught lying by 30 points, and front two has its first real hit: wlan is worth
 **1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
 each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
 pmOS 23:10-07:13, the pack charged back to 94 % / 4.394 V **on the UT side**
-before the slot switch. **Energy 525.6 mW (UT) vs 593.5 mW (pmOS) = +12.9 %.**
+before the slot switch. ☠️☠️ **2026-08-28: THE +12.9 % BELOW IS DEAD — the honest figure is ~2×.** Read
+each ladder's own voltage travel off the discharge curve measured on 2026-08-28:
+oracle **623–651 mAh**, pmOS **1308–1335 mAh**, **ratio 2.05–2.10×**, which is the
+disputed charge column's 2.12× surviving intact. The oracle's `current_now`
+integral (1031 mAh) is contradicted by both its own hardware coulomb counter
+(501 mAh) and the cell's voltage — it is the outlier, because sampling
+`current_now` wakes a phone that would otherwise sleep. pmOS's two handles agree
+to 8 %, as they must, since pmOS barely sleeps. **Both the energy and the current
+figures below were integrated against an inflated oracle.** Full account:
+`power/bringup/findings-log.md`, 2026-08-28.
+
+**Energy 525.6 mW (UT) vs 593.5 mW (pmOS) = +12.9 %.**
 Floor 72.2 → **56.9 mA (ours is 21 % BELOW the oracle's)**, median 126.3 → 161.8
 (+28 %). **We sit quieter and wake more expensively.** ☠️ Compare energy, not mA:
 the ladders covered different parts of the pack and 6.6 of the 19.5 mA-points were
