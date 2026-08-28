@@ -10,7 +10,18 @@
 #   modem-fw-swap.sh rootfs      # restore ours (425464) from the .bak
 #   modem-fw-swap.sh state       # print which build is in place, change nothing
 #
-# WHY THIS EXISTS: the oracle's MPSS master is awake 6.3 % of the time and ours
+# ☠️☠️ 2026-08-28: DO NOT RUN THIS. There is nothing to swap. Both modem
+# partitions and our rootfs copy carry the SAME build - modem_a, modem_b and
+# /lib/firmware all say QC_IMAGE_VERSION_STRING=MPSS.TA.3.1.C1-425464 and
+# GEN_PACK-1.356774.1.425464.1. The "325768" that made this look like a
+# difference is the METABUILD number out of the partition's verinfo/ver_info.txt,
+# package metadata written at flash time whose "modem" field mirrors
+# Meta_Build_ID; our own image embeds that same string too, among a dozen other
+# build strings, so grepping for it confirms the difference from either side.
+# The script is kept because the next reader of ver_info.txt will have the same
+# idea, and `modem-fw-swap.sh state` against both sides settles it in seconds.
+#
+# WHY IT WAS WRITTEN: the oracle's MPSS master is awake 6.3 % of the time and ours
 # 34-36 %, an awake MPSS costs +91 mA measured two independent ways, and every
 # Linux-side lever tried against that duty came back flat (mmcli --disable,
 # ModemManager stop, iio-sensor-proxy stop: 36/34/34, 38/36/37, 36/39/36 %). The
