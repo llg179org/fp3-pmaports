@@ -3260,3 +3260,26 @@ The gauge divides by the nameplate: this pack yields 2175 mAh across the OCV
 table's full span against a declared 3060, so `capacity` floors at 35 % and UPower
 never acts. Until that is fixed, "we halved the consumption" cannot be converted
 into runtime. Design settled above; validation costs a pack cycle.
+
+## ⏳ Queued 2026-08-28 night — if the QMI-client test reads ~35 %
+
+Then no client configuration causes it, and the difference is something the vendor
+stack **actively asks for**. The candidate the evidence points at is the **IPA
+control path**: `qrtr-lookup` on pmOS lists an *IPA control service* (49) offered by
+the modem with nobody talking to it, the IPA hardware is probed
+(`7900000.ipa`, driver `ipa`) and no channel is ever brought up, while the oracle
+runs `ipacm` and `ipacm-diag` and holds `rmnet_data2` fully established. A modem
+whose hardware data path was never negotiated has a reason to keep its core
+serviceable.
+
+**The decisive test is on the oracle, not on us:** stop `ipacm` there and re-measure
+its duty with `modem-window.sh`. If 6.1 % rises toward 35 %, the mechanism is named
+exactly, and it is named on the system that works — which is the stronger direction
+to prove it in.
+
+*Cost: one slot switch, ~25 min.* ☠️ Restore `ipacm` before switching back; it is
+the vendor data path and leaving it down would make the oracle's next capture a
+different phone.
+
+Second candidate if that is flat: the **DIAG channels**, which are all UNBOUND on
+pmOS and drained by `ipacm-diag` on the oracle.
