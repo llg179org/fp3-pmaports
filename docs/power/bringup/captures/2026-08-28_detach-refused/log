@@ -1,0 +1,6 @@
+# burst-master-knob 2026-08-28 17:09:11 knob=detach window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# --- leg A: state=attached
+# leg A -> /var/log/fp3/bmknob-detach-1787929751/A (186 samples)
+# applying off: mmcli -m 0 --3gpp-set-packet-service-state=detached
+☠️ after the off command the state is 'attached', expected 'detached' - refusing to label this leg off
