@@ -8253,3 +8253,43 @@ Android `diag` driver is bound and drained.
 that differ five-fold on the same hardware differ *somewhere*, and every place a
 subtraction could reach has now been checked. The remaining place is inside the
 modem, which is exactly where the one instrument never used points.
+
+## ★★★ 2026-08-29 — the DIAG path is open on mainline: r78 and one ioctl
+
+Elimination had run out, so the next instrument had to observe the modem rather
+than subtract from around it. On pmOS all seven DIAG channels sat `UNBOUND`,
+and the reason was one kernel symbol: `CONFIG_RPMSG_CHAR=m` was set but
+**`CONFIG_RPMSG_CTRL` was not**, and without it userspace cannot create an
+endpoint on an rpmsg device at all.
+
+**r78 is that config, and nothing else** — same `_commit`, in the shape of the r67
+kprobes bump. Deployed by the hand-copy route with the net intact (`vmlinuz-r78`
+default, r77 and r76 as labels), running as `#79-fp3`.
+
+☠️ **Binding through sysfs does not work and is the wrong door.** `echo
+remoteproc0:smd-edge.DIAG.-1.-1 > /sys/bus/rpmsg/drivers/rpmsg_chrdev/bind`
+fails; the channel is opened through the *control* device with
+`RPMSG_CREATE_EPT_IOCTL` (`0x4028B501`, `struct rpmsg_endpoint_info { char
+name[32]; __u32 src; __u32 dst; }`). The modem edge is `remoteproc0`, whose
+control node is `/dev/rpmsg_ctrl3` — ☠️ **the ctrl index does not follow the
+remoteproc index**; read `/sys/class/rpmsg/rpmsg_ctrl*/device` to map them
+(`rpmsg_ctrl0 → remoteproc:`, `1 → remoteproc2:`, `2 → remoteproc1:`,
+`3 → remoteproc0:`).
+
+```sh
+python3 rpmsg_ept.py /dev/rpmsg_ctrl3 DIAG    # -> /dev/rpmsg0
+```
+
+That is the first time this device's modem DIAG interface has been reachable on
+mainline.
+
+**First reading: the modem sends nothing unprompted.** `/tmp/diag.bin` was 0 bytes
+after the channel had been held open — DIAG is request/response, so the logging
+masks have to be set before anything arrives. That is the next step.
+
+☠️ **And the first duty measurement on the new kernel is void**: it ran in the
+minutes after the reboot, `mmcli` still answered "couldn't find modem", and it
+read 44.4 %. A window taken before the modem has registered is not a window about
+the modem's idle behaviour. Re-run with `state: registered` confirmed first — the
+same discipline the `modem-window.sh` capture was built to enforce, forgotten
+within an hour of building it.
