@@ -8086,3 +8086,31 @@ ADSP outright was priced at ~4 % against a 98 mA baseline. But that pricing was
 taken when the modem term dominated. If the modem work lands and idle falls to
 ~57 mA, the same 4 mA is 7 % of what is left, and it becomes worth reopening —
 with the measurement above as the entry point rather than the shipped patch.
+
+## ☠️ 2026-08-28 — the PDP-context hypothesis is dead within the hour
+
+The inversion suggested an obvious mechanism: the oracle holds an established data
+context and we hold none, so bring one up and see. It was set up on pmOS in one
+command — `mmcli -m 0 --simple-connect="apn=internet.vodafone.net"` succeeded,
+`rmnet_ipa0` came up with a `qmapmux0.0` mux, and the modem read `connected`.
+
+**Leg A, 600 s, bearer connected: MPSS awake 35.0 %.** Against 34.8 % measured with
+no bearer at all forty minutes earlier. The data context is worth nothing.
+
+☠️ **And the current column of that leg is unusable** — the phone was charging, so
+`cur_mA` is charge current and its p10 reads 0.0. The duty is the measure here and
+that is why this instrument records the bitmask rather than the meter; a run built
+on the current column would have had to be thrown away.
+
+So the difference is not the bearer, not the RAT, not the firmware, not the power
+state, not traffic, not signal, and not any Linux-side lever tried. What is left is
+**what the two stacks say to the modem over QMI** — and specifically the
+possibility that ModemManager leaves standing indication registrations (signal
+thresholds, serving-system change reports) that the modem services on its own
+schedule.
+
+☠️ The 2026-08-27 "ModemManager stopped" null result (38/36/37 %) does **not**
+acquit that: a QMI client's registrations live in the *modem*, and killing the
+client does not necessarily release them. The test that separates the two is a boot
+where ModemManager never runs at all, with the modem brought online by hand — and
+that is next.
