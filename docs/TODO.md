@@ -3151,3 +3151,42 @@ Neither is a base and neither is ever pruned when a base is rolled.
   commits are already in `7.1.3/main`, so they need a name, not a copy.
 - `archive/*` — rewritten history kept reachable, so an old pin still resolves
   and its tarball still downloads.
+
+## ⏳ T1 — learn `charge_full`, and the design is settled (2026-08-28)
+
+Measured: a full sweep of `ocv-capacity-table-0` (4.3756 V → 3.000 V) yields
+**2175 mAh** on this pack against a declared `charge-full-design-microamp-hours =
+<3060000>`, and **2076 mAh** down to the declared 3.400 V cutoff. One table-percent
+is worth 21.8 mAh, not 30.6, and the 35 % floor the gauge stopped at is exactly
+`1 − 2185/3060`. ☠️ **Do not fix it by editing the DT design value** — it is a
+nameplate, the OCV table was characterised against it, and this is one aged pack;
+that edit is right on this phone and wrong as a statement about the hardware, and
+it is unsendable upstream.
+
+The change, in `qcom_smbx.c` (charger category — so `wip/7.1.3/charger`, cherry-pick
+to `integration/7.1.3`, carry to `debug-int/7.1.3`, push, then bump `_commit`):
+
+1. Add `chip->charge_full_uah`, seeded from `batt_info->charge_full_design_uah`.
+   `POWER_SUPPLY_PROP_CHARGE_FULL` returns it; `CHARGE_FULL_DESIGN` keeps returning
+   the DT value. They stop being the same case label.
+2. Divide by it, not by the design value, in the counting branch of the gauge
+   (`per_permyriad = 360LL * chip->charge_full_uah`) and in `CHARGE_NOW`.
+3. Learn between two *trusted* anchors — the points where the driver already
+   overwrites `soc_permyriad` outright rather than counting: charge termination
+   (100 %), an `S3_GOOD_OCV` re-anchor, and a quiet-current wake sample. Accumulate
+   the counted charge between consecutive anchors; when the span is large enough
+   (≥ 50 % and one-directional) set `full = accumulated_uah * 10000 / span`, blend
+   ~25 % toward it rather than jumping, and clamp to 50–110 % of design.
+4. Persist it beside the SoC byte in the gauge's scratch SRAM, behind the same
+   magic, so a warm reboot does not throw the learning away. A battery swap clears
+   the magic and the value falls back to design, which is the correct behaviour.
+
+Expected convergence: **~2076 mAh**. Evidence that it worked: a discharge segment
+where the ratio of mAh delivered to percent lost lands at 20.8 (2076/100), and a
+run that reaches 0 % at the 3.400 V cutoff instead of stopping at 35 %.
+
+☠️ Validation needs a full pack cycle, so this does not go in front of a power
+measurement that needs the current kernel. **T2 is not a separate item** — there is
+no low-voltage cutoff in `qcom_smbx.c` and there should not be; on mainline the
+shutdown is UPower's policy driven by `capacity`, so fixing the percentage fixes
+the 2.864 V run too.
