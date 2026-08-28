@@ -14,7 +14,7 @@ _flavor="fp3"
 _commit="5aafd59e553ae5385f4e44f5d8b5846c3179bd7c"
 pkgname=linux-$_flavor
 pkgver=7.1.3
-pkgrel=77
+pkgrel=78
 pkgdesc="msm8953-mainline for the Fairphone 3: WCD9335 audio, IMX363 camera, PMI632 charger"
 arch="aarch64"
 _carch="arm64"
@@ -73,5 +73,5 @@ package() {
 }
 sha512sums="
 bd668a8c55ec608db4cf86836ccacbb286cb5c3d9c673007a1262a067c1312be7a98942a05754ace4703adaa189f6124c7644c5495f841032e4e36f61b535505  linux-fp3-5aafd59e553ae5385f4e44f5d8b5846c3179bd7c.tar.gz
-8e6cb000b182afb4b19205285630c7d82edf1805801aa18cf15b600a2f2a8034177dbddc289d02267ed66ec5b70b106b37515b762e2dc116d960b2a12bdbabec  config-fp3.aarch64
+2294d29cdefeb4fa3e6ed263930e926eef1fc851b7fd43ad7421e66d2476d688d82e8b36e8385a10831591a7a12d4c225a1c86cb97f27260a88941b0fa966fc4  config-fp3.aarch64
 "
