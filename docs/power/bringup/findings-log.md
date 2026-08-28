@@ -7763,3 +7763,30 @@ the learned value, which is what every real gauge does and what the vendor's own
 
 Usable capacity to the declared cutoff is **2076 mAh**, and that is the number a
 learned `charge_full` should converge to.
+
+## ☠️ 2026-08-28 — the oracle's 6.3 % MPSS duty has no recorded radio state
+
+The single established term in the whole gap — the MPSS duty differential, now
+carrying ~65 % of it — rests on exactly one pair of files,
+`2026-08-24_ut-master-stats-idle-before.txt` (13:39:38) and `-after.txt` (13:49:03),
+565 s apart. Both are 72 lines of raw master-stats and **neither records whether the
+modem was registered, disabled, or powered off.** They were captured for the `vlow`
+investigation, for which the radio state did not matter, and were later re-read for
+a question where it is the entire variable.
+
+What can still be said from inside the files: PRONTO ran at 23.2 %, so WiFi was up
+and the phone was not in flight mode — that rules out the crudest confound but not
+an individually disabled modem, and the same session was running `Powered=false`
+experiments on both ofono modems later the same day.
+
+So the comparison that reads "the oracle's modem is awake 6.3 % of the time and
+ours 34–36 %" may be comparing a registered modem against a disabled one. ☠️ **A
+capture re-read for a question it was not taken for must be checked against the
+variables that question cares about**, and this one was not.
+
+**It does not block the next step, and that is why the next step is the firmware
+swap rather than a slot switch.** Loading the partition's 325768 build on pmOS
+tests the same lever from our own side: if our MPSS duty drops, the story holds
+whatever the oracle was doing at 13:39 on the 24th; if it does not, the oracle
+window has to be retaken with `mmcli`/ofono state recorded in the capture itself
+before anything further is built on 6.3 %.
