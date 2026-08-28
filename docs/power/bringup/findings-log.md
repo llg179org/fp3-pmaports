@@ -8180,3 +8180,39 @@ verifies the count is zero and stays zero.
 The 8.0 % / 6.6 % pair from the first attempt therefore measures nothing about
 `ipacm`; both legs had it running. It is kept only as two more samples of the
 oracle's LTE duty, which is what it actually is.
+
+## ☠️ 2026-08-28 night — `ipacm` is definitively not it
+
+The corrected leg, with the processes actually killed and verified at **0** and
+still 0 fifteen seconds later, `rmnet_data0` and `rmnet_data2` still up:
+
+| oracle leg | MPSS awake |
+|---|---|
+| `ipacm` + `ipacm-diag` running (baseline) | 8.0 % |
+| both **killed**, verified | **6.4 %** |
+
+Flat, and if anything lower. **The IPA control daemon is not what keeps the
+oracle's modem asleep**, which retires the candidate the process list suggested and
+that `qrtr-lookup`'s unattended *IPA control service (49)* seemed to support.
+
+☠️ `setprop ctl.start` did not bring them back either — the property mechanism
+reported the request in both directions and performed neither. On this system the
+reliable restore for an init service is a reboot, which the slot switch provides.
+
+### Where that leaves the search
+
+Everything nameable in userspace on both sides has now been tested:
+
+| | result |
+|---|---|
+| our client (ModemManager) masked, modem online by one QMI command | **29–37 %** — the modem does it with no client at all |
+| their IPA daemon (`ipacm`, `ipacm-diag`) killed | **6.4 %** — still cheap without it |
+| their data manager (`netmgrd`) killed | *(running)* |
+| a live PDP context on our side | 35.0 / 36.0 / 36.8 % — worth nothing |
+| the AP's own sleep | not a variable: APSS is awake 100 % on **both** systems |
+
+So the mechanism is looking less like a daemon and more like the **kernel↔modem
+interface** — the downstream `rmnet_ipa`/`ipa` driver performs a handshake with the
+modem that mainline's `ipa` driver may not, and the pmOS side does expose an
+unexplored `modem` node under `/sys/devices/platform/soc@0/7900000.ipa/`. That is
+the next thing to read, and it is on our side of the phone.
