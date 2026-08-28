@@ -620,7 +620,29 @@ Consequences, both live:
   way; nothing else does. Whether the PMI632 QG block can expose a raw count to
   mainline — and what it would take in `qcom_smbx`/the QG driver — is unanswered.
 
-#### ☠️☠️ OPEN, and it outranks the idle work — OUR GAUGE IS ~30 POINTS OPTIMISTIC
+#### ☠️☠️ OPEN — OUR GAUGE IS ~30 POINTS OPTIMISTIC, and as of 2026-08-28 the CAUSE IS MEASURED
+
+**`charge_full` is the 3 060 000 µAh nameplate; the pack holds 2185 mAh.** One
+17.94 h discharge from a terminated charge to power-off (`captures/2026-08-28_discharge-to-shutdown/`)
+integrated 2185 mAh while the gauge fell only 100 → **35 %**, ending at
+**2.864 V**. 2185/3060 = 71.4 % of nameplate spent, so a coulomb counter scaled to
+the nameplate lands near 29 % — which is where it stopped. The missing points are
+not drift: they are the difference between the nameplate and the cell.
+
+**The fix is `charge_full`, learned rather than declared.** The QG path already
+tracks a full-to-empty excursion; nothing else in the mapping needs to change for
+the user-visible number to become honest.
+
+☠️ Also measured, and its own item: the phone crossed `voltage_min_design`
+(3.400 V) with the gauge reading **39 %** and kept running for **45 minutes**
+down to 2.864 V. Nothing in the stack acts on that property — the shutdown when
+it came was the hardware's, not a managed low-battery cut-off. A phone that
+ignores its own design minimum will keep taking the cell deeper than it should on
+every flat-battery event.
+
+<details><summary>The 2026-08-27 crosscheck that opened this, kept for the trail</summary>
+
+##### ☠️☠️ OPEN, and it outranks the idle work — OUR GAUGE IS ~30 POINTS OPTIMISTIC
 
 Measured 2026-08-27, the direct way: the pack was walked down to the **bottom of
 the pmOS ladder** (63 %), rested 300 s with the charge input open, read, then the
@@ -655,6 +677,8 @@ curve this pack has never had. ☠️ Needs the ladder harness's capacity floor
 it switched off.
 
 Capture: `power/bringup/captures/2026-08-27_gauge-crosscheck.txt`.
+
+</details>
 
 ### ✅ RAN, and it answered a different question than it asked — 2026-08-26
 

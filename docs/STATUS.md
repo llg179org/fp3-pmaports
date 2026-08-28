@@ -250,7 +250,11 @@ measurement queue must not be re-ordered around it.
 measuring, grep the captures** — they are indexed by date and question, not by
 what they contain.
 
-**5h. ⏳ RUNNING SINCE 2026-08-27 17:57 — the full instrumented discharge.**
+**5h. ✅ DONE 2026-08-28 11:56 — the full instrumented discharge, and it named the gauge bug.** 17.94 h, 6408 rows, panel dark throughout, charge cut proven. **100 % → 35 %** (it never went lower), **4.308 → 2.864 V**, **2185 mAh integrated = 71 % of the 3060 mAh nameplate `charge_full` reports.** The ~30-point optimism has a mechanism now, not a comparison: the gauge divides real coulombs by a denominator **40 % too large**. ☠️ The phone crossed its own `voltage_min_design` (3.400 V) with the gauge at **39 %** and ran another **45 minutes** to 2.864 V — nothing in the stack acts on that property, so the shutdown was the hardware's. **Fix: `charge_full` must be learned, not the nameplate.** Capture + analysis: `captures/2026-08-28_discharge-to-shutdown/`.
+
+<details><summary>What the run looked like while it was in flight</summary>
+
+**⏳ RUNNING SINCE 2026-08-27 17:57 — the full instrumented discharge.**
 `discharge-gate.sh` waited for the charger to **terminate** (`status=Full`,
 cap 100 %, 4.372 V, 27.5 °C) and handed the unit to `discharge-run.sh 10`. The
 panel is down (`bl_power=4`, `dpms=Off`) and the charge input cut is **proven**
@@ -268,6 +272,8 @@ integral of the *same run* disagree by nearly a factor of two.
 Analysis is `discharge-fit.py`, written and validated on a synthetic 20 h pack
 **before** the run, because this is the one instrument here whose capture cannot
 simply be retaken.
+
+</details>
 
 **6. Instruments written today**, all in `power/bringup/tools/`:
 `night-ladder.sh` (+ its two units, reboot-surviving, charge-input-safe),
