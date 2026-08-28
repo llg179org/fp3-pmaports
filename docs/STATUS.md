@@ -683,14 +683,43 @@ takes it to zero. "Disabled" stops the radio's use; "low" powers the core down. 
 knobs that look like one lever act on different layers — the same shape as the
 `ver_info.txt` misreading, in the other direction.
 
-### What is left, and it is one question
+### ★★★★★ 18:01 — the cost is **LTE**, and 2G reproduces the oracle's number here
 
-Same firmware, same SoC, same RPM and TZ; both modems powered and registered; one
-keeps its core down 94 % of the time and the other 50–70 %. That is **what the two
-stacks ask the modem to do** — attach state, DRX/paging cycle, which QMI services
-hold it. `mmcli -m 0` says `packet service state: attached` on pmOS. Whether the
-oracle attaches a bearer at idle is a one-line read on each side, and it is the
-next measurement.
+A-B-A′ on access technology (`captures/2026-08-28_2gonly-master-ab/`), 184 samples
+a leg, the phone registered and call-capable throughout leg B:
+
+| leg | access tech | current median | **MPSS core up** | edge IRQ/s |
+|---|---|---|---|---|
+| A | `lte` | 98.5 mA | **34.8 %** | 34.7 |
+| B | `gsm, gprs` | **54.0 mA** | **6.5 %** | 35.0 |
+| A′ | `lte` | 101.0 mA | **34.2 %** | 35.6 |
+
+A and A′ **0.6 points and 2.5 mA apart** — a clean two-sided A/B. **6.5 % is the
+oracle's 6.3 %**, reproduced on our own phone, our own kernel, our own stack, by
+one change. 54.0 mA is *below* the oracle's 55–64 mA band.
+
+☠️ 2G is an instrument, not a proposal — the networks are being switched off.
+
+☠️ The QMI packet-service detach is **refused by the modem firmware**
+(`QMI protocol error (3): Internal`, as root too), so the attach cannot be taken
+away directly; the RAT is the only handle on it.
+
+### The deciding unknown, and it is one line on the oracle
+
+**Was the oracle on LTE during its 565 s window?** That capture records no access
+technology — the third variable in a row it does not carry.
+
+- oracle on **LTE** at 6.3 % → a real LTE idle-configuration difference exists;
+- oracle on **2G/3G** → "five times better" collapses into a RAT difference and the
+  comparison has to be rebuilt.
+
+### ★★ And the two fronts are independent — this kills the afternoon's plan
+
+`edge_irq_per_s` is **34.7 / 35.0 / 35.6** across all three legs. The modem's SMD
+edge rings at the same rate on LTE and on 2G while the core's duty moves five-fold.
+So the ring is **not** what keeps the core awake and is **not** RAT-dependent:
+fixing the consumption will not hand back the suspend residency. The consumption
+target and the responsiveness target are two problems, not one.
 
 **Measured baseline for the responsiveness side** (r78, edge armed, firmware
 425464): six `rtcwake -m mem -s 600` cycles slept **60 / 2 / 9 / 6 / 6 / 19 s**,
