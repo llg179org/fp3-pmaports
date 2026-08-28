@@ -704,7 +704,44 @@ one change. 54.0 mA is *below* the oracle's 55–64 mA band.
 (`QMI protocol error (3): Internal`, as root too), so the attach cannot be taken
 away directly; the RAT is the only handle on it.
 
-### The deciding unknown, and it is one line on the oracle
+### ★★★★★ 18:55 — the slot switch answered it, the wrong way round
+
+One instrument (`modem-window.sh`) on both systems inside half an hour, same
+operator and cell:
+
+| | pmOS (slot b, r78) | oracle (slot a, UT 4.9.218) |
+|---|---|---|
+| access technology | `lte` | `lte` |
+| registration | `registered` | `registered` |
+| EPS attach | attached | attached |
+| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `context1`, `rmnet_data2`, 10.124.125.20, Vodafone APN |
+| **MPSS awake** | **34.8 %** | **6.1 %** |
+| LPASS awake | 100 % | 3.0 % |
+
+**6.1 % reproduces the 2026-08-24 figure of 6.3 % to a fifth of a point**, this
+time with `Technology` and `Status` inside the same file as the counters.
+
+**Both readings die.** LTE is not intrinsically expensive here — the same modem and
+firmware does it at 6.1 % under the vendor stack. And it is not that pmOS holds
+something up: **the cheaper system is the one doing more**, holding an established
+PDP context while ours has no bearer at all.
+
+So the question inverts — not what we hold that they release, but **what they set
+up that we never do.** The vendor process list names the candidate: `netmgrd` and
+`ipacm` build the IPA data path. On pmOS the IPA is probed (`7900000.ipa`) and
+nothing ever brings a channel up.
+
+☠️ Signal is not it and points the wrong way: ofono `Strength = 12–15` against
+ModemManager's `78 %` — the oracle does not read stronger, and a weaker signal
+costs a modem more.
+
+**Running now (18:58):** `bmknob-bearer`, A-B-A′ on `--simple-connect
+apn=internet.vodafone.net`. The connect already works — `rmnet_ipa0` came up with
+a `qmapmux0.0` mux and the modem reads `connected`. If the duty falls toward 6 %,
+the fix is that pmOS should establish the context: userspace, no kernel change,
+and it takes idle from 98–101 mA to ~57.
+
+### (superseded) The deciding unknown, and it is one line on the oracle
 
 **Was the oracle on LTE during its 565 s window?** That capture records no access
 technology — the third variable in a row it does not carry.
