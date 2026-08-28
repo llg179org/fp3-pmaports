@@ -90,6 +90,11 @@ for path in sys.argv[1:]:
             if 0 < dt <= 600:
                 acc += (abs(a["cur_uA"]) + abs(b["cur_uA"])) / 2.0 * dt / 3600.0
         c = [abs(r["cur_uA"]) / 1000.0 for r in chunk]
+        # ☠️ Report the END of the chunk, not its start. The accumulator has
+        # already absorbed the whole chunk by this point, so printing the first
+        # row's percentage beside it puts a claimed SoC next to charge that was
+        # drawn after it - which on the 2026-08-27 run made the last decile look
+        # like 7 gauge points spent on 3 mAh. The capture had no gap; the table did.
         print("   %8d %8.3f %10.0f %10.0f"
-              % (chunk[0]["cap_pct"], chunk[0]["v_uV"] / 1e6, acc / 1000.0,
+              % (chunk[-1]["cap_pct"], chunk[-1]["v_uV"] / 1e6, acc / 1000.0,
                  statistics.median(c)))

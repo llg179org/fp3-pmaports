@@ -1,0 +1,7 @@
+# discharge-run 2026-08-27 17:57:56 interval=10s bat=/sys/class/power_supply/pmi632-battery
+# kernel=7.1.3-postmarketos-qcom-msm8953 #78-fp3 SMP PREEMPT Wed Aug 26 04:23:06 UTC 2026
+# charge_full=3060000 charge_full_design=3060000
+# start: cap=100% v=4371742 temp=275 status=Full
+# borrowing a 20 s idle-ab window to lock the session and take the panel down
+# panel after that: bl_power='4' dpms='Off'
+# charge input cut: status=Discharging
