@@ -591,44 +591,52 @@ working the whole time. ☠️ This does **not** validate the 15.3 mA row: it re
 one reason to disbelieve it and says nothing about the 31.1 mA. The re-measure
 that settles it is running; until it lands, the UT row stays unquotable.
 
-## ★★★★★ 2026-08-28 — T0: half the gap has no owner, and the reason is that pmOS never suspends
+## ★★★★★ 2026-08-28 — T0, and the same afternoon's withdrawal of half of it
 
-**The gap, re-priced against the measured 2× (both ladders 8.05 h, read through
-the pack's own discharge curve):** oracle 623–651 mAh, pmOS 1308–1335 mAh —
-**684 mAh, i.e. 85.0 mA of average current.**
+T0 re-priced the named terms against the measured gap and found that only the MPSS
+duty (26.4 mA) cleared its own spread — the systemd PSI watch (8.3 mA on the mean,
+spread 12.4, n=2) and wlan (6.6 mA, spread 4.9, and not even a differential) did
+not — leaving ≥44 mA with no named owner. It then attributed that residual to
+suspend: `/sys/power/suspend_stats/success = 0` at 3 h of uptime, `IdleAction=ignore`,
+`gsd-power sleep-inactive-battery-type='nothing'` — **pmOS has never suspended and
+nothing in the stack ever asks it to** (not blocked: all eight inhibitors are
+`delay`, none `block`).
 
-| term | effect on the mean | of the gap | established? |
-|---|---|---|---|
-| MPSS awake duty (35.2 % vs 6.3 %, × 91 mA) | **26.4 mA** | 31 % | ✅ |
-| systemd PSI watch | 8.3 mA (spread 12.4) | 10 % | ❌ n=2, inside spread |
-| wlan radio | 6.6 mA (spread 4.9) | 8 % | ❌ inside spread, and not a differential |
-| **sum** | **41.3 mA** | **49 %** | |
+☠️ **The first half stands; the attribution does not.** Two files already in
+`captures/` break it. `2026-08-24_ut-coulomb-and-sleep-attempt.txt` records the
+oracle managing **2 completed suspends out of 120 attempts** with the full recipe
+applied — *the oracle does not sleep on this device either*, so its advantage
+cannot be sleep. And the oracle's idle figure is not the ~30 mA that got quoted:
+four `cc_soc` windows read 32.2 / 54.6 / 61.0 / 64.3 mA, and the 32 is the
+earliest, the only one on a half-empty pack, and the only one whose own write-up
+warns the pack was still relaxing. ☠️ **The flattering outlier is the one that
+travelled.**
 
-☠️ The gap is an integral, so terms count at their effect on the **mean**, not the
-median — the PSI watch and wlan were both priced on the median (26 and 15 mA) and
-neither clears its own spread on the mean.
+**The gap, on like-for-like instruments.** pmOS never sleeps, so its sampled
+`current_now` median *is* its draw; UT sleeps between samples, so only `cc_soc`
+prices its window:
 
-**≥44 mA — over half — is not in any named term.** And it was found in four sysfs
-reads: `/sys/power/suspend_stats/success = 0` at 3 h of uptime, `IdleAction=ignore`,
-`gsd-power sleep-inactive-battery-type='nothing'`. **pmOS has never suspended, and
-nothing ever asks it to** — not blocked (all eight inhibitors are `delay`, none
-`block`), simply never requested. ★ The oracle's own distance between its awake
-integral (129 mA) and what the pack says it spent (77–81 mA) is **48–52 mA**: the
-unowned half of the gap is the half the oracle wins by being asleep.
+| | idle, panel dark, radio up |
+|---|---|
+| pmOS, `current_now` median (08-25, two windows) | 98–101 mA |
+| oracle, `cc_soc` (three windows) | 55–64 mA |
+| **gap** | **~40 mA — 1.67×, not 2×** |
 
-**This reframes the remaining work as one trade**, measured 2026-08-22 and now the
-headline: modem SMD edge armed → calls raise the phone from s2idle (proven
-2026-08-25) but its ~1-per-2-s inbound ring kills every suspend; disarmed →
-suspends hold 3/3 and calls do not arrive. ☠️ Today the modem edge
-(`4080000.remoteproc/…/remoteproc0:smd-edge`) reads **`enabled`** while the other
-three read `disabled` — we are in the armed half and paying for it with the sleep
-it buys switched off at the policy layer.
+`(0.352 − 0.063) × 91 mA = 26 mA` of MPSS differential is **~65 % of that**, not
+31 % of a 2× gap. There is no orphan term to hunt; there is one term, and the
+remainder is inside the windows' own spread.
 
-**The oracle resolves the trade** (MPSS awake 6.3 % *and* it takes calls), and the
-only difference left is the **modem firmware build** — 425464 from our rootfs vs
-325768 from the partition, against an RPM/TZ that come from the same 2021 metabuild
-on both. So one experiment sits under both fronts, and it is a file copy with a
-`.bak`, not a partition write.
+**Still true, and still the trade the user's constraint names:** modem SMD edge
+armed → calls raise the phone from s2idle (proven 2026-08-25) but its ~1-per-2-s
+inbound ring kills every suspend; disarmed → suspends hold 3/3 and calls do not
+arrive. ☠️ Today the modem edge (`4080000.remoteproc/…/remoteproc0:smd-edge`) reads
+**`enabled`** while the other three read `disabled`. Suspend is worth having on its
+own merits — neither system sleeps, so it is headroom below *both* — but it is not
+where the pmOS-minus-UT difference lives.
+
+**One experiment sits under both fronts**: the modem firmware build (ours 425464
+from the rootfs, the oracle's 325768 from the partition, on an RPM/TZ from the same
+2021 metabuild). It is a file copy with a `.bak`, not a partition write.
 
 ## The work queue, in order
 
