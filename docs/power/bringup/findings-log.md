@@ -7858,3 +7858,56 @@ radio state was never recorded, and the same session ran both ofono modems
 has to be retaken on slot a with `mmcli`/ofono state written into the capture — and
 if the oracle's modem was disabled, the differential this whole line of work rests
 on does not exist.
+
+## ★★★★★ 2026-08-28 — radio-low puts the MPSS core at *exactly zero*, which rescues the oracle's 6.3 % from the hole flagged this morning
+
+A-B-A′ on `mmcli -m 0 --set-power-state-low`, measured as **master duty** rather
+than current (`burst-master-knob.sh`, 3 × 360 s, 186/186/184 samples) —
+[`captures/2026-08-28_radiolow-master-ab/`](captures/2026-08-28_radiolow-master-ab/):
+
+| leg | state | current median | **MPSS cores up** | PRONTO cores up |
+|---|---|---|---|---|
+| A | `on` | 128.0 mA | **51.6 %** | 25.8 % |
+| B | **`low`** | **57.5 mA** | **0.0 %** | 24.2 % |
+| A′ | `on` | 88.5 mA | 29.3 % | 23.9 % |
+
+☠️ **A and A′ are 22 points apart, so this is not a clean two-sided A/B** — the
+modem's duty is not stationary on the ten-minute scale, and any *shift* measured
+against this baseline would be worthless. What survives that objection is that leg B
+is not a shift but a **floor**: the MPSS core bitmask was clear in 186 of 186
+samples. Zero has no spread. (PRONTO is flat across all three legs at 24–26 %, the
+control that says nothing else moved.)
+
+Two things follow, and the second is the one worth the run.
+
+**1. The modem duty is the whole idle difference.** With the modem core down the
+current median is **57.5 mA**, which lands inside the oracle's own `cc_soc` band of
+55–64 mA. pmOS with the modem up idles at 98–101. So there is no residual "pmOS
+overhead" hiding behind the modem term — take the modem's awake time away and this
+phone idles where the oracle idles.
+
+**2. ★ It closes the hole in the oracle's 6.3 % from our own side, with no slot
+switch.** This morning's worry was that the 565 s UT window never recorded its
+radio state, and that the same session ran both ofono modems `Powered=false` — in
+which case the 6.3 % would be a powered-down modem and the differential would not
+exist. But a powered-down modem reads **0.0 %**, as leg B just demonstrated on this
+very SoC. **6.3 % is not 0 %.** The oracle's modem was up and doing something 6.3 %
+of the time; ours is up 30–50 %. The differential is real.
+
+☠️ Note the distinction the run also makes: `mmcli --disable` did *not* move the
+duty (36/34/34 % on 2026-08-27) while `--set-power-state-low` takes it to zero.
+"Disabled" only stops the radio's use; "low" powers the core down. A knob that
+looked like the same lever was measuring a different layer — which is exactly the
+mistake the firmware `ver_info.txt` reading made this afternoon, in the other
+direction.
+
+### The question this leaves is now sharp
+
+Both systems run the same modem firmware on the same SoC with the same RPM and TZ,
+both have the modem powered and registered, and one keeps its modem core down 94 %
+of the time while the other keeps it down 50–70 %. That is not a firmware
+difference and not a Linux-side power lever: it is **what the two stacks ask the
+modem to do** — attach state, DRX/paging cycle, and which QMI services hold it.
+`mmcli -m 0` reports `packet service state: attached` on pmOS; whether the oracle
+attaches a bearer at idle is the first thing to compare, and unlike the duty itself
+it is a one-line read on each side.
