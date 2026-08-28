@@ -8063,3 +8063,26 @@ reading *stronger*, and a weaker signal costs a modem more, not less.
 `internet.vodafone.net` takes MPSS from 34.8 % toward 6 %, the fix is that pmOS
 should establish the context — userspace, no kernel change, and it would take the
 idle draw from 98–101 mA to about 57 without touching 2G or the radio state.
+
+## 2026-08-28 — the matched pair also says the LPASS fix did not free the crystal
+
+Read out of the same two `modem-window.sh` captures, which is the first time the
+two systems' LPASS records have been compared side by side over a matched window:
+
+| | pmOS (r78) | oracle |
+|---|---|---|
+| LPASS `XO total duration` over 600 s | **0** — literally never | 582.1 s |
+| LPASS awake | **100 %** | 3.0 % |
+
+☠️ **The audio-clock fix is in the kernel that produced this.** `ASoC:
+msm8916-wcd-digital: hold mclk only while a stream runs` is on `debug-int/7.1.3`
+and shipped in r78, and the LPASS master still does not shut the crystal down for a
+single tick in ten minutes. So either something else holds it, or the fix addresses
+a different holder than the one that matters — and the lead page's closing line
+("solved and priced") is true about the *clock* and false about the *outcome*.
+
+It stays a correctness item rather than a lever on today's numbers: stopping the
+ADSP outright was priced at ~4 % against a 98 mA baseline. But that pricing was
+taken when the modem term dominated. If the modem work lands and idle falls to
+~57 mA, the same 4 mA is 7 % of what is left, and it becomes worth reopening —
+with the measurement above as the entry point rather than the shipped patch.
