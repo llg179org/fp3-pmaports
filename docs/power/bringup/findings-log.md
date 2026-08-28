@@ -8151,3 +8151,32 @@ negotiated has a reason to keep its core serviceable.
 re-measure. Proving a mechanism by removing it from the system that works is
 stronger than adding a guess to the system that does not — and it is the only
 direction available, because pmOS has no `ipacm` to start.
+
+## ☠️ 2026-08-28 night — an instrument failure caught by its own printout, and one hypothesis killed off the data already taken
+
+**The AP-sleep hypothesis dies without an experiment.** The obvious structural
+difference left was that the oracle's AP sleeps between samples and ours never
+does, which would make its modem's idleness a consequence rather than a cause. It
+is not: **APSS reads `XO off 0.0 s`, awake 100 %, in every window on both systems**
+— the oracle's application processor is awake exactly as continuously as ours. The
+data to kill this was in the same captures as the MPSS numbers and had simply not
+been read. (The 2G leg on pmOS says the same thing from the other side: 6.5 % duty
+with our AP just as awake.)
+
+**And an instrument failure worth writing down.** The first `ipacm` A/B was run by
+setting `setprop ctl.stop vendor.ipacm`, and the `getprop` status obligingly
+reported `[stopping]`. It never stopped: a `ps` in the same command block printed
+**2** ipacm processes, and they were still there fifteen minutes later. The status
+property records the request, not the outcome — the same shape as `show_blank_event`
+reporting `panel_power_on = 1` with zero MDSS clocks enabled, and as the knob whose
+state command watched `power state` while the knob changed registration.
+
+☠️ **A state that says "stopping" is a request, not a result.** The rule the tools
+already carry for knobs — refuse to label a leg until the state command *confirms*
+the change — has to be applied to the witness as well as to the knob, and here the
+witness was the wrong field. The corrected leg kills the process outright and
+verifies the count is zero and stays zero.
+
+The 8.0 % / 6.6 % pair from the first attempt therefore measures nothing about
+`ipacm`; both legs had it running. It is kept only as two more samples of the
+oracle's LTE duty, which is what it actually is.
