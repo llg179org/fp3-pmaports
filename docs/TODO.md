@@ -3152,7 +3152,7 @@ Neither is a base and neither is ever pruned when a base is rolled.
 - `archive/*` — rewritten history kept reachable, so an old pin still resolves
   and its tarball still downloads.
 
-## ⏳ T1 — learn `charge_full`, and the design is settled (2026-08-28)
+## 🔨 T1 — learn `charge_full`: **written and building as r79 (2026-08-29)**
 
 Measured: a full sweep of `ocv-capacity-table-0` (4.3756 V → 3.000 V) yields
 **2175 mAh** on this pack against a declared `charge-full-design-microamp-hours =
@@ -3180,6 +3180,23 @@ to `integration/7.1.3`, carry to `debug-int/7.1.3`, push, then bump `_commit`):
 4. Persist it beside the SoC byte in the gauge's scratch SRAM, behind the same
    magic, so a warm reboot does not throw the learning away. A battery swap clears
    the magic and the value falls back to design, which is the correct behaviour.
+
+**Implemented 2026-08-29** as `power: supply: qcom_smbx: learn what the pack
+actually holds` — `wip/7.1.3/charger 56ed6005`, `integration/7.1.3 bbb5a088`,
+`debug-int/7.1.3 b8de6ded`, all pushed and tarball-reachable, package bumped to
+r79. Two departures from the sketch above, both to keep the arithmetic honest:
+the accumulator is **signed**, so a span whose charge disagrees with its direction
+is discarded rather than averaged; and a stale gap either **starts** a new span
+(when the wake sample is itself at rest, which makes it an anchor) or **ends
+learning** (when it is not), because charge that moved uncounted would otherwise
+be divided by a span that includes it.
+
+☠️ **The `.ko` hot-swap was tried first and must not be.** A module built from
+`wip/7.1.3/charger` and loaded onto a phone running `debug-int/7.1.3` fails with
+an `ftrace bug`, leaves the charger unbound and wedges `/proc/modules` — and the
+on-disk module had already been overwritten, so the next boot would have had no
+charger driver. Recovered from the r78 `.apk`. Build the module from the tree the
+phone runs, or use the package.
 
 Expected convergence: **~2076 mAh**. Evidence that it worked: a discharge segment
 where the ratio of mAh delivered to percent lost lands at 20.8 (2076/100), and a
