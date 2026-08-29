@@ -850,13 +850,17 @@ technology — the third variable in a row it does not carry.
 - oracle on **2G/3G** → "five times better" collapses into a RAT difference and the
   comparison has to be rebuilt.
 
-### ★★ And the two fronts are independent — this kills the afternoon's plan
+### ☠️☠️ RETRACTED 2026-08-29 — "the two fronts are independent", on the wrong counter
 
-`edge_irq_per_s` is **34.7 / 35.0 / 35.6** across all three legs. The modem's SMD
-edge rings at the same rate on LTE and on 2G while the core's duty moves five-fold.
-So the ring is **not** what keeps the core awake and is **not** RAT-dependent:
-fixing the consumption will not hand back the suspend residency. The consumption
-target and the responsiveness target are two problems, not one.
+What stood here read `edge_irq_per_s` as the modem's SMD-edge rate (34.7 / 35.0 /
+35.6 across the RAT legs) and concluded the ring is RAT-independent and therefore
+that the two targets are separate problems. **That column is a sum over every**
+smd/smp2p/glink/ipcc/ipa interrupt and is dominated by the **RPM's** edge. By
+hardware IRQ, idle: RPM **13.29 /s**, WCNSS 0.39, ADSP 0.00, **modem 0.07 /s**. The
+same tool logged the modem alone in `modem_irq_per_s`; the conclusions quoted the
+column beside it. The ring is the AP's own RPM traffic —
+[`power/bringup/leads/rpm-idle-traffic.md`](power/bringup/leads/rpm-idle-traffic.md).
+The two targets may still be separate problems; this was not the evidence.
 
 **Measured baseline for the responsiveness side** (r78, edge armed, firmware
 425464): six `rtcwake -m mem -s 600` cycles slept **60 / 2 / 9 / 6 / 6 / 19 s**,

@@ -89,8 +89,9 @@ that the cheaper system is the one doing more — **has since been made and died
 vendor stack's own `ipacm`, its `netmgrd`, the IPCRTR link and an open DIAG
 channel; the table above carries them.
 
-☠️ And note what none of this will fix: `edge_irq_per_s` is 34.7 / 35.0 / 35.6
-across LTE, 2G and LTE, 35.0–35.7 across the six band legs, and 34.1–36.2 across
-forty-six windows of one boot. The modem's SMD-edge ring is independent of its
-awake duty, of the RAT and of the band. The suspend-residency front does not come
-back with any of this.
+☠️☠️ **The "35 Hz ring" this page used to invoke was the RPM's, not the modem's.**
+`edge_irq_per_s` (renamed `smd_irq_total_per_s`) sums every smd/smp2p/glink/ipcc/ipa
+interrupt. By hardware IRQ the modem's edge idles at **0.07 /s** — once every
+fourteen seconds — while the RPM's runs at 13.29 /s. Whether fixing this duty hands
+back suspend residency is therefore **open again**, and the idle ring turns out to
+be the AP's own RPM traffic: [`rpm-idle-traffic.md`](rpm-idle-traffic.md).
