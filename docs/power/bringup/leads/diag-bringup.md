@@ -43,6 +43,39 @@ format, consuming every byte: 28 × command-range registrations, then a
 one-byte `cmd=12`, then an 8-byte `cmd=28`. **The modem announces itself and then
 waits.**
 
+## The handshake, corrected from the vendor source — and the modem answers
+
+☠️ **The control-message IDs were guessed wrong the first time and the guesses
+were close enough to look plausible.** From
+`hadk22/kernel/fairphone/sdm632/drivers/char/diag/diagfwd_cntl.h`, which is on this
+disk: `DIAG_CTRL_MSG_DIAGMODE` is **3**, `DIAG_CTRL_MSG_FEATURE` is **8** — the
+first attempt sent 3 and 4. Reading the vendor header took two minutes and
+replaced an evening of packet guessing.
+
+The feature packet, exactly as `diag_send_feature_mask_update()` builds it
+(`diag_masks.c`):
+
+```
+ctrl_pkt_id      u32 = 8
+ctrl_pkt_data_len u32 = 4 + FEATURE_MASK_LEN(2) = 6
+feature_mask_len u32 = 2
+feature_mask     u16 = bits 0,2,9,11,14,15  -> 0xCA05
+```
+
+(`F_DIAG_FEATURE_MASK_SUPPORT`, `LOG_ON_DEMAND_APPS`, `STM`,
+`MASK_CENTRALIZATION`, `DCI_EXTENDED_HEADER_SUPPORT`, `DIAGID_SUPPORT`.)
+
+**★ The modem answers it.** Sending that packet on `DIAG_CNTL` draws a reply
+stream — `cmd 22` (`LAST_EVENT_REPORT`), then the log-range, SSID-range and
+build-mask reports. The peripheral had sent 2225 bytes on open and 6160 by the time
+the feature mask went out; after it, the conversation continues. **The control side
+of the handshake is working.**
+
+★ And a detail worth carrying into the power question rather than the protocol one:
+`struct diag_ctrl_msg_diagmode` contains a **`sleep_vote`** field. DIAG has its own
+say over whether the peripheral sleeps, so turning logging on is not a neutral
+observation of the thing being measured.
+
 ## What does not work yet
 
 The data channel stays silent. Tried and all returning nothing:
@@ -52,15 +85,21 @@ The data channel stays silent. Tried and all returning nothing:
   CRC-16 X.25, `0x7E`, with `0x7D`/`0x7E` escaped);
 - the same requests **unframed**, in case SMD packet boundaries replace HDLC;
 - both again *after* the control handshake had arrived;
-- answering with a `DIAG_CTRL_MSG_FEATURE` (id 3) feature mask and a
-  `DIAG_CTRL_MSG_DIAGMODE` (id 4) block on `DIAG_CNTL` — neither drew a reply on
-  the control channel either.
+- subsystem-dispatch commands aimed at ranges the modem actually registered
+  (`4B <subsys> <cmd16>` for subsys 0x04, 0x0D, 0x2A, 0xFF), after decoding all 28
+  `DIAG_CTRL_MSG_REG` packets — the modem registers `cmd_code` 0xFF/0x80 with
+  subsystem ids 0x02, 0x04, 0x05, 0x0B, 0x0D, 0x0E, 0x0F, 0x1C, 0x1E, 0x21, 0x2A,
+  0x2D, 0x36, 0x44, 0x54, 0x5B, 0xFF;
+- the correct `DIAG_CTRL_MSG_FEATURE` (8) — which **does** get answered — followed
+  by `DIAG_CTRL_MSG_DIAGMODE` (3) with `real_time = 1`;
+- opening `DIAG_CMD` as a separate request/response channel, which the modem then
+  closed under us (`BrokenPipeError` on the next read).
 
-So the AP side of the handshake is incomplete, and guessing at it packet by packet
-is the wrong method. The next attempt should read the downstream driver rather than
-improvise: `drivers/char/diag/diagfwd_cntl.c` in the vendor 4.9 tree, which **is on
-this disk** (`hadk22/kernel/fairphone/sdm632/`), and copy the exact sequence and
-field layouts it sends on peripheral open.
+So the control side works and the data side still does not. What is left is the
+part of the vendor driver after the feature exchange — `DIAG_ID` assignment, the
+mask updates in `diag_masks.c`, and peripheral buffering mode — and it should be
+transcribed, not guessed. The source is on this disk
+(`hadk22/kernel/fairphone/sdm632/drivers/char/diag/`).
 
 ## What was learned along the way, and is worth keeping
 
