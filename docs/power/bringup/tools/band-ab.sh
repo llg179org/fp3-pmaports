@@ -73,7 +73,7 @@ leg(){ # leg NAME BAND
 	awk -v leg="$1" '
 		/^# t_s/ { for (i = 1; i <= NF; i++) h[$i] = i - 1; next }
 		/^#/ { next }
-		{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["edge_irq_per_s"];
+		{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["smd_irq_total_per_s"];
 		  c[n] = $h["current_ua"] }
 		END { if (n) printf "RESULT %s mpss_up=%.1f%% edge_per_s=%.1f n=%d\n",
 			leg, 100 * up / n, e / n, n }

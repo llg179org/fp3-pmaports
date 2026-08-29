@@ -49,7 +49,7 @@ d=$(ls -dt /var/log/fp3/burst-master-* | head -1)
 awk '
 	/^# t_s/ { for (i = 1; i <= NF; i++) h[$i] = i - 1; next }
 	/^#/ { next }
-	{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["edge_irq_per_s"] }
+	{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["smd_irq_total_per_s"] }
 	END { if (n) printf "RESULT mpss_up=%.1f%% edge_per_s=%.1f n=%d\n", 100 * up / n, e / n, n }
 ' "$d/master.txt" >> "$O"
 rm -rf "$d"

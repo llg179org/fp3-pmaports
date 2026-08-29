@@ -63,7 +63,7 @@ while [ "$(cut -d. -f1 /proc/uptime)" -lt "$END" ]; do
 	awk -v t0="$t0" -v cap="$(cat /sys/class/power_supply/pmi632-battery/capacity)" '
 		/^# t_s/ { for (i = 1; i <= NF; i++) h[$i] = i - 1; next }
 		/^#/ { next }
-		{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["edge_irq_per_s"] }
+		{ n++; if ($h["MPSS_cores"] != "0x0") up++; e += $h["smd_irq_total_per_s"] }
 		END { if (n) printf "%s %.1f %.1f %s\n", t0, 100 * up / n, e / n, cap }
 	' "$d/master.txt" >> "$LOG"
 	rm -rf "$d"

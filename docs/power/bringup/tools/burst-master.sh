@@ -106,7 +106,13 @@ snap(){
 sampler(){
 	hdr="# t_s cur_mA v_mV"
 	for m in $MASTERS; do hdr="$hdr ${m}_sd ${m}_xosd ${m}_xopct ${m}_cores"; done
-	hdr="$hdr edge_irq_per_s modem_irq_per_s"
+	# ☠️ The first of these is a SUM over every smd/smp2p/glink/ipcc/ipa
+	# interrupt - dominated on this device by the RPM's edge at ~13-35/s - and
+	# the second is the modem alone, which idles at 0.07/s. For two days the sum
+	# was quoted as the modem's rate. It used to be called edge_irq_per_s, and a
+	# summary column beside a specific one will be read as the specific one
+	# unless its name forbids it.
+	hdr="$hdr smd_irq_total_per_s modem_irq_per_s"
 	echo "$hdr" > "$OUT/master.txt"
 	prev=$(snap)
 	set -- $(irq_row); pirq=$1; pmirq=$2
