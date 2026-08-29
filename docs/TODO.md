@@ -1151,6 +1151,24 @@ by blacklist bisection) and **worth no current** (A-B-A′, 30 min per leg: floo
 is a boot with the audio stack absent, so the honest statement is "the audio stack
 running is not expensive", not "audio adds nothing".
 
+**🔨 That measurement is now scheduled, and the upstream decision waits on it.**
+[`power/bringup/tools/audio-off-leg.sh`](power/bringup/tools/audio-off-leg.sh):
+three boots, A (stack loaded) → B (`install <mod> /bin/false` for the card, the
+digital codec, wcd9335 and the SLIMbus NGD) → A′, reading the **floor (p10)**
+because the leg cannot run inside one boot and the median carries the modem's
+per-boot offset. The leg's witness is the LPASS actually entering XO shutdown, not
+the module list.
+
+| result | what it means for the audio series |
+|---|---|
+| B floor within ~2 mA of the A/A′ bracket | the stack costs nothing measurable; the series goes upstream on its own schedule |
+| B floor **below** the bracket by more than the bracket's own spread | the audio work carries a real idle cost, and it has to be understood — and probably fixed — before the series is sent |
+
+☠️ Whichever way it reads, it is a statement about **our current audio stack on
+this device**, not about the patches in isolation: the series contains fixes
+(`disable_stream`, the mclk hold's siblings) that exist *because* of what was
+measured here, so a positive result argues for sending them sooner, not later.
+
 Then, in rough order of cost:
 
 1. ~~**The camera has no binding and no MAINTAINERS entry.**~~ **Fixed
