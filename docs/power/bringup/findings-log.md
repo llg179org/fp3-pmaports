@@ -8911,3 +8911,36 @@ LPASS asleep in every leg including the ones with the full stack, which retracts
 the 2026-08-28 reading in the other direction; whether the mclk fix or the
 `disable_stream` fix is what put it there is not established by a run with no leg
 that lacks them.
+
+## 2026-08-29 evening — 16 of 16 full suspends, and the gauge column still reads 100 %
+
+The residency run started at 18:02 with ModemManager stopped, the charge input
+cut and the panel down. At 20:48, sixteen rounds in:
+
+| round | wall | slept | cap | v_uV | ended by | suspend_stats |
+|---|---|---|---|---|---|---|
+| 13 | 8067 s | **602 / 602** | 100 % | 4.221 V | `78:pm8xxx_rtc_alarm` | 13 ok / 0 fail |
+| 14 | 8689 s | **602 / 602** | 100 % | 4.223 V | RTC | 14 / 0 |
+| 15 | 9311 s | **602 / 602** | 100 % | 4.163 V | RTC | 15 / 0 |
+| 16 | 9933 s | **602 / 602** | 100 % | 4.176 V | RTC | 16 / 0 |
+
+**Sixteen of sixteen slept the full window and woke on their own alarm, zero
+failures.** That confirms the afternoon's four legs at a much larger n: without
+ModemManager this phone's s2idle is not merely better, it is perfect.
+
+☠️ **And `capacity` reads 100 % after 2.8 hours of it** — exactly what
+`qcom_smbx.c` guarantees, since the software integrator does not count across a
+suspend gap. Read without the driver source, this table says "the phone draws
+almost nothing". It says no such thing.
+
+☠️ **No current figure is quoted from these four rows, deliberately.** They would
+support a slope of ~88 mV/h — about 164 mA through the discharge curve, more than
+the 98-101 mA the same phone draws *awake*, which is impossible. The reason is
+visible in the table: round 15 to 16 goes **up** by 13 mV against a per-sample
+spread of 14 mV. Four points is the same number that produced this morning's
+retracted "~15 mA has no owner", and the fit needs the hours it was given.
+
+☠️ **The phone is only reachable ~3 % of the time** during a run like this - a 20 s
+gap after every 600 s suspend - and every ssh login lands inside the window whose
+voltage is the measurement. After one lucky read, further polling was stopped
+rather than continued.
