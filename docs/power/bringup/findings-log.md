@@ -8490,3 +8490,48 @@ past mmcli's wrapped list and swallowed the rest of the dump; and what mmcli
 back, so writing it back could never work. The first run therefore left the modem
 pinned. Restoring is now unconditional `--set-current-bands=any`. **A restore that
 has only ever been observed on the path where it fails has not been tested.**
+
+## ☠️☠️ 2026-08-29 — the "35 Hz modem metronome" is the RPM, and it was my own column
+
+**Retracted:** every statement in the last two days that the *modem's* SMD edge
+rings at a fixed ~35 Hz. It does not. Measured over 120 s on an idle phone, by
+hardware IRQ:
+
+| edge | GIC hwirq | rate |
+|---|---|---|
+| **RPM** (`rpm-proc`, SPI 168) | 200 | **13.29 /s** |
+| ADSP (`lpass`, SPI 289) | 321 | 0.00 /s |
+| WCNSS (`pronto`, SPI 142) | 174 | 0.39 /s |
+| **MPSS** (the modem, SPI 25) | 57 | **0.07 /s** |
+
+The modem's SMD edge fires **once every fourteen seconds**. The ring that has been
+quoted all along is the **RPM's**, and of course it is independent of the RAT, of
+the modem's awake duty and of whether anything is listening to the modem — it is a
+different processor.
+
+☠️ **And the instrument was not wrong; the reading was.** `burst-master.sh` logs
+two columns: `edge_irq_per_s`, which sums *every* smd/smp2p/glink/ipcc/ipa
+interrupt, and `modem_irq_per_s`, which it selects by hardware IRQ number
+(`/smd-edge/ && $(NF-2) == 57`) — the modem alone, correctly. The tool computed the
+right number and printed it beside the wrong one, and every conclusion quoted the
+sum. **A summary column next to a specific one will be read as the specific one
+unless its name forbids it.** `edge_irq_per_s` should have been `smd_irq_total_per_s`
+from the start.
+
+### What this changes, and it is not only a subtraction
+
+The consumption story is untouched — it never rested on the ring. What changes is
+the **responsiveness** story, and it changes for the better:
+
+- The old claim was that 35 wakes/s from the modem made s2idle residency
+  impossible and that nothing on the AP side could move it. That is now the wrong
+  way round. The traffic is **ours**: the AP↔RPM channel carries every clock,
+  regulator, bus and power-domain request this system makes, and at idle it is
+  making **thirteen a second**.
+- Which means it is **reducible in principle**, by finding out what is asking. That
+  is an AP-side question with AP-side instruments, unlike everything the modem
+  front has run into.
+
+☠️ It also means the two fronts are **not** independent for the reason previously
+given. They may still be independent, but the argument for it was built on a
+counter belonging to the wrong processor.
