@@ -8362,3 +8362,49 @@ here; only runs carrying their own control leg survive:
 big enough to swallow any effect smaller than about 15 points. A knob is only
 tested by a run that carries its own A and A′ *inside the same boot* — which is
 what `burst-master-knob.sh` does and what the loose single windows did not.
+
+## ★★★★ 2026-08-29 — the duty is set at boot and does not decay, and the edge ring is a 35 Hz metronome
+
+Forty-six 360 s windows across one boot, 48 s to 4.8 h of uptime, modem confirmed
+`registered` on `lte` before the first —
+[`captures/2026-08-29_duty-vs-uptime/`](captures/2026-08-29_duty-vs-uptime/):
+
+| uptime band | n | MPSS awake, median | min–max | edge IRQ/s |
+|---|---|---|---|---|
+| 0–1 h | 10 | **49.7 %** | 44.2–52.9 | 35.2 |
+| 1–3 h | 19 | **49.5 %** | 46.2–56.6 | 35.0 |
+| 3–5 h | 17 | **50.0 %** | 46.0–54.9 | 35.2 |
+
+Least-squares slope over the whole run: **+0.36 %/hour** — flat.
+
+**So "post-boot decay" is dead and "per-boot level" stands.** The r77 boot's windows
+were taken 3–7 h in and clustered at 29–37 %; this boot sat at 46–55 % from
+48 seconds of uptime to nearly five hours. The level is fixed at boot and stays
+there.
+
+☠️ **The rule that follows is stricter than the one written last night.** It is not
+"match the uptime" — it is that **a comparison is only valid inside one boot**, and
+a reboot in the middle of an experiment invalidates it entirely. The A-B-A′ form
+was already doing this by accident; now it is the reason.
+
+★ **And the edge ring is a metronome.** `edge_irq_per_s` reads **34.1–36.2 across
+all forty-six windows and 4.8 hours**, a spread of about 6 %. Put beside the other
+things that do not move it — the RAT (34.7/35.0/35.6 across LTE and 2G), the modem's
+own awake duty (which varies 46–56 % in this very run while the ring does not), and
+unbinding `qcom_smd_qrtr` so that nothing on the AP is listening (36.6/35.6/37.2) —
+the modem's SMD edge is a **fixed ~35 Hz heartbeat that is independent of
+everything measured so far**.
+
+That is worth stating plainly because of what it costs: 35 interrupts per second is
+by itself enough to make s2idle residency impossible, whatever else is fixed. The
+consumption front and the responsiveness front were shown to be independent
+yesterday; this says the second one has a single, constant, so-far-immovable cause.
+
+### What is now open, in order
+
+1. **What differs between boots** to set the level at 35 % or 50 %? It is the one
+   variable with a 15-point effect and no explanation. Cheap to sample: reboot
+   twice more and take one window each.
+2. **The DIAG data channel**, gated on the `DIAG_ID` exchange — recipe in
+   [`leads/diag-bringup.md`](leads/diag-bringup.md).
+3. The 35 Hz ring itself, which nothing on the AP side has moved.
