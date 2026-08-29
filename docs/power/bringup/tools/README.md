@@ -202,6 +202,7 @@ dead candidates: [`../leads/modem-idle-lte.md`](../leads/modem-idle-lte.md).
 | [`band-ab.sh`](band-ab.sh) | A-B-A′ on the LTE band inside one boot, with the band list restored afterwards. ☠️ The witness reads `--nas-get-rf-band-info`, the variable the lever moves — a leg camped on a band other than the one requested is void, not evidence |
 | [`smd-wake-source.sh`](smd-wake-source.sh) | per-round residency plus a per-channel census of the modem's SMD edge, with a double-deref kprobe on the channel name |
 | [`rpmsg-ept.py`](rpmsg-ept.py), [`diag-probe.py`](diag-probe.py) | open a named rpmsg channel through the control device and speak HDLC-framed DIAG on it. State and the exact next sequence: [`../leads/diag-bringup.md`](../leads/diag-bringup.md) |
+| [`ipa-handshake-probe.sh`](ipa-handshake-probe.sh) | did our IPA driver ever complete its handshake with the modem — the surviving candidate after ten dead ones. Read-only, safe on a phone in use. ☠️ It is not looking for missing code: `drivers/net/ipa2-lite` implements the handshake and the config enables it. It separates *module never loaded* from *handshake stalled*, which need different fixes — and the v2 path can stall on a hardware interrupt (`IPA_UC_RESPONSE_INIT_COMPLETED`) with nothing logged anywhere |
 | [`modem-fw-swap.sh`](modem-fw-swap.sh) | kept for the record with a do-not-run banner — the firmware difference it was written to test did not exist |
 
 ## Suspend residency: how long it sleeps, and what that is worth
