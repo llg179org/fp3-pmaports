@@ -4,8 +4,9 @@
 > Gergely, who reviewed every change and made or reviewed every measurement it
 > rests on.
 
-**Status: the pmOS side is read; the oracle side decides it.** Opened 2026-08-29,
-first read taken the same afternoon.
+**Status: CLOSED, 2026-08-29 evening — the tenth dead candidate.** Both sides run
+the same carrier configuration. Kept because what it found on the way is a real
+difference and belongs on the record.
 
 ## Why this is the shape the evidence now demands
 
@@ -160,9 +161,30 @@ says the modem ended up on the same configuration either way. Whether that matte
 for idle duty is not established by anything measured — it is the next question,
 not an answer.
 
-### Next
+### The software list after the vendor boot: unchanged
 
-- The software list after the vendor boot (in flight) — if the active software
-  config changed, everything above is rewritten.
-- ☠️ A longer oracle boot before concluding anything about `modem_config`'s
-  schedule. Five minutes is not a control.
+**`ROW_Commercial` active, 25 configurations, platform `Inactive`** — identical to
+the read taken before the switch. The vendor boot changed nothing.
+
+### Why this closes the page, and it is not the five minutes
+
+The obvious objection to a five-minute oracle boot is that `modem_config` may not
+have run. That objection does not save the hypothesis, because **PDC state is
+persistent in the modem** and this phone ran Ubuntu Touch as its daily system for
+months before the port existed. Whatever the vendor stack activates, it had every
+opportunity to activate, and the modem would still be carrying it now. It is
+carrying `ROW_Commercial` and an inactive platform package.
+
+⇒ **Both systems run the same modem configuration**, so the configuration is not
+what makes one of them idle at 6 % and the other at 35 %. The page closes with the
+other nine.
+
+### What survives it, as a fact rather than a lead
+
+The oracle serves an AP-side MBN tree that pmOS does not have at all. That is a
+genuine difference in what the AP *could* hand the modem — it is simply not one
+the modem acted on, since the selected configuration is the same either way.
+Recorded so nobody re-discovers the tree and mistakes it for an explanation.
+
+☠️ And the shortcut refused above stays refused, now for a better reason: the read
+says activating the platform config would be a **guess**, not a fix.
