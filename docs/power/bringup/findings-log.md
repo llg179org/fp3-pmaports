@@ -8696,3 +8696,39 @@ progress is being kept for the voltage trend rather than the capacity delta.
 slept the full 602 s and woke on `63:pm8xxx_rtc_alarm`, `suspend_stats/success`
 7 → 11, `fail` 0. What the modem-front measurements say about *duty* is untouched;
 what is still unmeasured is what an hour of that sleep is worth in mA.
+
+## ★★★★ 2026-08-29 — ModemManager owns the modem's interrupts and not its duty, measured inside one boot
+
+The daemon's effect on *residency* was settled this afternoon (four legs, the
+suspend follows its lifetime exactly). Its effect on *duty* had only ever been
+measured across boots, which the per-boot offset rule makes worthless. A-B-A′
+inside one boot, 360 s per leg, `burst-master-knob.sh`
+([`captures/2026-08-29_mmdaemon-master-ab/`](captures/2026-08-29_mmdaemon-master-ab/)):
+
+| leg | ModemManager | MPSS awake | PRONTO | current median | **modem edge IRQs in the leg** |
+|---|---|---|---|---|---|
+| A | running | 33.7 % | 24.5 % | 99 mA | 27 |
+| B | **stopped** | 33.0 % | 24.9 % | 99 mA | **0** |
+| A′ | running | 35.9 % | 27.2 % | 104 mA | 68 |
+
+**The duty does not move** — B sits between its own two controls, and so does the
+current. That confirms the 2026-08-27 null with the control leg it lacked.
+
+★ **But one column is not flat, and it is the modem's own hardware IRQ**: with the
+daemon stopped the modem's SMD edge does not fire **once in 360 seconds**. Not a
+reduced rate — zero.
+
+**So the two fronts separate, and this time on evidence.** The daemon owns the
+modem's *interrupts*, and through them the suspends; it owns none of the modem's
+*awake duty*, and through that none of the consumption. Concretely:
+
+- the consumption target (34.8 % → 6.1 % of duty, the whole 63 mA of it)
+  **cannot be reached from ModemManager**, and no indication-narrowing will move
+  it;
+- the residency target **is exactly ModemManager**, and nothing else has ever
+  moved it.
+
+☠️ Note what this costs a hypothesis I was carrying an hour ago: that narrowing
+the NAS indications might buy both fronts at once. It buys one. The duty work and
+the wake work are separate problems with separate mechanisms, and a fix for one
+must not be reported as progress on the other.

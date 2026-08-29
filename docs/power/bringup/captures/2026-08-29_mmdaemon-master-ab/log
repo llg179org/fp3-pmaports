@@ -1,0 +1,12 @@
+# burst-master-knob 2026-08-29 14:56:44 knob=mmdaemon window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# --- leg A: state=active
+# leg A -> /var/log/fp3/bmknob-mmdaemon-1788008204/A (184 samples)
+# applying off: systemctl stop ModemManager
+# --- leg B: state=inactive
+# leg B -> /var/log/fp3/bmknob-mmdaemon-1788008204/B (185 samples)
+# restoring: systemctl start ModemManager
+# state after restore: active
+# --- leg Ap: state=active
+# leg Ap -> /var/log/fp3/bmknob-mmdaemon-1788008204/Ap (184 samples)
+# /var/log/fp3/bmknob-mmdaemon-1788008204
