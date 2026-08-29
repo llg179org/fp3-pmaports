@@ -78,3 +78,46 @@ means a positive result here has to explain why the daemons are free.
 ☠️ And what no source comparison can answer: why a modem that never got the
 handshake would respond by staying awake. That is firmware, and only DIAG sees
 inside.
+
+
+## ★★★ 2026-08-29 — the source comparison, both sides, and what it eliminates
+
+With the oracle's own tree fetched ([`vendor-kernel-sources.md`](vendor-kernel-sources.md)),
+mainline `drivers/net/ipa2-lite/ipa-qmi.c` and downstream
+`drivers/platform/msm/ipa/ipa_v2/ipa_qmi_service.c` can be read side by side.
+
+### The QMI identifiers are identical
+
+| | downstream (oracle) | mainline (ours) |
+|---|---|---|
+| host service | `0x31` / vers 1 / ins **1** | `0x31` / vers 1 / ins **1** |
+| modem service | `0x31` / vers 1 / ins **2** | `0x31` / vers 1 / ins **2** |
+
+★ **`0x31` is 49 decimal** — exactly the "IPA control service (49) with nobody
+talking to it" that `qrtr-lookup` reports on pmOS. Our driver looks up precisely
+the service the modem is offering, at the same version and instance. **A
+mismatched service or version is eliminated.**
+
+### mainline sends the request, and logs every failure
+
+`ipa_client_init_driver_work()` builds a complete `INIT_DRIVER` request — memory
+layout, route and filter table bounds, `skip_uc_load`, platform type — sends it
+with a 60 s timeout, and calls `dev_err()` on **every** failure path: txn init,
+send, and await. So a handshake that is attempted and fails is not silent.
+
+### Which leaves exactly two silent paths
+
+☠️ **1. The work never runs.** `ipa_client_init_driver_work` is scheduled from the
+`new_server` callback. If the qmi client handle never sees the modem's server, no
+request is sent, no error is logged, and `qrtr-lookup` shows the service
+unattended — which is what it shows. The most ordinary cause is that **the module
+is not loaded at all**, in which case there is no handle to see anything.
+
+☠️ **2. The uC interrupt never arrives.** Even with the handshake done, the v2 path
+gates on `IPA_UC_RESPONSE_INIT_COMPLETED` before `ipa_qmi_ready()` fires.
+
+Both are read-only questions and
+[`../tools/ipa-handshake-probe.sh`](../tools/ipa-handshake-probe.sh) answers them.
+☠️ Note the ordering this establishes: **do not go looking for missing code or a
+protocol mismatch.** Both are now eliminated from the source, and the remaining
+fault is operational — loaded or not, interrupt or not.
