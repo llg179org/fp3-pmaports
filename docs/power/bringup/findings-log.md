@@ -8828,3 +8828,44 @@ the wrapper insists on A′.
 shutdowns per round. That is the consumption front's own quantity, and it says the
 same thing from the other side — but it is measured here with the *radio down*, so
 it is not a duty result, only a confirmation that the leg did what it claimed.
+
+## ★★★ 2026-08-29 — the ADSP sleeps with the full audio stack up, which retracts the 2026-08-28 reading
+
+Taken while setting up the audio-absent leg, by reading the phone rather than the
+story. r79 (`#80-fp3`), full stack — 4 of 4 audio modules loaded, one sound card,
+3.1 h of uptime:
+
+```
+Last XO shutdown enter @ 216153296698   <- newer than the exit
+Last XO shutdown exit  @ 216153216095
+XO total duration:      215425342143    -> 11220 s of 11258 s uptime = 99.7 %
+Active cores bitmask:   0x0
+```
+
+and the counters are static across 20 s — which, per the static-counter trap, means
+frozen **down**, not frozen awake, because `enter` is the newer timestamp.
+Confirmed over the leg-A window: **LPASS awake 0.0 %** across 184 samples.
+
+☠️ **This retracts the 2026-08-28 entry** "the matched pair also says the LPASS fix
+did not free the crystal", which had `XO total duration` = 0 over 600 s and LPASS
+awake 100 %. Both are single boots on adjacent kernels. So "does the ADSP sleep" is
+a **per-boot property**, exactly like the modem's duty, and neither reading is a
+statement about the fix until one carries its own control.
+
+☠️ **And it invalidated the instrument I had just written.** `audio-off-leg.sh` was
+going to require the LPASS to be down as the B leg's witness. That condition is
+satisfied in the A leg too, so it separates nothing; the witness is now zero
+modules and zero sound cards, and the LPASS is recorded in every leg as an output
+rather than assumed as a precondition.
+
+### Leg A, for the record
+
+Full stack, cable cut by `idle-ab.sh`, panel down, 184 samples
+([`captures/2026-08-29_audio-off-ab/`](captures/2026-08-29_audio-off-ab/)):
+
+| | value |
+|---|---|
+| current floor p10 | **53 mA** (p25 54, min 51) |
+| current median | 100 mA |
+| MPSS awake | 37.5 % |
+| **LPASS awake** | **0.0 %** |
