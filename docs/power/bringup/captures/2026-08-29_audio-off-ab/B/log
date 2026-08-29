@@ -1,0 +1,6 @@
+# audio-off-leg 2026-08-29 16:56:45 leg=B window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# audio modules loaded: 0 of 4   LPASS: down   cards: 0
+# uptime=761s  cap=97%
+# leg B -> /var/log/fp3/audiooff-B-1788015405/data (185 samples)
+# /var/log/fp3/audiooff-B-1788015405

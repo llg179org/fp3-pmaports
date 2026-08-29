@@ -1151,7 +1151,28 @@ by blacklist bisection) and **worth no current** (A-B-A′, 30 min per leg: floo
 is a boot with the audio stack absent, so the honest statement is "the audio stack
 running is not expensive", not "audio adds nothing".
 
-**🔨 That measurement is now scheduled, and the upstream decision waits on it.**
+### ✅ 2026-08-29 evening — measured: the audio stack is not on the idle bill
+
+| leg | audio stack | **floor p10** | median | MPSS awake |
+|---|---|---|---|---|
+| A | 4 modules, 1 card | **53 mA** | 100 | 37.5 % |
+| B | **0 modules, 0 cards** | **55 mA** | 84 | 33.5 % |
+| A′ | 4 modules, 1 card | **54 mA** | 134 | 51.4 % |
+
+B is **above both of its controls**: removing the audio stack costs 1-2 mA rather
+than saving any — the same direction and size as stopping the ADSP outright
+(52.9 / 56.3 / 54.6, 2026-08-25). Two independent experiments, one removing the
+DSP and one removing the drivers that talk to it, agree.
+
+⇒ **The audio series goes upstream on its own schedule.** The remaining work on it
+is the regeneration below, not a power dependency.
+
+★ The same run is the sharpest case for reading the floor rather than the median:
+the medians are 100 / 84 / 134 mA. Read them and the audio stack "saves 16 mA"; read
+them in the other order and it "costs 50". ☠️ Resolution is about 2 mA and the phone
+was idle — nothing here prices audio *in use*.
+
+**The original plan, for the record.**
 [`power/bringup/tools/audio-off-leg.sh`](power/bringup/tools/audio-off-leg.sh):
 three boots, A (stack loaded) → B (`install <mod> /bin/false` for the card, the
 digital codec, wcd9335 and the SLIMbus NGD) → A′, reading the **floor (p10)**

@@ -8869,3 +8869,45 @@ Full stack, cable cut by `idle-ab.sh`, panel down, 184 samples
 | current median | 100 mA |
 | MPSS awake | 37.5 % |
 | **LPASS awake** | **0.0 %** |
+
+## ★★★★★ 2026-08-29 — the audio stack costs nothing at idle, and the audio series does not have to wait for the power work
+
+The measurement the LPASS story was never able to make: three boots, the middle
+one with the audio modules never loaded
+([`captures/2026-08-29_audio-off-ab/`](captures/2026-08-29_audio-off-ab/)).
+Witness per leg: modules loaded and sound cards present, both read on the device.
+
+| leg | audio stack | **floor p10** | p25 | median | MPSS awake | LPASS awake |
+|---|---|---|---|---|---|---|
+| A | 4 modules, 1 card | **53 mA** | 54 | 100 | 37.5 % | 0.0 % |
+| B | **0 modules, 0 cards** | **55 mA** | 56 | 84 | 33.5 % | 0.0 % |
+| A′ | 4 modules, 1 card | **54 mA** | 59 | 134 | 51.4 % | 0.0 % |
+
+**B sits above both of its controls.** Removing the audio stack does not save
+1-2 mA, it costs them — the same direction and the same size as stopping the ADSP
+outright (52.9 / 56.3 / 54.6 mA, 2026-08-25). Two independent experiments, one
+removing the DSP and one removing the drivers that talk to it, agree that this
+subsystem is not on the idle bill.
+
+**So the upstream question is answered: the audio series goes on its own
+schedule.** It does not depend on the power work textually either — the file sets
+are disjoint, checked the same day.
+
+★ **And the run is the sharpest demonstration yet of why the floor is the measure.**
+The medians read 100 / 84 / 134 mA and the MPSS duty 37.5 / 33.5 / 51.4 % — the
+per-boot modem offset in full view, an A′ 34 mA above its own A. Anyone reading the
+median column would conclude the audio stack *saves* 16 mA, and anyone reading it
+in the other order would conclude it costs 50. The floor reads 53 / 55 / 54.
+
+### What this does not say
+
+☠️ It is a statement about **this stack on this device today**, at a resolution of
+about 2 mA. A cost smaller than the floor's own spread would not be visible, and
+the leg was taken with the phone otherwise idle — nothing here prices audio *in
+use*.
+
+☠️ And it does not vindicate any particular patch. The same three boots showed the
+LPASS asleep in every leg including the ones with the full stack, which retracts
+the 2026-08-28 reading in the other direction; whether the mclk fix or the
+`disable_stream` fix is what put it there is not established by a run with no leg
+that lacks them.
