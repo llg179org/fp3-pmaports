@@ -22,6 +22,14 @@
 # with DIAG_CTRL_MSG_DIAGID (33) carrying its process name, and the AP echoes the
 # same structure with an id of its choosing (process_diagid(), diagfwd_cntl.c).
 #
+# ☠️ ONE ATTEMPT PER BOOT. The peripheral answers the feature mask exactly once
+# per boot: a second endpoint opened afterwards draws 9 bytes instead of 2225 and
+# gets no reply at all. Every retry inside one boot measures an already-consumed
+# state machine, which is indistinguishable from "the modem does not answer" -
+# and is very probably what several earlier attempts were measuring. Reboot
+# between attempts, and keep the raw stream (this writes it to RAWDUMP) so a
+# failed attempt can still be decoded afterwards.
+#
 # ☠️ Only the reply whose process_name contains "root" sets diag_id_sent - the
 # per-PD names are registered but do not open the gate. Echo every 33 we see and
 # the root one will be among them.
@@ -82,8 +90,15 @@ cntl_dev = open_channel(ctrl, "DIAG_CNTL")
 cntl = os.open(cntl_dev, os.O_RDWR | os.O_NONBLOCK)
 print(f"DIAG_CNTL -> {cntl_dev}")
 
+RAWDUMP = os.environ.get("RAWDUMP", "/var/log/fp3/diag-cntl-raw.bin")
+raw = open(RAWDUMP, "wb")
+
 buf = drain(cntl, settle)
-print(f"on open: {len(buf)} bytes")
+raw.write(buf)
+print(f"on open: {len(buf)} bytes -> {RAWDUMP}")
+if len(buf) < 100:
+    print("☠️ short open burst: this boot's handshake has already been consumed;"
+          " reboot before believing a silent result")
 
 fm = struct.pack("<IIIH", DIAG_CTRL_MSG_FEATURE, 4 + 2, 2, FEATURE_MASK)
 os.write(cntl, fm)
@@ -112,6 +127,7 @@ for _ in range(6):
         print(f"-> DIAGID echo name={name!r} their_id={their_id} our_id={our_id}"
               f"{'  <- ROOT, this is the one that opens the gate' if 'root' in name else ''}")
     more = drain(cntl, settle)
+    raw.write(more)
     if not more:
         break
     buf = more
@@ -125,11 +141,23 @@ dm = struct.pack("<III" + "I" * 8, DIAG_CTRL_MSG_DIAGMODE, 4 * 9, 1,
                  0, 1, 0, 0, 0, 0, 0, 0)
 os.write(cntl, dm)
 print("-> DIAGMODE real_time=1 sleep_vote=0")
-drain(cntl, settle)
+raw.write(drain(cntl, settle))
+raw.close()
 
-data_dev = open_channel(ctrl, "DIAG")
-data = os.open(data_dev, os.O_RDWR | os.O_NONBLOCK)
-print(f"DIAG -> {data_dev}")
+# What the peripheral advertised decides where the command goes and how it is
+# framed. Measured on this modem: feature mask 0x3EF7 - bit 4 F_DIAG_REQ_RSP
+# (a dedicated command channel) and bit 6 F_DIAG_APPS_HDLC_ENCODE (the forward
+# direction is NOT HDLC-framed), and bit 15 F_DIAG_DIAGID_SUPPORT clear.
+peer = None
+for cmd, body in packets(buf):
+    if cmd == DIAG_CTRL_MSG_FEATURE and len(body) >= 6:
+        peer = struct.unpack_from("<H", body, 4)[0]
+if peer is not None:
+    bits = [b for b in range(16) if peer & (1 << b)]
+    print(f"peripheral feature mask 0x{peer:04x}  bits {bits}"
+          f"  req_rsp={bool(peer & (1 << 4))}"
+          f"  apps_hdlc_encode={bool(peer & (1 << 6))}"
+          f"  diagid={bool(peer & (1 << 15))}")
 
 
 def crc16_x25(d):
@@ -153,11 +181,26 @@ def hdlc(payload):
     return bytes(out)
 
 
-for req in (b"\x00", b"\x7c"):
-    os.write(data, hdlc(req))
-    ans = drain(data, settle)
-    print(f"-> DIAG {req.hex()}   <- {len(ans)} bytes"
-          + (f"  {ans[:64].hex()}" if ans else "  (still silent)"))
+# ☠️ Keep every endpoint open in this one process. Closing a channel and opening
+# it again is not a retry: the peripheral answers the handshake once per boot,
+# and a second open draws 9 bytes where the first drew 6160.
+for chan in ("DIAG_CMD", "DIAG"):
+    try:
+        dev = open_channel(ctrl, chan)
+    except SystemExit as e:
+        print(f"{chan}: {e}")
+        continue
+    fd = os.open(dev, os.O_RDWR | os.O_NONBLOCK)
+    print(f"{chan} -> {dev}")
+    for label, req in (("raw", b"\x00"), ("hdlc", hdlc(b"\x00")),
+                       ("raw", b"\x7c"), ("hdlc", hdlc(b"\x7c"))):
+        try:
+            os.write(fd, req)
+        except OSError as e:
+            print(f"  {label} {req[:1].hex()}: write failed: {e}")
+            continue
+        ans = drain(fd, settle)
+        print(f"  {label} {req[:1].hex()}  <- {len(ans)} bytes"
+              + (f"  {ans[:80].hex()}" if ans else "  (silent)"))
 
-os.close(data)
 os.close(cntl)

@@ -95,64 +95,60 @@ The data channel stays silent. Tried and all returning nothing:
 - opening `DIAG_CMD` as a separate request/response channel, which the modem then
   closed under us (`BrokenPipeError` on the next read).
 
-## ★ Why the data channel is silent — the gate, read out of the driver
+## ☠️ The DIAG_ID gate was the right reading of the wrong peripheral
 
-`diagfwd_write()` in `diagfwd_peripheral.c` refuses to send a command at all until
-**three** conditions hold, and it returns 0 rather than an error when they do not —
-which is exactly the "no answer, no complaint" behaviour seen here:
+The gate in `diagfwd_write()` is real and was read correctly out of the vendor
+driver — it drops a `TYPE_CMD` packet with `return 0` unless the peripheral's
+feature mask has been received, ours sent, and, **when the peripheral advertises
+`F_DIAG_DIAGID_SUPPORT`**, a DIAG_ID assigned and sent back.
 
-```c
-if (type == TYPE_CMD || type == TYPE_DCI_CMD) {
-        if (!driver->feature[peripheral].rcvd_feature_mask ||
-            !driver->feature[peripheral].sent_feature_mask)
-                return 0;                       /* 1 and 2 */
-        if (!driver->feature[peripheral].separate_cmd_rsp)
-                type = (type == TYPE_CMD) ? TYPE_DATA : TYPE_DCI;
-}
-...
-if (type == TYPE_CMD) {
-        if (driver->feature[peripheral].diag_id_support)
-                if (!fwd_info->root_diag_id.diagid_val ||
-                    (!driver->diag_id_sent[peripheral]))
-                        return 0;               /* 3 */
-}
-```
-
-1. **the peripheral's feature mask received** — it sends one, we now draw it out;
-2. **our feature mask sent** — done, and the modem answers it;
-3. **a DIAG_ID assigned and sent**, whenever the peripheral advertises
-   `F_DIAG_DIAGID_SUPPORT` (bit 15).
-
-**The third is almost certainly the missing one**, and it is not a packet we
-invent: the *peripheral* opens the exchange with a `DIAG_CTRL_MSG_DIAGID` (**33**)
-carrying its process name, and the AP echoes one back:
+**This modem does not advertise it.** Decoded from its own announcement
+(`captures/2026-08-29_diag-bringup/`):
 
 ```
-struct diag_ctrl_diagid {
-        uint32_t pkt_id;        /* 33 */
-        uint32_t len;           /* 4 + 4 + strlen(process_name) + 1 */
-        uint32_t version;       /* 1 */
-        uint32_t diag_id;       /* assigned by the AP */
-        char     process_name[30];
-};
+cmd=8 len=6  02000000 f73e     ->  feature_mask_len = 2, mask = 0x3EF7
 ```
 
-Only after `diag_id_sent[peripheral]` is set does the driver queue
-`mask_update_work` and initialise the data buffers — so **the masks come after the
-DIAG_ID, not before**, and every attempt here that skipped it was always going to
-get silence.
+`0x3EF7` sets bits 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 13 — and **bit 15,
+`F_DIAG_DIAGID_SUPPORT`, is clear.** There is no `pkt_id 33` to echo, none ever
+arrives, and the third condition never applies. Two things the mask *does* say,
+both of which were then tested:
 
-### The next attempt, in order
+- **bit 4 `F_DIAG_REQ_RSP_SUPPORT`** — the peripheral has a dedicated command
+  channel, so commands belong on `DIAG_CMD` rather than `DIAG`;
+- **bit 6 `F_DIAG_APPS_HDLC_ENCODE`** — the forward direction is *not* HDLC-framed.
 
-1. open `DIAG_CNTL`, drain, send the feature mask (id 8, mask `0xCA05`);
-2. **capture the whole control stream that follows and find the peripheral's
-   `pkt_id == 33`** — its `process_name` is the string to echo;
-3. reply with the same structure and a `diag_id` of our choosing;
-4. only then send masks, and only then expect the data channel to answer.
+☠️ **And the gate is on the AP side anyway.** `diagfwd_write()` describes what the
+*vendor's own driver* refuses to send. Writing to the rpmsg endpoint directly
+bypasses it entirely, so it could never have explained our silence. Reading the
+driver was right; assuming its bookkeeping constrains a different sender was not.
 
-☠️ Do not run this while a duty measurement is in flight: `struct
-diag_ctrl_msg_diagmode` carries a `sleep_vote`, so bringing DIAG up is a change to
-the thing being measured, not an observation of it.
+## ★ The handshake is answered once per boot
+
+Measured twice: the **first** `DIAG_CNTL` endpoint of a boot draws **6160 bytes**;
+every endpoint opened afterwards in the same boot draws **9**. So a retry inside one
+boot is not a retry — it measures an already-consumed state machine, and the result
+is indistinguishable from "the modem does not answer". Several of the earlier
+attempts in the list above were second attempts. `diag-handshake.py` now warns on a
+short open burst and keeps every endpoint open in one process.
+
+## Where it actually stands
+
+On a **fresh boot**, in **one process**, with the control handshake done and the
+peripheral's own mask decoded, all eight combinations are silent:
+
+| channel | framing | request | answer |
+|---|---|---|---|
+| `DIAG_CMD` | raw | `00`, `7c` | 0 bytes |
+| `DIAG_CMD` | HDLC | `00`, `7c` | 0 bytes |
+| `DIAG` | raw | `00`, `7c` | 0 bytes |
+| `DIAG` | HDLC | `00`, `7c` | 0 bytes |
+
+The read path demonstrably works — 6160 unprompted bytes at open, parsing cleanly
+to the last byte. The **write** path has never been shown to reach the modem: no
+write has ever produced an observable response, and `os.write()` returning without
+error only proves the SMD channel accepted the buffer. That is the next thing to
+establish, and it is a different question from the one this page has been asking.
 
 ## What was learned along the way, and is worth keeping
 
