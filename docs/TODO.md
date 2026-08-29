@@ -1120,6 +1120,37 @@ chain preserved. Details and the checkpatch split in
 [`kernel/README.md`](kernel/README.md#camera-imx363c). The DCO chain turned out to
 be **intact**, so the camera never had the sensor series' problem.
 
+### ☠️ 2026-08-29 — `submit/7.1.3/audio` has fallen behind `wip/7.1.3/audio` and must be regenerated
+
+The question that prompted the check was whether the audio work can go upstream
+*before* the power work. On the power side it can — measured, see below — but the
+series itself is stale, and the gap is real fixes rather than churn. Compared by
+**content**, not by patch-id (`git cherry` reports nearly the whole branch here,
+because the submit series is a reshaping of the wip commits and every id differs):
+
+| file | `submit` vs `wip` | what is missing |
+|---|---|---|
+| `sound/soc/codecs/wcd9335.c` | **140+ / 32−** | the irq setup/teardown ordering, the chip-version reads being checked, the SLIMbus channel list heads initialised at probe, and the codec teardown when the SLIMbus device reports absent |
+| `sound/soc/qcom/apq8016_sbc.c` | 8+ / 8− | the channel-map latch removal — the card-lifetime flag stops `dai_init` from ever reprogramming a codec that re-probed after an SSR |
+| `sound/soc/codecs/wcd-mbhc-v2.c` | 1+ / 0− | a stray blank line; nothing to carry |
+| `wcd9335.h`, `q6afe.c`, the board DTS, the binding | identical | — |
+
+**The audio series does not depend on the power work.** The file sets are
+disjoint: `submit/7.1.3/audio` touches `sound/soc/codecs/wcd*`, `apq8016_sbc.c`,
+`q6afe.c`, the board DTS and the binding; `wip/7.1.3/power` touches clk, cpuidle,
+irqchip, interconnect, regulator, rpmsg, slimbus and `msm8916-wcd-digital.c`.
+Their intersection is **empty**. The two audio-scoped commits that live on the
+power branch — the `msm8916-wcd-digital` mclk hold and the `qcom-ngd-ctrl`
+`disable_stream` — are separate subsystems with separate maintainers and are not
+in the audio series either way.
+
+☠️ And on the consumption question specifically: the only audio-attributable power
+suspicion, "the LPASS never sleeps", is **caused** by our audio boot path (proven
+by blacklist bisection) and **worth no current** (A-B-A′, 30 min per leg: floor
+52.9 / 56.3 / 54.6 mA — stopping the ADSP *costs* ~2 mA). What was never measured
+is a boot with the audio stack absent, so the honest statement is "the audio stack
+running is not expensive", not "audio adds nothing".
+
 Then, in rough order of cost:
 
 1. ~~**The camera has no binding and no MAINTAINERS entry.**~~ **Fixed
