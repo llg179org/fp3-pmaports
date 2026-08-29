@@ -95,11 +95,64 @@ The data channel stays silent. Tried and all returning nothing:
 - opening `DIAG_CMD` as a separate request/response channel, which the modem then
   closed under us (`BrokenPipeError` on the next read).
 
-So the control side works and the data side still does not. What is left is the
-part of the vendor driver after the feature exchange — `DIAG_ID` assignment, the
-mask updates in `diag_masks.c`, and peripheral buffering mode — and it should be
-transcribed, not guessed. The source is on this disk
-(`hadk22/kernel/fairphone/sdm632/drivers/char/diag/`).
+## ★ Why the data channel is silent — the gate, read out of the driver
+
+`diagfwd_write()` in `diagfwd_peripheral.c` refuses to send a command at all until
+**three** conditions hold, and it returns 0 rather than an error when they do not —
+which is exactly the "no answer, no complaint" behaviour seen here:
+
+```c
+if (type == TYPE_CMD || type == TYPE_DCI_CMD) {
+        if (!driver->feature[peripheral].rcvd_feature_mask ||
+            !driver->feature[peripheral].sent_feature_mask)
+                return 0;                       /* 1 and 2 */
+        if (!driver->feature[peripheral].separate_cmd_rsp)
+                type = (type == TYPE_CMD) ? TYPE_DATA : TYPE_DCI;
+}
+...
+if (type == TYPE_CMD) {
+        if (driver->feature[peripheral].diag_id_support)
+                if (!fwd_info->root_diag_id.diagid_val ||
+                    (!driver->diag_id_sent[peripheral]))
+                        return 0;               /* 3 */
+}
+```
+
+1. **the peripheral's feature mask received** — it sends one, we now draw it out;
+2. **our feature mask sent** — done, and the modem answers it;
+3. **a DIAG_ID assigned and sent**, whenever the peripheral advertises
+   `F_DIAG_DIAGID_SUPPORT` (bit 15).
+
+**The third is almost certainly the missing one**, and it is not a packet we
+invent: the *peripheral* opens the exchange with a `DIAG_CTRL_MSG_DIAGID` (**33**)
+carrying its process name, and the AP echoes one back:
+
+```
+struct diag_ctrl_diagid {
+        uint32_t pkt_id;        /* 33 */
+        uint32_t len;           /* 4 + 4 + strlen(process_name) + 1 */
+        uint32_t version;       /* 1 */
+        uint32_t diag_id;       /* assigned by the AP */
+        char     process_name[30];
+};
+```
+
+Only after `diag_id_sent[peripheral]` is set does the driver queue
+`mask_update_work` and initialise the data buffers — so **the masks come after the
+DIAG_ID, not before**, and every attempt here that skipped it was always going to
+get silence.
+
+### The next attempt, in order
+
+1. open `DIAG_CNTL`, drain, send the feature mask (id 8, mask `0xCA05`);
+2. **capture the whole control stream that follows and find the peripheral's
+   `pkt_id == 33`** — its `process_name` is the string to echo;
+3. reply with the same structure and a `diag_id` of our choosing;
+4. only then send masks, and only then expect the data channel to answer.
+
+☠️ Do not run this while a duty measurement is in flight: `struct
+diag_ctrl_msg_diagmode` carries a `sleep_vote`, so bringing DIAG up is a change to
+the thing being measured, not an observation of it.
 
 ## What was learned along the way, and is worth keeping
 
