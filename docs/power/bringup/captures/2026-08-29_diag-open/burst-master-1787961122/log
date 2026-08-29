@@ -1,0 +1,9 @@
+# burst-master 2026-08-29 01:52:02 window=360s interval=2s bat=/sys/class/power_supply/pmi632-battery
+# kernel=7.1.3-postmarketos-qcom-msm8953 #79-fp3 SMP PREEMPT Fri Aug 28 18:42:18 UTC 2026
+# masters: /sys/kernel/debug/qcom_rpm_master_stats/APSS /sys/kernel/debug/qcom_rpm_master_stats/LPASS /sys/kernel/debug/qcom_rpm_master_stats/MPSS /sys/kernel/debug/qcom_rpm_master_stats/PRONTO
+# modem edge irq=141  all edge irqs:14 15 16 24 51 52 53 54 55 56 60 61 62 63 80 81 83 84 136 140 141 
+# sampler pid=6312, handing the window to idle-ab.sh
+# idle-ab rc=0 panel-wait=0s -> window_from=2
+# # panel: bl_power='4' dpms='Off' brightness='40' waited=0s blanked: /sys/class/graphics/fb0/blank|# panel: off for all 73 samples of the window|
+# done: 186 master samples
+# /var/log/fp3/burst-master-1787961122

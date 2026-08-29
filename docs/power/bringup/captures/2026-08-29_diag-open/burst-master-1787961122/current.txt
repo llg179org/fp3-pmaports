@@ -1,0 +1,100 @@
+# idle-ab Sat Aug 29 01:52:02 CEST 2026 os=pmos window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #79-fp3 SMP PREEMPT Fri Aug 28 18:42:18 UTC 2026
+# locked session c1
+# asking for the panel off, then waiting up to 240s for the hardware to say it is
+/usr/local/bin/idle-ab.sh: line 340: can't create /sys/class/drm/card0-DSI-1/dpms: Permission denied
+# panel: bl_power='4' dpms='Off' brightness='40' waited=0s blanked: /sys/class/graphics/fb0/blank
+# on battery: v=4330089
+# --- environment (opening) ---
+# uptime_s=433.35 loadavg=0.15 0.51 0.36
+# battery: temp_dC=246 capacity=96 v=4330089 status=Discharging full_uAh=?
+# thermal: cpu4-thermal=28700 cpu5-thermal=29100 cpu6-thermal=29400 cpu7-thermal=28700 cpu0-thermal=29400 gpu-thermal=28100 pmi632-thermal=37000 pm8953-thermal=31386 pmi632-battery=24500
+# wifi: wlan signal=50 HUAWEI-2.4G-V8qK:130 Mbit/s
+# remote processors: 4080000.remoteproc=running a204000.remoteproc=running adsp=running
+# radio registration:  (mmcli; needs root - blank means it refused)
+# --- end environment (opening) ---
+# t_s current_uA voltage_uV panel temp_dC
+5 -181732 4288242 - ppo=,bl=40,blp=4,regulator.1=, 245
+10 -131378 4299142 - ppo=,bl=40,blp=4,regulator.1=, 245
+15 -51727 4323666 - ppo=,bl=40,blp=4,regulator.1=, 245
+20 -52490 4319190 - ppo=,bl=40,blp=4,regulator.1=, 245
+25 -52337 4316854 - ppo=,bl=40,blp=4,regulator.1=, 245
+31 -52185 4309847 - ppo=,bl=40,blp=4,regulator.1=, 245
+36 -154266 4281041 - ppo=,bl=40,blp=4,regulator.1=, 245
+41 -155639 4282209 - ppo=,bl=40,blp=4,regulator.1=, 245
+46 -275573 4268973 - ppo=,bl=40,blp=4,regulator.1=, 245
+51 -235443 4264302 - ppo=,bl=40,blp=4,regulator.1=, 245
+56 -169983 4265470 - ppo=,bl=40,blp=4,regulator.1=, 245
+61 -175933 4284544 - ppo=,bl=40,blp=4,regulator.1=, 245
+66 -173797 4278511 - ppo=,bl=40,blp=4,regulator.1=, 245
+71 -179138 4280457 - ppo=,bl=40,blp=4,regulator.1=, 245
+76 -190887 4278705 - ppo=,bl=40,blp=4,regulator.1=, 245
+81 -247497 4271309 - ppo=,bl=40,blp=4,regulator.1=, 245
+86 -151825 4290189 - ppo=,bl=40,blp=4,regulator.1=, 245
+91 -164184 4291940 - ppo=,bl=40,blp=4,regulator.1=, 245
+96 -124969 4281235 - ppo=,bl=40,blp=4,regulator.1=, 245
+101 -109863 4291357 - ppo=,bl=40,blp=4,regulator.1=, 245
+107 -122528 4285517 - ppo=,bl=40,blp=4,regulator.1=, 244
+112 -161743 4259436 - ppo=,bl=40,blp=4,regulator.1=, 244
+117 -156250 4267805 - ppo=,bl=40,blp=4,regulator.1=, 245
+122 -164795 4262550 - ppo=,bl=40,blp=4,regulator.1=, 245
+127 -169677 4271309 - ppo=,bl=40,blp=4,regulator.1=, 245
+132 -70800 4295444 - ppo=,bl=40,blp=4,regulator.1=, 244
+137 -52032 4293498 - ppo=,bl=40,blp=4,regulator.1=, 244
+142 -218353 4260020 - ppo=,bl=40,blp=4,regulator.1=, 244
+147 -323028 4245228 - ppo=,bl=40,blp=4,regulator.1=, 244
+152 -254974 4251651 - ppo=,bl=40,blp=4,regulator.1=, 244
+157 -222778 4262745 - ppo=,bl=40,blp=4,regulator.1=, 244
+162 -88348 4286685 - ppo=,bl=40,blp=4,regulator.1=, 244
+167 -126037 4280262 - ppo=,bl=40,blp=4,regulator.1=, 244
+172 -52795 4293303 - ppo=,bl=40,blp=4,regulator.1=, 244
+177 -53558 4291162 - ppo=,bl=40,blp=4,regulator.1=, 244
+183 -94146 4281235 - ppo=,bl=40,blp=4,regulator.1=, 244
+188 -114593 4275202 - ppo=,bl=40,blp=4,regulator.1=, 244
+193 -229492 4242697 - ppo=,bl=40,blp=4,regulator.1=, 244
+198 -256500 4238610 - ppo=,bl=40,blp=4,regulator.1=, 244
+203 -59967 4284544 - ppo=,bl=40,blp=4,regulator.1=, 244
+208 -80108 4287464 - ppo=,bl=40,blp=4,regulator.1=, 244
+213 -85296 4285907 - ppo=,bl=40,blp=4,regulator.1=, 244
+218 -52948 4288048 - ppo=,bl=40,blp=4,regulator.1=, 244
+223 -169372 4268000 - ppo=,bl=40,blp=4,regulator.1=, 243
+228 -137786 4264691 - ppo=,bl=40,blp=4,regulator.1=, 244
+233 -274353 4239583 - ppo=,bl=40,blp=4,regulator.1=, 244
+238 -217743 4242892 - ppo=,bl=40,blp=4,regulator.1=, 244
+243 -180664 4255738 - ppo=,bl=40,blp=4,regulator.1=, 244
+248 -180206 4254765 - ppo=,bl=40,blp=4,regulator.1=, 243
+253 -200195 4254765 - ppo=,bl=40,blp=4,regulator.1=, 244
+258 -98571 4270141 - ppo=,bl=40,blp=4,regulator.1=, 243
+264 -106506 4274812 - ppo=,bl=40,blp=4,regulator.1=, 244
+269 -53405 4271114 - ppo=,bl=40,blp=4,regulator.1=, 244
+274 -294952 4221093 - ppo=,bl=40,blp=4,regulator.1=, 244
+279 -209503 4231019 - ppo=,bl=40,blp=4,regulator.1=, 244
+284 -51727 4281041 - ppo=,bl=40,blp=4,regulator.1=, 243
+289 -162353 4245812 - ppo=,bl=40,blp=4,regulator.1=, 243
+294 -52490 4280846 - ppo=,bl=40,blp=4,regulator.1=, 244
+299 -155181 4242503 - ppo=,bl=40,blp=4,regulator.1=, 243
+304 -53100 4279094 - ppo=,bl=40,blp=4,regulator.1=, 243
+309 -238189 4244254 - ppo=,bl=40,blp=4,regulator.1=, 244
+314 -202942 4239583 - ppo=,bl=40,blp=4,regulator.1=, 243
+319 -212555 4231019 - ppo=,bl=40,blp=4,regulator.1=, 244
+324 -251159 4235301 - ppo=,bl=40,blp=4,regulator.1=, 243
+329 -180511 4251261 - ppo=,bl=40,blp=4,regulator.1=, 243
+334 -181274 4250872 - ppo=,bl=40,blp=4,regulator.1=, 243
+340 -175476 4237831 - ppo=,bl=40,blp=4,regulator.1=, 243
+345 -126037 4267027 - ppo=,bl=40,blp=4,regulator.1=, 243
+350 -102386 4264497 - ppo=,bl=40,blp=4,regulator.1=, 243
+355 -271606 4215837 - ppo=,bl=40,blp=4,regulator.1=, 243
+# WINDOW=360s v 4330089 -> 4248536
+# panel at end: ppo=,bl=40,blp=4,regulator.1=,
+# panel: off for all 73 samples of the window
+# --- environment (closing) ---
+# uptime_s=792.69 loadavg=0.18 0.30 0.31
+# battery: temp_dC=243 capacity=96 v=4248536 status=Discharging full_uAh=?
+# thermal: cpu4-thermal=28700 cpu5-thermal=28400 cpu6-thermal=28700 cpu7-thermal=28100 cpu0-thermal=29400 gpu-thermal=28100 pmi632-thermal=37000 pm8953-thermal=30946 pmi632-battery=24300
+# wifi: wlan signal=49 HUAWEI-2.4G-V8qK:130 Mbit/s
+# remote processors: 4080000.remoteproc=running a204000.remoteproc=running adsp=running
+# radio registration:  (mmcli; needs root - blank means it refused)
+# --- end environment (closing) ---
+# DONE Sat Aug 29 01:58:26 CEST 2026
+# output: /tmp/idle-ab-1787961122.txt
+# restored: input=1 status=Not charging
