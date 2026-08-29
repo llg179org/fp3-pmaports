@@ -67,6 +67,21 @@ RPM=/sys/kernel/debug/qcom_rpm_master_stats
 usage(){ echo "usage: $0 set|clear|state|measure [window_s]" >&2; exit 2; }
 [ $# -ge 1 ] || usage
 
+# ☠️ `grep -c` RETURNS 1 WHEN IT COUNTS ZERO, which is the normal case in the B
+# leg. The first version wrote `grep -c ... || echo 0`, so on a B boot BOTH the
+# grep's "0" and the fallback's "0" were printed, the variable became "0\n0", and
+# the leg aborted with "bad number". It failed safe - it refused to label the leg
+# rather than mislabelling it - but a count helper that breaks on the value it
+# exists to detect is not a helper.
+count_cards(){
+	n=$(grep -c '^ *[0-9]' /proc/asound/cards 2>/dev/null)
+	case "$n" in ''|*[!0-9]*) echo 0 ;; *) echo "$n" ;; esac
+}
+count_mods(){
+	n=$(lsmod | awk '{print $1}' | grep -cE '^(snd_soc_apq8016_sbc|snd_soc_msm8916_digital|snd_soc_wcd9335|slim_qcom_ngd_ctrl)$')
+	case "$n" in ''|*[!0-9]*) echo 0 ;; *) echo "$n" ;; esac
+}
+
 lpass_down(){
 	# The success signature, and the trap that goes with it: a static counter is
 	# ambiguous. "Count stopped growing" means frozen AWAKE unless the last
@@ -92,21 +107,21 @@ clear)
 	;;
 state)
 	[ -f "$CONF" ] && echo "blacklist: PRESENT" || echo "blacklist: absent"
-	echo "loaded: $(lsmod | awk '{print $1}' | grep -cE '^(snd_soc_apq8016_sbc|snd_soc_msm8916_digital|snd_soc_wcd9335|slim_qcom_ngd_ctrl)$') of 4"
-	echo "cards: $(cat /proc/asound/cards 2>/dev/null | grep -c '^ *[0-9]')"
+	echo "loaded: $(count_mods) of 4"
+	echo "cards: $(count_cards)"
 	echo "LPASS: $(lpass_down)"
 	;;
 measure)
 	W=${2:-360}
 	modprobe rpm_master_stats 2>/dev/null
-	n=$(lsmod | awk '{print $1}' | grep -cE '^(snd_soc_apq8016_sbc|snd_soc_msm8916_digital|snd_soc_wcd9335|slim_qcom_ngd_ctrl)$')
+	n=$(count_mods)
 	l=$(lpass_down)
 	if [ -f "$CONF" ]; then
 		leg=B
 		# ☠️ The witness, not the module list: a B boot whose ADSP stayed awake
 		# has not applied the knob and must not be labelled as if it had.
 		[ "$n" -eq 0 ] || { echo "☠️ STOP: leg B but $n audio modules are loaded"; exit 1; }
-		c=$(grep -c '^ *[0-9]' /proc/asound/cards 2>/dev/null || echo 0)
+		c=$(count_cards)
 		[ "$c" -eq 0 ] || { echo "☠️ STOP: leg B but $c sound cards are present - the knob did not take"; exit 1; }
 	else
 		leg=A
@@ -117,7 +132,7 @@ measure)
 	{
 		echo "# audio-off-leg $(date '+%F %T') leg=$leg window=${W}s"
 		echo "# kernel=$(uname -r) $(uname -v)"
-		echo "# audio modules loaded: $n of 4   LPASS: $l   cards: $(grep -c '^ *[0-9]' /proc/asound/cards 2>/dev/null)"
+		echo "# audio modules loaded: $n of 4   LPASS: $l   cards: $(count_cards)"
 		echo "# uptime=$(cut -d. -f1 /proc/uptime)s  cap=$(cat /sys/class/power_supply/pmi632-battery/capacity)%"
 	} | tee "$O/log"
 	/usr/local/bin/burst-master.sh "$W" >/dev/null 2>&1
