@@ -743,7 +743,40 @@ costs a modem more.
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
 
-**Running now (19:25) — the QMI-client test.** ModemManager masked and the phone
+### ★★★ 2026-08-29 night — the DIAG path is open, and the duty turns out to be a per-boot property
+
+**Nine candidates, nine dead.** `netmgrd` killed on the oracle: **5.3 %**, lower
+than its 8.0 % baseline — so the oracle's modem is cheap with every data daemon
+dead, and ours is expensive with no client having ever spoken to it. Both APs are
+awake 100 % (`APSS XO off 0.0 s` in every window on both systems, which killed the
+AP-sleep hypothesis off data already taken).
+
+**The DIAG interface is reachable on mainline for the first time.** `linux-fp3 r78`
+is one config symbol — `CONFIG_RPMSG_CTRL`, which `CONFIG_RPMSG_CHAR` does not
+imply — plus `RPMSG_CREATE_EPT_IOCTL` through the control device. The modem's
+control channel talks: 2225 bytes, 30 packets, parsed. **The data channel does not
+answer yet**; the AP half of the handshake has to be copied from the vendor 4.9
+`diagfwd_cntl.c` (on this disk) rather than guessed. Full state:
+[`bringup/leads/diag-bringup.md`](power/bringup/leads/diag-bringup.md).
+
+☠️ **And the number under all of this is noisier than it looked.** The modem's duty
+has a **per-boot offset of ~13 points** — the r77 boot's eight windows cluster at
+29–37 %, the r78 boot's eight at 44–52 %, with the boot as the only change. The
+oracle stayed at 5.3–8.0 % across two boots and five windows, so the comparison
+survives easily; but **a single leg against "the baseline" measures nothing here.**
+Only A-B-A′ runs with their own control inside the same boot survive: the RAT
+result, the bearer result, the radio-low floor and the IPCRTR unbind do; the
+DIAG-open pair does not.
+
+★ **One finding from the failed levers is worth more than the levers.** With
+`qcom_smd_qrtr` unbound from the modem's IPCRTR channel — nobody on the AP
+listening at all — the modem **still rings the SMD edge at the same rate**
+(36.6 / 35.6 / 37.2 per second). With the RAT legs (34.7 / 35.0 / 35.6 across LTE
+and 2G) that makes the ring independent of the radio technology, of the modem's own
+awake duty, and of whether anything on this side is attached. It is not traffic and
+not a response.
+
+### (earlier, 19:25) The QMI-client test. ModemManager masked and the phone
 rebooted, so no client has ever configured this modem on this boot; brought online
 by hand with a single `qmicli -d qrtr://0 --dms-set-operating-mode=online`, which
 registered on **LTE within 10 s**. Two 360 s duty windows.
