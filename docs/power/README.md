@@ -188,11 +188,27 @@ path, and on pmOS the IPA is probed and no channel is ever brought up.
 ☠️ Signal does not explain it and points the wrong way — ofono `Strength = 12–15`
 against ModemManager's `78 %`.
 
-☠️ **And the two fronts are independent.** `edge_irq_per_s` is 34.7 / 35.0 / 35.6
-across all three legs: the modem's SMD-edge ring is the same on LTE and on 2G while
-the core's duty moves five-fold. The ring is not what keeps the core awake, so
-fixing the consumption will **not** hand back the suspend residency. Each front
-needs its own fix.
+☠️☠️ **RETRACTED 2026-08-29 — the ring quoted here was not the modem's.** The
+paragraph that stood here said the modem's SMD edge rings at ~35 Hz on LTE and on
+2G alike, and concluded that the two fronts are independent. `edge_irq_per_s` (now
+`smd_irq_total_per_s`) is a **sum over every** smd/smp2p/glink/ipcc/ipa interrupt,
+dominated by the **RPM's** edge. Measured by hardware IRQ on an idle phone: RPM
+**13.29 /s**, WCNSS 0.39, ADSP 0.00, and the **modem 0.07 /s** — once every
+fourteen seconds. The tool logged the modem's own rate in `modem_irq_per_s` all
+along, and every conclusion quoted the column next to it.
+
+What replaces it is better news: the idle ring is the **AP's own** RPM traffic —
+15.5 `qcom_rpm_smd_write` a second, every stack ending in an interconnect bandwidth
+vote from a runtime-PM resume of the eMMC host — so it is reducible in principle
+and has AP-side instruments. See [`bringup/leads/rpm-idle-traffic.md`](bringup/leads/rpm-idle-traffic.md).
+The two fronts may still be independent; the argument given for it was built on a
+counter belonging to the wrong processor.
+
+★ **What does move the modem's duty, besides the RAT: the band.** Forced inside
+single boots and in both orders, eutran-1 (2100 MHz) medians **50.0 %** against
+eutran-3 (1800 MHz) **36.4 %** — ≈ 12 mA of the 40 mA gap, and *not* link budget,
+since the expensive band has the better reported signal. A lead, not a shipping
+knob: pinning a phone to one LTE band trades coverage for power.
 
 ### The arithmetic underneath it
 
