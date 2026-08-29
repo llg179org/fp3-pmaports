@@ -27,6 +27,7 @@ headset](first-call/README.md)**.
 | [`sensors/`](sensors/README.md) | the proximity / ambient-light / IMU bring-up, which runs through the SSC — working, with calibration left |
 | [`power/`](power/README.md) | what the phone actually draws, measured against the vendor stack on the same hardware: the idle figures, the ~100 mA the held-open camera costs, and every raw capture the charger work rests on — with the investigation in [`power/bringup/`](power/bringup/README.md) |
 | [`sailfish-native/`](sailfish-native/README.md) | whether a **native** Sailfish — Lipstick on the mainline kernel and Mesa, no hybris — is reachable on this device: the two measurements that decide it, and the answer |
+| [`upstreaming/`](upstreaming/README.md) | how the work leaves this repository and becomes somebody else's to maintain: which series is sendable, what blocks the rest, and — in [`upstreaming/bringup/`](upstreaming/bringup/README.md) — the whole process explained from the beginning, vocabulary included |
 | [`debug/`](debug/README.md) | the bring-up safety net: the watchdog started at probe, why there is no ramoops, and where the debugging *method* lives — with [`debug/create_debug.md`](debug/create_debug.md), the step-by-step for building that safety net onto any branch from scratch |
 
 ## What is still open
