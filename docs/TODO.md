@@ -215,6 +215,30 @@ day; "sleep deeper" is now demoted with it. The modem lead keeps its place
 because it is worth ~36 mA and the mechanism is named, but it is no longer the
 frame — it is one contributor to a level.
 
+### ★★★★★ 2026-08-29: the goal now has an arithmetic, and it says what is reachable
+
+Fitted across the three radio-low legs, **`current [mA] = 54.9 + 135.0 x
+MPSS-duty`** — one line that predicts the oracle (6.1 % → 63.1 mA against 55-64
+measured) and pmOS (34.8 % → 101.9 mA against 98-101) from the same two
+coefficients. The intercept is **54.9 mA** and the p10 floor reads 53-54 mA in
+every leg regardless of duty.
+
+So the goal splits cleanly, and it is worth stating in the file that holds the
+goal:
+
+| target | reachable how |
+|---|---|
+| **oracle parity, 55-64 mA** | **yes, and exactly by the modem term.** 34.8 % → 6.1 % of duty is 63 mA. That is the whole of this front and its ceiling |
+| **≤50 mA** | **not from the modem at all** — it is below the intercept. It needs the AP to sleep, and `APSS XO off` reads 0.0 s in every window on *both* systems |
+
+☠️ This **retracts** the same morning's "~15 mA has no owner", which mixed a
+coefficient from one run with a floor from another. A model assembled out of two
+runs is not a model.
+
+**What it reorders.** The duty work is the goal; the residency work is the
+responsiveness half and does not reach the number. They stay separate items and
+the residency one must not be quoted as progress toward the level.
+
 ### ★★★★★ 2026-08-25: the gap is wakeups, and the two biggest wakers were OURS
 
 Named by tracepoint, panel proven off, machine 96 % idle. Full account and the
@@ -763,6 +787,24 @@ and steps in exactly 1 % of `charge_full`, the same OCV-lookup trap as pmOS's
 `charge_now`. Never price anything with `charge_counter` on either system.
 
 ## The modem lead — the only thing that has ever moved the sleeping number
+
+> **Update 2026-08-29 — this section's frame is from 2026-08-24/25 and two things
+> in it have since been superseded.** (1) The lead is no longer "the sleeping
+> number": the goal's arithmetic above prices it awake, as the whole 34.8 % → 6.1 %
+> duty term, and asleep it is a separate question. (2) Elimination has run out —
+> nine candidates tested and dead, including every userspace daemon on *both*
+> sides, a live PDP context on ours, and our client masked from boot. The two
+> things that did move it are the RAT (LTE vs 2G) and the **band the network hands
+> out** (~14 duty points, ≈12 mA, forced in both orders inside single boots), and
+> neither is shippable as it stands. The running account is
+> [`power/bringup/findings-log.md`](power/bringup/findings-log.md) and
+> [`../docs/STATUS.md`](STATUS.md); read those first and this section for the
+> history of how the candidates died.
+>
+> ☠️ **And a rule this section predates:** on this phone the modem's duty has a
+> per-boot offset big enough to swallow any effect under ~15 points, so a leg
+> compared against "the baseline" is worthless. Only A-B-A′ *inside one boot*
+> counts.
 
 > The "deep sleep / reach `vlow`" item this section grew out of is **closed** and
 > lives in [`TODO-DONE.md`](TODO-DONE.md): a raw mmap read of the RPM's own
