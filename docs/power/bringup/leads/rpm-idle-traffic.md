@@ -45,23 +45,29 @@ the host was runtime-active **3 %** of the time, and **no userspace process wrot
 a single byte** — the writes are filesystem journal and writeback, plus whatever
 the measuring session itself caused.
 
-## What has been tried, and what it did not settle
+## The autosuspend delay is a dead knob — measured, three rounds
 
-**Raising the autosuspend delay is not yet demonstrated.** A-B-A′ inside one boot,
-60 s legs, counting `qcom_rpm_smd_write`:
+The first attempt drove all three legs over SSH and produced an effect the size of
+its own drift. Redone properly — detached, 300 s legs, three rounds, counting with
+the **function profiler** rather than the ring buffer so that reading the counter
+costs no disk I/O of its own (`tools/rpm-write-ab.sh`):
 
-| leg | `autosuspend_delay_ms` | calls / 60 s |
-|---|---|---|
-| A | 50 | 945 |
-| B | 2000 | 649 |
-| A′ | 50 | 726 |
+| round | A: 50 ms | B: 2000 ms | A′: 50 ms |
+|---|---|---|---|
+| 1 | 3869 | 3450 | 3514 |
+| 2 | 3517 | **3851** | 3593 |
+| 3 | 3799 | 3220 | 3530 |
 
-The effect (−22 % against the mean of the controls) is the same size as the drift
-between the two controls (−23 %), so this measures nothing. ☠️ **And the confound
-is the instrument:** every leg was driven over SSH, and an SSH session is exactly
-the idle filesystem write this is trying to count. The next attempt has to run
-detached, with the host quiet, and with several repeats — the same discipline the
-duty windows already have.
+Medians 3799 / 3450 / 3530, and in round 2 **B is above both of its own controls**.
+The ranges overlap completely. **Raising the eMMC host's autosuspend delay does not
+change the RPM write rate**, and the obvious knob on this lead is closed.
+
+★ Which is itself informative. If the traffic were bursts of writes each followed
+by a 50 ms suspend, a 2 s delay would merge them and the rate would fall. It does
+not, so the resumes are **spread out** — roughly two write operations a second,
+each far enough from the next that no plausible delay bridges them. And
+`mmc_runtime_resume` accounted for only **408 of the 927** stacks: less than half
+the traffic is the eMMC at all, and the rest has not been attributed.
 
 ## Why it is worth another attempt
 
