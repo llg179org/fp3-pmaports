@@ -8625,3 +8625,37 @@ ModemManager change.
 ☠️ And masking ModemManager is **not** the fix. Without it there is no call
 handling, no SMS, no data — the phone sleeps because it has stopped being a phone.
 The leg is an instrument for locating the cost, exactly like the 2G leg was.
+
+### The same afternoon: it switches off with the daemon, inside one boot
+
+The masked-from-boot leg above leaves one alternative standing — that
+ModemManager writes something into the modem which then keeps ringing whether the
+daemon lives or not. It does not. Two more legs, **inside a single boot**, with
+nothing else touched:
+
+| leg | ModemManager | slept, of 600 s | ended by |
+|---|---|---|---|
+| C | **started** mid-boot | 22 / 16 s | `141:smd-edge` 2/2 |
+| D | **stopped** mid-boot (not masked) | **602 s** | `63:pm8xxx_rtc_alarm` |
+
+So the cause follows the daemon's lifetime exactly: start it and every suspend dies
+within half a minute; stop it and the next one runs to its alarm. ☠️ This also
+qualifies the 2026-08-27 result that stopping ModemManager did not move the modem's
+*duty*: the duty and the wakes are different quantities, and a null on one is not a
+null on the other. What the modem is asked to *report* survives nothing; what it was
+asked to *do* survives the client.
+
+★ **Which names the fix's shape.** The wakes are a live QMI indication subscription
+held over the daemon's own qrtr socket, not a setting written into the modem. A
+phone needs some of those — an incoming call and an SMS have to arrive — but not
+the chatty ones, and separating them is a ModemManager-side question, not a
+firmware one. The knob `mmcli --signal-setup` is **already 0** on this device
+(`refresh rate: 0 seconds`), so the extended signal polling is not it; the
+remaining candidates are the NAS indications the QMI plugin registers at startup.
+
+☠️ **What is still unmeasured is the one number that matters:** what residency is
+worth in mA. The model says the target has to come out of the 54.9 mA intercept,
+but nothing yet says how much of that intercept a sleeping AP actually removes.
+`current_now` cannot answer it — the gauge's poll worker is frozen during the
+suspend it is meant to measure — so this needs a discharge across a sleeping night
+against one across a waking night.
