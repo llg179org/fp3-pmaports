@@ -1,22 +1,34 @@
 #!/bin/sh
 # Category: audio
 # Detached: yes
-# Description: playback survives a suspend, and nothing suspends the phone under it
+# Description: the screen sleeps while audio keeps playing
 #
-# The user-visible question is "does the music stop when the screen goes dark".
-# That is two questions wearing one sentence, and they have different fixes:
+# The requirement, stated so it cannot be read the other way round: with only
+# audio running, **the display must blank** and **the audio must keep playing**.
+# Keeping the panel lit to keep the music going is a failure, not a pass.
 #
-#   A. policy  - does the system suspend *while audio is playing*? It should
-#      not: a player is expected to hold a logind sleep inhibitor for as long
-#      as it has a stream. If nothing holds one, the phone sleeps mid-track and
-#      the audio path is blameless.
-#   B. survival - if the phone suspends anyway (an alarm, a forced suspend, a
-#      caller that does not inhibit), does the stream come back? Freezing a
-#      q6asm front-end and an ADSP across s2idle is not free, and a stream that
-#      resumes dead looks identical from the outside to (A).
+# Three distinct claims, each with its own fix if it breaks:
 #
-# So this check answers both, in that order, and refuses to answer either
-# unless the phone demonstrably suspends at all in this boot - see part 0.
+#   A. the display actually blanks. Not "the compositor thinks it blanked" -
+#      fbcon has been seen holding DRM DPMS on with no userspace client at all,
+#      so this is read at the panel and at the display controller's interrupt
+#      rate, not from the session.
+#   B. the stream survives that. The screen going dark must not stop the DMA.
+#   C. the system does not s2idle underneath it. On this path suspend *is*
+#      silence: the q6asm front-end is fed by an AP task, and s2idle freezes
+#      that task, so nothing keeps the ring full. The correct behaviour is
+#      therefore that a player holds a logind sleep inhibitor for as long as it
+#      has a stream - screen off, system awake, audio playing. If the phone
+#      suspends mid-track and nothing held an inhibitor, the fault is policy
+#      and the audio path is blameless; the check says which of the two it saw.
+#
+# Part D then forces a suspend anyway and reports what happens to the stream.
+# That one is diagnostic, not a requirement: it measures how expensive (C) is
+# to get wrong. If the DMA does come back, the inhibitor is a nicety; if it
+# does not, the inhibitor is the whole feature.
+#
+# Nothing is answered at all unless the phone demonstrably suspends in this
+# boot - see part 0 - because otherwise (C) passes for the wrong reason.
 #
 # ☠️ Two witnesses, on two layers, on purpose. The sound server's own opinion
 # of its stream is not evidence that the hardware is still clocking data: it is
@@ -62,6 +74,25 @@ pcm_status() {
 
 pcm_field() {
 	pcm_status | awk -v k="$1" '$1 == k":" { print $2 }'
+}
+
+# The panel's own power state. Connector names differ per board and per kernel,
+# so find the one that is connected rather than hardcode card0-DSI-1.
+dpms_file() {
+	for c in /sys/class/drm/card*-*/dpms; do
+		[ -r "$c" ] || continue
+		[ "$(cat "${c%/dpms}/status" 2>/dev/null)" = connected ] || continue
+		echo "$c"
+		return
+	done
+}
+
+# Interrupts from the display controller. This is the witness that does not go
+# through the compositor at all: a panel that is still refreshing counts here
+# whatever any userspace state says.
+mdss_irqs() {
+	awk '/msm_mdss|mdp|mdss/ { for (i = 2; i <= NF; i++) if ($i ~ /^[0-9]+$/) n += $i }
+	     END { print n+0 }' /proc/interrupts 2>/dev/null
 }
 
 # ---------------------------------------------------------------------------
@@ -202,11 +233,81 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # ---------------------------------------------------------------------------
-# A. policy - does anything suspend the phone while it is playing?
+# A + B. the screen must blank, and the stream must not care
 # ---------------------------------------------------------------------------
+# The blank is left to the session's own idle timeout - forcing DPMS by hand
+# would test a transition nobody makes in normal use. So this window has to be
+# longer than that timeout; if it is not, the panel is still lit at the end and
+# that is a fact about the configured timeout, not about audio. Said as WARN
+# for exactly that reason.
+dpms=$(dpms_file)
+irq_before=$(mdss_irqs)
+[ -n "$dpms" ] && echo "PASS: panel state readable at $dpms ($(cat "$dpms"))"
+
 inhib=$(systemd-inhibit --list --no-pager 2>/dev/null | grep -c 'sleep')
 susp_before=$(suspend_count)
+
+# Ask the session to lock, which is what a user pocketing the phone does; the
+# blank then follows from the session's own policy rather than from us.
+loginctl lock-sessions >/dev/null 2>&1
+
 sleep "$POLICY_WINDOW"
+
+# Panel: two readings, and they must agree. The interrupt delta is taken over
+# the whole window, so a panel that blanked half way still shows far fewer than
+# a refreshing one - the comparison is against the awake rate, not against zero.
+irq_after=$(mdss_irqs)
+irq_delta=$((irq_after - irq_before))
+irq_per_s=$((irq_delta / POLICY_WINDOW))
+dpms_state=$([ -n "$dpms" ] && cat "$dpms" 2>/dev/null)
+
+if [ -z "$dpms" ]; then
+	echo "SKIP: no connected DRM connector exposes dpms, so the panel state"
+	echo "      cannot be read directly; only the interrupt rate is left"
+	echo "      cmd: head /sys/class/drm/card*-*/status /sys/class/drm/card*-*/dpms"
+elif [ "$dpms_state" = "Off" ] && [ "$irq_per_s" -lt 5 ]; then
+	echo "PASS: the panel blanked while audio played" \
+		"(dpms $dpms_state, ${irq_per_s} display irq/s)"
+elif [ "$dpms_state" = "Off" ]; then
+	echo "FAIL: dpms says Off but the display controller is still taking" \
+		"${irq_per_s} irq/s - the panel is still being refreshed."
+	echo "      This is the fbcon case: the session let go and something below"
+	echo "      it is holding the pipeline on, so the screen costs power all"
+	echo "      night while every userspace indicator says it is off."
+	echo "      cmd: grep -E 'msm_mdss|mdp' /proc/interrupts; cat $dpms"
+	fail=1
+else
+	echo "WARN: the panel was still on at the end of ${POLICY_WINDOW}s" \
+		"(dpms ${dpms_state:-unknown}, ${irq_per_s} display irq/s)"
+	echo "      Either the session idle timeout is longer than this window, or"
+	echo "      the stream is holding an idle inhibitor it should not - those"
+	echo "      are different bugs and the next command separates them."
+	echo "      cmd: systemd-inhibit --list; gsettings get" \
+		"org.gnome.desktop.session idle-delay"
+fi
+
+# B: did the blank cost us the stream? Read before the suspend leg touches
+# anything, so a failure here is attributable to the screen and nothing else.
+hw_blank=$(pcm_field hw_ptr)
+if ! kill -0 "$player" 2>/dev/null; then
+	echo "FAIL: playback stopped while the screen went dark - no suspend was"
+	echo "      involved, so this is the audio path or the session, not power"
+	echo "      management"
+	echo "      cmd: journalctl -b --user -u pipewire -n 50"
+	exit 1
+elif [ -n "$hw_blank" ] && [ "$hw_blank" -gt "$hw0" ]; then
+	echo "PASS: the stream kept running across the screen blank" \
+		"(hw_ptr $hw0 -> $hw_blank)"
+else
+	echo "FAIL: the player is alive but the DMA stopped during the window" \
+		"(hw_ptr $hw0 -> ${hw_blank:-gone})"
+	echo "      cmd: cat /proc/asound/card0/pcm0p/sub0/status"
+	fail=1
+fi
+
+# ---------------------------------------------------------------------------
+# C. policy - nothing may s2idle underneath it
+# ---------------------------------------------------------------------------
 susp_after=$(suspend_count)
 
 if [ -z "$susp_before" ] || [ -z "$susp_after" ]; then
@@ -214,7 +315,7 @@ if [ -z "$susp_before" ] || [ -z "$susp_after" ]; then
 	echo "      suspend during playback cannot be counted"
 elif [ "$susp_after" -gt "$susp_before" ]; then
 	echo "FAIL: the phone suspended $((susp_after - susp_before)) time(s) during"
-	echo "      ${POLICY_WINDOW}s of playback - this is the reported symptom."
+	echo "      ${POLICY_WINDOW}s of playback - on this path that is silence."
 	if [ "$inhib" -eq 0 ]; then
 		echo "      Nothing held a sleep inhibitor while the stream ran, so the"
 		echo "      fault is policy, not the audio path: the player (or the"
@@ -225,21 +326,16 @@ elif [ "$susp_after" -gt "$susp_before" ]; then
 	echo "      cmd: systemd-inhibit --list; loginctl show-session -p IdleAction"
 	fail=1
 else
-	echo "PASS: no automatic suspend during ${POLICY_WINDOW}s of playback" \
+	echo "PASS: stayed awake for the whole ${POLICY_WINDOW}s of playback" \
 		"($inhib sleep inhibitor(s) held)"
 fi
 
-# Still playing? A stream that died on its own during the window would make the
-# line above true for the wrong reason.
-if ! kill -0 "$player" 2>/dev/null; then
-	echo "FAIL: playback stopped during the policy window, without a suspend"
-	echo "      cmd: journalctl -b -u pipewire --user -n 50"
-	exit 1
-fi
-
 # ---------------------------------------------------------------------------
-# B. survival - force a suspend under the running stream
+# D. diagnostic - force a suspend under the running stream
 # ---------------------------------------------------------------------------
+# Not a requirement: it measures the price of getting C wrong. A stream that
+# comes back makes the inhibitor a nicety; one that does not makes it the
+# feature.
 depth_before=""
 [ -r "$SYSDOM/idle_states" ] && depth_before=$(s2idle_count "$SYSDOM/idle_states")
 hw_pre=$(pcm_field hw_ptr)
@@ -254,11 +350,16 @@ echo 0 >/sys/class/rtc/rtc0/wakealarm 2>/dev/null
 elapsed=$((rtc_after - rtc_before))
 
 if [ "$elapsed" -le 0 ]; then
-	echo "FAIL: the forced suspend did not happen under playback (elapsed"
-	echo "      ${elapsed}s) even though the control suspend did. Something the"
-	echo "      audio path takes is now blocking suspend outright."
+	# Writing /sys/power/state bypasses logind inhibitors, so this is not the
+	# inhibitor from C doing its job - something in the running audio path is
+	# an armed wakeup source or a blocked freeze. Worth knowing, but it does
+	# not violate the requirement, so it ends the diagnostic rather than the
+	# check.
+	echo "WARN: the forced suspend did not happen under playback (elapsed"
+	echo "      ${elapsed}s) even though the control suspend did, so the"
+	echo "      survival question stays unanswered this run"
 	echo "      cmd: grep -v '\\s0\\s*\$' /sys/kernel/debug/wakeup_sources"
-	exit 1
+	exit $fail
 fi
 
 if [ -n "$depth_before" ]; then
