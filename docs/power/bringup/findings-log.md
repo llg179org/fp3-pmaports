@@ -8293,3 +8293,32 @@ read 44.4 %. A window taken before the modem has registered is not a window abou
 the modem's idle behaviour. Re-run with `state: registered` confirmed first — the
 same discipline the `modem-window.sh` capture was built to enforce, forgotten
 within an hour of building it.
+
+## ☠️ 2026-08-29 — the IPCRTR link is not the lever either, and the edge rings without a listener
+
+The last AP-side consumer the modem has. A-B-A′ unbinding the modem's `IPCRTR`
+rpmsg device from `qcom_smd_qrtr` —
+[`captures/2026-08-29_ipcrtr-unbind-ab/`](captures/2026-08-29_ipcrtr-unbind-ab/):
+
+| leg | driver bound | MPSS awake | **edge IRQ/s** | PRONTO |
+|---|---|---|---|---|
+| A | `qcom_smd_qrtr` | 51.9 % | 36.6 | 20.3 % |
+| B | **unbound** | 47.0 % | **35.6** | 22.2 % |
+| A′ | `qcom_smd_qrtr` | 51.1 % | 37.2 | 27.2 % |
+
+A 5-point dip inside a day's spread of 29–52 %: not a lever.
+
+★ **But the edge column is a finding.** With the qrtr driver detached from the
+channel — nobody on the AP listening at all — **the modem still rings the SMD edge
+at the same rate.** Together with the RAT legs (34.7 / 35.0 / 35.6 across LTE and
+2G) that makes the ring independent of the radio technology, of the modem's own
+awake duty, *and* of whether anything on this side is connected to it. It is not
+traffic and not a response; it is something the modem does.
+
+☠️ **And a confound in my own instrument, caught by its own numbers.** Every window
+on this boot has read 47–52 % where the previous boot read 33–37 % — and since
+01:46 two DIAG endpoints that I created have been sitting open. Which way that cuts
+is not knowable from the runs already taken, because none of them has a leg without
+them. Rebooted with no endpoints created, waited for `state: registered`, and
+re-measured; until that lands, **every duty figure taken after 01:46 is quoted with
+the caveat that an instrument of mine was attached to the thing being measured.**

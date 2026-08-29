@@ -1,0 +1,12 @@
+# burst-master-knob 2026-08-29 02:11:36 knob=ipcrtr window=360s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #79-fp3 SMP PREEMPT Fri Aug 28 18:42:18 UTC 2026
+# --- leg A: state=qcom_smd_qrtr
+# leg A -> /var/log/fp3/bmknob-ipcrtr-1787962296/A (187 samples)
+# applying off: echo remoteproc0:smd-edge.IPCRTR.-1.-1 > /sys/bus/rpmsg/drivers/qcom_smd_qrtr/unbind
+# --- leg B: state=
+# leg B -> /var/log/fp3/bmknob-ipcrtr-1787962296/B (185 samples)
+# restoring: echo remoteproc0:smd-edge.IPCRTR.-1.-1 > /sys/bus/rpmsg/drivers/qcom_smd_qrtr/bind
+# state after restore: qcom_smd_qrtr
+# --- leg Ap: state=qcom_smd_qrtr
+# leg Ap -> /var/log/fp3/bmknob-ipcrtr-1787962296/Ap (184 samples)
+# /var/log/fp3/bmknob-ipcrtr-1787962296
