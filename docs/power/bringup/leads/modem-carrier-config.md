@@ -102,6 +102,23 @@ package in the list at all, so "generic" is not by itself a fault.
 
 1. **Read the same two lists on the oracle** (slot switch). Same config active on
    both ⇒ this page closes with the other nine candidates.
+
+   The route, from the 2026-08-28 switch: `systemctl reboot
+   --reboot-argument=bootloader` — ☠️ started with `systemd-run`, because a
+   backgrounded `sudo sh -c "(sleep 1; reboot bootloader) &"` silently does
+   nothing on this device — then `fastboot set_active a` from the host. `qbootctl`
+   cannot do it here: it looks for `/dev/bsg/ufs-bsg0` and this is eMMC.
+
+   ☠️ Whether `qmicli` even exists on the oracle is unknown; its QMI goes through
+   the vendor rild. If it is absent, the fallback is the vendor's own record of
+   what it activated, not an assumption that it activated nothing.
 2. Only if they differ: an A-B-A′ inside one boot, activating what the oracle
    activates and measuring the duty. ☠️ Nothing is written before step 1 answers —
    activating the wrong configuration changes persistent modem state.
+
+   ☠️ The tempting shortcut is to skip step 1 and just activate the platform
+   config here, on the argument that `SR_DSDS-LA-7+7_mode-SDM632` is this chip's
+   own platform package and `--pdc-deactivate-config` undoes it. It is deliberately
+   **not** taken: the read costs one slot switch and tells us whether the write is
+   a fix or a guess, and a persistent modem write made without knowing which is
+   exactly the class of action this project has a rule against.
