@@ -9090,3 +9090,52 @@ happens — because setting them to agree changed nothing.
 lookup produce no callback"** — which is a question about `qrtr_ns`'s own state,
 and the instrument for it is a kprobe on `qmi_recv_new_server` and on
 `ctrl_cmd_new_lookup`, not another constant.
+
+## ☠️☠️ 2026-08-29 late — the module subsystem on this kernel is broken, and it has been all along
+
+Found while trying to re-run the IPA experiment with the `qrtr` tracepoints on.
+Two symptoms, both on a **clean boot with stock modules only**:
+
+- **`lsmod` segfaults.** Not once, not after a hot-swap — on a boot that loaded
+  nothing but the packaged modules.
+- **`rmmod` hangs and never returns.** The stack is unambiguous:
+
+```
+[<0>] __arm64_sys_delete_module+0x8c/0x2c0
+[<0>] invoke_syscall.constprop.0+0x48/0x120
+...
+wchan: __arm64_sys_delete_module
+```
+
+The process sits in the delete-module syscall itself and does not come out, so
+the module is neither removed nor released and every later module operation
+queues behind it.
+
+### What this retracts
+
+☠️ **This morning's `.ko` hot-swap post-mortem is wrong.** That was written up as
+"a module built from `wip/7.1.3/charger` was loaded on a phone running
+`debug-int/7.1.3`, and the mismatch corrupted the module subsystem — `ftrace bug`,
+the charger unbound, `lsmod` segfaulting, `/proc/modules` stuck". The branch
+mismatch was real and the lesson about building from the running tree stands on
+its own merits. But **the corruption was not caused by it**: the phone does this
+with stock modules on a clean boot. A story that explained a symptom the device
+has anyway.
+
+### What it costs right now
+
+`rmmod`/`insmod` is not a usable deploy vehicle on this kernel, which removes the
+fastest experiment loop the port had. Anything module-scoped now needs
+`install <mod> /bin/false` plus a reboot to control *when* a module loads, and a
+package build to change *what* it contains.
+
+☠️ It also means `/proc/modules` and `lsmod` are not instruments here until this
+is understood — and the morning's write-up used exactly those to characterise a
+failure.
+
+### Open
+
+Whether this is a config problem (`MODULE_UNLOAD` interacting with something),
+a lock held by a driver that never releases it, or a real deadlock in a module
+this port carries, is not established. It deserves its own investigation: it is
+a defect of the running kernel, not of any experiment run on it.
