@@ -3215,21 +3215,28 @@ largely on **one** term — the modem core is awake **33–36 %** against the or
 **6.3 %** — because with the core down this phone idles at **57.5 mA**, inside the
 oracle's own 55–64 mA band.
 
-☠️☠️ **2026-08-29 — say the arithmetic out loud, because it does not reach the
-target.** Solving the modem term *completely* buys 26 mA: 98–101 → **72–75 mA**,
-which is still **1.15–1.3× the oracle** and nowhere near ≤50. Worse, the terms do
-not close: 57.5 mA with the core down plus the 26 mA differential predicts
-**83.5 mA**, against 98–101 measured — so **~15 mA has no owner at all**, inside a
-story that was written as though it had one term. "There is no second term behind
-the gap" was too strong; there is one, it is a sixth of the gap, and it has never
-been named.
+★★★★★ **2026-08-29 — the model closes, and the target is below the modem.** One
+line fitted on the radio-low legs explains **both** systems:
 
-And ≤50 mA is **below the oracle itself**. On the numbers as they stand today the
-honest ceiling for this line of work is **~1.3× better, not 2×**, unless the
-unattributed 15 mA turns out to be large and cheap. Naming it is therefore the
-highest-value open item, ahead of more modem archaeology — and it needs no new
-instrument, only `burst-master-knob.sh` and `rail-census.sh` with the modem as the
-knob.
+```
+current_mA = 54.9 + 135.0 * MPSS_duty
+```
+6.1 % → **63.1 mA** (oracle measured 55–64) · 34.8 % → **101.9 mA** (pmOS measured
+98–101). ☠️ This retracts the "~15 mA has no owner" written here earlier the same
+day: that multiplied one run's floor by another run's coefficient. Nothing is left
+over.
+
+**So the road forks, and the two halves of the goal need different work:**
+
+- **Parity with the oracle (55–64 mA) is the modem term, and only that.** Taking the
+  duty from 34.8 % to 6.1 % lands at 63 mA. That is this front's ceiling.
+- **The halving target (≤50 mA) is below the intercept.** With the modem core
+  powered down for good the phone still draws ~55 mA, and the p10 floor is 53–54 mA
+  in all three legs whatever the modem does. **No modem fix reaches it.** Going
+  lower has to come out of the intercept — the AP, the WiFi core and the SoC — where
+  `APSS XO off` has read **0.0 s in every window ever taken on either system**.
+  **Suspend residency is the only route to the target at all**, which is the
+  opposite of what was written here for two days.
 
 ★ What is measured and shippable so far is **zero**. The band is worth 12 mA and is
 not shippable (pinning an LTE band trades coverage for power); 2G is worth 44 mA
