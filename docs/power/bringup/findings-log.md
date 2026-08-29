@@ -8535,3 +8535,51 @@ the **responsiveness** story, and it changes for the better:
 ☠️ It also means the two fronts are **not** independent for the reason previously
 given. They may still be independent, but the argument for it was built on a
 counter belonging to the wrong processor.
+
+## ★★★★★ 2026-08-29 — the model closes, and it says the halving target is below the modem
+
+Fitting the three legs of the radio-low A-B-A′ (186 / 186 / 184 samples,
+`captures/2026-08-28_radiolow-master-ab/`) — current median against MPSS core duty:
+
+| leg | duty | median |
+|---|---|---|
+| B (`low`) | 0.0 % | 57.5 mA |
+| A′ (`on`) | 29.3 % | 88.5 mA |
+| A (`on`) | 51.6 % | 128.0 mA |
+
+```
+current_mA = 54.9 + 135.0 * duty
+```
+
+| duty | predicted | measured |
+|---|---|---|
+| **6.1 %** (the oracle) | **63.1 mA** | 55–64 mA ✓ |
+| **34.8 %** (pmOS) | **101.9 mA** | 98–101 mA ✓ |
+
+**One line explains both systems.** ☠️ Which retracts this morning's claim, made to
+the user, that ~15 mA of the gap has no owner: that came from multiplying the duty
+differential by **91 mA per unit duty**, a coefficient taken from a different run,
+while using a floor taken from this one. **A model assembled from two runs is not a
+model.** The correct coefficient is 135, and with it nothing is left over.
+
+### ★ The consequence, and it reorders the whole project
+
+**The intercept is 54.9 mA** — and independently, the p10 floor is **53–54 mA in
+all three legs**, unchanged when the modem core is at 0 %, 29 % or 52 %. So:
+
+- **The halving target, ≤50 mA, is below the intercept.** With the modem core
+  powered down for good this phone still draws ~55 mA. **No modem fix reaches the
+  target**, however complete.
+- **Parity with the oracle (55–64 mA) *is* reachable**, and by exactly the modem
+  term: 34.8 % → 6.1 % lands at 63 mA. That is the "UT's consumption" half of the
+  goal and it is the modem front's ceiling.
+- **Anything below ~55 mA has to come out of the intercept**, which is the AP, the
+  WiFi core and the SoC — with `APSS XO off` reading **0.0 s in every window ever
+  taken on either system**. The application processor never sleeps.
+
+☠️ So the two fronts are **not independent, and the dependence runs the opposite way
+to what was written for two days**: the halving depends on *suspend*, not on the
+modem; the modem is what buys parity. The earlier claim that fixing consumption
+would not hand back residency was argued from the wrong interrupt counter; this says
+something stronger and better founded — **residency is the only route to the target
+at all.**
