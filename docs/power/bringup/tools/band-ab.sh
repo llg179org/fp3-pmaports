@@ -84,11 +84,14 @@ leg A "$A"
 leg B "$B"
 leg Ap "$A"
 
-s "# restoring: $orig"
-mmcli -m 0 --set-current-bands="$(echo "$orig" | tr -d ' ')" >/dev/null 2>&1 \
-	|| { s "#   ☠️ restore FAILED - falling back to 'any'"
-	     mmcli -m 0 --set-current-bands=any >/dev/null 2>&1 \
-		|| s "#   ☠️☠️ fallback FAILED TOO - the modem is still pinned"; }
+# ☠️ Restore with 'any', not with the list that was captured. What mmcli PRINTS
+# as the current bands is a shorthand ("gsm-umts, lte") that mmcli will not
+# accept back as an argument, so writing it back fails every time - measured
+# twice. The captured list is kept in the log for the record only.
+s "# restoring: any   (captured list was: $orig)"
+mmcli -m 0 --set-current-bands=any >/dev/null 2>&1 \
+	|| s "#   ☠️☠️ restore FAILED - the modem is still pinned to $A"
+
 wait_reg || s "#   ☠️ not registered after restore"
 witness "restored"
 s "$O"

@@ -8438,3 +8438,55 @@ not leave the modem pinned.
 34.1–36.2 in the forty-six windows of the previous entry. The metronome is
 constant *within* a boot and steps *between* boots, exactly like the duty. It is
 a second quantity that gets its value at boot.
+
+## 2026-08-29 — the band is a real lever, in both orders, and it is worth ~12 mA
+
+The suggestion from the nine boots was forced, twice, inside single boots and in
+**both orders** so that a monotone drift could not produce it
+(`tools/band-ab.sh`, 360 s per leg, ~184 samples each):
+
+| run | leg 1 | leg 2 | leg 3 |
+|---|---|---|---|
+| A-B-A′ | eutran-3 **39.7 %** | eutran-1 **48.4 %** | eutran-3 **33.7 %** |
+| B-A-B′ | eutran-1 **52.7 %** | eutran-3 **36.4 %** | eutran-1 **50.0 %** |
+
+| band | windows | median |
+|---|---|---|
+| eutran-1 (2100 MHz, channel 500, cell 1470762) | 48.4 / 52.7 / 50.0 | **50.0 %** |
+| eutran-3 (1800 MHz, channel 1300, cell 1470732) | 39.7 / 33.7 / 36.4 | **36.4 %** |
+
+**≈ 14 points of MPSS duty, about 12 mA.** The within-order drift is 6.0 points in
+the first run and 2.7 in the second, so the effect is two to five times the noise
+it has to beat, and it points the same way whichever band is measured first. This
+also settles the previous entry's open question: what differs between boots to set
+the level is, at least in part, **which band the network hands out**, and the
+per-boot fixity was the network's choice being fixed, not the modem's state
+decaying.
+
+★ **It is not link budget.** The expensive band is the one with the *better*
+reported signal — 81 % on eutran-1 against 71–80 % on eutran-3 — so "the modem
+works harder because reception is worse" is the wrong way round here. Whatever
+costs the 14 points is a property of the carrier or the cell, not of how hard the
+receiver has to strain.
+
+★ And the ring does not care: `edge_per_s` reads 35.5 / 35.7 / 35.3 and
+35.6 / 35.0 / 35.0 across the six legs. The ~35 Hz metronome survives a band
+change, as it survived a RAT change, a duty change and having nothing listening.
+
+### What this is and is not
+
+It is **12 mA of a 40 mA gap**, measured, and unlike 2G it is a configuration a
+device could in principle carry. It is **not** a fix to ship as it stands: pinning
+a phone to one LTE band trades coverage for power in a way no user asked for, and
+the number was measured on one operator at one location. What it is, squarely, is
+the first handle on the mechanism — the modem's idle cost here is set by what the
+network gives it, and that is a lead worth following before it is a knob worth
+turning.
+
+☠️ **Two instrument bugs, both in the restore path**, both found by reading the log
+rather than by the run failing. The band-list capture used a `sed` range that ran
+past mmcli's wrapped list and swallowed the rest of the dump; and what mmcli
+*prints* as the current bands (`gsm-umts, lte`) is a shorthand it will not accept
+back, so writing it back could never work. The first run therefore left the modem
+pinned. Restoring is now unconditional `--set-current-bands=any`. **A restore that
+has only ever been observed on the path where it fails has not been tested.**
