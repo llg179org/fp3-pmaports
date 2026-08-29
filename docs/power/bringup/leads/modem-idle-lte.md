@@ -56,19 +56,32 @@ sending the AP nothing.
 which is how we know the number is reachable — but the networks are being switched
 off and nothing here suggests shipping it.
 
+## What the band result changed
+
+**The band is a measured lever, forced in both orders inside single boots:**
+eutran-1 (2100 MHz, cell 1470762) median **50.0 %**, eutran-3 (1800 MHz, cell
+1470732) median **36.4 %** — ≈ 14 points, ≈ 12 mA of the 40 mA gap, against a
+within-order drift of 2.7–6.0 points. It also explains the per-boot offset: the
+network's choice was fixed at boot, the modem's state was not decaying.
+
+★ **It is not link budget** — the expensive band has the *better* reported signal
+(81 % against 71–80 %). So the cost is a property of the carrier or the cell, not
+of how hard the receiver strains. That is the first statement about the *mechanism*
+this page has been able to make, and it points at what the network tells the modem
+about idle behaviour: paging cycle, DRX configuration, SIB timing. **Those are
+readable, and only DIAG reads them** — see [`diag-bringup.md`](diag-bringup.md),
+which is now the path forward rather than a parallel curiosity.
+
+☠️ It is a lead, not a knob. Pinning a phone to one LTE band trades coverage for
+power in a way no user asked for, and it was measured on one operator at one
+location.
+
 ## The next measurement
 
-**The band the modem camps on**, which is the only variable left with a measured
-effect and a shippable form. Nine per-boot windows put the one boot camped on
-`eutran-1` (2100 MHz, cell 1470762) at 48.9 % against a median of 29.1 % for the
-eight camped on `eutran-3` (1800 MHz, cell 1470732) — but eight-to-one is a
-coincidence until forced, and `mmcli -m 0 --set-current-bands=eutran-1` forces it,
-landing on that exact cell within 25 seconds. [`../tools/band-ab.sh`](../tools/band-ab.sh)
-runs the A-B-A′ inside one boot, which is the only place the per-boot rule allows
-the question to be asked.
-
-If band separates the clusters, this is a **configuration** fix, not a 2G-shaped
-instrument: a band preference is something a device can ship.
+Bring the DIAG data channel up and read the **idle-mode configuration the two
+bands hand out** — `defaultPagingCycle` and `nB` from SIB2, and the modem's own
+DRX state. If eutran-1 pages this phone more often, the 14 points are explained and
+the question becomes whether anything on our side can ask for better.
 
 ☠️ What was the next measurement here — establishing a PDP context, on the theory
 that the cheaper system is the one doing more — **has since been made and died**:
@@ -77,6 +90,7 @@ vendor stack's own `ipacm`, its `netmgrd`, the IPCRTR link and an open DIAG
 channel; the table above carries them.
 
 ☠️ And note what none of this will fix: `edge_irq_per_s` is 34.7 / 35.0 / 35.6
-across LTE, 2G and LTE, and 34.1–36.2 across forty-six windows of one boot, so the
-modem's SMD-edge ring is independent of its awake duty. The suspend-residency
-front does not come back with this one.
+across LTE, 2G and LTE, 35.0–35.7 across the six band legs, and 34.1–36.2 across
+forty-six windows of one boot. The modem's SMD-edge ring is independent of its
+awake duty, of the RAT and of the band. The suspend-residency front does not come
+back with any of this.
