@@ -95,3 +95,28 @@ interrupt. By hardware IRQ the modem's edge idles at **0.07 /s** — once every
 fourteen seconds — while the RPM's runs at 13.29 /s. Whether fixing this duty hands
 back suspend residency is therefore **open again**, and the idle ring turns out to
 be the AP's own RPM traffic: [`rpm-idle-traffic.md`](rpm-idle-traffic.md).
+
+## ★★★★ 2026-08-29 — the open question at the end of this page is now closed, and the answer is "no"
+
+The last paragraph left it open whether fixing this duty hands back suspend
+residency. It does not, and the two are now separated by a measurement rather than
+by an argument. A-B-A′ on ModemManager **inside one boot**
+([`../captures/2026-08-29_mmdaemon-master-ab/`](../captures/2026-08-29_mmdaemon-master-ab/)):
+
+| leg | ModemManager | MPSS awake | current median | **modem edge IRQs in 360 s** |
+|---|---|---|---|---|
+| A | running | 33.7 % | 99 mA | 27 |
+| B | **stopped** | 33.0 % | 99 mA | **0** |
+| A′ | running | 35.9 % | 104 mA | 68 |
+
+The duty is untouched; the modem's own hardware interrupt goes to **zero**. So the
+daemon owns the modem's interrupts — and through them every suspend on this phone,
+which four residency legs the same afternoon confirmed — and owns nothing of the
+duty this page is about.
+
+**What that means for this page.** The consumption target lives here and only here:
+`current = 54.9 + 135.0 x MPSS-duty`, so 34.8 % → 6.1 % is the whole 63 mA, and it
+is also the ceiling — the intercept is 54.9 mA and no amount of modem work reaches
+below it. Nothing in ModemManager will move any of it. The residency work is a
+different problem with a different mechanism and must not be quoted as progress
+here.
