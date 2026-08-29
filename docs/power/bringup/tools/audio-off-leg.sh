@@ -37,10 +37,22 @@
 # every knob so far regardless of duty, so it is the column that can cross a
 # reboot. Quote the median only with its own A and A′ around it.
 #
-# ☠️ THE LEG NEEDS A WITNESS, and the witness is the LPASS. A "B" boot where the
-# ADSP did not actually go to sleep has not applied the knob, whatever the module
-# list says — `measure` refuses to label it. This is the same rule the knob
-# wrappers carry: never label a leg on the strength of a command that returned 0.
+# ☠️ THE LEG NEEDS A WITNESS, AND IT IS **NOT** THE LPASS — corrected before the
+# first run, by reading the phone instead of the story. The plan was to require
+# the ADSP to be asleep in the B leg. Measured 2026-08-29 16:30 on r79 with the
+# FULL audio stack loaded (4 of 4 modules, one card): LPASS `enter` newer than
+# `exit`, `Active cores bitmask: 0x0`, counters static across 20 s, and XO-off for
+# **99.7 %** of a 3.1 h uptime. The ADSP already sleeps with audio up, so that
+# condition is satisfied in the A leg too and separates nothing.
+#
+# The witness is therefore the thing the knob actually changes: **zero of the four
+# modules loaded and zero sound cards**. The LPASS is still recorded in every leg,
+# because whether it sleeps is now a question this run answers rather than assumes.
+#
+# ☠️ That reading also contradicts the 2026-08-28 matched pair, which had the LPASS
+# awake 100 % of a 600 s window with `XO total duration` of literally 0. Both are
+# single boots. Treat "does the ADSP sleep" as a per-boot property until a run with
+# its own control says otherwise — the same discipline the modem duty needed.
 #
 # ☠️ Recovery: this writes /etc/modprobe.d only, so `clear` plus a reboot undoes
 # it, and a phone that will not boot is recoverable through the Ubuntu Touch
@@ -94,7 +106,8 @@ measure)
 		# ☠️ The witness, not the module list: a B boot whose ADSP stayed awake
 		# has not applied the knob and must not be labelled as if it had.
 		[ "$n" -eq 0 ] || { echo "☠️ STOP: leg B but $n audio modules are loaded"; exit 1; }
-		[ "$l" = down ] || { echo "☠️ STOP: leg B but LPASS reads '$l', not down - the knob did not take"; exit 1; }
+		c=$(grep -c '^ *[0-9]' /proc/asound/cards 2>/dev/null || echo 0)
+		[ "$c" -eq 0 ] || { echo "☠️ STOP: leg B but $c sound cards are present - the knob did not take"; exit 1; }
 	else
 		leg=A
 		[ "$n" -eq 4 ] || echo "⚠️ leg A with only $n of 4 audio modules loaded - note it"
