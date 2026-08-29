@@ -122,3 +122,47 @@ package in the list at all, so "generic" is not by itself a fault.
    **not** taken: the read costs one slot switch and tells us whether the write is
    a fix or a guess, and a persistent modem write made without knowing which is
    exactly the class of action this project has a rule against.
+
+
+## ★★★ 2026-08-29 evening — the oracle read, and what it actually found
+
+Slot switch to `a`, ~5 minutes on Ubuntu Touch, back to `b`. `qmicli` does not
+exist on the oracle and there is no `/dev/qrtr*` there — its QMI goes through the
+vendor rild — so the read was taken the other way round, which the persistence of
+PDC state makes possible: **let the vendor stack run, come back, and re-read the
+modem.**
+
+**The platform config is `Inactive` after the vendor boot too**, byte-identical ID
+(`1E:28:02:C6:…`). So it is not that the oracle activates it and we do not.
+
+☠️ **That is one short boot, not proof.** Whether `modem_config` runs on every
+boot or only on a SIM change is unknown, and five minutes may not be enough for it
+either way. Do not write "the vendor does not activate it" as a fact yet.
+
+### ★ What the switch did find, and it is a layer nobody had looked at
+
+The oracle carries a full AP-side MBN tree, served to the modem by the vendor's
+`modem_config`:
+
+```
+/data/vendor/modem_config/
+    mcfg_sw/generic/eu/{vodafone,dt,orange,tim,telia,tele2,kpn,sky,nos,ee,…}
+    mcfg_hw/generic/common/msm8940/la/7+7_mode/sr_dsds/mcfg_hw.mbn
+```
+
+69 `.mbn` files ([`../captures/2026-08-29_pdc-configs/ut-modem_config-tree.txt`](../captures/2026-08-29_pdc-configs/ut-modem_config-tree.txt)),
+and the `mcfg_hw` path is exactly the `SR_DSDS-LA-7+7_mode-SDM632` package the
+modem lists as inactive. **On pmOS this directory does not exist**: mainline's
+`rmtfs`/`tqftpserv` do not serve it.
+
+So the two sides differ in *what the AP can hand the modem*, even if today's read
+says the modem ended up on the same configuration either way. Whether that matters
+for idle duty is not established by anything measured — it is the next question,
+not an answer.
+
+### Next
+
+- The software list after the vendor boot (in flight) — if the active software
+  config changed, everything above is rewritten.
+- ☠️ A longer oracle boot before concluding anything about `modem_config`'s
+  schedule. Five minutes is not a control.

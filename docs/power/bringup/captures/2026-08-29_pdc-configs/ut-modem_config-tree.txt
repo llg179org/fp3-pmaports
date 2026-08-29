@@ -1,0 +1,223 @@
+[sudo] password for phablet: /data/vendor/modem_config
+/data/vendor/modem_config/mcfg_sw
+/data/vendor/modem_config/mcfg_sw/generic
+/data/vendor/modem_config/mcfg_sw/generic/eu
+/data/vendor/modem_config/mcfg_sw/generic/eu/sky
+/data/vendor/modem_config/mcfg_sw/generic/eu/sky/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/sky/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/spain
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/spain/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/de
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/de/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/uk
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/commerci/uk/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/non_volt
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/non_volt/spain
+/data/vendor/modem_config/mcfg_sw/generic/eu/telefoni/non_volt/spain/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/swisscom
+/data/vendor/modem_config/mcfg_sw/generic/eu/swisscom/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/swisscom/commerci/swiss
+/data/vendor/modem_config/mcfg_sw/generic/eu/swisscom/commerci/swiss/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/kpn
+/data/vendor/modem_config/mcfg_sw/generic/eu/kpn/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/kpn/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/norway
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/norway/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/denmark
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/denmark/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/sweden
+/data/vendor/modem_config/mcfg_sw/generic/eu/telenor/commerci/sweden/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/tim
+/data/vendor/modem_config/mcfg_sw/generic/eu/tim/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/tim/commerci/italy
+/data/vendor/modem_config/mcfg_sw/generic/eu/tim/commerci/italy/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia/commerci/norway
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia/commerci/norway/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia/commerci/sweden
+/data/vendor/modem_config/mcfg_sw/generic/eu/telia/commerci/sweden/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/bouygues
+/data/vendor/modem_config/mcfg_sw/generic/eu/bouygues/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/bouygues/commerci/france
+/data/vendor/modem_config/mcfg_sw/generic/eu/bouygues/commerci/france/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2/commerci/sweden
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2/commerci/sweden/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2/commerci/nl
+/data/vendor/modem_config/mcfg_sw/generic/eu/tele2/commerci/nl/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/proximus
+/data/vendor/modem_config/mcfg_sw/generic/eu/proximus/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/proximus/commerci/belgium
+/data/vendor/modem_config/mcfg_sw/generic/eu/proximus/commerci/belgium/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/denmark
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/denmark/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/se
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/se/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/italy
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/italy/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/austria
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/austria/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/uk
+/data/vendor/modem_config/mcfg_sw/generic/eu/h3g/commerci/uk/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/tdc
+/data/vendor/modem_config/mcfg_sw/generic/eu/tdc/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/tdc/commerci/denmark
+/data/vendor/modem_config/mcfg_sw/generic/eu/tdc/commerci/denmark/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/volte
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/volte/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/volte/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/slovakia
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/slovakia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/croatia
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/croatia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/cz
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/cz/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/pl
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/pl/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/hungary
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/hungary/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/nl
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/nl/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/austria
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/austria/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/greece
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/commerci/greece/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/non_volt
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/non_volt/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/dt/non_volt/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/elisa
+/data/vendor/modem_config/mcfg_sw/generic/eu/elisa/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/elisa/commerci/fi
+/data/vendor/modem_config/mcfg_sw/generic/eu/elisa/commerci/fi/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/sfr
+/data/vendor/modem_config/mcfg_sw/generic/eu/sfr/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/sfr/commerci/fr
+/data/vendor/modem_config/mcfg_sw/generic/eu/sfr/commerci/fr/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/nos
+/data/vendor/modem_config/mcfg_sw/generic/eu/nos/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/nos/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/slovakia
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/slovakia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/france
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/france/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/spain
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/spain/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/group_no
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/group_no/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/belgium
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/belgium/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/romania
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/romania/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/poland
+/data/vendor/modem_config/mcfg_sw/generic/eu/orange/commerci/poland/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/germany
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/germany/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/turkey
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/turkey/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/cz
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/cz/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/portugal
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/portugal/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/spain
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/spain/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/global
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/global/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/italy
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/italy/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/ie
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/ie/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/safrica
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/safrica/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/uk
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/uk/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/netherla
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/volte/netherla/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/commerci/hungary
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/commerci/hungary/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/non_volt
+/data/vendor/modem_config/mcfg_sw/generic/eu/vodafone/non_volt/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/eu/ee
+/data/vendor/modem_config/mcfg_sw/generic/eu/ee/commerci
+/data/vendor/modem_config/mcfg_sw/generic/eu/ee/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/mea
+/data/vendor/modem_config/mcfg_sw/generic/mea/stc
+/data/vendor/modem_config/mcfg_sw/generic/mea/stc/commerci
+/data/vendor/modem_config/mcfg_sw/generic/mea/stc/commerci/sa
+/data/vendor/modem_config/mcfg_sw/generic/mea/stc/commerci/sa/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/latam
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx/commerci
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx/commerci/mx
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx/commerci/mx/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx/non_volt
+/data/vendor/modem_config/mcfg_sw/generic/latam/amx/non_volt/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni/commerci
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni/commerci/peru
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni/commerci/peru/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni/commerci/colombia
+/data/vendor/modem_config/mcfg_sw/generic/latam/telefoni/commerci/colombia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/latam/claro
+/data/vendor/modem_config/mcfg_sw/generic/latam/claro/commerci
+/data/vendor/modem_config/mcfg_sw/generic/latam/claro/commerci/colombia
+/data/vendor/modem_config/mcfg_sw/generic/latam/claro/commerci/colombia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/apac
+/data/vendor/modem_config/mcfg_sw/generic/apac/reliance
+/data/vendor/modem_config/mcfg_sw/generic/apac/reliance/commerci
+/data/vendor/modem_config/mcfg_sw/generic/apac/reliance/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/apac/kddi
+/data/vendor/modem_config/mcfg_sw/generic/apac/kddi/commerci
+/data/vendor/modem_config/mcfg_sw/generic/apac/kddi/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/apac/rakuten
+/data/vendor/modem_config/mcfg_sw/generic/apac/rakuten/commerci
+/data/vendor/modem_config/mcfg_sw/generic/apac/rakuten/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/apac/dcm
+/data/vendor/modem_config/mcfg_sw/generic/apac/dcm/commerci
+/data/vendor/modem_config/mcfg_sw/generic/apac/dcm/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/apac/sbm
+/data/vendor/modem_config/mcfg_sw/generic/apac/sbm/commerci
+/data/vendor/modem_config/mcfg_sw/generic/apac/sbm/commerci/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/sea
+/data/vendor/modem_config/mcfg_sw/generic/sea/p1
+/data/vendor/modem_config/mcfg_sw/generic/sea/p1/commerci
+/data/vendor/modem_config/mcfg_sw/generic/sea/p1/commerci/malaysia
+/data/vendor/modem_config/mcfg_sw/generic/sea/p1/commerci/malaysia/mcfg_sw.mbn
+/data/vendor/modem_config/mcfg_sw/generic/sea/chunghwa
+===VERINFO===
+{
+    "Image_Build_IDs": {
+        "adsp": "ADSP.VT.3.0-00161-00000-1", 
+        "apps": "LA.UM.8.6.2.r1-07600-89xx.0-1", 
+        "boot": "BOOT.BF.3.3.2-00078-M8953JAAAANAZB-2", 
+        "common": "SDM632.LA.2.1-00015-STD.PROD-1.325768.0.329896.1", 
+        "cpe": "CPE.TSF.3.0-00002-W9335AAAAAAAZQ-4", 
+        "glue": "GLUE.SDM632.2.0-00006-NOOP_TEST-1", 
+        "modem": "MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.325768.1.329896.1", 
+        "root_dir": "SDM632.LA.2.1-00015-STD.PROD-1.325768.0.329896.1", 
+        "rpm": "RPM.BF.2.4-00066-M8953AAAAANAZR-2", 
+        "tz": "TZ.BF.4.0.5-00236-M8937AAAAANAZT-1", 
+        "video": "VIDEO.VE.4.4-00066-PROD-1", 
+        "wcnss": "CNSS.PR.4.0.3-00294-M8953BAAAANAZW-1"
+    }, 
+    "Metabuild_Info": {
+        "Meta_Build_ID": "SDM632.LA.2.1-00015-STD.PROD-1.325768.0.329896.1", 
+        "Product_Flavor": "asic", 
+        "Time_Stamp": "2021-10-25 17:14:07"
+    }, 
+    "Version": "1.0"
+}
