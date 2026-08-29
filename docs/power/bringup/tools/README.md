@@ -203,3 +203,11 @@ dead candidates: [`../leads/modem-idle-lte.md`](../leads/modem-idle-lte.md).
 | [`smd-wake-source.sh`](smd-wake-source.sh) | per-round residency plus a per-channel census of the modem's SMD edge, with a double-deref kprobe on the channel name |
 | [`rpmsg-ept.py`](rpmsg-ept.py), [`diag-probe.py`](diag-probe.py) | open a named rpmsg channel through the control device and speak HDLC-framed DIAG on it. State and the exact next sequence: [`../leads/diag-bringup.md`](../leads/diag-bringup.md) |
 | [`modem-fw-swap.sh`](modem-fw-swap.sh) | kept for the record with a do-not-run banner — the firmware difference it was written to test did not exist |
+
+## Suspend residency: how long it sleeps, and what that is worth
+
+| tool | the question it answers |
+|---|---|
+| [`suspend-rate.sh`](suspend-rate.sh) | how much of each `rtcwake` window the phone actually sleeps, and **which IRQ ended it** — the `wake_irq` column resolves `/sys/power/pm_wakeup_irq` to a name, because the Linux irq number is an allocation and moves between boots. This is the instrument that named ModemManager across four legs |
+| [`sleep-night.sh`](sleep-night.sh) | what residency is worth in mA. ☠️☠️ **Read its header before reading its output**: `capacity`, `charge_now` and `current_now` are three sysfs names for **one** software integrator in `qcom_smbx.c`, and its suspend-gap branch counts nothing — so the capacity column is pinned by design across exactly the window being measured. The measure is the `v_uV` column (a hardware rest OCV), it needs hours, and the run must start **below** the flat top of the discharge curve |
+| [`call-wake-test.sh`](call-wake-test.sh) | does an incoming call still raise the phone once a knob is applied — the responsiveness half of the trade, which no residency number replaces |
