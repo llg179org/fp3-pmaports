@@ -195,6 +195,7 @@ dead candidates: [`../leads/modem-idle-lte.md`](../leads/modem-idle-lte.md).
 
 | tool | the question it answers |
 |---|---|
+| [`learn-prep.sh`](learn-prep.sh) + [`learn-cycle.sh`](learn-cycle.sh) | does the r79 gauge learning actually converge on the pack? prep walks the pack under the recharge threshold and back up to a terminated charge — ☠️ a pack sitting at 91 % on the cable does not charge, it inhibits, so the upper anchor has to be *produced* — then learn-cycle discharges to a floor with `charge_full` in **every row**, because the learning fires inside an anchor and a value read only at the end cannot say when it moved |
 | [`modem-window.sh`](modem-window.sh) + [`modem-window-fit.py`](modem-window-fit.py) | one duty window, **on either system**: it branches on the stack (`mmcli` vs the oracle's two ofono modems, a master-stats directory vs a single file) but never on the question, and writes the modem's power state, access technology, signal and serving cell into the same file as the counters. ☠️ Built because a window taken before registration is not a window about idle behaviour |
 | [`boot-level-sample.sh`](boot-level-sample.sh) | one window per boot with the candidates beside it — camped cell, band, channel, signal, operator, firmware. ☠️ The duty is fixed at boot and does not decay, so a window is a property of its boot |
 | [`duty-vs-uptime.sh`](duty-vs-uptime.sh) | is the level a post-boot decay or a per-boot constant? Forty-six windows over 4.8 hours answered: constant, slope +0.36 %/hour |

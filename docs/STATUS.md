@@ -757,10 +757,20 @@ existing magic, and a battery swap correctly falls back to design.
 
 Shipped through the category rule — `wip/7.1.3/charger 56ed6005`,
 `integration/7.1.3 bbb5a088`, `debug-int/7.1.3 b8de6ded`, all pushed and
-tarball-reachable — package **r79**, running as `#80-fp3`. ⏳ Validation is a pack
-cycle: `learn-prep.sh` walks the pack under the recharge threshold, lets it
-terminate, and hands over to `learn-cycle.sh`, which logs `charge_full` in every
-row down to a 38 % floor. Expected convergence ~2076 mAh.
+tarball-reachable — package **r79**, running as `#80-fp3`. ⏳ **Validation is written but NOT running** — it was started at 11:00 and
+**stopped at ~12:50** to free the phone for the modem work, with the pack back at
+91–94 %. ☠️ This line said "validation running" for four hours after that; a status
+field that goes false while nobody edits it is the failure mode this project has
+already been bitten by twice, and it is why the sentence now names the time it
+stopped rather than the state it was in.
+
+Restart it with one command — the tools are installed on the phone and in the
+repo: `systemd-run --unit=learn-prep --collect /usr/local/bin/learn-prep.sh 38`.
+[`learn-prep.sh`](power/bringup/tools/learn-prep.sh) walks the pack under the
+recharge threshold, lets it terminate — the upper anchor — and hands over to
+[`learn-cycle.sh`](power/bringup/tools/learn-cycle.sh), which logs `charge_full` in
+every row down to a 38 % floor. Expected convergence ~2076 mAh; the evidence is
+that column moving.
 
 ☠️ **The `.ko` hot-swap was tried first and is not available for this change.** A
 module built from `wip/7.1.3/charger` and loaded onto a phone running
