@@ -15,11 +15,13 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-29 (15:00) — the consumption model closes
+Last updated: **2026-08-29 (15:25) — the consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
 target BELOW the modem and oracle parity exactly AT it; the sleep blocker is named
-(ModemManager's live QMI indications, four legs); and the instrument built to price
-that sleep was caught reading a gauge the suspend switches off.**
+(ModemManager, now separated from the duty by a one-boot A-B-A′); the oracle turns
+out to have been measured on the *expensive* cell all along, which kills the
+network-configuration explanation; and the instrument built to price that sleep was
+caught reading a gauge the suspend switches off.**
 
 **1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
 each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
@@ -744,6 +746,38 @@ costs a modem more.
 (36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
+
+### ★★★★★ 2026-08-29 — the oracle was on the EXPENSIVE cell, and the two fronts are now separated by measurement
+
+**1. Same cell, eight to nine times.** All four oracle windows of
+`captures/2026-08-28_modem-window-both/` were camped on cell **1470762** —
+eutran-1, channel 500, the cell the band A-B-A′ measured at a pmOS median of
+**50.0 %**:
+
+| system | MPSS awake on cell 1470762 |
+|---|---|
+| oracle | **5.4 / 6.2 / 6.5 / 8.1 %** |
+| pmOS | **48.9 – 52.7 %** |
+
+☠️ This kills the reading the modem lead was pointing at: `defaultPagingCycle` and
+`nB` come out of the cell's SIB2 and are therefore common to both systems, so they
+cannot explain the *system* gap. ★ And it inverts the band result — the expensive
+band is not expensive in itself, since the oracle pays 6 % on it. **Our stack
+responds to it expensively.**
+
+**2. ModemManager owns the interrupts, not the duty.** A-B-A′ inside one boot
+(`captures/2026-08-29_mmdaemon-master-ab/`):
+
+| leg | ModemManager | MPSS awake | current | **modem edge IRQs / 360 s** |
+|---|---|---|---|---|
+| A | running | 33.7 % | 99 mA | 27 |
+| B | **stopped** | 33.0 % | 99 mA | **0** |
+| A′ | running | 35.9 % | 104 mA | 68 |
+
+The duty does not move; the modem's own hardware IRQ goes to **zero**. So the
+consumption target cannot be reached from ModemManager and the residency target is
+exactly ModemManager. ☠️ Retires the hypothesis that narrowing the NAS indications
+buys both fronts at once — it buys one.
 
 ### ★★★★★ 2026-08-29 — the model closes, and it says where the halving target sits
 
