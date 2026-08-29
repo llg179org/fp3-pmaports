@@ -8944,3 +8944,87 @@ retracted "~15 mA has no owner", and the fit needs the hours it was given.
 gap after every 600 s suspend - and every ssh login lands inside the window whose
 voltage is the measurement. After one lucky read, further polling was stopped
 rather than continued.
+
+## ★★★★★ 2026-08-29 — the IPA handshake never starts: our driver looks up instance 2, the modem advertises instance 1
+
+The surviving candidate, run down in one evening with the oracle's kernel tree
+fetched and five read-only commands on the device
+([`captures/2026-08-29_ipa-handshake/`](captures/2026-08-29_ipa-handshake/)).
+
+### What the device says
+
+```
+## 1. module loaded?        ipa2_lite  32768  0          -> yes
+## 2. device bound?         7900000.ipa -> drivers/ipa   -> yes
+## 3. dmesg | grep -ic ipa  0                            -> NOT ONE LINE, EVER
+## 4. qrtr-lookup, service 49:
+       49       1        1    1 16386 IPA control service   <- the MODEM, instance 1
+       49       1        2    0    22 IPA control service   <- ours (see below)
+## 5. rmnet_ipa0 down, 0 bytes; ipa_lan0 down, 0 bytes
+```
+
+### What the source says
+
+`drivers/net/ipa2-lite/ipa-qmi.c`:
+
+```c
+#define IPA_MODEM_SERVICE_SVC_ID	0x31	/* 49 */
+#define IPA_MODEM_SERVICE_INS_ID	2
+	qmi_add_lookup(&ipa_qmi->client_handle, IPA_MODEM_SERVICE_SVC_ID,
+		       IPA_MODEM_SVC_VERS /* 1 */, IPA_MODEM_SERVICE_INS_ID /* 2 */);
+```
+
+QRTR packs the two into one field — `QRTR_INSTANCE(version, instance) = version |
+instance << 8` (`include/linux/soc/qcom/qrtr.h`) — so:
+
+| | version | instance | **encoded field** |
+|---|---|---|---|
+| our lookup | 1 | **2** | **0x201** |
+| the modem's server | 1 | **1** | **0x101** |
+
+and the name service demands an exact match, twice:
+
+```c
+net/qrtr/ns.c:531:  if (lookup->instance && lookup->instance != instance) continue;
+net/qrtr/ns.c:126:  return (srv->instance & ifilter) == f->instance;
+```
+
+**0x201 never equals 0x101, so `new_server` is never called.** The work that
+sends `INIT_DRIVER` is scheduled *from that callback*, so no request is ever
+built, no timeout ever expires, and every `dev_err` in the path is unreachable.
+**That is exactly why `dmesg` has not one IPA line in 12 359 seconds of uptime** —
+the silence is not a missing driver, it is a lookup that never matches.
+
+### The instrument calibration that made this readable
+
+☠️ The `qrtr-lookup` columns had to be trusted before any of this meant anything,
+and they were checked against a service that **provably works on this phone**: the
+SLIMbus controller calls `qmi_add_lookup(0x0301, vers 1, ins 0)` and the listing
+reads `769 1 0` — service, version, instance, exactly the lookup's own arguments.
+Audio works, so that row is a known-good calibration.
+
+### Two things measured, one still unexplained
+
+★ `rmmod ipa2_lite` removed the node-0 row and `modprobe` did **not** bring it
+back, which is how the node-0 row was attributed to our driver at all. ☠️ But the
+row read **instance 2** while `qmi_add_server()` is called with
+`IPA_HOST_SERVICE_INS_ID = 1`, and that is not explained. It does not affect the
+finding — the modem's own advertisement is a direct measurement and our lookup is
+plain source — but it is written down rather than smoothed over.
+
+### Why this is not simply an upstream bug
+
+Both mainline IPA drivers use `INS_ID 2` (`ipa2-lite` and the v3 `drivers/net/ipa`),
+and that works on SDM845. So the question is whether **this modem** — an
+`SR_DSDS` (single radio, dual SIM) build — advertises instance 1 where a single-SIM
+platform advertises 2. Until that is known the fix is a device-level finding, not
+a driver-level one.
+
+### Next: the cheapest possible proof
+
+Change the constant to 1, build **from the running tree**, hot-swap the `.ko`, and
+watch `qrtr-lookup` and `dmesg`. ☠️ The hot-swap trap of this morning was building
+from a *different* branch than the phone runs; built from `debug-int/7.1.3` it is
+valid. A handshake that starts will announce itself — every failure path in
+`ipa_client_init_driver_work()` logs, and success brings the modem service a
+client.
