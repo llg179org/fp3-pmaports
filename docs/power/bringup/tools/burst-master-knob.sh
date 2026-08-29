@@ -24,8 +24,20 @@ set -u
 [ $# -ge 5 ] || { echo "usage: $0 <label> <off-cmd> <on-cmd> <state-cmd> <expected-off> [window_s]" >&2; exit 2; }
 LABEL=$1; OFFCMD=$2; ONCMD=$3; STATECMD=$4; EXPECT=$5; W=${6:-360}
 
+# ☠️ Refuse the ONE dangerous write - restarting the modem through
+# /sys/class/remoteproc/N/state costs audio until the next reboot and a mixer
+# write afterwards oopses the kernel.
+#
+# ☠️ Match the PATH, not the word. The first version of this guard matched
+# *remoteproc* anywhere in either command, and on 2026-08-29 it refused a
+# perfectly safe run whose knob was
+#   echo remoteproc0:smd-edge.IPCRTR.-1.-1 > .../qcom_smd_qrtr/unbind
+# - an rpmsg DEVICE NAME that merely contains the word. A guard that fires on
+# the safe case is worse than none, because the next person in a hurry deletes
+# it rather than narrowing it.
 case "$OFFCMD$ONCMD" in
-	*remoteproc*) echo "☠️ refusing: this must not drive the remoteproc state file" >&2; exit 2 ;;
+	*/sys/class/remoteproc/*state*|*/sys/class/remoteproc/*/state*)
+		echo "☠️ refusing: this must not drive the remoteproc state file" >&2; exit 2 ;;
 esac
 
 OUT=/var/log/fp3/bmknob-${LABEL}-$(date +%s)
