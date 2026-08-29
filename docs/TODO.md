@@ -3211,9 +3211,30 @@ the 2.864 V run too.
 ## ★★★★★ 2026-08-28 evening — the road to halving pmOS, in order
 
 The target in numbers: idle **98–101 mA → ≤50 mA**, call-wake preserved. It rests
-on **one** term — the modem core is awake **33–36 %** against the oracle's **6.3 %**
-— because with the core down this phone idles at **57.5 mA**, inside the oracle's
-own 55–64 mA band. There is no second term behind the gap.
+largely on **one** term — the modem core is awake **33–36 %** against the oracle's
+**6.3 %** — because with the core down this phone idles at **57.5 mA**, inside the
+oracle's own 55–64 mA band.
+
+☠️☠️ **2026-08-29 — say the arithmetic out loud, because it does not reach the
+target.** Solving the modem term *completely* buys 26 mA: 98–101 → **72–75 mA**,
+which is still **1.15–1.3× the oracle** and nowhere near ≤50. Worse, the terms do
+not close: 57.5 mA with the core down plus the 26 mA differential predicts
+**83.5 mA**, against 98–101 measured — so **~15 mA has no owner at all**, inside a
+story that was written as though it had one term. "There is no second term behind
+the gap" was too strong; there is one, it is a sixth of the gap, and it has never
+been named.
+
+And ≤50 mA is **below the oracle itself**. On the numbers as they stand today the
+honest ceiling for this line of work is **~1.3× better, not 2×**, unless the
+unattributed 15 mA turns out to be large and cheap. Naming it is therefore the
+highest-value open item, ahead of more modem archaeology — and it needs no new
+instrument, only `burst-master-knob.sh` and `rail-census.sh` with the modem as the
+knob.
+
+★ What is measured and shippable so far is **zero**. The band is worth 12 mA and is
+not shippable (pinning an LTE band trades coverage for power); 2G is worth 44 mA
+and is an instrument; the eMMC autosuspend delay is a dead knob (three rounds, no
+effect).
 
 ☠️ **2G is an instrument, not a mode.** The `2gonly` A-B-A′ answers whether the
 cost is RAT/DRX-dependent, which names *where* a fix would live. The networks are
