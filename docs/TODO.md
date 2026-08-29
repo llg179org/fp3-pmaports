@@ -3247,6 +3247,40 @@ effect).
 cost is RAT/DRX-dependent, which names *where* a fix would live. The networks are
 being switched off; nothing here proposes shipping it.
 
+### 0. ★★★★★ NEW PRIMARY — get below the 54.9 mA intercept, which means suspend
+
+Everything under §1 and after buys **parity** with the oracle and stops at 63 mA.
+The halving target lives under the intercept, and the intercept is an application
+processor that has **never slept** — `APSS XO off` reads 0.0 s in every window ever
+taken, on either system.
+
+The blocker is already named: `pm_wakeup_irq = 141` on 4 of 4 attempts, the
+**modem's SMD edge**, and the modem rings it about **once every fourteen seconds**
+(0.07 /s by hardware IRQ). The measured sleep durations line up with exactly that
+interval — 60 / 2 / 9 / 6 / 6 / 19 s out of 600 s attempts.
+
+☠️ **And today that traffic is pure loss.** The modem edge
+(`remoteproc0:smd-edge`) currently reads `power/wakeup = disabled`, so it breaks
+the suspend *without* being able to deliver a call. Whatever the fix is, the phone
+is paying the cost and getting none of the benefit.
+
+**The ordered questions, none of which needs a new instrument:**
+
+1. **Is the ~14 s ring ours?** Two boots, same instrument: ModemManager running,
+   against ModemManager masked from boot with the modem brought online by a single
+   `qmicli --dms-set-operating-mode=online` and no indications subscribed. Compare
+   `modem_irq_per_s` and the suspend-round durations (`suspend-rate.sh`). The 2026-08-22
+   census put the ring on **IPCRTR** and found it signal-level — flow control and
+   read-acks, not messages — and found the AP sending almost nothing, so a
+   subscription the modem is *answering* is the obvious remaining candidate.
+2. **If it is ours**, name the indication (signal strength, serving system) and
+   measure the residency with it off. That is a userspace fix and it is shippable.
+3. **If it is not ours**, the question becomes why a non-wake interrupt aborts
+   s2idle at all, which is a kernel question about this edge's IRQ handling.
+4. **Only then** turn the policy layer on — `IdleAction`, gsd-power's
+   `sleep-inactive-battery-type` — and measure what residency is worth in mA. Until
+   a suspend can hold, enabling the policy measures nothing.
+
 ### 1. ⏳ The decisive fork — is it our stack's configuration or the modem's own?
 
 Boot with **`ModemManager` masked from boot**, then 2 × 360 s of MPSS duty.
