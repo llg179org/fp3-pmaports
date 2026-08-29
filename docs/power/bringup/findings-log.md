@@ -8408,3 +8408,33 @@ yesterday; this says the second one has a single, constant, so-far-immovable cau
 2. **The DIAG data channel**, gated on the `DIAG_ID` exchange — recipe in
    [`leads/diag-bringup.md`](leads/diag-bringup.md).
 3. The 35 Hz ring itself, which nothing on the AP side has moved.
+
+## 2026-08-29 — the boot level follows the band the network hands out
+
+Nine boots, one 6-minute window each, everything that might explain the level
+recorded beside it (`tools/boot-level-sample.sh`):
+
+| boot | cell | band | channel | signal | MPSS duty |
+|---|---|---|---|---|---|
+| 1 | 1470762 | eutran-1 (2100 MHz) | 500 | 81 % | **48.9 %** |
+| 2 | 1470732 | eutran-3 (1800 MHz) | 1300 | 80 % | 36.8 % |
+| 3–9 | 1470732 | eutran-3 (1800 MHz) | 1300 | 71–80 % | 26.5–31.6 %, median **29.1 %** |
+
+The network put the phone on the same cell in eight boots out of nine, so the
+high leg is n=1 and the table on its own is a suggestion, not a result: **a
+correlation with one point on one side is a coincidence until the variable is
+forced**. What it does buy is a lever to force — and the lever exists:
+`mmcli -m 0 --set-current-bands=eutran-1` moved the modem onto cell 1470762 at
+channel 500 within 25 seconds, the very cell the 48.9 % window was taken on.
+
+So the question became answerable inside one boot, which is the only place the
+previous entry allows it to be asked. `tools/band-ab.sh` runs A(eutran-3) →
+B(eutran-1) → A′(eutran-3), records `--nas-get-rf-band-info` around every leg —
+☠️ the witness watches the band, the variable the lever moves, not the modem's
+power state — and writes the original band list back at the end so the run does
+not leave the modem pinned.
+
+☠️ Note the ring: `edge_per_s` reads **38.8–47.8** in these nine windows against
+34.1–36.2 in the forty-six windows of the previous entry. The metronome is
+constant *within* a boot and steps *between* boots, exactly like the duty. It is
+a second quantity that gets its value at boot.
