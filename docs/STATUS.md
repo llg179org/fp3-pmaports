@@ -15,11 +15,13 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-29 (16:15) — the consumption model closes
+Last updated: **2026-08-29 (18:05) — the consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
 target BELOW the modem and oracle parity exactly AT it; the sleep blocker is named
 (ModemManager, separated from the duty by a one-boot A-B-A′, and its mechanism
-pinned to a live QMI indication subscription rather than a daemon timer); the oracle turns
+pinned to a live QMI indication subscription rather than a daemon timer); **the
+audio stack is measured off the idle bill and its series is free to go upstream**;
+the carrier-configuration lead is closed as the tenth dead candidate; the oracle turns
 out to have been measured on the *expensive* cell all along, which kills the
 network-configuration explanation; and the instrument built to price that sleep was
 caught reading a gauge the suspend switches off.**
@@ -747,6 +749,31 @@ costs a modem more.
 (36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
+
+### ✅ 2026-08-29 evening — the audio stack costs nothing at idle
+
+Three boots, the middle one with the audio modules never loaded, witnessed per leg
+(`captures/2026-08-29_audio-off-ab/`):
+
+| leg | audio stack | **floor p10** | median | MPSS awake |
+|---|---|---|---|---|
+| A | 4 modules, 1 card | **53 mA** | 100 | 37.5 % |
+| B | **0 modules, 0 cards** | **55 mA** | 84 | 33.5 % |
+| A′ | 4 modules, 1 card | **54 mA** | 134 | 51.4 % |
+
+B is above both controls: removing the stack costs 1-2 mA, the same direction and
+size as stopping the ADSP outright in August. ⇒ **the audio series goes upstream on
+its own schedule** (the file sets are disjoint from the power branch too). ★ And
+the medians — 100 / 84 / 134 — are the sharpest case yet for reading the floor:
+they would say audio *saves* 16 mA, or *costs* 50, depending on reading order.
+
+### ☠️ 2026-08-29 evening — the carrier-configuration lead is closed
+
+`ROW_Commercial` active, platform package `Inactive`, **unchanged by a vendor
+boot** — and PDC state is persistent, so months of daily Ubuntu Touch use had
+every chance to set something else. Both systems run the same modem configuration.
+★ Kept for what it found: the oracle serves a 69-file AP-side MBN tree that pmOS
+does not have at all (`leads/modem-carrier-config.md`).
 
 ### ★★★★★ 2026-08-29 — the wake mechanism is an indication subscription, and that names the fix
 
