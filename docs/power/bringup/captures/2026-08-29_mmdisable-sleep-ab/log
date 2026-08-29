@@ -1,0 +1,16 @@
+# sleep-knob-ab 2026-08-29 15:18:56 knob=mmdisable rounds=2 secs=600 gap=150s
+# kernel=7.1.3-postmarketos-qcom-msm8953 #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# --- leg A: state=registered
+# leg A slept: 8 +1228 +274 +242 +232 +119 +111 +66 +47 12 +1168 +274 +243 +125 +109 +84 +76 +59 of 600
+# leg A ended by: 141:smd-edge 153.50/s 34.25/s 30.25/s 29.00/s 14.88/s 13.88/s 8.25/s 5.88/s 141:smd-edge 97.33/s 22.83/s 20.25/s 10.42/s 9.08/s 7.00/s 6.33/s 4.92/s 
+# applying off: mmcli -m 0 --disable
+# state after off: disabled
+# --- leg B: state=disabled
+# leg B slept: 601 +1106 +246 +212 +139 +111 +107 +104 +44 602 +1050 +248 +235 +110 +90 +86 +47 +37 of 600
+# leg B ended by: 63:pm8xxx_rtc_alarm 1.84/s 0.41/s 0.35/s 0.23/s 0.18/s 0.18/s 0.17/s 0.07/s 63:pm8xxx_rtc_alarm 1.74/s 0.41/s 0.39/s 0.18/s 0.15/s 0.14/s 0.08/s 0.06/s 
+# restoring: mmcli -m 0 --enable
+# state after restore: registered
+# --- leg Ap: state=registered
+# leg Ap slept: 124 +1240 +254 +236 +130 +110 +106 +80 +40 56 +886 +214 +183 +95 +94 +81 +47 +37 of 600
+# leg Ap ended by: 141:smd-edge 10.00/s 2.05/s 1.90/s 1.05/s 0.89/s 0.85/s 0.65/s 0.32/s 141:smd-edge 15.82/s 3.82/s 3.27/s 1.70/s 1.68/s 1.45/s 0.84/s 0.66/s 
+# /var/log/fp3/sknob-mmdisable-1788009536

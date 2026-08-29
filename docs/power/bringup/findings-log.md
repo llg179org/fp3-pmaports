@@ -8783,3 +8783,48 @@ that cell.
 ☠️ This does not retire DIAG; it re-aims it. The question is no longer "what does
 the network say" — that is now known to be common to both — but "what does the
 modem do with it", and only DIAG sees inside.
+
+## ★★★★★ 2026-08-29 — it is an indication subscription, not a poll timer, and that names the fix
+
+The mechanism behind ModemManager ending every suspend had two candidates needing
+opposite fixes: a **poll timer** inside the daemon (s2idle does not stop hrtimers,
+so a timer every N seconds wakes the AP, which asks the modem and gets an interrupt
+back — the fix would be a setting), or a **live indication subscription** the modem
+services on its own schedule (the fix would be which NAS indications the QMI plugin
+registers).
+
+`mmcli -m 0 --disable` separates them with nothing patched: the daemon keeps
+running with every timer it has, and the modem's subscriptions go away with the
+disable. A-B-A′, 2 × 600 s per leg
+([`captures/2026-08-29_mmdisable-sleep-ab/`](captures/2026-08-29_mmdisable-sleep-ab/)):
+
+| leg | modem | ModemManager | slept, of 600 s | ended by |
+|---|---|---|---|---|
+| A | `registered` | **running** | 8 / 12 s | `141:smd-edge` |
+| B | **`disabled`** | **running** | **601 / 602 s** | `63:pm8xxx_rtc_alarm` |
+| A′ | `registered` | **running** | 124 / 56 s | `141:smd-edge` |
+
+**The daemon runs in all three legs.** So it is not the daemon's own timers — those
+were present through the B leg and cost nothing. It is the subscription, which is
+exactly what `--disable` tears down.
+
+★ **The fix's shape, now decided:** *which* NAS indications ModemManager's QMI
+plugin registers at enable time. That is a ModemManager change, not a setting;
+`--signal-setup` is already 0 on this device and was never the lever.
+
+☠️ **And `--disable` is not the fix either** — a disabled modem is not registered
+and cannot receive a call. Like the masked daemon and the 2G leg before it, this is
+an instrument for locating the cost. The trade to break is keeping the call and SMS
+path while dropping the chatty reporting, and nothing measured so far says the two
+cannot be separated.
+
+★ Note the A′ spread: 124 and 56 s against A's 8 and 12. Both legs die on the modem
+edge and both are an order below B's 601, so the knob's effect is ~50x and survives
+the noise — but a single A-leg number is not a baseline on this phone, which is why
+the wrapper insists on A′.
+
+★ The `mpss_xo_delta` column moves with it: 23 / 31 in A, **1478 / 1489** in B, 316 /
+138 in A′. With the modem disabled the MSS core takes about fifty times as many XO
+shutdowns per round. That is the consumption front's own quantity, and it says the
+same thing from the other side — but it is measured here with the *radio down*, so
+it is not a duty result, only a confirmation that the leg did what it claimed.

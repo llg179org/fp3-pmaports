@@ -67,9 +67,13 @@ leg(){
 	say "# --- leg $name: state=$(state)"
 	/usr/local/bin/suspend-rate.sh "$N" "$SECS" "$GAP" >/dev/null 2>&1
 	cp /run/srate.txt "$OUT/$name.txt" 2>/dev/null
-	# the summary line the reader actually wants, next to the raw file
-	say "# leg $name slept: $(awk '!/^#/ && NF>3 {printf "%s ", $3}' "$OUT/$name.txt")of $SECS"
-	say "# leg $name ended by: $(awk '!/^#/ && NF>3 {printf "%s ", $NF}' "$OUT/$name.txt")"
+	# The summary line the reader actually wants, next to the raw file.
+	# ☠️ Anchor on a leading round NUMBER. suspend-rate.sh interleaves indented
+	# per-IRQ delta lines that also have more than three fields, and the first
+	# version of this matched them too - the summary read
+	# "8 +1228 153.50/s ... of 600" and buried the one number it exists to show.
+	say "# leg $name slept: $(awk '/^[0-9]/ {printf "%s ", $3}' "$OUT/$name.txt")of $SECS"
+	say "# leg $name ended by: $(awk '/^[0-9]/ {printf "%s ", $NF}' "$OUT/$name.txt")"
 }
 
 leg A

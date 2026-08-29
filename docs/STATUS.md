@@ -15,10 +15,11 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-29 (15:25) — the consumption model closes
+Last updated: **2026-08-29 (16:15) — the consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
 target BELOW the modem and oracle parity exactly AT it; the sleep blocker is named
-(ModemManager, now separated from the duty by a one-boot A-B-A′); the oracle turns
+(ModemManager, separated from the duty by a one-boot A-B-A′, and its mechanism
+pinned to a live QMI indication subscription rather than a daemon timer); the oracle turns
 out to have been measured on the *expensive* cell all along, which kills the
 network-configuration explanation; and the instrument built to price that sleep was
 caught reading a gauge the suspend switches off.**
@@ -746,6 +747,27 @@ costs a modem more.
 (36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
+
+### ★★★★★ 2026-08-29 — the wake mechanism is an indication subscription, and that names the fix
+
+Two candidates needed opposite fixes: a poll timer inside the daemon (a setting) or
+a live indication subscription the modem services on its own schedule (a
+ModemManager change). `mmcli -m 0 --disable` separates them with nothing patched —
+the daemon keeps every timer, the subscriptions go with the disable
+(`captures/2026-08-29_mmdisable-sleep-ab/`):
+
+| leg | modem | ModemManager | slept, of 600 s | ended by |
+|---|---|---|---|---|
+| A | `registered` | **running** | 8 / 12 s | `141:smd-edge` |
+| B | **`disabled`** | **running** | **601 / 602 s** | RTC |
+| A′ | `registered` | **running** | 124 / 56 s | `141:smd-edge` |
+
+**The daemon runs in all three legs**, so its timers are not it. ★ The fix is
+*which NAS indications the QMI plugin registers at enable time* — a ModemManager
+change, not a setting (`--signal-setup` is already 0 here and was never the lever).
+☠️ `--disable` is an instrument, not a fix: a disabled modem cannot take a call.
+The trade to break is keeping the call/SMS path while dropping the chatty
+reporting.
 
 ### ★★★★★ 2026-08-29 — the oracle was on the EXPENSIVE cell, and the two fronts are now separated by measurement
 

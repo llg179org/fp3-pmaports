@@ -1,0 +1,23 @@
+# srate n=2 secs=600 gap=150s start_uptime=9794 kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# cable: online=1 status=Charging
+# modem remoteproc state at start: running
+# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta wake_irq
+1 9794 124 600 registered 100 316 141:smd-edge
+    irq IPI1:        +1240    10.00/s
+    irq 24:          +254     2.05/s
+    irq 11:          +236     1.90/s
+    irq 41:          +130     1.05/s
+    irq IPI4:        +110     0.89/s
+    irq 22:          +106     0.85/s
+    irq IPI0:        +80      0.65/s
+    irq IPI5:        +40      0.32/s
+2 10068 56 600 registered 100 138 141:smd-edge
+    irq IPI1:        +886     15.82/s
+    irq 24:          +214     3.82/s
+    irq 11:          +183     3.27/s
+    irq 22:          +95      1.70/s
+    irq IPI0:        +94      1.68/s
+    irq IPI4:        +81      1.45/s
+    irq 41:          +47      0.84/s
+    irq 140:         +37      0.66/s
+# done
