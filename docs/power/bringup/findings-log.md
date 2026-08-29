@@ -8659,3 +8659,40 @@ but nothing yet says how much of that intercept a sleeping AP actually removes.
 `current_now` cannot answer it — the gauge's poll worker is frozen during the
 suspend it is meant to measure — so this needs a discharge across a sleeping night
 against one across a waking night.
+
+## ☠️☠️ 2026-08-29 — the residency measurement was reading an instrument the suspend switches off
+
+`sleep-night.sh` was built to price suspend residency in mA from charge delivered
+between two capacities. Four full 602 s suspends in, `capacity` had not moved off
+95 % and the rounds file looked like a phone drawing nearly nothing. It is not a
+reading. It is what the driver guarantees.
+
+`smb_get_batt_charge_now()` is `soc_permyriad * charge_full / 10000`, and
+`soc_permyriad` is a **software integrator** in `qcom_smbx.c`. Its suspend-gap
+branch counts nothing, by design and with the reason in the comment:
+
+> A suspend draws too little to have moved the charge, so keep the count as it was
+> and let the hardware rest-OCV re-anchor correct any residual.
+
+There is no hardware coulomb counter in the picture at all: the driver reads
+instantaneous ADC (`QG_LAST_ADC_I_DATA0`) and the rest-OCV registers
+(`QG_S3_GOOD_OCV_*`, `QG_S7_PON_OCV_*`), nothing accumulated. So `capacity`,
+`charge_now` and `current_now` are **three sysfs names for one instrument**, and
+that instrument is off for exactly the window the script exists to measure.
+
+☠️ **The same shape as the aw8898 regmap cache**: two witnesses that share a layer
+are one witness. Here it took three names to hide it, and the file that gave it
+away was the driver source, not the phone. A capture that agrees with itself four
+times is not corroboration when all four came out of the same divider.
+
+**What survives in the log**: the `v_uV` column. It is sampled immediately after
+each wake with the phone otherwise idle, so it is a rest OCV taken by hardware, and
+the suspend does not freeze it. The per-sample spread is ~20 mV, so it needs a
+trend over hours and a start **below** the flat top of the curve — at 95 % a whole
+night's drain sits inside the noise. The header now says so, and the run in
+progress is being kept for the voltage trend rather than the capacity delta.
+
+☠️ And note what this does *not* invalidate: the residency itself. 4 of 4 rounds
+slept the full 602 s and woke on `63:pm8xxx_rtc_alarm`, `suspend_stats/success`
+7 → 11, `fail` 0. What the modem-front measurements say about *duty* is untouched;
+what is still unmeasured is what an hour of that sleep is worth in mA.

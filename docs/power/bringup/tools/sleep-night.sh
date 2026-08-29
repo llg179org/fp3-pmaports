@@ -9,9 +9,25 @@
 #
 # ☠️ WHY IT CANNOT BE current_now. The gauge's poll worker is frozen for the whole
 # suspend, so `current_now` samples only the awake gaps - which is the part of the
-# night this is trying not to measure. The answer has to come from the pack:
-# charge delivered between two capacities, over a night that was mostly asleep,
-# against the 98-101 mA the same phone draws awake.
+# night this is trying not to measure.
+#
+# ☠️☠️ AND IT CANNOT BE `capacity` OR `charge_now` EITHER - read the driver, not the
+# sysfs name. `smb_get_batt_charge_now()` is `soc_permyriad * charge_full / 10000`,
+# and `soc_permyriad` is a SOFTWARE integrator in qcom_smbx.c whose suspend-gap
+# branch counts *nothing*: "A suspend draws too little to have moved the charge, so
+# keep the count as it was". There is no hardware coulomb counter in play - the
+# driver reads instantaneous ADC (QG_LAST_ADC_I_DATA0) and the rest-OCV registers,
+# nothing accumulated. So capacity, charge_now and current_now are three readings of
+# ONE instrument, and that instrument is switched off for exactly the window this
+# script exists to measure. Measured 2026-08-29: four full 602 s suspends, capacity
+# pinned at 95 % throughout - which is what the code guarantees, not a low draw.
+#
+# ⇒ THE MEASURE HERE IS THE `v_uV` COLUMN, sampled right after each wake with the
+# phone otherwise idle: that is a rest OCV, taken by hardware, and it is the only
+# number in this log the suspend does not freeze. Fit the trend across many rounds
+# (the per-sample spread is ~20 mV) and convert through the pack's OCV curve. Start
+# the run BELOW the flat top of the curve - at 95 % a night's drain is inside the
+# noise - and expect hours, not minutes.
 #
 # ☠️ IT NEEDS ModemManager STOPPED, and that is not a fix, it is the instrument.
 # Measured 2026-08-29: with the daemon running every suspend dies within 16-53 s

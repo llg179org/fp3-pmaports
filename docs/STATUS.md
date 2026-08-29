@@ -15,9 +15,11 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-27 (14:20) — the matched ladders landed, the gauge was
-caught lying by 30 points, and front two has its first real hit: wlan is worth
-~15 mA of median, confirmed at the rail. ~30 mA of burst still unexplained.**
+Last updated: **2026-08-29 (15:00) — the consumption model closes
+(`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
+target BELOW the modem and oracle parity exactly AT it; the sleep blocker is named
+(ModemManager's live QMI indications, four legs); and the instrument built to price
+that sleep was caught reading a gauge the suspend switches off.**
 
 **1. THE TWO EIGHT-HOUR LADDERS (the headline).** Eight matched one-hour rungs on
 each system, back to back, panel provably off in all sixteen: oracle 14:07-22:10,
@@ -742,6 +744,65 @@ costs a modem more.
 (36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
+
+### ★★★★★ 2026-08-29 — the model closes, and it says where the halving target sits
+
+Fitted across the three radio-low legs (186 / 186 / 184 samples):
+
+**`current [mA] = 54.9 + 135.0 x MPSS-duty`**
+
+| duty | predicted | measured |
+|---|---|---|
+| 6.1 % (oracle) | **63.1 mA** | 55–64 mA ✅ |
+| 34.8 % (pmOS) | **101.9 mA** | 98–101 mA ✅ |
+
+One line, both systems. ☠️ This **retracts** the same morning's "~15 mA has no
+owner": that mixed a 91 mA/duty coefficient from one run with the floor of
+another, and a model assembled from two runs is not a model.
+
+**What the intercept decides.** It is **54.9 mA**, and the p10 floor reads 53–54 mA
+in all three legs regardless of duty:
+
+- **≤50 mA is below the intercept — no modem fix reaches it.**
+- **Oracle parity (55–64 mA) is reachable, and exactly by the modem term**: 34.8 %
+  → 6.1 % is 63 mA. That is the ceiling of this front.
+- Below 55 mA needs **sleep**, and `APSS XO off` reads 0.0 s in every window on
+  both systems.
+
+### ★★★★★ 2026-08-29 — the sleep blocker is ModemManager, and it is its live subscriptions
+
+`pm_wakeup_irq`, resolved to a name (the Linux irq number is an allocation and
+moves between boots), across four legs:
+
+| leg | ModemManager | slept, of 600 s | ended by |
+|---|---|---|---|
+| A | running from boot | 53 / 306 / 29 s | `141:smd-edge` 3/3 |
+| B | **masked from boot** | **602 / 602 s** | RTC 2/2 |
+| C | **started** mid-boot | 22 / 16 s | `141:smd-edge` 2/2 |
+| D | **stopped** mid-boot | **602 s** | RTC |
+
+The cost follows the daemon's lifetime exactly, so it is a **live QMI indication
+subscription on the daemon's own qrtr socket**, not something written into the
+modem. ☠️ The modem stayed `registered` throughout leg B (read with `qmicli`, since
+`mmcli` cannot talk to a masked daemon) — do not read it as "the radio was off".
+☠️ Masking is the instrument, not the fix: a phone that sleeps because it stopped
+being a phone has not been improved. `mmcli --signal-setup` is **already 0** here,
+so the remaining candidates are the NAS indications the QMI plugin registers at
+startup.
+
+### ☠️☠️ 2026-08-29 — the instrument that was to price that sleep read a frozen gauge
+
+`sleep-night.sh` priced residency from charge between two capacities. Four full
+602 s suspends in, `capacity` had not left 95 % — which is what `qcom_smbx.c`
+*guarantees*, not a low draw: `charge_now` is `soc_permyriad * charge_full`,
+`soc_permyriad` is a software integrator, and its suspend-gap branch counts
+nothing. There is no hardware coulomb counter in play. **`capacity`, `charge_now`
+and `current_now` are three sysfs names for one instrument, and it is off for
+exactly the window being measured** — the same shape as the aw8898 regmap cache.
+The surviving measure in that log is the `v_uV` column (a hardware rest OCV the
+suspend does not freeze), which needs hours and a start below the flat top of the
+curve. Residency itself is unaffected: 4 of 4 rounds slept the full 602 s,
+`suspend_stats` 7 → 11 success, 0 fail.
 
 ### 🔨 2026-08-29 — r79: the gauge learns the pack (validation running)
 
