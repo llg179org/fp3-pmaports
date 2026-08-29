@@ -58,11 +58,25 @@ off and nothing here suggests shipping it.
 
 ## The next measurement
 
-`mmcli -m 0 --simple-connect="apn=…"` and re-measure the duty. The connect already
-works on pmOS: `rmnet_ipa0` comes up with a `qmapmux0.0` mux and the modem reads
-`connected`. If the duty falls toward 6 %, the fix is userspace and it takes idle
-from 98–101 mA to about 57.
+**The band the modem camps on**, which is the only variable left with a measured
+effect and a shippable form. Nine per-boot windows put the one boot camped on
+`eutran-1` (2100 MHz, cell 1470762) at 48.9 % against a median of 29.1 % for the
+eight camped on `eutran-3` (1800 MHz, cell 1470732) — but eight-to-one is a
+coincidence until forced, and `mmcli -m 0 --set-current-bands=eutran-1` forces it,
+landing on that exact cell within 25 seconds. [`../tools/band-ab.sh`](../tools/band-ab.sh)
+runs the A-B-A′ inside one boot, which is the only place the per-boot rule allows
+the question to be asked.
 
-☠️ And note what it will **not** fix: `edge_irq_per_s` is 34.7 / 35.0 / 35.6 across
-LTE, 2G and LTE, so the modem's SMD-edge ring is independent of its awake duty. The
-suspend-residency front does not come back with this one.
+If band separates the clusters, this is a **configuration** fix, not a 2G-shaped
+instrument: a band preference is something a device can ship.
+
+☠️ What was the next measurement here — establishing a PDP context, on the theory
+that the cheaper system is the one doing more — **has since been made and died**:
+35.0 / 36.0 / 36.8 % with `rmnet_ipa0` up and the modem `connected`. So did the
+vendor stack's own `ipacm`, its `netmgrd`, the IPCRTR link and an open DIAG
+channel; the table above carries them.
+
+☠️ And note what none of this will fix: `edge_irq_per_s` is 34.7 / 35.0 / 35.6
+across LTE, 2G and LTE, and 34.1–36.2 across forty-six windows of one boot, so the
+modem's SMD-edge ring is independent of its awake duty. The suspend-residency
+front does not come back with this one.
