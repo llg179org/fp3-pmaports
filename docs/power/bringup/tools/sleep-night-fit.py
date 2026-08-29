@@ -5,7 +5,13 @@
 #
 # Price suspend residency in mA from a sleep-night.sh log.
 #
-#   sleep-night-fit.py <rounds.txt> [reference-discharge.txt]
+#   sleep-night-fit.py <rounds.txt> [reference-discharge.txt] [skip_hours]
+#
+# `skip_hours` drops the leading part of the run before fitting. A run that had to
+# start high spends its first hours on the flat top of the curve, where the travel
+# is inside the sample spread; including those rounds does not average out, it
+# drags the slope toward zero. Fit the part of the run that is on a readable
+# stretch and say which part that was.
 #
 # ☠️ WHY THIS CANNOT JUST READ THE CAPACITY COLUMN. `capacity`, `charge_now` and
 # `current_now` are three sysfs names for ONE software integrator in qcom_smbx.c,
@@ -78,6 +84,7 @@ def main():
     rounds = sys.argv[1]
     ref = sys.argv[2] if len(sys.argv) > 2 else \
         "../captures/2026-08-28_discharge-to-shutdown/discharge.txt"
+    skip_h = float(sys.argv[3]) if len(sys.argv) > 3 else 0.0
     curve = read_reference(ref)
     print(f"# reference: {ref}  {len(curve)} points, "
           f"{curve[0][0]/1e6:.3f} V .. {curve[-1][0]/1e6:.3f} V, "
@@ -92,10 +99,13 @@ def main():
             wall, sl, v = float(f[1]), float(f[3]), int(f[5])
         except (ValueError, IndexError):
             continue
+        total = wall
+        slept += sl          # ☠️ over the WHOLE run: it is a property of the
+                             # phone, not of the window chosen for the fit
+        if wall / 3600.0 < skip_h:
+            continue
         xs.append(wall / 3600.0)
         ys.append(spent_at(curve, v))
-        slept += sl
-        total = wall
     n = len(xs)
     if n < 3:
         sys.exit(f"only {n} rounds - not enough to fit a slope")
@@ -109,15 +119,17 @@ def main():
     resid = [y - (inter + slope * x) for x, y in zip(xs, ys)]
     rms = (sum(r * r for r in resid) / n) ** 0.5
 
-    vs = [v for v in (int(l.split()[5]) for l in open(rounds)
-                      if not l.startswith('#') and len(l.split()) > 5)]
-    print(f"# rounds={n} span={total/3600:.2f} h  slept={slept/total*100:.1f} % "
-          f"of wall clock")
+    vs = [int(l.split()[5]) for l in open(rounds)
+          if not l.startswith('#') and len(l.split()) > 5
+          and float(l.split()[1]) / 3600.0 >= skip_h]
+    fitted = max(xs) - min(xs)
+    print(f"# rounds={n} of a {total/3600:.2f} h run, fitted over {fitted:.2f} h "
+          f"from t={skip_h:.2f} h  slept={slept/total*100:.1f} % of the whole run")
     print(f"# voltage {min(vs)/1e6:.3f} .. {max(vs)/1e6:.3f} V, "
           f"sample spread {statistics.pstdev(vs)/1000:.1f} mV")
     print(f"average draw = {slope:.1f} mA   (rms residual {rms:.1f} mAh)")
     # ☠️ Say when the answer is not supported rather than printing it plainly.
-    if rms > abs(slope) * (total / 3600) * 0.25:
+    if rms > abs(slope) * fitted * 0.25:
         print("☠️ residual is a large fraction of the total travel - this fit is "
               "noise-dominated, run longer or start lower on the curve")
     if max(vs) > 4_150_000:
