@@ -9139,3 +9139,67 @@ Whether this is a config problem (`MODULE_UNLOAD` interacting with something),
 a lock held by a driver that never releases it, or a real deadlock in a module
 this port carries, is not established. It deserves its own investigation: it is
 a defect of the running kernel, not of any experiment run on it.
+
+## ★★★★ 2026-08-29 late — the tracepoints invert the picture: our side never reaches the name service at all
+
+`net/qrtr/ns.c` ships tracepoints (`qrtr_ns_message`, `qrtr_ns_server_add`,
+`qrtr_ns_service_announce_new`), so the question "why does a matching lookup
+produce no callback" is answerable without a kprobe. Run with the IPA module
+held back at boot (`install ipa2_lite /bin/false`), tracing armed, then loaded by
+hand:
+
+```
+kworker/u32:2  45.368673: qrtr_ns_message: new-server from 1:16398
+kworker/u32:2  45.368684: qrtr_ns_server_add: add server [49:101]@[1:16398]
+kworker/u32:2  45.368686: qrtr_ns_service_announce_new: advertising [49:101]@[1:16398]
+kworker/u32:2  45.368763: qrtr_ns_message: new-lookup from 1:16399
+```
+
+**Every event is from node 1 — the modem.** Our driver is on node 0, and across
+the whole window there is **no `new-server` and no `new-lookup` from node 0 at
+all**, even though the probe demonstrably ran: the device is bound
+(`7900000.ipa -> drivers/ipa`) and `rmnet_ipa0` exists, which only the probe
+creates. ☠️ And the only IPA lines in `dmesg` are the interconnect's
+`sync_state() pending due to 7900000.ipa` — nothing from the driver.
+
+### The mechanism this points at, in the QMI helper itself
+
+```c
+static void qmi_send_new_server(struct qmi_handle *qmi, struct qmi_service *svc)
+{
+	...
+	mutex_lock(&qmi->sock_lock);
+	if (qmi->sock) {                    /* <-- no else, no warning */
+		ret = kernel_sendmsg(qmi->sock, &msg, &iv, 1, sizeof(pkt));
+		if (ret < 0)
+			pr_err("send service registration failed: %d\n", ret);
+	}
+	mutex_unlock(&qmi->sock_lock);
+}
+```
+
+`qmi_send_new_lookup()` has the same shape. **With no socket the registration is
+dropped silently** — `qmi_add_server()`/`qmi_add_lookup()` still return 0, because
+they only append to the handle's list, and the caller has no way to know the wire
+message never left. That is a perfect fit for everything measured: a probe that
+succeeds, a driver that logs nothing, a name service that never hears from us, and
+an instance constant that makes no difference **because the message was never
+sent**.
+
+### What it retires and what it opens
+
+☠️ It also settles the node-0 row that never added up. `49 1 2` is present on a
+boot where our module was **blacklisted and not loaded**, and loading it by hand
+produces no registration event — so **that row was never ours**, which is why no
+bit-order convention could reconcile it with `qmi_add_server(0x31, 1, 1)`. Two
+earlier readings that leaned on it are void.
+
+**Open, and it is a narrow question now:** why `qmi->sock` is unusable — or the
+handle's `sq_node` wrong — at the moment `ipa_qmi_setup()` runs. The instrument is
+one `pr_info` on that pointer in the driver, or a kprobe on `qmi_send_new_lookup`,
+and it is a much smaller question than the one this evening started with.
+
+☠️ Note what made this readable: **an in-tree tracepoint nobody had enabled**. The
+first four instruments of the evening all measured our side's *intent* (the source
+constant, the module list, the service listing) and none measured whether the
+message left. The tracepoint measures the wire.
