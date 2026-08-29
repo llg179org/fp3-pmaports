@@ -9028,3 +9028,65 @@ from a *different* branch than the phone runs; built from `debug-int/7.1.3` it i
 valid. A handshake that starts will announce itself — every failure path in
 `ipa_client_init_driver_work()` logs, and success brings the modem service a
 client.
+
+## ☠️☠️ 2026-08-29 late — the instance hypothesis is WRONG, and two supports under it were bad
+
+The one-line experiment: `IPA_MODEM_SERVICE_INS_ID` 2 → 1 plus a `dev_info`
+breadcrumb, built from the **running commit** (`b8de6ded`, after finding the build
+tree parked three commits behind — the same trap as the morning's `.ko` swap),
+vermagic-matched, installed into `/lib/modules`, `depmod`, clean reboot.
+
+**Pass was declared in advance as the silence breaking** — any IPA line at all,
+success or `dev_err` — not as success. The result:
+
+```
+[   12.837566] ipa 7900000.ipa: DBG lookup svc=0x31 vers=1 ins=1
+```
+
+and **nothing else**. The code path provably ran with the new constant, and the
+handshake still did not start: no `INIT_DRIVER`, no timeout, no error, and
+`rmnet_ipa0` still `DOWN` with zero bytes. **The hypothesis is dead.**
+
+### ☠️ Support 1 was a bad measurement: the rmmod/modprobe attribution
+
+Earlier I concluded the node-0 row belonged to our driver because `rmmod` removed
+it and `modprobe` did not bring it back. That run's intermediate `qrtr-lookup`
+printed **nothing at all** — the modem's row was missing too, which is impossible.
+The tool failed in that instant; the rows did not disappear. **After this clean
+boot the node-0 row is back** (`49 1 2 0 22`), which is what a boot always
+produces. The attribution never held.
+
+### ☠️ Support 2 was not a calibration at all
+
+I checked the `qrtr-lookup` columns against SLIMbus — the driver asks for
+`(0x0301, vers 1, ins 0)` and the listing reads `769 1 0` — and called that a
+known-good calibration because audio works. It is not one. **That row is the
+ADSP's advertisement, not our driver's lookup**; a lookup never appears in this
+listing. All it showed is that for SLIMbus the two happen to agree, which is why
+that service works — it says nothing about what the columns mean.
+
+So the column semantics are **still unestablished**, and with them the whole
+reading. The arithmetic does not close either: our driver calls
+`qmi_add_server(0x31, vers 1, ins 1)` exactly once, `QRTR_INSTANCE(1,1) = 0x101`,
+and no bit-order convention turns 0x101 into the "1 2" the listing prints for
+node 0.
+
+### ☠️ And `lsmod` segfaults on a clean boot
+
+It did so before any of tonight's work, on a boot that loaded only stock modules.
+That **retracts this morning's diagnosis** that the mis-built `.ko` hot-swap caused
+it: the corruption story explained a symptom the phone has anyway. It is now an
+open defect of its own, and it also means `/proc/modules` cannot be used as an
+instrument here until it is understood.
+
+### What survives
+
+Two facts, both direct: the modem advertises service 49 on node 1 with the
+listing reading `1 1`, and our driver's lookup asks for `(vers 1, ins 2)`. What
+does **not** survive is the inference that these two are the reason nothing
+happens — because setting them to agree changed nothing.
+
+**The next question is therefore not "which instance" but "why does a matching
+lookup produce no callback"** — which is a question about `qrtr_ns`'s own state,
+and the instrument for it is a kprobe on `qmi_recv_new_server` and on
+`ctrl_cmd_new_lookup`, not another constant.
