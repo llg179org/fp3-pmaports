@@ -186,3 +186,19 @@ fluctuating sample — a before/after pair of it proves nothing.
 | [`emmc-watch.sh`](emmc-watch.sh) | did the card fall off the bus, and what was the RPM doing when it did. ☠️ Logs to tmpfs, because the filesystem it watches is the one that dies. Superseded for unattended use by [`../night/guardian.sh`](../night/guardian.sh), which also acts |
 | [`episode-watch.sh`](episode-watch.sh) | the unexplained 44-minute episode of 2026-08-18. ☠️ Must never run during a suspend leg — a sampler once a minute is a wakeup once a minute |
 | [`pll-sweep.sh`](pll-sweep.sh), [`pll-vs-voltage.sh`](pll-vs-voltage.sh), [`pll-ramp-fit.py`](pll-ramp-fit.py) | the `apcs-cpu0-pll` failures: how often, and whether they depend on pack voltage. They do not — 7.3 per 10 000 transitions, flat from 4.32 V to 3.93 V |
+
+## The modem's idle duty (2026-08-28/29)
+
+The whole remaining gap to the oracle is one term — the modem core's awake duty
+on LTE — so these ask about that and nothing else. Background and the table of
+dead candidates: [`../leads/modem-idle-lte.md`](../leads/modem-idle-lte.md).
+
+| tool | the question it answers |
+|---|---|
+| [`modem-window.sh`](modem-window.sh) + [`modem-window-fit.py`](modem-window-fit.py) | one duty window, **on either system**: it branches on the stack (`mmcli` vs the oracle's two ofono modems, a master-stats directory vs a single file) but never on the question, and writes the modem's power state, access technology, signal and serving cell into the same file as the counters. ☠️ Built because a window taken before registration is not a window about idle behaviour |
+| [`boot-level-sample.sh`](boot-level-sample.sh) | one window per boot with the candidates beside it — camped cell, band, channel, signal, operator, firmware. ☠️ The duty is fixed at boot and does not decay, so a window is a property of its boot |
+| [`duty-vs-uptime.sh`](duty-vs-uptime.sh) | is the level a post-boot decay or a per-boot constant? Forty-six windows over 4.8 hours answered: constant, slope +0.36 %/hour |
+| [`band-ab.sh`](band-ab.sh) | A-B-A′ on the LTE band inside one boot, with the band list restored afterwards. ☠️ The witness reads `--nas-get-rf-band-info`, the variable the lever moves — a leg camped on a band other than the one requested is void, not evidence |
+| [`smd-wake-source.sh`](smd-wake-source.sh) | per-round residency plus a per-channel census of the modem's SMD edge, with a double-deref kprobe on the channel name |
+| [`rpmsg-ept.py`](rpmsg-ept.py), [`diag-probe.py`](diag-probe.py) | open a named rpmsg channel through the control device and speak HDLC-framed DIAG on it. State and the exact next sequence: [`../leads/diag-bringup.md`](../leads/diag-bringup.md) |
+| [`modem-fw-swap.sh`](modem-fw-swap.sh) | kept for the record with a do-not-run banner — the firmware difference it was written to test did not exist |
