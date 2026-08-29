@@ -743,6 +743,31 @@ costs a modem more.
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
 
+### ★★★★ 2026-08-29 morning — the band the network hands out is worth 12 mA
+
+The per-boot offset below has a cause, and it is not inside the phone. Nine boots,
+one 6-minute window each, put the single boot camped on **eutran-1** (2100 MHz,
+cell 1470762) at 48.9 % against a median of **29.1 %** for the eight camped on
+**eutran-3** (1800 MHz, cell 1470732) — and `mmcli -m 0 --set-current-bands` forces
+the choice, so the question fits inside one boot, where the per-boot rule allows
+it to be asked. Run in **both orders** so a drift cannot produce it
+([`bringup/tools/band-ab.sh`](power/bringup/tools/band-ab.sh), 360 s legs):
+
+| band | windows | median |
+|---|---|---|
+| eutran-1 (2100 MHz, ch 500) | 48.4 / 52.7 / 50.0 | **50.0 %** |
+| eutran-3 (1800 MHz, ch 1300) | 39.7 / 33.7 / 36.4 | **36.4 %** |
+
+**≈ 14 points of MPSS duty ≈ 12 mA of the 40 mA gap**, against a within-order drift
+of 2.7–6.0 points. ★ **Not link budget** — the expensive band is the one with the
+*better* reported signal (81 % vs 71–80 %). ★ The ring is unmoved: `edge_per_s`
+35.0–35.7 across all six legs.
+
+☠️ **This is a lead, not a shipping knob.** Pinning a phone to one LTE band trades
+coverage for power in a way no user asked for, and it was measured on one operator
+at one location. What it buys is the first handle on the mechanism: the modem's
+idle cost here is set by what the network gives it.
+
 ### ★★★ 2026-08-29 night — the DIAG path is open, and the duty turns out to be a per-boot property
 
 **Nine candidates, nine dead.** `netmgrd` killed on the oracle: **5.3 %**, lower
