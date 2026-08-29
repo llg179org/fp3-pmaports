@@ -4,8 +4,8 @@
 > Gergely, who reviewed every change and made or reviewed every measurement it
 > rests on.
 
-**Status: hypothesis with a cheap first read, not yet measured.** Opened
-2026-08-29, after the reading that forced it.
+**Status: the pmOS side is read; the oracle side decides it.** Opened 2026-08-29,
+first read taken the same afternoon.
 
 ## Why this is the shape the evidence now demands
 
@@ -66,3 +66,42 @@ the kernel.
 The A-B is then available and it is inside one boot: activate the configuration
 the oracle uses, re-measure the duty with `burst-master.sh`, deactivate, measure
 again. The per-boot offset rule makes the A′ leg mandatory.
+
+
+## The pmOS read, 2026-08-29
+
+[`../captures/2026-08-29_pdc-configs/`](../captures/2026-08-29_pdc-configs/).
+`qmicli --pdc-list-configs` takes `platform` or `software` (not `hw`/`sw`), and
+both answered:
+
+| type | count | active |
+|---|---|---|
+| `platform` | 1 — `SR_DSDS-LA-7+7_mode-SDM632` | ☠️ **none: Inactive** |
+| `software` | 25 | **`ROW_Commercial`** |
+
+So this modem carries a full carrier-configuration set — 24 operator packages
+sitting unused, including `Global-VoLTE-Vodafone` and seven country-specific
+Vodafone builds — and runs the **generic Rest-of-World** software config with the
+**platform config not activated at all**.
+
+★ That is the shape the hypothesis predicted. It is **not yet evidence**, for one
+reason that has to be stated before anyone acts on it:
+
+☠️ **PDC activation is persistent in the modem.** It lives in modem storage, not in
+the host, so if the oracle had activated something else, this read would show it —
+the same modem, the same storage, one slot switch apart. The likeliest outcome of
+the oracle read is therefore that it says exactly the same thing, which would kill
+this lead. The case where it does not is the interesting one: a vendor stack that
+**re-activates on every boot** would leave the persistent state looking like ours
+between boots.
+
+☠️ And `ROW_Commercial` may well be the correct choice here — there is no Hungarian
+package in the list at all, so "generic" is not by itself a fault.
+
+## What is still to do
+
+1. **Read the same two lists on the oracle** (slot switch). Same config active on
+   both ⇒ this page closes with the other nine candidates.
+2. Only if they differ: an A-B-A′ inside one boot, activating what the oracle
+   activates and measuring the duty. ☠️ Nothing is written before step 1 answers —
+   activating the wrong configuration changes persistent modem state.

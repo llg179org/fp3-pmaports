@@ -1,0 +1,10 @@
+[sudo: authenticate] Password: 
+Total configurations: 1
+Configuration 1:
+	Description: SR_DSDS-LA-7+7_mode-SDM632
+	Type:        platform
+	Size:        12144
+	Status:      Inactive
+	Version:     0x7001900
+	ID:          1E:28:02:C6:21:25:3A:2B:3E:3E:1B:EB:8D:EC:43:68:18:41:1C:9B
+
