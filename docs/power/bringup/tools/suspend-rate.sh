@@ -57,7 +57,21 @@ s "# cable: online=$(cat /sys/class/power_supply/pmi632-charger/online) status=$
 # recovered later: a modem started by the boot and one restarted by hand through
 # remoteproc are not obviously the same state.
 s "# modem remoteproc state at start: $(cat /sys/class/remoteproc/remoteproc1/state 2>/dev/null)"
-s "# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta"
+s "# round uptime_s slept_s asked_s modem_state cap mpss_xo_delta wake_irq"
+
+# ☠️ THE FIELD THAT NAMES THE CULPRIT. Every round of this script used to record
+# how long the suspend lasted and which interrupt lines moved across the whole
+# round - gap included - and none of that says which line ENDED the suspend.
+# /sys/power/pm_wakeup_irq does, in one read, and it is the only reason the
+# 2026-08-26 answer (the modem's SMD edge, 4 of 4) was reachable at all. Resolve
+# it to a name here, because a bare Linux irq number is an allocation and moves
+# between boots - which is exactly the trap the modem-edge identification hit.
+wake_irq(){
+	n=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)
+	case "$n" in ''|*[!0-9]*) echo "none"; return ;; esac
+	printf '%s:%s\n' "$n" \
+		"$(awk -v k="$n:" '$1 == k { print $NF }' /proc/interrupts)"
+}
 
 RPM=/sys/kernel/debug/qcom_rpm_master_stats
 mf(){ sed -n "s/^[[:space:]]*$1[[:space:]]*:[[:space:]]*//p" "$RPM/MPSS" 2>/dev/null | head -1; }
@@ -84,7 +98,7 @@ while [ "$i" -le "$N" ]; do
 	rtcwake -m mem -s "$SECS" >/dev/null 2>&1
 	t1=$(cut -d. -f1 /proc/uptime); x1=$(mf 'XO shutdown count')
 	slept=$((t1 - t0))
-	s "$i $t0 $slept $SECS ${st:-?} $(cat /sys/class/power_supply/pmi632-battery/capacity) $(( ${x1:-0} - ${x0:-0} ))"
+	s "$i $t0 $slept $SECS ${st:-?} $(cat /sys/class/power_supply/pmi632-battery/capacity) $(( ${x1:-0} - ${x0:-0} )) $(wake_irq)"
 	if [ "$IRQS" = 1 ]; then
 		irqs > /run/.sr_irq1
 		awk -v sl="$slept" 'NR==FNR{a[$1]=$2; next}

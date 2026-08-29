@@ -8583,3 +8583,45 @@ modem; the modem is what buys parity. The earlier claim that fixing consumption
 would not hand back residency was argued from the wrong interrupt counter; this says
 something stronger and better founded — **residency is the only route to the target
 at all.**
+
+## ★★★★★ 2026-08-29 — the phone sleeps for the full ten minutes without ModemManager
+
+Two legs, same kernel (r79, `#80-fp3`), same instrument, `suspend-rate.sh` with a
+new field that names the interrupt which ended each suspend
+(`/sys/power/pm_wakeup_irq`, resolved to a name because a bare Linux irq number is
+an allocation and moves between boots):
+
+| leg | ModemManager | slept, of 600 s | ended by |
+|---|---|---|---|
+| A | running | **53 / 306 / 29 s** | `141:smd-edge` — the modem — **3 of 3** |
+| B | **masked from boot**, modem brought online by one `qmicli --dms-set-operating-mode=online` | **602 / 602 s** | `63:pm8xxx_rtc_alarm` — the alarm we set — **2 of 2** |
+
+☠️ **The control that makes it a comparison:** in leg B the modem is *registered*
+throughout — `Registration state: registered`, `Selected network: 3gpp`, radio
+interfaces 1, checked with `qmicli` after the run, because `mmcli` cannot be used
+when the daemon it talks to is masked (which is why the `modem_state` column reads
+`?` in that leg and must not be read as "the modem was down").
+
+**So the suspend blocker is ModemManager, not the modem.** A registered modem with
+no client on this side lets the phone sleep the whole ten minutes; add the client
+and every suspend dies on the modem's edge within half a minute to five.
+
+★ This is the first result on the **only** front that can reach the stated target.
+The consumption model fitted the same morning — `mA = 54.9 + 135.0 × duty` — puts
+an unreachable floor of ~55 mA under any modem-duty fix, so ≤50 mA has to come out
+of the intercept, and the intercept is an application processor that has never
+slept. This is the first time it has been shown to sleep at all on this phone with
+the radio up.
+
+### What it does not yet say
+
+**Which** ModemManager behaviour. The obvious candidate is its periodic signal
+polling, which is the right shape — a poll every N seconds against sleeps that last
+tens of seconds — and it is a **configuration**, not a patch. The alternative is an
+indication subscription the modem answers. Deciding it is one more A/B with the
+daemon running, and it is the difference between a shippable setting and a
+ModemManager change.
+
+☠️ And masking ModemManager is **not** the fix. Without it there is no call
+handling, no SMS, no data — the phone sleeps because it has stopped being a phone.
+The leg is an instrument for locating the cost, exactly like the 2G leg was.
