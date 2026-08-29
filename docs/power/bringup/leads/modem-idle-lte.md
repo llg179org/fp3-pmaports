@@ -120,3 +120,23 @@ is also the ceiling — the intercept is 54.9 mA and no amount of modem work rea
 below it. Nothing in ModemManager will move any of it. The residency work is a
 different problem with a different mechanism and must not be quoted as progress
 here.
+
+## ★★★★★ 2026-08-29 — the band effect exists only on our side, and the page's next measurement is re-aimed
+
+The four oracle windows of `../captures/2026-08-28_modem-window-both/` were all
+camped on **cell 1470762** — eutran-1, channel 500, the *expensive* cell of the
+band A-B-A′ above — and they read **5.4 / 6.2 / 6.5 / 8.1 %** MPSS awake. pmOS on
+that same cell reads **48.9 – 52.7 %**.
+
+Same cell, same band, same carrier, same firmware, **eight to nine times**.
+
+☠️ **That kills the reading this page proposed next.** `defaultPagingCycle` and
+`nB` come out of the cell's SIB2 and are therefore common to both systems, so they
+cannot explain the system gap. And it turns the band result around: the expensive
+band is not expensive in itself — the oracle pays 6 % on it — **our stack responds
+to it expensively**.
+
+**The re-aimed question**: not what the network says, which is now known to be
+shared, but what the modem *does with it* on our side. That is still DIAG, and it
+is still the only instrument that sees inside — but it is looking for a behaviour,
+not for a broadcast parameter.

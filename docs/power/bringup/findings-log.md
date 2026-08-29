@@ -8732,3 +8732,54 @@ modem's *interrupts*, and through them the suspends; it owns none of the modem's
 the NAS indications might buy both fronts at once. It buys one. The duty work and
 the wake work are separate problems with separate mechanisms, and a fix for one
 must not be reported as progress on the other.
+
+## ★★★★★ 2026-08-29 — the oracle was measured on the EXPENSIVE cell, and that kills the network-configuration explanation
+
+Re-read of `captures/2026-08-28_modem-window-both/`, parsing the raw
+`xo_accumulated_duration` out of the four oracle windows instead of quoting the
+summary line. Every one of them carries its camped cell in the same file:
+
+| oracle window | cell | span | MPSS XO off | **MPSS awake** |
+|---|---|---|---|---|
+| `ut-lte` | **1470762** | 600 s | 563.3 s | **6.2 %** |
+| `ut-ipacm-on` | **1470762** | 420 s | 386.4 s | **8.1 %** |
+| `ut-ipacm-off-real` | **1470762** | 420 s | 393.0 s | **6.5 %** |
+| `ut-netmgrd-off` | **1470762** | 420 s | 397.7 s | **5.4 %** |
+
+**Cell 1470762 is the expensive one.** It is eutran-1, channel 500, the cell whose
+band was forced in both orders this morning and measured at a pmOS median of
+**50.0 %** — and the single boot that camped there on its own read **48.9 %**.
+
+So on the same cell, the same band, the same carrier and the same modem firmware:
+
+| system | MPSS awake on cell 1470762 |
+|---|---|
+| oracle | **5.4 – 8.1 %** |
+| pmOS | **48.9 – 52.7 %** |
+
+**Eight to nine times, with the network variable held fixed by accident rather
+than by design** — the oracle runs were taken for the `ipacm`/`netmgrd` question
+and the cell was recorded beside the counters because `modem-window.sh` was built
+to record it. That is the second time this week a capture answered a question it
+was not taken for, and both times because the instrument wrote down the context.
+
+### What it kills
+
+☠️ **The next measurement this lead was pointing at.** `modem-idle-lte.md` closed
+on reading `defaultPagingCycle` and `nB` out of SIB2 over DIAG, on the theory that
+the expensive band pages this phone more often. That theory cannot explain the
+*system* gap: the paging cycle is a property of the cell, and both systems were
+measured on the same cell.
+
+### What it leaves, and it is sharper than what was there before
+
+★ **The band effect exists only on our side.** eutran-1 costs pmOS ~14 duty points
+over eutran-3, and the oracle sits at 5.4–8.1 % on that same eutran-1 cell. If the
+cell's idle configuration were the cost, the oracle would pay it too. It does not.
+So the band is not expensive in itself — **our stack responds to it expensively**,
+and the question becomes what our modem does differently when the network hands it
+that cell.
+
+☠️ This does not retire DIAG; it re-aims it. The question is no longer "what does
+the network say" — that is now known to be common to both — but "what does the
+modem do with it", and only DIAG sees inside.
