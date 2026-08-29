@@ -26,8 +26,16 @@ O=/var/log/fp3/band-ab-$(date +%s)
 mkdir -p "$O"; L=$O/log.txt
 s(){ echo "$*" | tee -a "$L"; }
 
-orig=$(mmcli -m 0 2>/dev/null | sed -n '/current:/,/^$/p' | sed 's/.*current: *//' \
-	| tr -d '|' | tr '\n' ' ' | sed 's/  */ /g; s/, *$//; s/ *$//')
+# ☠️ mmcli wraps a long band list over several lines, and the sed range that
+# looked obvious ('/current:/,/^$/') ran past the list and swallowed the entire
+# rest of the modem dump - IMEI included - which then failed as a band argument.
+# Take the remainder of the 'current:' line and only the continuation lines,
+# which are the ones with no colon of their own.
+orig=$(mmcli -m 0 2>/dev/null | awk '
+	/current:/ { sub(/.*current: */, ""); print; inlist = 1; next }
+	inlist && /:/ { exit }
+	inlist { gsub(/^ *\| */, ""); print }
+' | tr -d '|' | tr '\n' ' ' | sed 's/  */ /g; s/, *$//; s/^ *//; s/ *$//')
 s "# band-ab $(date '+%F %T') A=$A B=$B window=${W}s"
 s "# kernel=$(uname -v)"
 s "# original bands: $orig"
@@ -78,7 +86,9 @@ leg Ap "$A"
 
 s "# restoring: $orig"
 mmcli -m 0 --set-current-bands="$(echo "$orig" | tr -d ' ')" >/dev/null 2>&1 \
-	|| s "#   ☠️ restore FAILED - bands are still pinned"
+	|| { s "#   ☠️ restore FAILED - falling back to 'any'"
+	     mmcli -m 0 --set-current-bands=any >/dev/null 2>&1 \
+		|| s "#   ☠️☠️ fallback FAILED TOO - the modem is still pinned"; }
 wait_reg || s "#   ☠️ not registered after restore"
 witness "restored"
 s "$O"
