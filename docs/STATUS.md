@@ -743,6 +743,32 @@ costs a modem more.
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
 
+### 🔨 2026-08-29 — r79: the gauge learns the pack (validation running)
+
+The gauge divided counted charge by the device tree's 3060 mAh nameplate and
+reported the same number as `CHARGE_FULL`; this pack delivers **2076 mAh** to the
+declared cutoff, so every percentage was optimistic by the difference and a
+discharge to the hardware's own shutdown stopped at 35 %. **r79 learns it**: the
+charge between two anchors the driver already trusts *is* the size of the pack, so
+spans of at least half the pack, whose charge agrees with their direction, blend a
+quarter of the way toward what they say. `CHARGE_FULL_DESIGN` keeps reporting the
+nameplate; the learned value is persisted in the gauge's scratch SRAM behind the
+existing magic, and a battery swap correctly falls back to design.
+
+Shipped through the category rule — `wip/7.1.3/charger 56ed6005`,
+`integration/7.1.3 bbb5a088`, `debug-int/7.1.3 b8de6ded`, all pushed and
+tarball-reachable — package **r79**, running as `#80-fp3`. ⏳ Validation is a pack
+cycle: `learn-prep.sh` walks the pack under the recharge threshold, lets it
+terminate, and hands over to `learn-cycle.sh`, which logs `charge_full` in every
+row down to a 38 % floor. Expected convergence ~2076 mAh.
+
+☠️ **The `.ko` hot-swap was tried first and is not available for this change.** A
+module built from `wip/7.1.3/charger` and loaded onto a phone running
+`debug-int/7.1.3` fails with an `ftrace bug`, leaves the charger unbound and wedges
+`/proc/modules` — and the on-disk module had already been overwritten, so the next
+boot would have had no charger driver at all. Recovered from the r78 `.apk` before
+rebooting. Build the module from the tree the phone runs, or use the package.
+
 ### ★★★★ 2026-08-29 morning — the band the network hands out is worth 12 mA
 
 The per-boot offset below has a cause, and it is not inside the phone. Nine boots,
