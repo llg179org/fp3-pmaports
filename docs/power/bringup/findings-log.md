@@ -9203,3 +9203,50 @@ and it is a much smaller question than the one this evening started with.
 first four instruments of the evening all measured our side's *intent* (the source
 constant, the module list, the service listing) and none measured whether the
 message left. The tracepoint measures the wire.
+
+## ☠️☠️☠️ 2026-08-30 01:50 — the IPA handshake WORKS. The whole evening's premise was false.
+
+The last instrument of the chain, with the probes attached to the module by name
+(`p:newsrv ipa2_lite:ipa_client_new_server`) so they arm when it loads:
+
+```
+26.579347  lknotify: lookup_notify           <- the name service found a match
+26.579369  lknotify
+26.579400  lknotify
+26.579447  lknotify
+26.579463  newsrv:   ipa_client_new_server   <- OUR CALLBACK RUNS
+26.579489  initwork: ipa_client_init_driver_work  <- THE WORK RUNS
+```
+
+**The callback fires and the INIT_DRIVER work executes.** And since every failure
+path in that work calls `dev_err()`, and `dmesg` has not one driver line, **the
+handshake succeeds**. There is nothing to fix here.
+
+### What this retracts, and it is most of tonight
+
+| claim | status |
+|---|---|
+| "the modem's IPA service has no client" | ☠️ **false** — `qrtr-lookup` lists servers, not clients; it was never evidence of a missing client |
+| "the handshake never starts, silently" | ☠️ **false** — it starts and completes |
+| "our lookup asks instance 2, the modem advertises 1" | ☠️ **false, node roles inverted** — the trace proves `local_node = 1` (the announce only fires for local servers, and it fired for `@[1:16398]`), so node 1 is **us** and node 0 is the modem. The modem advertises instance **2**, exactly what the driver asks for |
+| "`qmi->sock` is NULL and the registration is dropped" | ☠️ **false** — `qmi_send_new_lookup` runs and the name service receives it |
+| `rmnet_ipa0` DOWN | not a fault: it is a netdev nothing brings up, because no data call is configured |
+
+### The mistake underneath all five
+
+**Silence was read as failure on a path where success is also silent.** The
+driver logs nothing when the handshake works — there is no `dev_info` on the
+success path at all — so "zero IPA lines in dmesg" was compatible with *both*
+outcomes from the start, and every instrument after that was chosen to explain a
+failure that was never established. The chain only broke when a probe was put on
+the *function*, which distinguishes ran-and-succeeded from never-ran.
+
+☠️ The rule this earns, and it generalises past this driver: **before building on
+"nothing happened", find the log line that a success would print. If there isn't
+one, silence is not evidence and the next instrument must be a probe on the code
+path, not another reading of the same absence.**
+
+### Where the modem-duty question stands now
+
+Back where it was: eleven candidates dead, this one included. The IPA data-path
+handshake is **not** what the oracle does and we don't — we do it too.
