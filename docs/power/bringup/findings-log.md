@@ -8322,3 +8322,43 @@ is not knowable from the runs already taken, because none of them has a leg with
 them. Rebooted with no endpoints created, waited for `state: registered`, and
 re-measured; until that lands, **every duty figure taken after 01:46 is quoted with
 the caveat that an instrument of mine was attached to the thing being measured.**
+
+## ☠️★★ 2026-08-29 — the duty is a boot-level property, not a stable number, and that re-grades half of tonight's negatives
+
+The confound check: rebooted with **no DIAG endpoints created**, waited for
+`state: registered`, four minutes of settle, two windows —
+[`captures/2026-08-29_nodiag-baseline/`](captures/2026-08-29_nodiag-baseline/):
+
+| window | MPSS awake | edge IRQ/s |
+|---|---|---|
+| first | **47.9 %** | 37.9 |
+| second | **46.2 %** | 36.6 |
+
+**My endpoints were not the cause.** But the number is still 46–48 % where the
+previous boot sat at 33–37 %, so the level is a property of *the boot*, not of the
+configuration under test. Every pmOS reading so far, in order:
+
+| boot | windows |
+|---|---|
+| r77 (`#78-fp3`), afternoon | 29.1, 33.3, 34.2, 34.8, 35.0, 36.0, 36.8, 37.1 % |
+| r78 (`#79-fp3`), night | 44.4, 46.2, 47.0, 47.9, 49.5, 49.7, 51.1, 51.9 % |
+
+Two tight clusters, ~13 points apart, with the boot as the only thing that changed
+between them. The oracle, across two boots and five windows, stayed at 5.3–8.0 %.
+
+**What this re-grades.** A single leg compared against "the baseline" is worthless
+here; only runs carrying their own control leg survive:
+
+| result | still stands? |
+|---|---|
+| RAT: LTE 34.8 / 2G 6.5 / LTE 34.2 % | ✅ A-B-A′, A and A′ 0.6 points apart |
+| bearer: 35.0 / 36.0 / 36.8 % | ✅ A-B-A′, flat |
+| radio-low: leg B **0.0 %**, 186 of 186 | ✅ a floor, not a shift |
+| IPCRTR unbind: 51.9 / 47.0 / 51.1 % | ✅ A-B-A′, and the dip is inside the boot's own spread |
+| **DIAG endpoint open: 49.5 / 49.7 %** | ❌ **weak** — no control leg, and it is now clear the whole boot sat at 46–52 % |
+| ModemManager masked: 29.1 / 37.1 % | ⚠️ on the low-cluster boot, so consistent with that boot's baseline — the acquittal holds, but as "indistinguishable from this boot's normal", not as a measured null |
+
+☠️ **The rule this earns**: on this phone the modem's duty has a per-boot offset
+big enough to swallow any effect smaller than about 15 points. A knob is only
+tested by a run that carries its own A and A′ *inside the same boot* — which is
+what `burst-master-knob.sh` does and what the loose single windows did not.
