@@ -476,7 +476,9 @@ of them and the goal does not run through it.
    sleep — `captures/2026-08-30_wake-qmi-sms/`. The wake list is now Voice (39)
    and WMS (51), both measured. The outcome that would have made the *present*
    system the bug — an SMS lost in suspend — is ruled out.
-2. **The application processor never lets the crystal go.** `APSS` reads
+2. ☠️ **WITHDRAWN the same afternoon — see `captures/2026-08-30_oracle-xo-and-deepstate/`.
+   The oracle's APSS reads the same zeros, so this describes the platform, not a
+   pmOS defect.** ~~The application processor never lets the crystal go.~~ `APSS` reads
    `XO total duration: 0` and `XO shutdown count: 0` against `Shutdown count:
    485401`, while LPASS, MPSS and PRONTO all read large non-zero values — so the
    counter works and the zero is real. This is the sub-50 mA row of the goal's

@@ -147,6 +147,32 @@ the first.
 **It shares a slot switch with step D1** — one reboot into slot_a answers both.
 Run them in the same trip.
 
+### ✅ ANSWERED 2026-08-30, and it closes the track
+
+Both readings taken on slot_a the same afternoon
+(`captures/2026-08-30_oracle-xo-and-deepstate/`):
+
+- **The oracle's `APSS xo_count` is `0x0`** — as is
+  `xo_accumulated_duration` and `xo_last_entered_at` — at 120 s and again at
+  394 s of uptime, against `numshutdowns` of 3 112 and then 19 181. Every other
+  master reports non-zero XO shutdowns, so the counter works. **pmOS reads
+  exactly the same.** Parking the APSS XO vote cannot be what separates a 98.5 mA
+  system from a 63 mA one, because the 63 mA one does not do it either.
+- **The `vlow` question has no oracle.** The downstream 4.9 kernel does not build
+  `rpm_stats.c`, so that side has no `vlow`/`vmin` counter at all. There is no
+  same-instrument comparison to be had, and substituting `lpm_stats`'
+  `system-pc` — a cpuidle counter, not an RPM voltage corner — would be the
+  two-witnesses-at-different-layers mistake this project has already paid for
+  once.
+
+**Consequence for the frame:** the ≤50 mA row cannot be reached by making the
+RPM or the APSS vote differently, and this morning's *"the application processor
+never lets the crystal go"* headline is **withdrawn** — it described the
+platform, not a pmOS defect. The halving's whole weight now rests on **residency**
+(track R): how much of the night the phone is actually suspended, and what a
+suspend costs. Step 0 is therefore no longer merely first — it is the only
+remaining measurement that can price the goal.
+
 ### Step D1 (track D) — **the oracle's own A/B, which has never been run**
 
 Every A/B on the duty gap has been run on pmOS. The oracle has only ever been
