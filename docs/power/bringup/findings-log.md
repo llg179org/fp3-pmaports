@@ -9349,6 +9349,20 @@ MODEM IPC router"*, the same actor that ends ours. So for that half there is no
 working system to imitate, which is a harder problem than "find what UT does
 differently" and had not been put in those terms before.
 
+> **2026-08-30 — the framing survives; the pessimism attached to it does not.**
+> On this date pmOS filled **four consecutive 600 s windows**, every one ended by
+> the RTC (`captures/2026-08-30_spread/`). So the thing the oracle cannot
+> demonstrate, our own system already does — and that reframes "no oracle" from
+> an obstacle into a statement about *method*: an oracle is only needed when you
+> do not know what good looks like. Here good is set by physics rather than by
+> imitation (the crystal off, and `xo_accumulated_duration` says whether it was),
+> so the absence of a working system to copy costs nothing on this half.
+>
+> ☠️ What it does cost is the **cross-check**. With no oracle leg, a bad number
+> on this front has nothing to disagree with it, and the only guard left is the
+> instrument's own control window. That is a reason to keep taking one, not a
+> reason to trust the number more.
+
 ☠️ **A retracted figure travelled again, into a paragraph written to the user.**
 That capture's summary sentence — *"the oracle idles below our phone asleep"* —
 rests on a ~30 mA reading this log had already retracted as the flattering
