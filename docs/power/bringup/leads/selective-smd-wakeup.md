@@ -178,3 +178,31 @@ measurement says it is needed.
    `captures/2026-08-30_terse-call/` did — the responsiveness half is not
    negotiable, and a design that buys residency by dropping calls is disqualified
    whatever it saves.
+
+## ☠️ Before building any of this: the cheaper fork in the road
+
+Measured 2026-08-30, the noise is NAS (QRTR port 40) and DSD (52) indications
+while a call is Voice (39). Naming the *service* was enough to show the two are
+separable — and **not** enough to justify a kernel patch, because two causes
+produce that same census and they need opposite fixes:
+
+| cause | fix |
+|---|---|
+| the modem sends the indication unsolicited | kernel-side filter — this lead |
+| **ModemManager subscribed to it** (NAS `0x0003` Register Indications, WMS `0x0047` Indication Register) | **unregister it in userspace** — no kernel patch, reversible over ssh, upstreamable as a ModemManager change |
+
+The second is strictly cheaper and it has never been ruled out. It is also
+plausible on its face: `NAS 0x0051 Signal Info` and `NAS 0x0002 Event Report`
+are exactly the kind of thing a modem manager asks to be told about, and a
+signal-strength indication arriving every minute is a subscription, not weather.
+
+**The message id is what separates them**, and the service-layer census does not
+capture it. `tools/wake-qmi.sh` does: it reads the QMI `service_header` at
+`+0x20` of the QRTR v1 payload and names the message from `qmi-msgids.txt`
+(generated from libqmi's own definitions). Run it before writing a line of
+kernel code — and if the answer is "subscription", **this lead is not the fix
+and should not be built**.
+
+☠️ Note the asymmetry that makes this worth doing first: a kernel filter that
+turns out to have been unnecessary is invisible once merged — it works, so
+nothing ever says it was the wrong layer.

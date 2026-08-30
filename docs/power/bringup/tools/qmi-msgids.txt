@@ -1,0 +1,386 @@
+# QMI message-id -> name, generated from libqmi data/*.json (llg179 clone).
+# Fields: SERVICE DECIMAL_ID HEX_ID TYPE Name...
+# ☠️ The DECIMAL id is field 2 on purpose: the kprobe prints decimal, and a
+#    hex-only table silently matches nothing - every line then reads
+#    '<not in libqmi>', which looks like a libqmi gap and is a units bug.
+# ☠️ libqmi implements a SUBSET; an id absent here is not a nonexistent
+#    message, only one libqmi has no definition for.
+# ☠️ The id is only unique WITHIN a service - resolve the service from the
+#    QRTR port via qrtr-lookup before trusting a name.
+ATR 0 0x0000 Message Send
+ATR 1 0x0001 Indication Received
+CTL 32 0x0020 Message Set Instance ID
+CTL 33 0x0021 Message Get Version Info
+CTL 34 0x0022 Message Allocate CID
+CTL 35 0x0023 Message Release CID
+CTL 38 0x0026 Message Set Data Format
+CTL 39 0x0027 Message Sync
+CTL 39 0x0027 Indication Sync
+CTL 65280 0xff00 Message Internal Proxy Open
+CTL 65314 0xff22 Message Internal Allocate CID QRTR
+CTL 65315 0xff23 Message Internal Release CID QRTR
+DMS 0 0x0000 Message Reset
+DMS 1 0x0001 Message Set Event Report
+DMS 1 0x0001 Indication Event Report
+DMS 32 0x0020 Message Get Capabilities
+DMS 33 0x0021 Message Get Manufacturer
+DMS 34 0x0022 Message Get Model
+DMS 35 0x0023 Message Get Revision
+DMS 36 0x0024 Message Get MSISDN
+DMS 37 0x0025 Message Get IDs
+DMS 38 0x0026 Message Get Power State
+DMS 39 0x0027 Message UIM Set PIN Protection
+DMS 40 0x0028 Message UIM Verify PIN
+DMS 41 0x0029 Message UIM Unblock PIN
+DMS 42 0x002a Message UIM Change PIN
+DMS 43 0x002b Message UIM Get PIN Status
+DMS 44 0x002c Message Get Hardware Revision
+DMS 45 0x002d Message Get Operating Mode
+DMS 46 0x002e Message Set Operating Mode
+DMS 47 0x002f Message Get Time
+DMS 48 0x0030 Message Get PRL Version
+DMS 49 0x0031 Message Get Activation State
+DMS 50 0x0032 Message Activate Automatic
+DMS 51 0x0033 Message Activate Manual
+DMS 52 0x0034 Message Get User Lock State
+DMS 53 0x0035 Message Set User Lock State
+DMS 54 0x0036 Message Set User Lock Code
+DMS 55 0x0037 Message Read User Data
+DMS 56 0x0038 Message Write User Data
+DMS 57 0x0039 Message Read ERI File
+DMS 58 0x003a Message Restore Factory Defaults
+DMS 59 0x003b Message Validate Service Programming Code
+DMS 60 0x003c Message UIM Get ICCID
+DMS 62 0x003e Message Set Firmware ID
+DMS 64 0x0040 Message UIM Get CK Status
+DMS 65 0x0041 Message UIM Set CK Protection
+DMS 66 0x0042 Message UIM Unblock CK
+DMS 67 0x0043 Message UIM Get IMSI
+DMS 68 0x0044 Message UIM Get State
+DMS 69 0x0045 Message Get Band Capabilities
+DMS 70 0x0046 Message Get Factory SKU
+DMS 71 0x0047 Message Get Firmware Preference
+DMS 72 0x0048 Message Set Firmware Preference
+DMS 73 0x0049 Message List Stored Images
+DMS 74 0x004a Message Delete Stored Image
+DMS 75 0x004b Message Set Time
+DMS 76 0x004c Message Get Stored Image Info
+DMS 77 0x004d Message Get Alt Net Config
+DMS 78 0x004e Message Set Alt Net Config
+DMS 79 0x004f Message Get Boot Image Download Mode
+DMS 80 0x0050 Message Set Boot Image Download Mode
+DMS 81 0x0051 Message Get Software Version
+DMS 82 0x0052 Message Set Service Programming Code
+DMS 92 0x005c Message Get MAC Address
+DMS 30 0x001e Message Get Supported Messages
+DMS 21846 0x5556 Message HP Change Device Mode
+DMS 21846 0x5556 Message Swi Get Current Firmware
+DMS 21851 0x555b Message Swi Get USB Composition
+DMS 21852 0x555c Message Swi Set USB Composition
+DMS 21854 0x555e Message Foxconn Get Firmware Version
+DMS 21855 0x555f Message Set FCC Authentication
+DMS 21858 0x5562 Message Foxconn Change Device Mode
+DMS 21873 0x5571 Message Foxconn Set FCC Authentication
+DMS 21873 0x5571 Message Foxconn Set FCC Authentication v2
+DPM 32 0x0020 Message Open Port
+DPM 33 0x0021 Message Close Port
+DSD 36 0x0024 Message Get System Status
+DSD 37 0x0025 Message System Status Change
+DSD 38 0x0026 Indication System Status
+DSD 51 0x0033 Message Get APN Info
+DSD 81 0x0051 Message Set APN Type
+FOX 21854 0x555e Message Get Firmware Version
+FOX 21873 0x5571 Message Set FCC Authentication
+GAS 515 0x0203 Message DMS Set USB Composition
+GAS 516 0x0204 Message DMS Get USB Composition
+GAS 518 0x0206 Message DMS Set Active Firmware
+GAS 520 0x0208 Message DMS Get Firmware List
+GAS 546 0x0222 Message DMS Set Firmware Auto Sim
+GAS 547 0x0223 Message DMS Get Firmware Auto Sim
+GAS 557 0x022d Message DMS Get Ethernet PDU MAC Address
+GMS 3840 0x0f00 Message Test Set Value
+GMS 3841 0x0f01 Message Test Get Value
+IMS 71 0x0047 Message Set IMS Policy Manager Settings
+IMS 72 0x0048 Message Get IMS Policy Manager Settings
+IMS 73 0x0049 Indication IMS Policy Manager Settings Ind
+IMS 143 0x008f Message Set IMS Services Enabled Setting
+IMS 144 0x0090 Message Get IMS Services Enabled Setting
+IMS 145 0x0091 Indication IMS Services Enabled Setting
+IMS 152 0x0098 Message Bind
+IMSA 32 0x0020 Message Get IMS Registration Status
+IMSA 33 0x0021 Message Get IMS Services Status
+IMSA 34 0x0022 Message Register Indications
+IMSA 35 0x0023 Indication IMS Registration Status Changed
+IMSA 36 0x0024 Indication IMS Services Status Changed
+IMSA 51 0x0033 Message Bind
+IMSA 52 0x0034 Message Get Bind
+IMSDCM 32 0x0020 Message PDP Activate Request
+IMSDCM 32 0x0020 Indication PDP Activate
+IMSDCM 33 0x0021 Message PDP Deactivate Request
+IMSP 36 0x0024 Message Get Enabler State
+LOC 33 0x0021 Message Register Events
+LOC 34 0x0022 Message Start
+LOC 35 0x0023 Message Stop
+LOC 36 0x0024 Indication Position Report
+LOC 38 0x0026 Indication NMEA
+LOC 40 0x0028 Indication Inject Time Request
+LOC 41 0x0029 Indication Inject Predicted Orbits Request
+LOC 42 0x002a Indication Inject Position Request
+LOC 43 0x002b Indication Engine State
+LOC 44 0x002c Indication Fix Recurrence Type
+LOC 37 0x0025 Indication GNSS Sv Info
+LOC 53 0x0035 Message Inject Predicted Orbits Data
+LOC 53 0x0035 Indication Inject Predicted Orbits Data
+LOC 54 0x0036 Message Get Predicted Orbits Data Source
+LOC 54 0x0036 Indication Get Predicted Orbits Data Source
+LOC 55 0x0037 Message Get Predicted Orbits Data Validity
+LOC 55 0x0037 Indication Get Predicted Orbits Data Validity
+LOC 56 0x0038 Message Inject UTC Time
+LOC 56 0x0038 Indication Inject UTC Time
+LOC 57 0x0039 Message Inject Position
+LOC 57 0x0039 Indication Inject Position
+LOC 58 0x003a Message Set Engine Lock
+LOC 58 0x003a Indication Set Engine Lock
+LOC 59 0x003b Message Get Engine Lock
+LOC 59 0x003b Indication Get Engine Lock
+LOC 62 0x003e Message Set NMEA Types
+LOC 62 0x003e Indication Set NMEA Types
+LOC 63 0x003f Message Get NMEA Types
+LOC 63 0x003f Indication Get NMEA Types
+LOC 66 0x0042 Message Set Server
+LOC 66 0x0042 Indication Set Server
+LOC 67 0x0043 Message Get Server
+LOC 67 0x0043 Indication Get Server
+LOC 68 0x0044 Message Delete Assistance Data
+LOC 68 0x0044 Indication Delete Assistance Data
+LOC 74 0x004a Message Set Operation Mode
+LOC 74 0x004a Indication Set Operation Mode
+LOC 75 0x004b Message Get Operation Mode
+LOC 75 0x004b Indication Get Operation Mode
+LOC 167 0x00a7 Message Inject Xtra Data
+LOC 167 0x00a7 Indication Inject Xtra Data
+NAS 0 0x0000 Message Reset
+NAS 1 0x0001 Message Abort
+NAS 2 0x0002 Message Set Event Report
+NAS 2 0x0002 Indication Event Report
+NAS 3 0x0003 Message Register Indications
+NAS 30 0x001e Message Get Supported Messages
+NAS 32 0x0020 Message Get Signal Strength
+NAS 33 0x0021 Message Network Scan
+NAS 34 0x0022 Message Initiate Network Register
+NAS 35 0x0023 Message Attach Detach
+NAS 36 0x0024 Message Get Serving System
+NAS 36 0x0024 Indication Serving System
+NAS 37 0x0025 Message Get Home Network
+NAS 38 0x0026 Message Get Preferred Networks
+NAS 39 0x0027 Message Set Preferred Networks
+NAS 42 0x002a Message Set Technology Preference
+NAS 43 0x002b Message Get Technology Preference
+NAS 49 0x0031 Message Get RF Band Information
+NAS 51 0x0033 Message Set System Selection Preference
+NAS 52 0x0034 Message Get System Selection Preference
+NAS 57 0x0039 Message Get Operator Name
+NAS 58 0x003a Indication Operator Name
+NAS 67 0x0043 Message Get Cell Location Info
+NAS 68 0x0044 Message Get PLMN Name
+NAS 76 0x004c Indication Network Time
+NAS 77 0x004d Message Get System Info
+NAS 78 0x004e Indication System Info
+NAS 79 0x004f Message Get Signal Info
+NAS 80 0x0050 Message Config Signal Info
+NAS 108 0x006c Message Config Signal Info v2
+NAS 81 0x0051 Indication Signal Info
+NAS 90 0x005a Message Get Tx Rx Info
+NAS 101 0x0065 Message Get CDMA Position Info
+NAS 103 0x0067 Message Force Network Search
+NAS 104 0x0068 Indication Network Reject
+NAS 125 0x007d Message Get Network Time
+NAS 133 0x0085 Message Incremental Network Scan
+NAS 133 0x0085 Indication Incremental Network Scan
+NAS 137 0x0089 Message Get DRX
+NAS 172 0x00ac Message Get LTE Cphy CA Info
+NAS 232 0x00e8 Message Get ENDC Config
+NAS 21846 0x5556 Message Swi Get Status
+OMA 0 0x0000 Message Reset
+OMA 1 0x0001 Message Set Event Report
+OMA 1 0x0001 Indication Event Report
+OMA 32 0x0020 Message Start Session
+OMA 33 0x0021 Message Cancel Session
+OMA 34 0x0022 Message Get Session Info
+OMA 35 0x0023 Message Send Selection
+OMA 36 0x0024 Message Get Feature Setting
+OMA 37 0x0025 Message Set Feature Setting
+PBM 1 0x0001 Message Indication Register
+PBM 2 0x0002 Message Get Capabilities
+PBM 3 0x0003 Message Get All Capabilities
+PBM 14 0x000e Message Get Emergency List
+PDC 0 0x0000 Message Reset
+PDC 32 0x0020 Message Register
+PDC 33 0x0021 Indication Config Change
+PDC 34 0x0022 Message Get Selected Config
+PDC 34 0x0022 Indication Get Selected Config
+PDC 35 0x0023 Message Set Selected Config
+PDC 35 0x0023 Indication Set Selected Config
+PDC 36 0x0024 Message List Configs
+PDC 36 0x0024 Indication List Configs
+PDC 37 0x0025 Message Delete Config
+PDC 38 0x0026 Message Load Config
+PDC 38 0x0026 Indication Load Config
+PDC 39 0x0027 Message Activate Config
+PDC 39 0x0027 Indication Activate Config
+PDC 40 0x0028 Message Get Config Info
+PDC 40 0x0028 Indication Get Config Info
+PDC 41 0x0029 Message Get Config Limits
+PDC 42 0x002a Message Get Default Config Info
+PDC 43 0x002b Message Deactivate Config
+PDC 43 0x002b Indication Deactivate Config
+PDC 47 0x002f Indication Refresh
+PDS 0 0x0000 Message Reset
+PDS 1 0x0001 Message Set Event Report
+PDS 1 0x0001 Indication Event Report
+PDS 32 0x0020 Message Get GPS Service State
+PDS 33 0x0021 Message Set GPS Service State
+PDS 41 0x0029 Message Get Default Tracking Session
+PDS 42 0x002a Message Set Default Tracking Session
+PDS 46 0x002e Message Get AGPS Config
+PDS 47 0x002f Message Set AGPS Config
+PDS 48 0x0030 Message Get Auto Tracking State
+PDS 49 0x0031 Message Set Auto Tracking State
+PDS 96 0x0060 Indication GPS Ready
+QOS 0 0x0000 Message Reset
+QOS 38 0x0026 Message Get Flow Status
+QOS 38 0x0026 Indication Flow Status
+QOS 39 0x0027 Message Get Network Status
+QOS 39 0x0027 Indication Network Status
+QOS 43 0x002b Message Bind Mux Data Port
+QOS 45 0x002d Message Bind Subscription
+QOS 46 0x002e Message Get Bind Subscription
+QOS 21846 0x5556 Message Swi Read Data Stats
+SAR 1 0x0001 Message RF Set State
+SAR 2 0x0002 Message RF Get State
+SSC 32 0x0020 Message Control
+SSC 33 0x0021 Indication Report Small
+SSC 34 0x0022 Indication Report Large
+UIM 0 0x0000 Message Reset
+UIM 30 0x001e Message Get Supported Messages
+UIM 32 0x0020 Message Read Transparent
+UIM 33 0x0021 Message Read Record
+UIM 35 0x0023 Message Write Record
+UIM 36 0x0024 Message Get File Attributes
+UIM 37 0x0025 Message Set PIN Protection
+UIM 38 0x0026 Message Verify PIN
+UIM 39 0x0027 Message Unblock PIN
+UIM 40 0x0028 Message Change PIN
+UIM 41 0x0029 Message Depersonalization
+UIM 42 0x002a Message Refresh Register
+UIM 44 0x002c Message Refresh Complete
+UIM 46 0x002e Message Register Events
+UIM 47 0x002f Message Get Card Status
+UIM 48 0x0030 Message Power Off SIM
+UIM 49 0x0031 Message Power On SIM
+UIM 50 0x0032 Indication Card Status
+UIM 51 0x0033 Indication Refresh
+UIM 56 0x0038 Message Change Provisioning Session
+UIM 58 0x003a Message Get Configuration
+UIM 59 0x003b Message Send APDU
+UIM 63 0x003f Message Logical Channel
+UIM 66 0x0042 Message Open Logical Channel
+UIM 68 0x0044 Message Refresh Register All
+UIM 70 0x0046 Message Switch Slot
+UIM 71 0x0047 Message Get Slot Status
+UIM 72 0x0048 Indication Slot Status
+UIM 93 0x005d Message Remote Unlock
+VOICE 3 0x0003 Message Indication Register
+VOICE 30 0x001e Message Get Supported Messages
+VOICE 32 0x0020 Message Dial Call
+VOICE 33 0x0021 Message End Call
+VOICE 34 0x0022 Message Answer Call
+VOICE 46 0x002e Indication All Call Status
+VOICE 47 0x002f Message Get All Call Info
+VOICE 49 0x0031 Message Manage Calls
+VOICE 50 0x0032 Indication Supplementary Service
+VOICE 51 0x0033 Message Set Supplementary Service
+VOICE 52 0x0034 Message Get Call Waiting
+VOICE 58 0x003a Message Originate USSD
+VOICE 59 0x003b Message Answer USSD
+VOICE 60 0x003c Message Cancel USSD
+VOICE 61 0x003d Indication Release USSD
+VOICE 62 0x003e Indication USSD
+VOICE 65 0x0041 Message Get Config
+VOICE 67 0x0043 Message Originate USSD No Wait
+VOICE 67 0x0043 Indication Originate USSD No Wait
+VOICE 40 0x0028 Message Burst DTMF
+VOICE 41 0x0029 Message Start Continuous DTMF
+VOICE 42 0x002a Message Stop Continuous DTMF
+WDA 30 0x001e Message Get Supported Messages
+WDA 32 0x0020 Message Set Data Format
+WDA 33 0x0021 Message Get Data Format
+WDA 47 0x002f Message Loopback Configuration
+WDA 47 0x002f Indication Loopback Configuration
+WDA 48 0x0030 Message Set Capability
+WDA 51 0x0033 Message Get Ethernet Config
+WDS 0 0x0000 Message Reset
+WDS 1 0x0001 Message Set Event Report
+WDS 1 0x0001 Indication Event Report
+WDS 2 0x0002 Message Abort
+WDS 3 0x0003 Message Indication Register
+WDS 30 0x001e Message Get Supported Messages
+WDS 32 0x0020 Message Start Network
+WDS 33 0x0021 Message Stop Network
+WDS 34 0x0022 Message Get Packet Service Status
+WDS 34 0x0022 Indication Packet Service Status
+WDS 35 0x0023 Message Get Channel Rates
+WDS 36 0x0024 Message Get Packet Statistics
+WDS 37 0x0025 Message Go Dormant
+WDS 38 0x0026 Message Go Active
+WDS 39 0x0027 Message Create Profile
+WDS 40 0x0028 Message Modify Profile
+WDS 41 0x0029 Message Delete Profile
+WDS 42 0x002a Message Get Profile List
+WDS 43 0x002b Message Get Profile Settings
+WDS 44 0x002c Message Get Default Settings
+WDS 45 0x002d Message Get Current Settings
+WDS 48 0x0030 Message Get Dormancy Status
+WDS 52 0x0034 Message Get Autoconnect Settings
+WDS 55 0x0037 Message Get Data Bearer Technology
+WDS 68 0x0044 Message Get Current Data Bearer Technology
+WDS 73 0x0049 Message Get Default Profile Number
+WDS 74 0x004a Message Set Default Profile Number
+WDS 77 0x004d Message Set IP Family
+WDS 81 0x0051 Message Set Autoconnect Settings
+WDS 108 0x006c Message Get PDN Throttle Info
+WDS 133 0x0085 Message Get LTE Attach Parameters
+WDS 137 0x0089 Message Bind Data Port
+WDS 140 0x008c Indication Extended Ip Config
+WDS 146 0x0092 Message Get Max LTE Attach PDN Number
+WDS 147 0x0093 Message Set LTE Attach PDN List
+WDS 147 0x0093 Indication Set LTE Attach PDN List
+WDS 148 0x0094 Message Get LTE Attach PDN List
+WDS 162 0x00a2 Message Bind Mux Data Port
+WDS 167 0x00a7 Message Configure Profile Event List
+WDS 168 0x00a8 Indication Profile Changed
+WDS 175 0x00af Message Bind Subscription
+WDS 176 0x00b0 Message Get Bind Subscription
+WDS 21848 0x5558 Message Swi Create Profile Indexed
+WMS 0 0x0000 Message Reset
+WMS 1 0x0001 Message Set Event Report
+WMS 1 0x0001 Indication Event Report
+WMS 30 0x001e Message Get Supported Messages
+WMS 32 0x0020 Message Raw Send
+WMS 33 0x0021 Message Raw Write
+WMS 34 0x0022 Message Raw Read
+WMS 35 0x0023 Message Modify Tag
+WMS 36 0x0024 Message Delete
+WMS 48 0x0030 Message Get Message Protocol
+WMS 49 0x0031 Message List Messages
+WMS 50 0x0032 Message Set Routes
+WMS 51 0x0033 Message Get Routes
+WMS 55 0x0037 Message Send Ack
+WMS 60 0x003c Message Set Broadcast Activation
+WMS 61 0x003d Message Set Broadcast Config
+WMS 62 0x003e Message Get Broadcast Config
+WMS 66 0x0042 Message Send From Memory Storage
+WMS 70 0x0046 Indication SMSC Address
+WMS 71 0x0047 Message Indication Register
+WMS 74 0x004a Message Get Transport Network Registration Status
+WMS 75 0x004b Indication Transport Network Registration Status
