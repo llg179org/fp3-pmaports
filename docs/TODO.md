@@ -2756,6 +2756,19 @@ commits of `submit/7.1.3/charger` apply clean, though to three different trees �
 six to `psy/for-next`, two dts and one `adc5` channel to mainline. Gaps, in
 [`docs/charger/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/charger/README.md#known-gaps):
 
+155. **Check whether the series owes a `defconfig` patch.** Measured 2026-08-30:
+    `CHARGER_QCOM_SMB2` is not in mainline's `arch/arm64/configs/defconfig` — but
+    that symbol name is ours, and the upstream driver this work extends
+    (`qcom_smbx`, serving pmi8998 / pm660 / pmi632) already exists, so the real
+    question is whether *its* symbol is enabled there and whether adding the
+    pmi632 compatible needs anything new. One command answers it against the
+    driver's actual Kconfig symbol:
+    `grep -E '^CONFIG_CHARGER_QCOM' arch/arm64/configs/defconfig`. If nothing is
+    enabled, the charger cannot work on a stock kernel build and the series needs
+    a defconfig patch; if the symbol is already there, it owes none. The audio
+    series was checked the same way and owes none — `SND_SOC_WCD9335`,
+    `SND_SOC_APQ8016_SBC` and `SLIM_QCOM_NGD_CTRL` are all already `=m`.
+
 11. **No high-voltage negotiation on the input side** — the port settles near
     1.9 A, just under the programmed 2 A. This is the next real feature here, and
     a piece of work in its own right.
@@ -2903,6 +2916,19 @@ is **Joel Selvaraj's** (`sdm670-mainline/linux` MR !3, commit `5130bc702ea2`,
 2024-08-15), archived byte-identically on `vendor/imx363-sdm670`; our measured
 delta is +68/−21 on 1514 lines, roughly half comments, functionally four things in
 the power path.
+
+154. **The series owes a `defconfig` patch, and does not have one.** Measured
+    2026-08-30: `arch/arm64/configs/defconfig` in mainline `master` carries no
+    symbol for this sensor — unsurprisingly, since the driver is not upstream at
+    all. The canonical shape of a driver series is *binding → framework change →
+    driver + Kconfig → **defconfig** → DTS*, and the defconfig patch is the piece
+    most easily forgotten, because the developer's own build already has the
+    symbol enabled and nothing local fails without it. Without it the sensor
+    cannot work on a stock kernel build, which is most of the point of sending
+    it. Settle the exact symbol name when the driver's Kconfig entry is written
+    — ours is `VIDEO_IMX363` today, and that name is ours to propose, not a
+    given. Check, do not assume: `grep -E '^CONFIG_<SYMBOL>=' arch/arm64/configs/defconfig`.
+    (Source: Matt Porter, *Upstreaming 201*, Linaro Connect HKG15.)
 
 33. **The focus actuator is at 0x0c and is not an LC898217.** ☠️ **This
     corrects the same item written earlier the same day.** `lc898217.c` plus its
