@@ -234,3 +234,52 @@ And the half that decides whether a filter is *allowed* to exist at all:
 Note the last row: it is the only outcome that would make the *present* state,
 not the proposed one, the problem — and no measurement so far would have caught
 it, because nobody has ever sent this phone an SMS while it was asleep.
+
+## 2026-08-30 12:11 — the SMS half of the wake list, measured
+
+`captures/2026-08-30_wake-qmi-sms/`. Three rounds of a 600 s alarm; the SMS was
+sent during the third.
+
+| round | slept | ended by | port 51 |
+|---|---|---|---|
+| 1 | 601 s | RTC (72) | — |
+| 2 | 601 s | RTC (72) | — |
+| 3 | **321 s** | **modem edge (139)** | **WMS Event Report + 2× Send Ack** |
+
+**An SMS wakes the phone, and it does so on the Wireless Messaging Service's own
+port.** The pre-registered table above named three possible outcomes; this is the
+first, and it is the one that keeps the filter viable. The third — *"the SMS does
+not wake the phone at all"* — is ruled out, which matters because that outcome
+would have made the **present** system the bug rather than the proposed one.
+
+**The wake list is therefore:**
+
+| service | port | measured |
+|---|---|---|
+| Voice | 39 | 2026-08-30 10:39, an incoming call out of a 280 s sleep |
+| Wireless Messaging | 51 | 2026-08-30 12:11, an SMS out of a 321 s sleep |
+
+☠️ **It is still a list of two, and the argument that produced it applies to
+itself.** The reason to run this measurement was that a filter built on the call
+alone would have swallowed SMS. Nothing about today's run rules out a third
+thing that also deserves a wake and has never been sent to this phone while it
+slept — a voicemail notification, an operator/cell-broadcast message, an MMS
+push, a network-initiated detach. **Before the filter ships, the list has to be
+argued from the service map rather than from what we happened to test**, and
+each entry it names has to be either measured or explicitly accepted as a risk.
+An unmeasured service on a *deny* list is a silent failure by construction.
+
+### And a genuinely new fact about the noise
+
+Rounds 1 and 2 slept their **full** windows while NAS (40), DSD (52), WDS (45)
+and UIM (44) traffic arrived. Until this capture that could not be said: the
+trace ran across the resume, so "during the sleep" and "just after it" were the
+same buffer. With the `RESUMED` marker the split is explicit — 3742 of 3743
+lines in round 1 are from the sleep — so **the noise demonstrably arrives
+without ending a suspend.**
+
+That does not make the noise harmless: what changed between the morning's 52–63 s
+sleeps and these full windows is still unnamed, and the same traffic was present
+in both. It does mean the design question moves. "The modem sends packets, so we
+wake" is now known to be false as stated; the filter's job is narrower than it
+looked, and possibly unnecessary in this regime.
