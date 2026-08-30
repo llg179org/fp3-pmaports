@@ -49,6 +49,7 @@ set -u
 S=${1:-600}; N=${2:-3}; P=${3:-logind}
 O=/var/log/fp3/wake-qmi.log
 IDS=$(dirname "$0")/qmi-msgids.txt
+IDS_SVC=$(dirname "$0")/qmi-service-ids.txt
 T=/sys/kernel/tracing
 mkdir -p /var/log/fp3
 say(){ echo "$*" >> "$O"; }
@@ -73,7 +74,26 @@ say "# probes armed:${ARMED:- NONE - the rest of this file is meaningless}"
 
 # port -> service, so a number can be resolved afterwards instead of guessed
 say "-- qrtr services at start (service:instance node:port)"
-qrtr-lookup 2>/dev/null | sed 's/^/   /' | head -40 >> "$O"
+QL=/tmp/fp3-qrtr-lookup.$$
+qrtr-lookup > "$QL" 2>/dev/null
+sed 's/^/   /' "$QL" | head -40 >> "$O"
+
+# ☠️ Resolve the port to ONE service instead of listing every service that happens
+# to define the same number. The map has to come from THIS run: QRTR ports are
+# dynamic, so a map from another boot is a map of a different phone. Fields in
+# qrtr-lookup are "service version instance node port ..." - take 1 and 5.
+PORTMAP=/tmp/fp3-portmap.$$
+: > "$PORTMAP"
+if [ -s "$QL" ] && [ -r "$IDS_SVC" ]; then
+	awk 'NR>1 && $1 ~ /^[0-9]+$/ && $5 ~ /^[0-9]+$/ {print $5, $1}' "$QL" |
+	while read -r port svc; do
+		nm=$(awk -v s="$svc" '$1==s {print $2; exit}' "$IDS_SVC")
+		[ -n "$nm" ] && echo "$port $nm" >> "$PORTMAP"
+	done
+	say "-- port -> service, resolved from THIS run ($(grep -c . "$PORTMAP") ports)"
+else
+	say "☠️ no port map (qrtr-lookup empty or $IDS_SVC missing) - ids stay ambiguous"
+fi
 
 # stdin: "count src_port msgid flags". The id is unique only WITHIN a service,
 # so print EVERY service that defines it and let the port (via qrtr-lookup
@@ -88,9 +108,17 @@ decode() {
 		# settled - an IND can only be an Indication - and leave the rest of the
 		# disambiguation to the port, using the qrtr-lookup block above.
 		[ "$k" = IND ] && want=Indication || want=Message
+		# the port names the service, so ask the table about that service only
+		svc=$(awk -v p="$sp" '$1==p {print $2; exit}' "$PORTMAP" 2>/dev/null)
 		nm=""
-		[ -r "$IDS" ] && nm=$(awk -v m="$msg" -v w="$want" '$2==m && $4==w {
-			printf "%s%s:", (n++?" | ":""), $1; for(i=5;i<=NF;i++) printf " %s", $i} END{print ""}' "$IDS")
+		if [ -r "$IDS" ] && [ -n "$svc" ]; then
+			nm=$(awk -v m="$msg" -v w="$want" -v S="$svc" '$1==S && $2==m && $4==w {
+				printf "%s:", $1; for(i=5;i<=NF;i++) printf " %s", $i; exit}' "$IDS")
+			[ -n "$nm" ] || nm="$svc: <id $msg not in libqmi for this service>"
+		elif [ -r "$IDS" ]; then
+			nm=$(awk -v m="$msg" -v w="$want" '$2==m && $4==w {
+				printf "%s%s:", (n++?" | ":""), $1; for(i=5;i<=NF;i++) printf " %s", $i} END{print ""}' "$IDS")
+		fi
 		printf '   %5d  src_port=%-6s %s  msg=%s  %s\n' "$c" "$sp" "$k" "$msg" "${nm:-<not in libqmi>}"
 	done
 }

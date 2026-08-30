@@ -1,0 +1,59 @@
+# QMI service id -> short name, generated from libqmi src/libqmi-glib/qmi-enums.h.
+# Fields: DECIMAL_ID NAME
+# Used to turn a QRTR port into a service via the run's own qrtr-lookup output,
+# so a message id can be resolved against ONE service instead of every service
+# that happens to define that number. ☠️ The port map must come from the RUN -
+# QRTR ports are dynamic and a map from another boot is a different phone.
+0 CTL
+1 WDS
+2 DMS
+3 NAS
+4 QOS
+5 WMS
+6 PDS
+7 AUTH
+8 AT
+9 VOICE
+10 CAT2
+11 UIM
+12 PBM
+13 QCHAT
+14 RMTFS
+15 TEST
+16 LOC
+17 SAR
+18 IMS
+19 ADC
+20 CSD
+21 MFS
+22 TIME
+23 TS
+24 TMD
+25 SAP
+26 WDA
+27 TSYNC
+28 RFSA
+29 CSVT
+30 QCMAP
+31 IMSP
+32 IMSVT
+33 IMSA
+34 COEX
+36 PDC
+38 STX
+39 BIT
+40 IMSRTP
+41 RFRPE
+42 DSD
+43 SSCTL
+47 DPM
+224 CAT
+225 RMS
+226 OMA
+227 FOX
+230 FOTA
+231 GMS
+232 GAS
+237 ATR
+400 SSC
+770 IMSDCM
