@@ -44,6 +44,34 @@ The call never reaches the device — there is no `ringing-in` in the journal
 because nothing arrived. **The lever is disqualified by the goal's own terms**
 (parity *at the oracle's responsiveness*), and it is now closed on evidence.
 
+### ☠️ Three corrections from the journal, after the call
+
+The run's own log sharpens what was measured, and one part of it is unexplained.
+
+**MM did take the modem to low power** — the line a success prints, which is what
+made the negative readable rather than merely silent:
+
+```
+10:11:10  [sleep-monitor-systemd] system is about to suspend
+10:11:10  [modem0] state changed (registered -> disabling)
+10:11:10  [modem0] state changed (disabling -> disabled)
+```
+
+**☠️ But it never brought it back.** The second round (10:17:40) has no
+`disabling` line, because the modem already was. So from 10:11:10 onward it was
+`disabled` continuously, not only across the sleeps — the call therefore reached
+a phone whose modem had been off for minutes, not one that powers down per
+suspend. The lever is disqualified either way, but the mechanism differs, and
+which it is — the mode's intent or a defect — is **not distinguishable from this
+run and is not claimed**.
+
+**★ Residency did improve**: 88 s and 228 s, against 8–33 s in the normal mode the
+same morning. ☠️ **And the 228 s did not reach its 300 s alarm**, so something
+still woke the phone with the modem disabled — which contradicts the radio-off
+leg's 1802 s. The two disable the modem by different means (`mmcli --disable`
+versus MM's low-power path) and the log does not record the wake source here, so
+this is left open as a measurement rather than explained.
+
 ## What the three levers now look like, all measured
 
 | lever | residency | call |
