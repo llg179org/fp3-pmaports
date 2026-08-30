@@ -418,6 +418,48 @@ next and in what order**: the goal's arithmetic, the two tracks it splits into
 spent, and each next step with its decision rule written before the measurement.
 Read it before picking anything up.
 
+### ★ 2026-08-30 afternoon — the ledger, and the one thing still running
+
+Four questions closed in one afternoon, three of them **negatively**, which is
+the useful kind.
+
+| # | question | answer | consequence |
+|---|---|---|---|
+| **X1** | does a working system park the APSS XO vote, or reach a deeper RPM state? | ☠️ **No.** The oracle's `APSS xo_count` is `0x0` at two uptimes against 3 112 → 19 181 power-collapses — identical to pmOS | the **deep-vote track closes**; the morning's "the AP never lets the crystal go" headline is **withdrawn**, it described the platform |
+| **D1** | is the oracle's data context what makes it cheap? | ☠️ **No.** 6.9 % → 5.2 % → 5.4 % across context-on / off / on; the duty *fell* slightly | the **`netmgrd`/`ipacm` story is retired**, and the pmOS bearer A/B is confirmed rather than doubted. The duty gap points at **attach-time configuration** |
+| **R1a** | does the modem send anything unprompted during s2idle? | **No.** Window bounded by a `system-sleep` hook: alarm-ended 600 s round = **0** messages; modem-ended 46 s round = **1** | every packet arriving during s2idle ends the sleep |
+| **R1c** | build the selective wake filter? | ☠️ **No — parked**, by R1a and by this lead's own pre-registration | nothing to filter in this regime; reopen only after a census *inside* the short-sleep regime |
+
+**Still running:** `step0sleep` (started 15:58:11,
+`/var/log/fp3/sleep-night-1788098291`, floor 55 %, 600 s sleeps, ModemManager
+stopped). It is the **only** remaining source of `floor_mA`, the term the goal's
+arithmetic cannot be evaluated without. ☠️ Do not poll it — every ssh is a wake.
+Its control leg is done and reads 122.3 mA against an awake band of 88.5–128 mA,
+which licenses the decision table (`<15` / `15–40` / `>40 mA`) and nothing finer.
+
+**Where the goal now stands.** With X1 closed, the halving has exactly one route
+and it is residency: `night_mA = (1 - r) x 98.5 + r x floor_mA`. Neither `r` nor
+`floor_mA` has ever been measured here; step 0 is measuring the second.
+
+### ☠️ Four instrument defects found the same afternoon, all one shape
+
+Recorded together because the pattern is more useful than any of them alone:
+**a number that is not where it appears to be**, or **the reading the argument
+prefers arriving before the evidence does**.
+
+| defect | what it would have produced |
+|---|---|
+| census window bounded at the wrong edge (twice, then a third time) | ModemManager's own handshake counted as modem noise |
+| `idle-suspend-window.sh` read `suspend_stats/success` only at the end | an absolute count where the answer is a delta — "75" is compatible with zero suspends in the window |
+| watcher matched the wrong systemd states (twice, in opposite directions) | a 1634-line capture read as 4 lines; a 90-minute run reported finished in 11 seconds |
+| `pm_wakeup_irq` numbers read as names | on this boot 72 is a **camera** interrupt, while every earlier capture reads 72 as "the RTC" |
+
+And two reading errors of the same family, both corrected the same day: the
+census result read as *justifying* the filter its own pre-registration says it
+retires, and a **measurement that was never taken** written into an outgoing
+message to a kernel maintainer. Each instrument defect is now fixed in the tool
+rather than remembered.
+
 ### Orientation — two fronts, and which numbers belong to which
 
 Asked on 2026-08-30 after a long instrument-heavy day, and worth keeping because
