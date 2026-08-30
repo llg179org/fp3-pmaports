@@ -79,6 +79,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `idle-ladder-fit.py` | Fit an idle-ladder capture: median current per stage, and the marginal cost |
 | `idle-ladder.sh` | The idle decomposition: what actually makes up the awake-idle draw, measured |
 | `idle-leg.sh` | One leg of an idle-current measurement on the FP3 |
+| `idle-suspend-window.sh` | DOES THE PHONE SUSPEND ON ITS OWN, AND WHAT DOES IT COST WHEN IT DOES? |
 | `ipa-handshake-probe.sh` | Did our IPA driver ever complete its handshake with the modem? |
 | `kmsg-tap.sh` | kmsg-tap.sh OUTFILE - stream the device's kernel log to a file ON THE HOST |
 | `ladder-summary.py` | Summarise a night-ladder run: how much the pack actually gave up over the whole |
