@@ -33,6 +33,7 @@ as "this exists and this is what it was for", never as "this is current".
 
 | script | what it is for |
 |---|---|
+| `README.md` | The instruments |
 | `ab-leg-fit.py` | Fit an alternating-arms leg: one slope per SUSPEND, compared arm against arm |
 | `ab-leg.sh` | Both arms of a sleeping-current comparison from ONE pack |
 | `adsp-restart-leg.sh` | What is the ADSP's held session worth? |
@@ -105,7 +106,8 @@ as "this exists and this is what it was for", never as "this is current".
 | `pll-vs-voltage.sh` | pll-vs-voltage.sh - run the same cpufreq sweep repeatedly while the battery |
 | `press-power-key.py` | Press the power key from software, via /dev/uinput |
 | `qmi-msgids.txt` | QMI message-id -> name, generated from libqmi data/*.json (llg179 clone) |
-| `radio-context.sh` | THE CONFOUND NOBODY HAS EVER RECORDED: which cell, how good the signal, which radio technology |
+| `qmi-service-ids.txt` | QMI service id -> short name, generated from libqmi src/libqmi-glib/qmi-enums.h |
+| `radio-context.sh` | THE CONFOUND NOBODY HAS EVER RECORDED: which cell, how good the signal, which |
 | `radio-cycle-ab.sh` | DOES CYCLING THE RADIO MOVE THE PHONE FROM THE SHORT SLEEP REGIME TO THE LONG ONE? |
 | `radio-off-sleep.sh` | Is the thing that ends every sleep coming FROM THE NETWORK, or from the modem |
 | `rail-census-parse.py` | Turn a rail-census capture into the list of rails that vote active and never |
@@ -113,7 +115,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `restwake.sh` | How long does the phone sleep as a function of HOW LONG IT WAS LEFT ALONE? |
 | `ring-source.sh` | ring-source.sh — is the modem edge's ~one-per-2-s signal ring produced by an |
 | `rpm-write-ab.sh` | A-B-A' on the eMMC host's runtime-PM autosuspend delay, counting the RPM |
-| `rpm-xo-snapshot.sh` | One line per RPM master: how long it has let the XO go, cumulatively, since boot |
+| `rpm-xo-snapshot.sh` | One line per RPM master: how long it has let the XO go, cumulatively, since |
 | `rpmsg-ept.py` | Open an rpmsg channel by name and get a /dev/rpmsgN for it |
 | `rpmstats_raw.py` | Raw reader for the RPM sleep-stats records in message RAM (msm8953) |
 | `run-wake-qmi.sh` | HOST side: deploy tools/wake-qmi.sh to the phone and run the census |
