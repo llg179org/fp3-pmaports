@@ -99,19 +99,53 @@ measurement: across a real 601 s sleep `APSS` read `XO total duration: 0` with
 `XO shutdown count: 0`. If the application processor never lets the crystal go
 *while suspended*, suspending buys far less than the arithmetic assumes.
 
-### Step X1 (track R, the real front) — **why does the RPM never reach vlow/vmin?**
+### ☠️ Step X1 as first written was already answered — corrected 2026-08-30
 
-The 633-line lead `bringup/leads/rpm-sleep-set.md` already frames it and the
-instruments already exist: `rail-census.sh` + `rail-census-parse.py` name the
-rails that vote active and never vote sleep; `sleepset-witness.sh` reads the
-probe-time votes; `vlow-probe.sh` and `leg3.sh` test whether zeroing the sleep-set
-XO vote changes anything.
+The first draft of this page sent the next run to "census the rails that never
+vote sleep". **That is done and the answer is negative**, and it was negative
+before this page was written: with the USB PHY unbound the census leaves
+**exactly one** enabled rail with no sleep vote, and it is `ldoa/8`, the eMMC's
+`sdhc_1:vmmc`, which has to stay up (`2026-08-19_rail-census-usb-off.txt`,
+`leads/rpm-sleep-set.md`). The lead's own verdict: *"no patch on this page buys
+any current on the FP3."*
 
-**Pre-registered:** the output is a **named list of rails/masters that never vote
-sleep**, and for each one the driver that votes it. A list is the deliverable; a
-lever is what comes after. ☠️ If the census comes back empty, that is a result
-about the instrument, not about the phone — validate it against a known positive
-(a rail that *is* known to sleep) before believing it.
+Re-run today with USB attached, it reproduced the **five**-rail list — and the
+2026-08-19 capture header had already predicted that in writing: *"three of the
+five enabled rails are USB PHY rails. Repeat it on WiFi only before reading
+anything into those three."* The delta against the 08-23 capture looked like a
+finding for about a minute. It is the cable.
+
+☠️ The failure that produced the wrong step: this page's X1 was written from a
+one-line memory of the lead ("the real front: the RPM sleep set") without reading
+the lead's closing section. **A file's headline is not its verdict.**
+
+And the whole `vlow` family is spent on our side too: the AP-side sleep-set
+variants, `xo_sleep_off`, `both_sets`, `sleep_init`, and a **powered-off ADSP**
+all leave `vlow Count: 0`.
+
+### ★ Step X1 (corrected) — the one control the lead itself says is unrun
+
+> *"…which raises the prior on the one control still unrun, the oracle with USB
+> detached: whether a working system ever reaches `vlow` on this SoC at all."*
+> — `leads/rpm-sleep-set.md`
+
+**Does the oracle ever reach `vlow`/`vmin`?** `bringup/tools/ut-vlow-idle.sh` is
+the oracle half and `vlow-idle.sh` the pmOS control; both exist and neither has
+been run as a pair.
+
+**Pre-registered reading:**
+
+| oracle `vlow Count` | meaning | consequence |
+|---|---|---|
+| **> 0** | a working system *does* reach it here, so our 0 is a defect with an address | the deep-sleep floor becomes a real, bounded target and X-track is worth a campaign |
+| **0** | ☠️ **no system reaches `vlow` on this SoC** — the state is not available, and every hour spent chasing it is spent against a wall | **close the entire X-track** and put the halving's weight on residency (R) plus whatever D can give |
+
+☠️ The comfortable outcome for a track already argued at length is the first.
+The second is the one that saves the most time, and it must be as publishable as
+the first.
+
+**It shares a slot switch with step D1** — one reboot into slot_a answers both.
+Run them in the same trip.
 
 ### Step D1 (track D) — **the oracle's own A/B, which has never been run**
 
