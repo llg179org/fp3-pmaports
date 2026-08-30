@@ -125,3 +125,61 @@ it. ☠️ It exists because the 2026-08-22 per-channel census — the one that 
 back-to-back short sleeps, i.e. entirely inside the disturbed regime. That answer
 may describe only what a freshly woken phone does, not what ends a rested phone's
 sleep.
+
+
+## ☠️☠️ RETRACTED 09:40 — there is no recovery. The 258 s was an outlier.
+
+The corrected instrument answered, and it answered against the page above
+(`tools/restwake.sh`, rest as the independent variable, 1800 s alarm so every
+sleep ends on the phone's terms):
+
+| rest | slept | ended by |
+|---|---|---|
+| 2 min | 22 s | modem edge |
+| 5 min | 6 s | modem edge |
+| 10 min | 3 s | modem edge |
+| 20 min | 6 s | modem edge |
+| **40 min** | **3 s** | modem edge |
+
+**Leaving the phone alone changes nothing.** Forty minutes of rest buys three
+seconds. So the 07:50 reading of 258 s was a one-off, and the entire "disturbed
+regime with a decay" hypothesis was built on it — by the same session that had,
+an hour earlier, written *"the flattering outlier is the one that travelled"*
+into this repository and a rule about it into a skill. **Recording the rule does
+not confer immunity to it.**
+
+### What survives, and it is not nothing
+
+- ☠️ **"Every full sleep equals its alarm"** still stands, and is still the
+  reason no residency number here ever measured the phone;
+- ☠️ **"Back-to-back legs measure the previous leg"** still stands as a
+  discipline, even though the specific disturbance it was invoked to explain does
+  not exist. The terse A/B is still owed a re-run — not because the arms were
+  saturated by a *decay*, but because its alarm was shorter than sleeps this
+  phone takes;
+- ★ **and the real pattern is now visible, because the recovery hypothesis was
+  covering it.** At 02:30 and 05:15 this phone slept its **full** 300 s and 240 s
+  alarms. Through the entire morning it never once reached 43 s. The difference
+  is not rest, and it is not anything we did — the candidate that fits is **time
+  of day**, i.e. traffic arriving from the network, which is diurnal in a way the
+  modem's own housekeeping is not.
+
+`tools/radio-off-sleep.sh` is the control that separates those two and nothing
+else does: one leg with the radio disabled, A-B-A′, 1800 s alarms.
+
+- radio off and it still sleeps badly ⇒ the modem generates it; the network is
+  out of the picture and the lever is on our side
+  (`leads/selective-smd-wakeup.md`);
+- radio off and it sleeps long ⇒ it comes from the network, and 3GPP power save
+  becomes the subject.
+
+☠️ On which: **`libqmi` has no PSM or eDRX control at all** — checked in the tree
+at `b7913df`, where NAS carries only a `QMI_NAS_SERVICE_STATUS_POWER_SAVE` status
+enum, and the `SET_POWER_SAVE_MODE` hits are the old Gobi API's CTL service,
+which is a different thing. So it cannot be requested with the tools present. And
+the two are not interchangeable for this goal: **PSM makes the device
+unreachable** for the duration, which forfeits exactly what the goal is defined
+by, while **eDRX keeps it registered** and only lengthens the paging interval.
+Only the second is worth wanting here. Not checked, and therefore not claimed:
+whether this modem's firmware supports either, and whether this network offers
+eDRX.
