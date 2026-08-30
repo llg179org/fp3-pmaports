@@ -218,3 +218,37 @@ positive.
 2. `tools/wake-qmi.sh`, which does not depend on MM's self-report at all: if
    NAS/DSD indications keep arriving under terse, the unregister did not take,
    whatever the journal says. That is the instrument that can say no.
+
+## 2026-08-30 — measured: terse runs, and the traffic it claims to stop keeps arriving
+
+`captures/2026-08-30_wake-qmi-sms/`. Three sleeps, **4 terse journal lines in
+every round**, and in every round the trace — cut at the `RESUMED` marker, so
+these are packets from *inside* the sleep — carries traffic on **NAS (port 40)**
+and **DSD (port 52)**.
+
+Those are exactly the services terse unregisters: NAS `serving_system_events`,
+NAS `system_info`, NAS `network_reject_information` and, when `dsd_supported`,
+the DSD `System Status Change` indication. The two statements cannot both
+describe a working unregister, and the section above already established that
+the journal cannot arbitrate — the step returns success regardless and the
+disable-path error message is never emitted.
+
+**So the port-level reading stands on its own: terse ran and did not silence
+NAS or DSD.** Which of the two causes it is —
+
+- the unregister was refused by the modem and swallowed by `/* Just ignore
+  errors for now */`, or
+- what still arrives are *different* messages that terse never asked about —
+
+is **not** settled here, and the reason is worth stating rather than glossing:
+the census's message-id decode is new. It named the SMS pair correctly on a
+known positive, which is real validation, but most other lines decode as
+responses while userspace is frozen, and the same ids recur every round with
+identical counts. Until a second known positive confirms the decode, the ids in
+that capture are not evidence about *which* NAS message survives.
+
+**The cheap next step is the one this page already listed:** raise
+ModemManager's log level and look for `couldn't register` across a terse
+suspend. ☠️ Remember what it can and cannot do — a hit names the failing
+unregister outright, a miss clears nothing, because on the disable path the
+message is suppressed by `if (ctx->enable)`.
