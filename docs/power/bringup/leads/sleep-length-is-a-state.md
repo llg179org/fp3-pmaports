@@ -234,3 +234,51 @@ by the modem rather than by our tooling — a real answer either way. If it does
 contain more, the extra ids are a *measured* list, which is still not a licence
 to decide which of them is eDRX. Wired into `tools/run-wake-qmi.sh` as a
 pre-census read, since it costs one awake query.
+
+## 2026-08-30 midday — four windows the modem did not end, and the one correlate worth testing
+
+`captures/2026-08-30_spread/`: four consecutive 600 s alarms, **601 / 601 / 600 /
+601 s slept, every one ended by `pm_wakeup_irq=72` — the RTC**. Until then every
+short sleep on this front had ended on IRQ 139/141, the modem's SMD edge. The
+host's USB log agrees, and it is the better witness because it never touches the
+phone.
+
+So the regime is real and it is not subtle: the same configuration gives 52–63 s
+in the morning and a filled window at midday. **What flips it is now the
+question**, and more samples of one regime cannot answer it — that is what the
+four rounds already establish, and why the remaining sixteen were dropped.
+
+### The correlate, stated as a hypothesis and not as a finding
+
+Every long sleep of the day falls **after** the radio-off control at 10:10
+(`mmcli --disable` then `--enable`) and the ModemManager restart at 10:27. Every
+short one falls before. That is a clean split in time, and it is also **exactly
+the shape of a coincidence**: time of day, network load and cell state all split
+the same way, and none of them has been measured.
+
+☠️ It is written here because it is testable, not because it is believed. Five
+hypotheses were withdrawn on this front in a single day and each was a plausible
+story written down before the measurement allowed it. The honest reading today
+is: *there is a regime change, and the radio cycle is the only lever we know we
+pulled.*
+
+### The test, designed before the result
+
+A‑B‑A′ with the radio cycle as the lever, inside one session so nothing else
+drifts:
+
+1. **A** — wait for, or find, the short regime. ☠️ This leg is the hard part and
+   it must not be faked: if the phone is filling its windows, there is nothing to
+   improve and the experiment has to wait. Do not run B against an A that was
+   already long.
+2. **B** — `mmcli --disable` / `--enable`, then the same alarm, same path
+   (logind), same number of rounds.
+3. **A′** — the return leg. Two legs are not a comparison; the day already
+   produced two "results" that were drift.
+
+If B and A′ separate, the fix is a **userspace radio cycle** — cheap, reversible,
+and it keeps the phone registered, which the low-power arm did not. If they do
+not, the correlate was the clock and the search moves to what else changes
+between morning and midday: network load, serving cell, signal quality. ☠️ None
+of those is recorded in any capture on either side, which is a gap worth closing
+in the instrument before spending another day on it.
