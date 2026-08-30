@@ -289,6 +289,38 @@ of the tools' own headers before planning anything around them:
 ⇒ Treat D2 as **bring-up work with a reboot per attempt**, and schedule it only
 when nothing else is in flight.
 
+#### ★ The design that gets a control out of the one attempt — added 2026-08-30
+
+Constraint 1 and constraint 2 together look like they forbid a control: DIAG
+perturbs the sleep behaviour, and there is only one attempt per boot, so there is
+no second boot in which to measure the unperturbed case *under the same
+conditions*. Read again, though, the constraint is on **opening DIAG**, not on
+the duty instrument, and the two can share a boot:
+
+1. `modem-window.sh` — one duty window with DIAG **closed**;
+2. open DIAG (`diag-handshake.py`, the one attempt this boot allows);
+3. `modem-window.sh` again, DIAG **open**, then ask it the RRC / paging / DRX
+   questions.
+
+Pre-registered reading, so it cannot be chosen afterwards:
+
+* **the two duty windows agree** ⇒ opening DIAG did not move the thing being
+  explained, and the RRC/DRX numbers describe the regime we care about;
+* **they differ** ⇒ every number DIAG reports describes a *perturbed* modem and
+  must be written down that way. It does not make them worthless — it makes them
+  a different measurement, of a modem with a DIAG session open.
+
+☠️ Checked in the source rather than assumed: `diag-handshake.py` sends
+`DIAGMODE` with `real_time=1` and **`sleep_vote` deliberately 0**, so the
+intervention is smaller than the header's general warning implies. That is a
+reason to run the control, not a reason to skip it — the vote is one mechanism by
+which DIAG could perturb the modem, and a zero in a field we chose is not
+evidence about the others.
+
+Cost: two extra duty windows in a boot that has to happen anyway. Without it, any
+D2 number is single-sided, which is the failure this project has already paid
+for more than once.
+
 ### Step R1 (track R, responsiveness — carried over, demoted)
 
 Only after step 0 has priced suspend. Three open threads, in order:
