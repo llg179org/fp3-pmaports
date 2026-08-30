@@ -103,3 +103,41 @@ That also re-frames the morning's terse verdict: it was not "terse does not
 help", it was **six samples from a distribution wide enough that six was not
 enough**. Any future A/B on this front needs a sample size chosen against this
 spread, not against a hoped-for effect.
+
+
+## ★★★★★ The call's own port, measured — the filter is now fully specified
+
+The round the call landed in carries a packet source that appears in **no other
+round**:
+
+```
+round 1 (the call, 10:39:15):   4 x type=1 src_node=0 src_port=39 -> dst_port=16408
+round 3 (601 s, no call):       src_port=39 does not appear at all
+```
+
+**Port 39 is the Voice service**, per the name-service map captured in the same
+run — so the call's arrival is now **observed**, not inferred from the map. And
+its absence from the quiet round is the control that makes it meaningful.
+
+The criterion is therefore complete and measured on both sides:
+
+| decision | source | service |
+|---|---|---|
+| **WAKE** | `src_port=39` | **Voice** — the call |
+| ignore | `src_port=40` | Network Access Service |
+| ignore | `src_port=52` | Data System Determination |
+| ignore | `src_port=45` | Wireless Data Service |
+| ignore | `src_port=44` | User Identity Module |
+| ignore | node 5, `src_port=10` | not the modem |
+
+⇒ [`leads/selective-smd-wakeup.md`](../../leads/selective-smd-wakeup.md) has
+everything it was missing. `qrtr_endpoint_post()` already parses `src_port` before
+delivery, so the filter is a comparison, and the remaining unknowns are the ones
+that page names: whether `pm_system_wakeup()` may be called from that context,
+and whether SMS and other must-wake events need ports of their own on the list.
+
+☠️ **Sample size, stated plainly:** four packets from one call, against one quiet
+round. The presence/absence contrast is clean, but a filter built on this list
+must be validated by *the same measurement after the change* — a call that still
+rings, and a quiet night that is no longer interrupted — not by the list looking
+right.

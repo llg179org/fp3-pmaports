@@ -78,7 +78,10 @@ waking for.
 
 ## ☠️ What is not known yet, and what would make this wrong
 
-- **The filter criterion does not exist.** "A channel that matters" is undefined
+- ~~The filter criterion does not exist.~~ **Resolved above — measured on both
+  sides.** What remains of this point: **SMS and other must-wake events have not
+  been enumerated**, and each needs its port on the wake list or it is lost the
+  same way a call would have been. "A channel that matters" is undefined
   until it is measured which channel carries a call and which carry the traffic
   that currently ends every suspend. The 2026-08-22 per-channel census answered
   *IPCRTR, and the ring is signal-level rather than messages* — but it ran
@@ -126,6 +129,16 @@ the SMD-layer version is the fallback.**
 interrupts per sleep against **1–3 QRTR packets**. Most of the edge's interrupts
 carry no message, so a handler that only calls `pm_system_wakeup()` for a packet
 worth waking for has little to judge and a great deal to ignore.
+
+★★★★★ **And the call's own port is now measured too** (2026-08-30 10:39): the
+round a call landed in carried `4 x src_node=0 src_port=39` — the **Voice
+service** — and that source appears in **no other round**, including the one that
+slept its full 600 s. So the filter has both halves from measurement:
+
+```
+wake on:    src_node=0 src_port=39          (Voice)
+ignore:     src_port 40 (NAS), 52 (DSD), 45 (WDS), 44 (UIM), node 5 port 10
+```
 
 ☠️ **Still not established, and load-bearing:** four packets across three sleeps
 is a direction, not a ratio; the call's port comes from the service map rather
