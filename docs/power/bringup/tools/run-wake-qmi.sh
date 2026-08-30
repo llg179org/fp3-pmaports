@@ -50,22 +50,24 @@ STATE=${TMPDIR:-/tmp}/fp3-wake-qmi
 # nothing has to be sampled during the sleep (nothing can be: the battery
 # attributes that look readable across a suspend are cached).
 # ☠️ This debugfs is root-only; a BLANK row is not a zero. Say so if it is empty.
+# ☠️ Runs a DEPLOYED script, never an inlined one. The inline version expanded
+# $(basename $m) in the device's login shell, before sh -c saw it, and wrote
+# busybox's usage text into the middle of the capture - a failure a host-side
+# dry run cannot reproduce, because on the host the string passes through
+# literally. See the header of rpm-xo-snapshot.sh.
 rpm_snapshot() {
-	fp3-ssh 'echo <pw> | sudo -S sh -c "modprobe rpm_master_stats 2>/dev/null;
-		for m in /sys/kernel/debug/qcom_rpm_master_stats/*; do
-			printf \"%s \" \"$(basename $m)\";
-			sed -n \"s/^[[:space:]]*xo_accumulated_duration[[:space:]]*:[[:space:]]*//p\" \"$m\" | head -1;
-		done" 2>/dev/null'
+	fp3-ssh 'echo <pw> | sudo -S /usr/local/bin/rpm-xo-snapshot.sh 2>/dev/null'
 }
 
 case "$CMD" in
 start)
 	mkdir -p "$STATE"
 	echo "=== deploy $(date '+%T')"
-	for f in wake-qmi.sh qmi-msgids.txt; do
+	for f in wake-qmi.sh qmi-msgids.txt rpm-xo-snapshot.sh; do
 		fp3-ssh "cat > /tmp/$f" < "$D/$f"
 	done
 	fp3-ssh 'echo <pw> | sudo -S sh -c "install -m755 /tmp/wake-qmi.sh /usr/local/bin/wake-qmi.sh;
+		install -m755 /tmp/rpm-xo-snapshot.sh /usr/local/bin/rpm-xo-snapshot.sh;
 		install -m644 /tmp/qmi-msgids.txt /usr/local/bin/qmi-msgids.txt" 2>/dev/null'
 	# ☠️ identity, not well-formedness: `sh -n` answers "is this well-formed",
 	# never "is this the file I sent", and the two look identical when green.
@@ -84,8 +86,8 @@ start)
 	# the firmware rather than at our tooling, which is a real answer; a larger
 	# set is a measured list of ids, still not a licence to name one eDRX.
 	echo "=== NAS reads before the census"
-	fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-supported-messages 2>&1 | head -40' | tee "$STATE/nas-supported.txt" || true
-	fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-drx 2>&1 | head -10' | tee "$STATE/nas-drx.txt" || true
+	fp3-ssh 'qmicli -d qrtr://0 --nas-get-supported-messages 2>&1 | head -40' | tee "$STATE/nas-supported.txt" || true
+	fp3-ssh 'qmicli -d qrtr://0 --nas-get-drx 2>&1 | head -10' | tee "$STATE/nas-drx.txt" || true
 
 	echo "=== RPM master XO accumulation BEFORE (saved for the post phase)"
 	rpm_snapshot | tee "$STATE/xo-before.txt"

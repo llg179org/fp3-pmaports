@@ -111,6 +111,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `restwake.sh` | How long does the phone sleep as a function of HOW LONG IT WAS LEFT ALONE? |
 | `ring-source.sh` | ring-source.sh — is the modem edge's ~one-per-2-s signal ring produced by an |
 | `rpm-write-ab.sh` | A-B-A' on the eMMC host's runtime-PM autosuspend delay, counting the RPM |
+| `rpm-xo-snapshot.sh` | One line per RPM master: how long it has let the XO go, cumulatively, since boot |
 | `rpmsg-ept.py` | Open an rpmsg channel by name and get a /dev/rpmsgN for it |
 | `rpmstats_raw.py` | Raw reader for the RPM sleep-stats records in message RAM (msm8953) |
 | `run-wake-qmi.sh` | HOST side: deploy tools/wake-qmi.sh to the phone and run the census |
