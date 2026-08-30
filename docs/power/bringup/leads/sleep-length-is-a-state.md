@@ -282,3 +282,30 @@ not, the correlate was the clock and the search moves to what else changes
 between morning and midday: network load, serving cell, signal quality. ☠️ None
 of those is recorded in any capture on either side, which is a gap worth closing
 in the instrument before spending another day on it.
+
+## 2026-08-30 12:20 — the eDRX avenue is closed by the modem, not by our tooling
+
+`qmicli -d qrtr://0 --nas-get-supported-messages` answers
+
+```
+error: couldn't get supported NAS messages: QMI protocol error (71): 'InvalidQmiCommand'
+```
+
+so this firmware does not implement the introspection message either. That was
+the last admissible route, and all three are now measured rather than assumed:
+
+| route | result |
+|---|---|
+| libqmi's own definitions | no eDRX or PSM message exists (`b7913df`) |
+| the on-disk vendor tree | no QMI NAS header at all; the telephony side is closed blobs |
+| the modem's own list of what it implements | `InvalidQmiCommand` |
+
+☠️ **The item closes as blocked, not as answered**, and the distinction is the
+point: nothing here says this modem lacks eDRX. It says we cannot ask it with
+anything we have, and that **an invented message id stays forbidden** — a wrong
+QMI id is not rejected as nonsense, it is a *different* message, and one sent to
+a modem's NAS service with fabricated TLVs fails somewhere else entirely.
+
+`--nas-get-drx` is still worth its one line as data, with the caveat already on
+this page: it reports the 2G/3G paging cycle (0.32–2.56 s), which is neither the
+eDRX lever nor capable of explaining a per-minute wake.

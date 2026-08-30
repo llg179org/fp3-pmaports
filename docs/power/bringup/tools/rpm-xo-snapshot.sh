@@ -26,13 +26,25 @@ if [ ! -d "$MS" ]; then
 	echo "☠️ $MS absent - module missing, or not root. NOT a zero."
 	exit 1
 fi
+# ☠️ THE FIELD IS SPELLED DIFFERENTLY ON THE TWO SYSTEMS, and getting it wrong
+# does not look like an error - it prints a blank, which reads as a zero, and
+# zero is a meaningful value for exactly this counter. Downstream (the Ubuntu
+# Touch oracle, vendor 4.9) writes `xo_accumulated_duration:0xAE0147EB`, hex and
+# colon-separated; mainline writes `XO total duration: 407012504635`, decimal
+# with a space. tools/modem-window-fit.py already knew this (its XO_KEYS tuple
+# carries both) - this script did not, and read <unreadable> on every master
+# until it was told. Accept both, and say when neither matched.
 n=0
 for m in "$MS"/*; do
 	[ -e "$m" ] || continue
-	v=$(sed -n 's/^[[:space:]]*xo_accumulated_duration[[:space:]]*:[[:space:]]*//p' "$m" 2>/dev/null | head -1)
-	c=$(sed -n 's/^[[:space:]]*xo_count[[:space:]]*:[[:space:]]*//p' "$m" 2>/dev/null | head -1)
-	printf '%-12s xo_accumulated_duration=%-22s xo_count=%s\n' \
-		"$(basename "$m")" "${v:-<unreadable>}" "${c:-<unreadable>}"
+	v=$(sed -n 's/^[[:space:]]*xo_accumulated_duration[[:space:]]*:[[:space:]]*//p;
+	            s/^[[:space:]]*XO total duration[[:space:]]*:[[:space:]]*//p' "$m" 2>/dev/null | head -1)
+	c=$(sed -n 's/^[[:space:]]*xo_count[[:space:]]*:[[:space:]]*//p;
+	            s/^[[:space:]]*XO shutdown count[[:space:]]*:[[:space:]]*//p' "$m" 2>/dev/null | head -1)
+	d=$(sed -n 's/^[[:space:]]*shutdown_count[[:space:]]*:[[:space:]]*//p;
+	            s/^[[:space:]]*Shutdown count[[:space:]]*:[[:space:]]*//p' "$m" 2>/dev/null | head -1)
+	printf '%-8s xo_total=%-16s xo_shutdowns=%-10s shutdowns=%s\n' \
+		"$(basename "$m")" "${v:-<field not found>}" "${c:-<field not found>}" "${d:-<field not found>}"
 	n=$((n + 1))
 done
 [ "$n" -gt 0 ] || echo "☠️ no master files under $MS - NOT a zero."
