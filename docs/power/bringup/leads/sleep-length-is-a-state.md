@@ -89,3 +89,39 @@ between them. **The act of waking is what shortens the next sleep.**
   delivered on wake and re-armed each time;
 - **then, and only then, re-run the knobs that were tested inside the disturbed
   regime** — terse first, since it is the one with a plausible mechanism.
+
+## ☠️ The instrument that reproduced the trap it was written to study
+
+`decay.sh`, written *after* the finding above, slept fifteen times with a **ten
+second** gap between rounds. On a 900 s alarm it produced
+
+```
+43 s, 1 s, 3 s, 7 s, 18 s, …
+```
+
+which is not a decay curve — it is the disturbed regime measuring itself, exactly
+the failure the page above describes, committed within the hour of writing it
+down. The gap was a constant chosen without thinking, and recovery here is a
+tens-of-minutes process.
+
+**The rule that follows is sharper than "leave a gap":** when an effect has an
+unknown time constant, **the recovery interval is the independent variable, not a
+setting.** A constant gap — any constant gap — assumes the answer.
+
+`tools/restwake.sh` is the corrected instrument: rest for N minutes doing nothing,
+then take **exactly one** sleep on an alarm longer than any sleep yet observed, and
+report one number. The rounds vary N; the rounds are the curve. Two details that
+are not incidental:
+
+- **one sleep per round**, because a second one would corrupt its own next point;
+- the alarm is 1800 s and the script **says so when a sleep hits it**
+  (`THE ALARM (so this is a floor, not a value)`), since a sleep that equals its
+  alarm is the failure this whole page is about.
+
+`tools/wakesrc-rested.sh` is its per-channel counterpart, for after the curve is
+known: rest, then **one traced** sleep, and name the channel whose interrupt ended
+it. ☠️ It exists because the 2026-08-22 per-channel census — the one that answered
+"IPCRTR, signal-level, not messages" and closed several candidates — ran on
+back-to-back short sleeps, i.e. entirely inside the disturbed regime. That answer
+may describe only what a freshly woken phone does, not what ends a rested phone's
+sleep.
