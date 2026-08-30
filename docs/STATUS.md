@@ -794,6 +794,37 @@ lock, and busybox `lsmod` fails by segfaulting rather than blocking. That also
 re-opens the morning's `.ko` post-mortem, which had been retracted on the strength
 of the wrong claim — **neither it nor its retraction is now supported.**
 
+### ★★★★ 2026-08-30 (08:30) — the two halves of the goal have different targets, and only one has an oracle
+
+Stated because a re-read of the 08-24 oracle capture nearly produced a wrong
+headline, and the tension it exposed is real.
+
+| half of the goal | target | route |
+|---|---|---|
+| **oracle parity** | 55–64 mA | the **modem duty** — 34.8 % → 6.1 % lands at 63 mA by the model |
+| **halving (≤50 mA)** | below the model's **54.9 mA intercept** | **suspend only**; no modem fix reaches it, however complete |
+
+☠️ **And the halving has no oracle.** The 2026-08-24 capture settled that the
+oracle *does not sleep either*: 120 attempts in a 603 s window, 2 completed
+suspends, 93 s total — aborted by *"~5 wakeups/s from the MODEM IPC router
+(`ipc_rtr_smd_ipcrtr` / `NasModemEndPoint` / `radio-interface`)"*, which is the
+same actor that ends ours. So for the half of the goal that needs residency there
+is **no working system to imitate** — copying the oracle can reach parity and
+cannot reach the target. That is a harder problem than "find what UT does
+differently", and it has not been stated in those terms before.
+
+☠️ **The re-read also caught a live misreading, worth recording because it is the
+documented failure mode repeating.** The capture's own summary sentence — *"the
+oracle idles below our phone asleep"* — rests on a **~30 mA** figure that
+`findings-log.md` later retracted: it is the earliest of four oracle windows, the
+only one on a half-empty pack, and its own write-up warns the pack was still
+relaxing. The other three read 55–64 mA. The log says exactly why it travelled:
+*"the flattering outlier is the one that travelled"* — and it travelled again
+today, into a paragraph written to the user, because the capture was read without
+checking whether a later document had overturned it. **A capture is true as of its
+date; the retraction lives elsewhere.** Read the findings log before quoting a
+capture's conclusion.
+
 ### ☠️☠️☠️ 2026-08-30 (08:15) — THE FRAME WAS WRONG: sleep length is a state, and every alarm we set was shorter than it
 
 Read this before trusting any residency number on this page, including the ones
