@@ -412,6 +412,12 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+**→ [`power/NEXT-RUN.md`](power/NEXT-RUN.md) is the frame for what gets measured
+next and in what order**: the goal's arithmetic, the two tracks it splits into
+(duty reaches parity, only suspend reaches the halving), the ten levers already
+spent, and each next step with its decision rule written before the measurement.
+Read it before picking anything up.
+
 ### Orientation — two fronts, and which numbers belong to which
 
 Asked on 2026-08-30 after a long instrument-heavy day, and worth keeping because
