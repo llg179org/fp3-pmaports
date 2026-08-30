@@ -1,0 +1,83 @@
+# uptime=394.66 2909.13
+# kernel=4.9.218-perf-ubuntutouch+
+==rpm_master_stats==
+APSS
+	shutdown_req:0x1D3ABF2BD
+	wakeup_ind:0x1D39CC4A7
+	bringup_req:0x1D3AD9134
+	bringup_ack:0x1D3ADCB7E
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x33af
+	last_wake_transition_duration:0x3359
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x4aed
+	active_cores:0x1
+		core0
+MPSS
+	shutdown_req:0x1D400D9FA
+	wakeup_ind:0x1D3FC7011
+	bringup_req:0x1D3FC7407
+	bringup_ack:0x1D3FC7478
+	xo_last_entered_at:0x1D40106B7
+	xo_last_exited_at:0x1D3FC37FE
+	xo_accumulated_duration:0x16A4B2FFD
+	last_sleep_transition_duration:0x41c1
+	last_wake_transition_duration:0x4c39
+	xo_count:0x48b
+	wakeup_reason:0x0
+	numshutdowns:0x4aa
+	active_cores:0x0
+PRONTO
+	shutdown_req:0x1D3500D4D
+	wakeup_ind:0x1D363FFF2
+	bringup_req:0x1D364015D
+	bringup_ack:0x1D36401CC
+	xo_last_entered_at:0x1D35031C4
+	xo_last_exited_at:0x1D363E2BD
+	xo_accumulated_duration:0x121404C29
+	last_sleep_transition_duration:0x29ce
+	last_wake_transition_duration:0x2ef3
+	xo_count:0xb7d
+	wakeup_reason:0x1
+	numshutdowns:0xb7d
+	active_cores:0x1
+		core0
+TZ
+	shutdown_req:0x0
+	wakeup_ind:0x0
+	bringup_req:0x0
+	bringup_ack:0x0
+	xo_last_entered_at:0x0
+	xo_last_exited_at:0x0
+	xo_accumulated_duration:0x0
+	last_sleep_transition_duration:0x0
+	last_wake_transition_duration:0x0
+	xo_count:0x0
+	wakeup_reason:0x0
+	numshutdowns:0x0
+	active_cores:0x0
+LPASS
+	shutdown_req:0x1D412A0D4
+	wakeup_ind:0x1D3C2D5C9
+	bringup_req:0x1D4121025
+	bringup_ack:0x1D412378E
+	xo_last_entered_at:0x1D412BC42
+	xo_last_exited_at:0x1D4121DAC
+	xo_accumulated_duration:0x16F26E98E
+	last_sleep_transition_duration:0x1ddb
+	last_wake_transition_duration:0x1e78
+	xo_count:0x11bf
+	wakeup_reason:0x0
+	numshutdowns:0x121f
+	active_cores:0x0
+==lpm system-pc==
+[system] system-pc:
+  success count:   20114
+  total success time: 225.661078670
+  failed count:    1148
+	<     0.000062500:       0 (0-0)
+==rpm_stats==
+ls: cannot access '/sys/kernel/debug/rpm_stats': No such file or directory
