@@ -440,11 +440,28 @@ to remote `fork` only, over port 443, and never to `origin`.
   suppresses the error message entirely — see
   `power/bringup/leads/modemmanager-suspend-modes.md`.
 
-**The open question is the spread, not the mean.** The same configuration gives
-sleeps from ~60 s to a full window: six consistent 52–63 s legs in the morning,
-then 600/600/601 s in the first three rounds of the afternoon census. Six
-consistent samples looked like a property and were one regime. Whatever flips
-the regime is now the subject; more samples of one regime will not name it.
+**The open question is the spread, not the mean** — and by midday it had grown
+teeth. The same configuration gives sleeps from ~60 s to a full window: six
+consistent 52–63 s legs in the morning, then **601 / 601 / 600 / 601 s, every
+one ended by the RTC** (`captures/2026-08-30_spread/`). Until then every short
+sleep on this front had ended on the modem's SMD edge. Six consistent samples
+had looked like a property and were one regime.
+
+Three things follow, and the third is the expensive one:
+
+- **More samples of one regime name nothing.** That is why the run was stopped at
+  four of twenty. What is needed is a perturbation.
+- **The one lever we know we pulled** is the 10:10 radio cycle and the 10:27
+  ModemManager restart: every long sleep of the day is after them, every short
+  one before. Written up as a hypothesis with its A‑B‑A′ in
+  `power/bringup/leads/sleep-length-is-a-state.md`, ☠️ **not** as a finding — the
+  clock, the network load and the cell state all split the day identically and
+  none of them was ever recorded. `tools/radio-context.sh` now records them.
+- ☠️ **The terse residency verdict is withdrawn.** "Terse buys nothing" compared
+  tens of seconds against a confound worth ten times that, and no leg on record
+  says which regime it ran in. Withdrawn, not reversed. The *call* half stands —
+  it is a one-second coincidence between two logs, which a regime that shifts
+  durations cannot touch.
 
 
 ## ✅ RESOLVED — r74 no-boot cause found + reverted (2026-08-24); device since moved to r76
