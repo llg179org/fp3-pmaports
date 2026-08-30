@@ -15,7 +15,10 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-30 (08:20) — ☠️☠️ **the frame was wrong**: sleep length
+Last updated: **2026-08-30 (10:30) — ★★★★★ **the noise comes from the NETWORK**
+(radio off: 1802 s of an 1800 s alarm, against 8 s and 33 s controls), and ☠️
+**powering the modem down is not available** — a call to a low-power phone is told
+the number is unavailable. Earlier: ☠️☠️ **the frame was wrong**: sleep length
 is a state with a decay, the disturbance is the waking itself, and every alarm we
 ever set was shorter than the sleep it was measuring — so every back-to-back A/B
 on the residency front compared two saturated arms; ✅ **an incoming call reaches
@@ -824,6 +827,49 @@ today, into a paragraph written to the user, because the capture was read withou
 checking whether a later document had overturned it. **A capture is true as of its
 date; the retraction lives elsewhere.** Read the findings log before quoting a
 capture's conclusion.
+
+### ★★★★★ 2026-08-30 (10:10) — IT COMES FROM THE NETWORK, and powering the modem down is not available
+
+The two measurements that close the modem front's central question.
+Full write-up: [`captures/2026-08-30_radio-off-and-lowpower/`](power/bringup/captures/2026-08-30_radio-off-and-lowpower/).
+
+**A-B-A′ with only the radio state differing, 1800 s alarm on every leg:**
+
+| leg | radio | slept | ended by |
+|---|---|---|---|
+| A | on | **8 s** | modem edge |
+| **B** | **off** | **1802 s of 1800** | **THE ALARM — the whole window** |
+| A′ | on | **33 s** | modem edge |
+
+**The first sleep in this project that filled its alarm rather than dying on
+it**, with its own controls minutes either side. ⇒ **what ends every suspend
+arrives from the network** — not the modem's housekeeping, not our driver, not
+ModemManager. It also explains the diurnal pattern the retracted recovery
+hypothesis was covering. Read it off the device with `tools/radio-off-sleep.sh`.
+
+**☠️ And the low-power lever is dead, measured rather than predicted.** With
+`--test-low-power-suspend-resume` and the phone asleep, a call placed by hand got
+*"the number you have dialled is not available"* — the modem **deregisters**, so
+the network cannot page it. Nothing arrived; there is no `ringing-in` in the
+journal. The lead had said "expected to lose the call", and four predictions in
+that tone had already failed on this front the same day.
+
+**All three levers, now all measured:**
+
+| lever | residency | call |
+|---|---|---|
+| terse (the pmOS default) | ✗ 52–63 s — still owed a clean re-run | ✅ woke a sleeping phone and rang |
+| low power | — | ☠️ **lost** |
+| radio off | ✅✅ 1802 s | ☠️ none, by construction |
+
+⇒ **Powering the modem down is not the route.** The noise arrives from the
+network *and so does the call*, so the only remaining lever is to separate
+network events **from each other** — at the interrupt layer
+([`leads/selective-smd-wakeup.md`](power/bringup/leads/selective-smd-wakeup.md))
+or at the network layer via eDRX, which ☠️ cannot be requested: `libqmi`
+(checked at `b7913df`) has no PSM or eDRX control, only a NAS status enum. And
+of the two, only eDRX is admissible — PSM makes the device unreachable, which is
+exactly what the low-power measurement just disqualified.
 
 ### ☠️☠️☠️ 2026-08-30 (08:15) — THE FRAME WAS WRONG: sleep length is a state, and every alarm we set was shorter than it
 
