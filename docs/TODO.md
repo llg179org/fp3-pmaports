@@ -2800,6 +2800,26 @@ six to `psy/for-next`, two dts and one `adc5` channel to mainline. Gaps, in
 
 ## `wip/7.1.3/audio` — WCD9335 on SLIMbus
 
+156. **★ The upstream blocker for the machine driver is now one small generic
+    patch — measure the ADSP API version and write it.** Read in mainline
+    `master` 2026-08-30: `q6core_get_svc_api_info()` is upstream and exported,
+    handles both shapes of the ADSP service list, and `q6afe` already calls it at
+    probe into `afe->ainfo`; a NULL-port param path exists too. The only piece
+    missing is that `q6afe_port_set_sysclk()` dispatches **by clock id alone**, so
+    `LPAIF_BIT_CLK` always takes the old `AFE_PARAM_ID_LPAIF_CLK_CONFIG` path even
+    on firmware that wants `AFE_PARAM_ID_CLOCK_SET`. Making that switch consult
+    `afe->ainfo` is the whole job, and it is generic across msm8909/8916/8917/
+    8953/8976.
+    **Step 1 is a measurement, on the device:** what `api_version` does this ADSP
+    report for the AFE service? The condition turns on that number and nothing
+    else. **Step 2 is the mail, not the patch:** Otto Pflüger's series
+    (2023-10-29) and Adam Skladowski's (2024-07-31) are both formally alive, and
+    the rule here is to reply on their threads rather than post a third one —
+    especially since neither author could test on hardware and we can.
+    If it lands, our own machine-driver patch loses its per-SoC hardcode
+    entirely, and what remains of the dependency is the uncontroversial Quinary
+    MI2S support plus the compatible and its binding.
+
 Playback, microphone, MBHC and the call path all work on the device. Blocked
 upstream on item 8. How it works is in
 [`docs/audio/README.md`](https://github.com/llg179org/fp3-pmaports/blob/main/docs/audio/README.md),

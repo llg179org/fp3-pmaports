@@ -92,10 +92,47 @@ series as our prerequisite would misdescribe what we are standing on.
 ☠️ Otto's series contains `ASoC: qcom: q6afe: remove "port already open" error`,
 adjacent to our own q6afe patch — read it before sending ours.
 
-**The constructive move** is to join that work rather than compete with it:
-runtime ADSP-version detection is generic (msm8909/8916/8953/8976), we have the
-hardware and the measurements both authors lacked, and it unblocks the chain from
-the bottom.
+### ★ The chain is shorter than it looks — read 2026-08-30 in mainline
+
+Otto's series was **not** rejected, and most of its foundation has since landed.
+What is in mainline `master` today:
+
+| piece | where |
+|---|---|
+| a per-service firmware API version query, handling **both** shapes of the ADSP's service list — which was Srinivas's own objection to Otto's 1/4 | `q6core_get_svc_api_info()`, `EXPORT_SYMBOL_GPL`, `q6core.h` |
+| q6afe **already asks for it at probe** and keeps it | `q6afe.c`, `q6core_get_svc_api_info(adev->svc_id, &afe->ainfo)` |
+| a param path that takes a NULL port — Srinivas's own 2023-12-11 cleanup sketch | `q6afe_set_param(afe, NULL, …)` in `q6afe_set_lpass_clock()` |
+
+What is **not** there is only the last step: `q6afe_port_set_sysclk()` still
+dispatches **by clock id alone** — `LPAIF_BIT_CLK` and `LPAIF_OSR_CLK` always take
+the old `AFE_PARAM_ID_LPAIF_CLK_CONFIG` path, `LPAIF_DIG_CLK` the old digital-codec
+path, and only an explicit `Q6AFE_LPASS_CLK_ID_*` takes the new
+`AFE_PARAM_ID_CLOCK_SET` path. The firmware version sits in `afe->ainfo`, unread
+by that switch.
+
+So the missing work is one self-contained change in `q6afe.c`: **when the firmware
+is the newer kind, serve `LPAIF_BIT_CLK` from the new clock-set API** instead of
+the old one. That is exactly what Stephan asked Adam for in 2024, what Otto's 3/4
+attempted before the foundation existed, and what Srinivas sketched the plumbing
+for in 2023.
+
+And it changes what our own series needs: a machine driver on MSM8953 could then
+keep asking for `LPAIF_BIT_CLK`, as `apq8016_sbc` already does for msm8916, and get
+the right thing — **no per-SoC hardcode, no `bool use_ibit_clk`, no
+`enum afe_clk_api`**. Most of the blocking patch stops being necessary; what
+remains from Adam's series is the Quinary MI2S support and the compatible plus its
+binding, neither of which drew an objection.
+
+☠️ Not yet verified, and it is the next thing to measure: **which `api_version`
+this device's ADSP actually reports** for the AFE service, and therefore what the
+condition should test. That is a device-side reading, not an argument — and it is
+the one number the whole redesign turns on.
+
+**The constructive move** is to join that work rather than compete with it: the
+change is generic (msm8909/8916/8917/8953/8976), it is small now that its
+foundation is upstream, and we have the hardware and the measurements both authors
+lacked. Announce it on Otto's thread and Adam's rather than posting a third
+competing series.
 
 ## What has not been done yet
 
