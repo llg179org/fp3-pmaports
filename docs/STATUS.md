@@ -15,7 +15,10 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-30 (02:30) — the consumption model closes
+Last updated: **2026-08-30 (06:00) — ☠️ the suspend-path worry is measured and
+dead: `rtcwake` and logind sleep the same, so **every residency number stands**
+(and the modem's IRQ number moved — 139 here, 141 is now the WLAN's); the
+consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
 target BELOW the modem and oracle parity exactly AT it; **the audio stack is
 measured off the idle bill and its series is free to go upstream**; the
@@ -23,7 +26,8 @@ carrier-configuration lead is closed as the tenth dead candidate; ☠️ **an en
 evening's IPA chain was built on silence and is retracted in full — the handshake
 works**; and ☠️ **every residency measurement so far went down a suspend path that
 bypasses ModemManager's own preparation**, so "the daemon kills every sleep" is
-under re-measurement; the oracle turns
+retracted twice over: the path is
+equivalent, and the modem interrupted one suspend of four, not four of four; the oracle turns
 out to have been measured on the *expensive* cell all along, which kills the
 network-configuration explanation; and the instrument built to price that sleep was
 caught reading a gauge the suspend switches off.**
@@ -784,20 +788,49 @@ lock, and busybox `lsmod` fails by segfaulting rather than blocking. That also
 re-opens the morning's `.ko` post-mortem, which had been retracted on the strength
 of the wrong claim — **neither it nor its retraction is now supported.**
 
-### 🔨 2026-08-30 — every residency number so far may be an artefact of the suspend path
+### ✅ 2026-08-30 — the suspend path is NOT the variable; the residency numbers stand
 
 `suspend-rate.sh`, `sleep-night.sh` and the four ModemManager legs all sleep with
 `rtcwake -m mem`, which writes `/sys/power/state` directly and **bypasses logind**
-— so ModemManager never receives `PrepareForSleep` and never prepares, although it
-has handling for it. Real-world suspends (gsd-power, `IdleAction`) go through
-logind. ⇒ "ModemManager ends every suspend" may be measuring a path that skips the
-step where the daemon would quiet the modem. A-B-A′ alternating the two paths with
-the same 300 s alarm is running.
+— so ModemManager never receives `PrepareForSleep`, although it has handling for
+it. If that preparation were what quiets the modem, every residency figure would
+have been an artefact. **Measured A-B-A-B on one boot, same 240 s alarm**
+(`captures/2026-08-30_susp-path-ab/`):
 
-★ Also found: ModemManager ships `--test-low-power-suspend-resume` ("put the modem
-in low power mode during suspend/resume") and `--test-quick-suspend-resume`. The
-first likely cuts the call path like the `--disable` leg did, but prices what the
-daemon's suspend handling is worth.
+| leg | path | slept, wall clock | wake IRQ |
+|---|---|---|---|
+| A | `rtcwake -m mem` | **82 s** of 240 | 139 = modem |
+| B | `systemctl suspend` (logind) | 242 s | 72 = RTC alarm |
+| A′ | `rtcwake -m mem` | **241 s** of 240 | 72 = RTC alarm |
+| B′ | logind | 242 s | 72 = RTC alarm |
+
+The second `rtcwake` leg slept the full alarm ⇒ **the path is not the variable**,
+and the residency front owes no re-measurement. Read it off the device with
+`grep . /sys/power/suspend_stats/*` before and after a `rtcwake -m mem -s N`, and
+compare the wall clock, not the monotonic one.
+
+☠️ **The Linux IRQ number is an allocation and it moved.** On this boot the modem
+edge is **139** (`GIC-0 57 Edge smd-edge`) and **141 is `wcn36xx_tx`, the WLAN
+transmit interrupt**. Every page here that says "IRQ 141, the modem's SMD edge"
+was right on the boot it was written and is not a stable identifier. The stable
+one is the `smd-edge` row at hwirq 57:
+`awk '/smd-edge/ && $(NF-2)==57' /proc/interrupts`.
+
+☠️ **`# MM inhibitor:` came back empty in this run**, although the same query
+listed a `delay`-mode `sleep` inhibitor from ModemManager hours earlier ⇒ the
+inhibitor is state-dependent, and "the daemon always registers for sleep" does not
+hold as a premise.
+
+★ **Secondary, and it softens an earlier headline:** the modem interrupted **one**
+of these four suspends, not all four. "The modem's SMD edge terminates every
+suspend" (2026-08-26) describes a **state**, not a permanent property — consistent
+with the `mmcli --disable` leg, where the same phone went from 8 s to 601 s of
+sleep with the daemon still running.
+
+★ Still to price: ModemManager ships `--test-low-power-suspend-resume` ("put the
+modem in low power mode during suspend/resume") and `--test-quick-suspend-resume`.
+The first likely cuts the call path like the `--disable` leg did, but prices what
+the daemon's suspend handling is worth.
 
 ### ✅ 2026-08-29 evening — the audio stack costs nothing at idle
 

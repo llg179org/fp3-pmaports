@@ -224,10 +224,22 @@ service 49, a mismatched instance, a dropped registration) was an artefact of
 reading absence. `leads/ipa-modem-handshake.md` and `leads/vendor-kernel-sources.md`
 stay for the method and the trees; the hypothesis is dead.
 
-**Under re-measurement:** every residency figure. They all sleep via
-`rtcwake -m mem`, which bypasses logind, so ModemManager never gets
-`PrepareForSleep`. The four legs that named the daemon may have measured a path
-that skips its preparation.
+**Was under re-measurement, now cleared (06:00):** every residency figure. They
+all sleep via `rtcwake -m mem`, which bypasses logind, so ModemManager never gets
+`PrepareForSleep` — but A-B-A-B on one boot shows the two paths sleep the same
+(82 / 242 / 241 / 242 s of a 240 s alarm), so **the path is not the variable and
+the numbers stand**. See `power/bringup/captures/2026-08-30_susp-path-ab/`.
+
+Two things did fall out of that run, both smaller and both real:
+
+- ☠️ **the modem's Linux IRQ number moved** — it is `139` on this boot and `141`
+  is now `wcn36xx_tx`, the WLAN transmit interrupt. Everything written here about
+  "IRQ 141, the modem's SMD edge" was true when written. Identify it by the row,
+  not the number: `awk '/smd-edge/ && $(NF-2)==57' /proc/interrupts`;
+- ★ **the modem interrupted one of four suspends, not four of four.** "The SMD
+  edge terminates every suspend" is a *state* — the same phone slept 601 s with
+  `mmcli --disable` and the daemon still running — not a permanent property. That
+  makes the indication-subscription reading stronger, not weaker.
 
 **Still standing, and unaffected by any of it:**
 

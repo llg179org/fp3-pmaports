@@ -1,0 +1,7 @@
+# susp-path-ab Sun Aug 30 05:13:08 CEST 2026 MM=active
+# MM inhibitor: 
+A rtcwake wall=82s of 240 suspends=+1 wake_irq=139:
+B logind wall=242s of 240 suspends=+1 wake_irq=72:
+A2 rtcwake wall=241s of 240 suspends=+1 wake_irq=72:
+B2 logind wall=242s of 240 suspends=+1 wake_irq=72:
+# done Sun Aug 30 05:29:17 CEST 2026
