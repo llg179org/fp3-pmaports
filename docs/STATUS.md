@@ -15,8 +15,11 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-30 (08:00) — ✅ **an incoming call reaches a sleeping,
-terse phone and rings**, so the responsiveness half of the goal is safe and the
+Last updated: **2026-08-30 (08:20) — ☠️☠️ **the frame was wrong**: sleep length
+is a state with a decay, the disturbance is the waking itself, and every alarm we
+ever set was shorter than the sleep it was measuring — so every back-to-back A/B
+on the residency front compared two saturated arms; ✅ **an incoming call reaches
+a sleeping, terse phone and rings**, so the responsiveness half of the goal is safe and the
 low-power suspend mode stays disqualified; ☠️ but **terse buys no residency**
 (52–63 s with it and without), and this file's own 305 s figure is withdrawn as a
 script artefact — the kernel's `PM: suspend entry/exit` pair and the host's USB
@@ -790,6 +793,41 @@ modules, rc=0. One `rmmod` hung in `__arm64_sys_delete_module` holding the modul
 lock, and busybox `lsmod` fails by segfaulting rather than blocking. That also
 re-opens the morning's `.ko` post-mortem, which had been retracted on the strength
 of the wrong claim — **neither it nor its retraction is now supported.**
+
+### ☠️☠️☠️ 2026-08-30 (08:15) — THE FRAME WAS WRONG: sleep length is a state, and every alarm we set was shorter than it
+
+Read this before trusting any residency number on this page, including the ones
+directly below it. Full write-up: [`leads/sleep-length-is-a-state.md`](leads/sleep-length-is-a-state.md).
+
+The phone's USB gadget drops on suspend and re-enumerates on resume, within a
+second of the kernel's own `PM: suspend entry/exit` marks — so the **host's**
+`dmesg` is a complete sleep log, free, retrospective, and with **no observer
+effect at all** (`tools/host-sleep-census.sh`). Reading the whole day off it:
+
+```
+02:30:51 → 02:35:51   300 s      alarm 300  → hit the alarm
+05:15:13 → 05:19:14   240 s      alarm 240  → hit the alarm      (×3)
+06:08 … 07:17        11–76 s     alarm 240–600 → cut short, every time
+07:50:42 → 07:55:00   258 s      alarm 600  → cut short
+07:55:21 → 07:55:48    27 s      alarm 600  → cut short
+07:56:09 → 07:56:12     3 s      alarm 600  → cut short
+```
+
+1. ☠️ **No sleep in this project has ever been measured against an alarm longer
+   than it wanted to be.** Every "full" sleep equals its alarm exactly, so
+   `300/300` and `240/240` measured the alarm, not the phone. The "good regime"
+   may never have been observed.
+2. ☠️ **The ~60 s is a state with a decay.** 11–76 s from 06:08 to 07:17; left
+   alone for half an hour, the next sleep ran 258 s.
+3. ☠️ **The disturbance is the waking itself** — 258 → 27 → 3 s in one run with
+   no daemon restart, no call and no knob between the legs.
+
+⇒ **every back-to-back A/B on this front compared two saturated arms**, this
+morning's terse comparison included. "No difference between the arms" and "both
+arms saturated" produce the same table. The eleven dead duty candidates were all
+killed inside this frame; the ones killed by "the duty did not change" are worth
+re-reading. Running: `decay.sh none 15 900` — fifteen sleeps on an alarm longer
+than any sleep yet observed, so each ends on the phone's terms.
 
 ### ✅ 2026-08-30 — terse keeps the call, buys no residency; the suspend path is not the variable
 

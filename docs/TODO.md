@@ -224,6 +224,23 @@ service 49, a mismatched instance, a dropped registration) was an artefact of
 reading absence. `leads/ipa-modem-handshake.md` and `leads/vendor-kernel-sources.md`
 stay for the method and the trees; the hypothesis is dead.
 
+### ☠️☠️☠️ 2026-08-30 (08:15) — reopened: the whole residency front was measured inside a disturbance
+
+`leads/sleep-length-is-a-state.md`. The host's USB log shows every "full" sleep
+this project ever recorded equals its own alarm exactly, that the short regime is
+a state which recovers when the phone is left alone, and that the disturbance is
+**the act of waking** (258 → 27 → 3 s with nothing between the legs). So every
+back-to-back A/B here compared two saturated arms, and "no difference" was
+indistinguishable from "both arms saturated". What that costs:
+
+- the terse result below is **not** "terse does not help" — it is "both arms were
+  in the disturbed regime". To be re-run with a measured recovery gap and a 900 s
+  alarm;
+- the eleven dead duty candidates stay dead as *hypotheses*, but any of them
+  killed by "the duty did not change" was judged inside this frame;
+- the consumption model and the audio result are untouched — neither depends on a
+  sleep duration.
+
 **Settled (08:00), after two wrong answers on the way:** the suspend path is not
 the variable, and neither is terse. Six legs alternating the paths with a
 ModemManager restart before each slept **52 / 61 / 62 / 61 / 63 / 63 s** — terse
