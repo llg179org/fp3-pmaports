@@ -1,0 +1,85 @@
+# wake-qmi 2026-08-30 12:38:10 alarm=600s rounds=2 path=logind edge=139
+#   ExecStart: /usr/sbin/ModemManager --test-quick-suspend-resume
+#   modem: registered
+#   msgid table: /usr/local/bin/qmi-msgids.txt (386 lines)
+# tracefs clean (kprobe_events cleared)
+# probes armed: qmi
+-- qrtr services at start (service:instance node:port)
+     Service Version Instance Node  Port
+          43       2       18    0     1 Subsystem control service
+          15       1        0    0    15 Test service
+          24       1        0    0    17 Thermal mitigation device service
+          23       1        0    0    18 Thermal sensors service
+          22       1        0    0    19 Time service
+          36       1        0    0    21 Persistent device configuration service
+          49       1        2    0    22 IPA control service
+          41       1        1    0    24 RF radiated performance enhancement service
+          70       1        1    0    25 LTE service
+          54       1        0    0    26 <unknown>
+          17       1        0    0    27 Specific absorption rate service
+          34       1        0    0    28 Coexistence service
+          55       1        2    0    37 QMI-SLIM service
+           9       2        0    0    39 Voice service
+           3       1        0    0    40 Network Access Service
+          12       1        0    0    41 Phonebook Management service
+          10       2        0    0    42 Card Application Toolkit service (v2)
+          47       1        0    0    43 Data Port Mapper service
+          11       1        0    0    44 User Identity Module service
+           1       1        0    0    45 Wireless Data Service
+           4       1        0    0    46 Quality Of Service service
+          26       1        0    0    47 Wireless data administrative service
+           7       1        0    0    48 Authentication service
+           8       1        0    0    49 AT service
+          29       1        0    0    50 Circuit switched videotelephony service
+           5       1        0    0    51 Wireless Messaging Service
+          42       1        0    0    52 Data system determination service
+           2       1        0    0    53 Device Management Service
+          16       2        0    0    54 Location service (~ PDS v2)
+          48       1        0    0    56 QMI DFS service
+          68       1        0    0    57 <unknown>
+          77       1        0    0    58 IMS QMI Priv service
+          33       1        0    0    61 IMS application service
+          18       1        0    0    63 IMS settings service
+          14       1        0    1    14 Remote file system service
+          52       1        1    1 16384 Dynamic Heap Memory Sharing
+        4096       1        0    1 16392 TFTP
+         271       2        0    1 16395 Sensor Registry service
+          49       1        1    1 16397 IPA control service
+-- port -> service, resolved from THIS run (32 ports)
+
+== round 1: slept 601s of 600s  pm_wakeup_irq=72
+   (QRTR control packets excluded from the decode: 3; they carry no QMI SDU)
+   (trace split at the resume marker: 22 of 36 lines are from the sleep)
+-- QMI messages BETWEEN the two markers, i.e. while asleep (count / port / kind / id / name)
+       5  src_port=40     RSP  msg=3  NAS: Register Indications
+       2  src_port=52     RSP  msg=37  DSD: System Status Change
+       2  src_port=45     RSP  msg=1  WDS: Set Event Report
+       2  src_port=44     RSP  msg=32  UIM: Read Transparent
+       1  src_port=52     RSP  msg=36  DSD: Get System Status
+       1  src_port=45     RSP  msg=133  WDS: Get LTE Attach Parameters
+       1  src_port=44     RSP  msg=47  UIM: Get Card Status
+       1  src_port=40     IND  msg=81  NAS: Signal Info
+       1  src_port=40     RSP  msg=77  NAS: Get System Info
+       1  src_port=40     RSP  msg=68  NAS: Get PLMN Name
+       1  src_port=40     RSP  msg=125  NAS: Get Network Time
+       1  src_port=40     RSP  msg=108  NAS: Config Signal Info v2
+-- terse lines this round: 4
+
+== round 2: slept 601s of 600s  pm_wakeup_irq=72
+   (QRTR control packets excluded from the decode: 4; they carry no QMI SDU)
+   (trace split at the resume marker: 24 of 38 lines are from the sleep)
+-- QMI messages BETWEEN the two markers, i.e. while asleep (count / port / kind / id / name)
+       5  src_port=40     RSP  msg=3  NAS: Register Indications
+       2  src_port=52     RSP  msg=37  DSD: System Status Change
+       2  src_port=45     RSP  msg=1  WDS: Set Event Report
+       2  src_port=44     RSP  msg=32  UIM: Read Transparent
+       2  src_port=10     IND  msg=34  PDC: Get Selected Config | SSC: Report Large | WDS: Packet Service Status
+       1  src_port=52     RSP  msg=36  DSD: Get System Status
+       1  src_port=45     RSP  msg=133  WDS: Get LTE Attach Parameters
+       1  src_port=44     RSP  msg=47  UIM: Get Card Status
+       1  src_port=40     RSP  msg=77  NAS: Get System Info
+       1  src_port=40     RSP  msg=68  NAS: Get PLMN Name
+       1  src_port=40     RSP  msg=125  NAS: Get Network Time
+       1  src_port=40     RSP  msg=108  NAS: Config Signal Info v2
+-- terse lines this round: 4
+# done 2026-08-30 12:59:03
