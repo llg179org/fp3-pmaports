@@ -367,6 +367,48 @@ was never sendable.
 
 ---
 
+## 10a. What it costs, and why the first port is the slow one
+
+Calibration, so the timeline is not a surprise. From Neil Armstrong's *No, It's
+Never Too Late to Upstream Your Legacy Linux Based Platform* (ELCE 2016) — a
+BayLibre engineer describing exactly this job, on exactly this kind of platform:
+
+- ☠️ **There is no way to submit "platform support" in one go.** *"The general
+  mainlining workflow is to push code in each linux subsystems, one by one.
+  Coherency of the support for a platform is done over the time. There is no
+  current 'methodology' to push an overall platform support at once, each
+  maintainer will want to have control and review the code."* This is the answer
+  to the instinct to hold everything back and send it together: there is nothing
+  to send it *to*.
+- **The initial period is the most frustrating**, and for a structural reason:
+  the platform needs the whole patchset to boot, but one subsystem always misses
+  a window. Expect two or three releases before a complete set is in.
+- **His list of what causes the delays** maps onto ours almost item for item:
+  code that does not match the subsystem's style or architecture (deprecated
+  APIs); code depending on headers owned by a higher-level subsystem
+  (`dt-bindings` includes are his example); code depending on a **partly merged**
+  framework API — which is precisely our machine-driver blocker; and **a patch
+  posted too late, too close to the merge window**.
+- **Rough times he gives**: a simple driver — a week of refactoring and
+  patch-set preparation, then a day to a week per repost; a complex one (DRM,
+  SATA, audio) — one to two months of initial refactoring, iterated across
+  several releases. Initial SoC support: two or three releases, ~6 months.
+
+Two workflow shapes he contrasts are worth naming, because this port already
+picked one: keeping a BSP tree and an upstream effort in parallel and rebasing
+the BSP onto a new long-term release periodically (what `msm8953-mainline` does
+for us, and what our rolling forward-port mirrors), versus porting everything
+onto each long-term release as it appears. The first is cheaper per release and
+accumulates a gap; the second costs a dedicated effort and keeps mainline near
+complete coverage.
+
+☠️ **And the obstacle that is ours specifically** — Tim Bird's *proxy problem*
+(ELCE 2014): whoever submits code they did not write is found out by review,
+because they cannot answer why a line is there. Almost everything in this port
+began as somebody else's work, and the series we depend on stalled for exactly
+this reason. Before adopting a patch, ask per hunk whether you could defend it;
+if not, hand it back to its author or learn it well enough to own it.
+
 ## 11. The short list of things that kill a series
 
 None of these is technical:
