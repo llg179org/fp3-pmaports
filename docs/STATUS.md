@@ -430,12 +430,60 @@ the useful kind.
 | **R1a** | does the modem send anything unprompted during s2idle? | **No.** Window bounded by a `system-sleep` hook: alarm-ended 600 s round = **0** messages; modem-ended 46 s round = **1** | every packet arriving during s2idle ends the sleep |
 | **R1c** | build the selective wake filter? | ☠️ **No — parked**, by R1a and by this lead's own pre-registration | nothing to filter in this regime; reopen only after a census *inside* the short-sleep regime |
 
-**Still running:** `step0sleep` (started 15:58:11,
-`/var/log/fp3/sleep-night-1788098291`, floor 55 %, 600 s sleeps, ModemManager
-stopped). It is the **only** remaining source of `floor_mA`, the term the goal's
-arithmetic cannot be evaluated without. ☠️ Do not poll it — every ssh is a wake.
-Its control leg is done and reads 122.3 mA against an awake band of 88.5–128 mA,
-which licenses the decision table (`<15` / `15–40` / `>40 mA`) and nothing finer.
+**Step 0 was interrupted and re-armed 2026-08-30 evening.** The first run
+(15:58:11, `/var/log/fp3/sleep-night-1788098291`) reached 12 rounds and was
+stopped at 17:52 to let R1b — a 30-minute measurement — have the evening, since
+the night is the scarce resource for step 0 and not the other way round. It is
+the **only** source of `floor_mA`, the term the goal's arithmetic cannot be
+evaluated without. ☠️ Do not poll it — every ssh is a wake. Its control leg is
+done and reads 122.3 mA against an awake band of 88.5–128 mA, which licenses the
+decision table (`<15` / `15–40` / `>40 mA`) and nothing finer.
+
+★ **What those 12 rounds already say, before any fit.** Every one slept the full
+602 s and every one ended on `56:pm8xxx_rtc_alarm` — nothing interrupted them.
+Against `sleep-night.sh`'s own record that with ModemManager running every
+suspend dies within 16–53 s, that makes the fault **interruption, not inability**.
+☠️ And the `cap` column fell 93 → 83 % across those rounds while the voltage moved
+16 mV: that is the frozen software integrator, not consumption. The instrument is
+`v_uV`, as pre-registered.
+
+### ★ 2026-08-30 evening — "all devices do that with suspend broken", checked
+
+Prompted by a third-party claim about why pmOS drains double. Lead:
+`bringup/leads/opportunistic-sleep-missing.md`.
+
+| claim | verdict |
+|---|---|
+| mainline pmOS idles higher than downstream Android kernels | **true**, and pmOS's own [Power saving](https://wiki.postmarketos.org/wiki/Power_saving) page says so — but names *runtime PM*, components live with the screen off, not a broken suspend |
+| suspend is broken on this device | ☠️ **false, measured** — 12/12 full 602 s rounds, all ending on the RTC alarm |
+| "pmOS never suspends" as a statement about the distribution | ☠️ **false** — pmaports [#990](https://gitlab.postmarketos.org/postmarketOS/pmaports/-/work_items/990) cut the idle timeout from 15 min to 2 in v21.12 |
+| the web's "broken suspend" material applies | ☠️ **no** — it is x86 laptops losing S3 to s2idle in firmware; this SoC has no S3 to lose |
+
+Two real findings did come out of it:
+
+* **Half the autosleep mechanism is not compiled in.** The wiki's
+  [Opportunistic Sleep](https://wiki.postmarketos.org/wiki/Opportunistic_Sleep)
+  page requires `CONFIG_PM_WAKELOCKS=y` **and** `CONFIG_PM_AUTOSLEEP=y`;
+  `config-fp3.aarch64` has the first and `# CONFIG_PM_AUTOSLEEP is not set`, so
+  `/sys/power/autosleep` does not exist. The userspace half (`stated`) is not
+  packaged for pmOS. ☠️ Not a switch to flip — the wiki's own caveat is that a
+  wakelock must be held while the display is on.
+* **The idle-suspend policy is off on both branches**, `'nothing'` for AC and for
+  battery, against an upstream default of `'suspend'`/900 for both. The timeout is
+  untouched, so the type was changed deliberately by something not yet identified.
+
+☠️☠️ **And one claim of mine that lived twenty minutes.** From pmaports it looked
+as though only the AC branch was overridden, so the phone would suspend on
+battery after 20 minutes and we had only ever measured the cable — an entire
+unexercised regime. `gsettings` on the device: both `'nothing'`. The file
+consulted was the *GNOME Shell* package's and this device runs **phosh**. The
+transferable form: **a distribution's package source tells you what one UI
+package overrides, not what the running system has.** It cost twenty minutes
+instead of a night only because it was written down as a reading of package
+sources rather than as a measurement.
+
+☠️ None of this touches the **awake** duty gap (34.8 % vs 6.1 %), which is where
+the arithmetic says the halving lives. This lead must not absorb track D.
 
 **Where the goal now stands.** With X1 closed, the halving has exactly one route
 and it is residency: `night_mA = (1 - r) x 98.5 + r x floor_mA`. Neither `r` nor
