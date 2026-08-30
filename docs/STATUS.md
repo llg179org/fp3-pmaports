@@ -15,10 +15,13 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-30 (06:00) — ☠️ the suspend-path worry is measured and
-dead: `rtcwake` and logind sleep the same, so **every residency number stands**
-(and the modem's IRQ number moved — 139 here, 141 is now the WLAN's); the
-consumption model closes
+Last updated: **2026-08-30 (08:00) — ✅ **an incoming call reaches a sleeping,
+terse phone and rings**, so the responsiveness half of the goal is safe and the
+low-power suspend mode stays disqualified; ☠️ but **terse buys no residency**
+(52–63 s with it and without), and this file's own 305 s figure is withdrawn as a
+script artefact — the kernel's `PM: suspend entry/exit` pair and the host's USB
+log are the measures from here on; the modem's IRQ number moved (139 here, 141 is
+now the WLAN's); the consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
 target BELOW the modem and oracle parity exactly AT it; **the audio stack is
 measured off the idle bill and its series is free to go upstream**; the
@@ -788,44 +791,48 @@ lock, and busybox `lsmod` fails by segfaulting rather than blocking. That also
 re-opens the morning's `.ko` post-mortem, which had been retracted on the strength
 of the wrong claim — **neither it nor its retraction is now supported.**
 
-### ✅ 2026-08-30 — the suspend path is NOT the variable; the residency numbers stand
+### ✅ 2026-08-30 — terse keeps the call, buys no residency; the suspend path is not the variable
 
-`suspend-rate.sh`, `sleep-night.sh` and the four ModemManager legs all sleep with
-`rtcwake -m mem`, which writes `/sys/power/state` directly and **bypasses logind**
-— so ModemManager never receives `PrepareForSleep`, although it has handling for
-it. If that preparation were what quiets the modem, every residency figure would
-have been an artefact. **Measured A-B-A-B on one boot, same 240 s alarm**
-(`captures/2026-08-30_susp-path-ab/`):
+Two related results, and one retraction of a number this file carried for four
+hours (`captures/2026-08-30_terse-call/`, `captures/2026-08-30_susp-path-ab/`).
 
-| leg | path | slept, wall clock | wake IRQ |
+**The call survives terse — the responsiveness half of the goal is safe.** With
+terse demonstrably applied and the phone demonstrably asleep, an incoming call
+arrived in the second the suspend ended:
+
+```
+07:17:04  setting terse state (2/2): all done
+07:17:04 -> 07:17:19  = 15s asleep      (kernel PM: suspend entry/exit)
+07:17:19  [modem0/call0] call state changed: unknown -> ringing-in
+```
+
+**☠️ Terse buys no residency, and the 305 s figure is withdrawn.** Six legs
+alternating `rtcwake` and logind, ModemManager restarted before each so terse
+could not carry over:
+
+| leg | path | terse | asleep |
 |---|---|---|---|
-| A | `rtcwake -m mem` | **82 s** of 240 | 139 = modem |
-| B | `systemctl suspend` (logind) | 242 s | 72 = RTC alarm |
-| A′ | `rtcwake -m mem` | **241 s** of 240 | 72 = RTC alarm |
-| B′ | logind | 242 s | 72 = RTC alarm |
+| r1 / r2 / r3 | rtcwake | 0 lines | 52 / 62 / 63 s |
+| l1 / l2 / l3 | logind | 4 lines each | **61 / 61 / 63 s** |
 
-The second `rtcwake` leg slept the full alarm ⇒ **the path is not the variable**,
-and the residency front owes no re-measurement. Read it off the device with
-`grep . /sys/power/suspend_stats/*` before and after a `rtcwake -m mem -s N`, and
-compare the wall clock, not the monotonic one.
+Same with terse as without. The earlier "logind sleeps 305 s" came from a script
+that sat for `alarm + 5` seconds because `systemctl suspend` does not block, and
+its own output betrayed it — the modem edge as wake source on legs with no RTC
+alarm armed. **The suspend path is not the variable either**; the morning's
+A-B-A-B that appeared to show equivalence was reading terse carried over from the
+preceding leg, and both readings die together.
 
-☠️ **The Linux IRQ number is an allocation and it moved.** On this boot the modem
-edge is **139** (`GIC-0 57 Edge smd-edge`) and **141 is `wcn36xx_tx`, the WLAN
-transmit interrupt**. Every page here that says "IRQ 141, the modem's SMD edge"
-was right on the boot it was written and is not a stable identifier. The stable
-one is the `smd-edge` row at hwirq 57:
-`awk '/smd-edge/ && $(NF-2)==57' /proc/interrupts`.
+⇒ terse is harmless and useless here; the modem-duty front is unchanged and open.
 
-☠️ **The run's empty `# MM inhibitor:` line was MY BUG, not the system's state** —
-the heredoc that wrote the script onto the phone ate the awk quotes, leaving a
-truncated program. ModemManager holds its `delay` sleep inhibitor throughout, and
-the journal shows it being told about both logind legs and about neither `rtcwake`
-one (`[sleep-monitor-systemd] system is about to suspend` at 05:15:10 and
-05:24:34, nothing at 05:13 or 05:19) ⇒ **the A/B contrast is real and the result is
-better evidenced than first written.** Read it with
-`systemd-inhibit --list | grep ModemManager` and
-`journalctl -u ModemManager | grep sleep-monitor`. General form: **a field that
-reports "absent" is a claim about the instrument first.**
+**Two measures are now the standard ones, and both were available all along:**
+
+- `journalctl -k | grep 'PM: suspend'` — the kernel's own entry/exit pair, wall
+  timestamped, authoritative on any path, unforgeable by a script bug;
+- **the host's `dmesg`** — the phone's USB gadget drops on suspend and
+  re-enumerates on resume, within a second of the kernel's marks, while
+  **touching nothing on the phone**. It caught a call test running against an
+  awake phone. Three instrument generations were written before a witness sitting
+  on the host was used.
 
 ### ★★★★ 2026-08-30 — nobody asks the modem to sleep, and it is a pmOS default
 

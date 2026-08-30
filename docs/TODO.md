@@ -224,11 +224,23 @@ service 49, a mismatched instance, a dropped registration) was an artefact of
 reading absence. `leads/ipa-modem-handshake.md` and `leads/vendor-kernel-sources.md`
 stay for the method and the trees; the hypothesis is dead.
 
-**Was under re-measurement, now cleared (06:00):** every residency figure. They
-all sleep via `rtcwake -m mem`, which bypasses logind, so ModemManager never gets
-`PrepareForSleep` — but A-B-A-B on one boot shows the two paths sleep the same
-(82 / 242 / 241 / 242 s of a 240 s alarm), so **the path is not the variable and
-the numbers stand**. See `power/bringup/captures/2026-08-30_susp-path-ab/`.
+**Settled (08:00), after two wrong answers on the way:** the suspend path is not
+the variable, and neither is terse. Six legs alternating the paths with a
+ModemManager restart before each slept **52 / 61 / 62 / 61 / 63 / 63 s** — terse
+applied on three of them, and it changed nothing. ☠️ Both earlier readings were
+the same class of instrument bug and are withdrawn: the "82/242/241/242" A-B-A-B
+was reading terse carried over from the preceding leg, and the "305 s" was a
+script sitting for `alarm + 5` seconds because `systemctl suspend` does not
+block. From here on the sleep duration comes from the kernel's own
+`PM: suspend entry/exit` pair, with the host's USB disconnect/reconnect log as an
+independent witness that touches nothing on the phone. Captures:
+`power/bringup/captures/2026-08-30_{susp-path-ab,terse-call}/`.
+
+**✅ And the responsiveness half of the goal is safe:** an incoming call reaches a
+sleeping, terse phone and rings, in the same second the suspend ends. So quieting
+the modem is not inherently in tension with being callable — the open question is
+only *what else* rings the SMD edge, since terse's 3GPP unsolicited events are
+evidently not it.
 
 Two things did fall out of that run, both smaller and both real:
 
