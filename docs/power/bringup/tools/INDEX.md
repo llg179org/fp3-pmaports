@@ -152,3 +152,4 @@ as "this exists and this is what it was for", never as "this is current".
 | `wake-service.sh` | WHICH SERVICE's traffic ends the sleep? |
 | `wakesrc-rested.sh` | NAME what ends a RESTED phone's sleep - the one sleep that is worth naming |
 | `wakeup-census.sh` | Does the modem keep WAKING the application processor, or does it merely never |
+| [`awake-ocv-control.sh`](awake-ocv-control.sh) | The CONTROL leg for sleep-night.sh: the same instrument, in the regime this phone already has a number for. |

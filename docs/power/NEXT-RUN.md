@@ -81,8 +81,15 @@ Nothing else can be prioritised until this number exists. The goal's ≤50 mA ro
 a *suspend* row, and it has never been measured on a system that could stay
 asleep. It can be now: four consecutive 600 s windows were filled today.
 
-- instrument: `bringup/tools/sleep-night.sh` + `sleep-night-fit.py`, control window
-  in the awake regime (the instrument's own known-positive).
+- instrument: `bringup/tools/sleep-night.sh` + `sleep-night-fit.py`, preceded by
+  `bringup/tools/awake-ocv-control.sh` — **the control leg, written 2026-08-30
+  because it did not exist.** The fit prices a suspend from the rest-OCV slope,
+  and that is a new instrument aimed at a regime nothing else can reach: exactly
+  the shape that once produced a "spectacular sub-2 mA" reading. The control runs
+  the identical sampling with the phone awake, where the ladder already says
+  ~98.5 mA, in the same configuration (ModemManager stopped, panel down, charge
+  input cut). **If the control does not reproduce the known number, the sleeping
+  number is not a measurement and step 0 has not been done.**
 - ☠️ gate: the pack must be **off the cable** — a charging leg makes `cur_mA` the
   charge current and its p10 read 0.0. That has already spoiled one capture.
 
