@@ -1,0 +1,174 @@
+# wake-service 2026-08-30 10:56:25 alarm=600s rounds=20 path=logind edge=139
+#   ExecStart: /usr/sbin/ModemManager --test-quick-suspend-resume
+#   modem: registered
+# probes armed: chan hdr
+-- qrtr services at start (service:instance node:port)
+     Service Version Instance Node  Port
+          43       2       18    0     1 Subsystem control service
+          15       1        0    0    15 Test service
+          24       1        0    0    17 Thermal mitigation device service
+          23       1        0    0    18 Thermal sensors service
+          22       1        0    0    19 Time service
+          36       1        0    0    21 Persistent device configuration service
+          49       1        2    0    22 IPA control service
+          41       1        1    0    24 RF radiated performance enhancement service
+          70       1        1    0    25 LTE service
+          54       1        0    0    26 <unknown>
+          17       1        0    0    27 Specific absorption rate service
+          34       1        0    0    28 Coexistence service
+          55       1        2    0    37 QMI-SLIM service
+           9       2        0    0    39 Voice service
+           3       1        0    0    40 Network Access Service
+          12       1        0    0    41 Phonebook Management service
+          10       2        0    0    42 Card Application Toolkit service (v2)
+          47       1        0    0    43 Data Port Mapper service
+          11       1        0    0    44 User Identity Module service
+           1       1        0    0    45 Wireless Data Service
+           4       1        0    0    46 Quality Of Service service
+          26       1        0    0    47 Wireless data administrative service
+           7       1        0    0    48 Authentication service
+           8       1        0    0    49 AT service
+          29       1        0    0    50 Circuit switched videotelephony service
+           5       1        0    0    51 Wireless Messaging Service
+          42       1        0    0    52 Data system determination service
+           2       1        0    0    53 Device Management Service
+          16       2        0    0    54 Location service (~ PDS v2)
+
+== round 1: slept 601s of 600s  pm_wakeup_irq=72
+-- channels serviced
+   1397 rpm_requests
+    206 IPCRTR
+    184 sys_mon
+    184 WLAN_CTRL
+    184 WCNSS_CTRL
+    184 APPS_RIVA_DATA
+    184 APPS_RIVA_CTRL
+    184 APPS_RIVA_BT_CMD
+-- QRTR headers seen (the answer, if any arrived)
+        10 type=1 src_node=0 src_port=40 dst_node=1 dst_port=16400
+         4 type=7 src_node=0 src_port=4294967294 dst_node=1 dst_port=4294967294
+         3 type=1 src_node=0 src_port=52 dst_node=1 dst_port=16409
+         3 type=1 src_node=0 src_port=45 dst_node=1 dst_port=16404
+         3 type=1 src_node=0 src_port=44 dst_node=1 dst_port=16403
+         2 type=1 src_node=5 src_port=10 dst_node=1 dst_port=16396
+-- terse lines in this round: 4
+-- local ports looked up
+        10 port=40
+        10 port=16400
+         8 port=4294967294
+         3 port=52
+         3 port=45
+         3 port=44
+         3 port=16409
+         3 port=16404
+-- last trace lines (POST-wake traffic, context only - not the wake)
+             <idle>-0       [000] d.h3. 26879.245425: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_DATA"
+             <idle>-0       [000] d.h3. 26879.245434: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_CTRL"
+             <idle>-0       [000] d.h3. 26879.245442: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="sys_mon"
+             <idle>-0       [000] d.h3. 26879.245450: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="IPCRTR"
+             <idle>-0       [000] d.h3. 26879.284091: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="rpm_requests"
+             <idle>-0       [000] d.h3. 26879.285392: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="rpm_requests"
+
+== round 2: slept 601s of 600s  pm_wakeup_irq=72
+-- channels serviced
+   1368 rpm_requests
+    200 IPCRTR
+    180 sys_mon
+    180 WLAN_CTRL
+    180 WCNSS_CTRL
+    180 APPS_RIVA_DATA
+    180 APPS_RIVA_CTRL
+    180 APPS_RIVA_BT_CMD
+-- QRTR headers seen (the answer, if any arrived)
+        10 type=1 src_node=0 src_port=40 dst_node=1 dst_port=16400
+         4 type=7 src_node=0 src_port=4294967294 dst_node=1 dst_port=4294967294
+         3 type=1 src_node=0 src_port=52 dst_node=1 dst_port=16409
+         3 type=1 src_node=0 src_port=45 dst_node=1 dst_port=16404
+         3 type=1 src_node=0 src_port=44 dst_node=1 dst_port=16403
+-- terse lines in this round: 4
+-- local ports looked up
+        10 port=40
+        10 port=16400
+         8 port=4294967294
+         3 port=52
+         3 port=45
+         3 port=44
+         3 port=16409
+         3 port=16404
+-- last trace lines (POST-wake traffic, context only - not the wake)
+             <idle>-0       [000] d.h3. 26904.526669: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WLAN_CTRL"
+             <idle>-0       [000] d.h3. 26904.526765: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WCNSS_CTRL"
+             <idle>-0       [000] d.h3. 26904.526775: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_DATA"
+             <idle>-0       [000] d.h3. 26904.526783: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_CTRL"
+             <idle>-0       [000] d.h3. 26904.526792: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="sys_mon"
+             <idle>-0       [000] d.h3. 26904.526800: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="IPCRTR"
+
+== round 3: slept 600s of 600s  pm_wakeup_irq=72
+-- channels serviced
+   1425 rpm_requests
+    208 IPCRTR
+    181 sys_mon
+    181 WLAN_CTRL
+    181 WCNSS_CTRL
+    181 APPS_RIVA_DATA
+    181 APPS_RIVA_CTRL
+    181 APPS_RIVA_BT_CMD
+-- QRTR headers seen (the answer, if any arrived)
+        12 type=1 src_node=0 src_port=40 dst_node=1 dst_port=16400
+         8 type=1 src_node=5 src_port=10 dst_node=1 dst_port=16396
+         4 type=7 src_node=0 src_port=4294967294 dst_node=1 dst_port=4294967294
+         3 type=1 src_node=0 src_port=52 dst_node=1 dst_port=16409
+         3 type=1 src_node=0 src_port=45 dst_node=1 dst_port=16404
+         3 type=1 src_node=0 src_port=44 dst_node=1 dst_port=16403
+-- terse lines in this round: 4
+-- local ports looked up
+        12 port=40
+        12 port=16400
+         8 port=4294967294
+         8 port=16396
+         8 port=10
+         3 port=52
+         3 port=45
+         3 port=44
+-- last trace lines (POST-wake traffic, context only - not the wake)
+             <idle>-0       [000] d.h3. 26930.067014: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WLAN_CTRL"
+             <idle>-0       [000] d.h3. 26930.067083: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WCNSS_CTRL"
+             <idle>-0       [000] d.h3. 26930.067091: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_DATA"
+             <idle>-0       [000] d.h3. 26930.067098: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_CTRL"
+             <idle>-0       [000] d.h3. 26930.067105: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="sys_mon"
+             <idle>-0       [000] d.h3. 26930.067112: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="IPCRTR"
+
+== round 4: slept 601s of 600s  pm_wakeup_irq=72
+-- channels serviced
+   1346 rpm_requests
+    209 IPCRTR
+    180 sys_mon
+    180 WLAN_CTRL
+    180 WCNSS_CTRL
+    180 APPS_RIVA_DATA
+    180 APPS_RIVA_CTRL
+    180 APPS_RIVA_BT_CMD
+-- QRTR headers seen (the answer, if any arrived)
+        40 type=1 src_node=5 src_port=10 dst_node=1 dst_port=16396
+        10 type=1 src_node=0 src_port=40 dst_node=1 dst_port=16400
+         3 type=7 src_node=0 src_port=4294967294 dst_node=1 dst_port=4294967294
+         3 type=1 src_node=0 src_port=52 dst_node=1 dst_port=16409
+         3 type=1 src_node=0 src_port=45 dst_node=1 dst_port=16404
+         3 type=1 src_node=0 src_port=44 dst_node=1 dst_port=16403
+-- terse lines in this round: 4
+-- local ports looked up
+        40 port=16396
+        40 port=10
+        10 port=40
+        10 port=16400
+         6 port=4294967294
+         3 port=52
+         3 port=45
+         3 port=44
+-- last trace lines (POST-wake traffic, context only - not the wake)
+             <idle>-0       [000] d.h3. 26955.548386: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WLAN_CTRL"
+             <idle>-0       [000] d.h3. 26955.548423: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="WCNSS_CTRL"
+             <idle>-0       [000] d.h3. 26955.548426: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_DATA"
+             <idle>-0       [000] d.h3. 26955.548429: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="APPS_RIVA_CTRL"
+             <idle>-0       [000] d.h3. 26955.548432: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="sys_mon"
+             <idle>-0       [000] d.h3. 26955.548434: chan: (qcom_smd_channel_intr+0x0/0x2d8) name="IPCRTR"

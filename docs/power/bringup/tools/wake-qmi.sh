@@ -108,6 +108,14 @@ while [ $r -le $N ]; do
 	else
 		rtcwake -m mem -s "$S" >/dev/null 2>&1
 	fi
+	# ☠️ THE MARKER IS WHAT MAKES THIS A MEASUREMENT OF THE SLEEP.
+	# Tracing stays on across the resume, so everything the buffer holds is
+	# "during the sleep OR just after it" - and the just-after part is not small
+	# (a resume produces hundreds of rpm_requests within a second). A census that
+	# does not split there will report post-wake traffic as the traffic that
+	# arrived while asleep, which is the opposite of what it is for. Write the
+	# marker before anything else, then cut the trace at it.
+	echo RESUMED > $T/trace_marker 2>/dev/null
 	echo 0 > $T/tracing_on
 	d=$(journalctl -k --since "@$t0" --no-pager 2>/dev/null | grep -E "PM: suspend (entry|exit)" \
 	    | awk '{t=$3; m=$0; sub(/.*PM: /,"",m); split(t,c,":"); s=c[1]*3600+c[2]*60+c[3];
@@ -119,14 +127,26 @@ while [ $r -le $N ]; do
 	[ "${bad:-0}" -gt 0 ] && say "   ☠️ $bad lines with ver!=1 - their decode is GARBAGE, do not interpret"
 	ctl=$(grep -c 'ver=1 ty=[^1]' $T/trace 2>/dev/null || echo 0)
 	say "   (QRTR control packets excluded from the decode: ${ctl:-0}; they carry no QMI SDU)"
-	say "-- QMI messages seen (count / port / kind / id / name)"
+	# everything up to the marker is the sleep; everything after it is the resume
+	# ☠️ /tmp, NOT under $T - tracefs is not a writable filesystem.
+	SLEPT=/tmp/fp3-trace-slept.$$
+	awk '/tracing_mark_write: RESUMED/{exit} {print}' $T/trace > "$SLEPT" 2>/dev/null || cp $T/trace "$SLEPT"
+	if ! grep -q 'RESUMED' $T/trace 2>/dev/null; then
+		say "   ☠️ no RESUMED marker in the trace - the split did not happen, so the"
+		say "      counts below include post-wake traffic and must NOT be read as"
+		say "      'what arrived while asleep'."
+	else
+		say "   (trace split at the resume marker: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
+	fi
+	say "-- QMI messages seen WHILE ASLEEP (count / port / kind / id / name)"
 	# require ver=1 AND ty=1: the offsets are v1-only, and only QRTR_TYPE_DATA
 	# (include/uapi/linux/qrtr.h:18) carries a QMI SDU - a control packet's
 	# payload is a router command, so decoding it as a QMI header yields a
 	# plausible-looking message id for a message that was never sent.
-	sed -n 's/.*ver=1 ty=1 src_port=\([0-9]*\).*fl=\([0-9]*\) msg=\([0-9]*\).*/\1 \3 \2/p' $T/trace \
+	sed -n 's/.*ver=1 ty=1 src_port=\([0-9]*\).*fl=\([0-9]*\) msg=\([0-9]*\).*/\1 \3 \2/p' "$SLEPT" \
 		| sort | uniq -c | sort -rn | head -14 | decode >> "$O"
 	say "-- terse lines this round: $(journalctl -u ModemManager --since "@$t0" --no-pager 2>/dev/null | grep -ci terse)"
+	rm -f "$SLEPT"
 	sleep 15
 	r=$((r + 1))
 done
