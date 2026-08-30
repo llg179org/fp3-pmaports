@@ -215,6 +215,34 @@ day; "sleep deeper" is now demoted with it. The modem lead keeps its place
 because it is worth ~36 mA and the mechanism is named, but it is no longer the
 frame — it is one contributor to a level.
 
+### ☠️ 2026-08-30 — what the night cost, and what it left standing
+
+**Retracted in full:** the IPA data-path handshake lead. It works — the callback
+and the INIT_DRIVER work both run, and the driver's silence is what *success*
+looks like on that path. Every reading that pointed at it (an "unattended"
+service 49, a mismatched instance, a dropped registration) was an artefact of
+reading absence. `leads/ipa-modem-handshake.md` and `leads/vendor-kernel-sources.md`
+stay for the method and the trees; the hypothesis is dead.
+
+**Under re-measurement:** every residency figure. They all sleep via
+`rtcwake -m mem`, which bypasses logind, so ModemManager never gets
+`PrepareForSleep`. The four legs that named the daemon may have measured a path
+that skips its preparation.
+
+**Still standing, and unaffected by any of it:**
+
+- the consumption model, `mA = 54.9 + 135.0 x MPSS-duty`, and what it decides;
+- the audio result — the stack is not on the idle bill, three boots with the
+  floor as the measure — so the audio series is free to go upstream;
+- eleven dead candidates for the modem's duty, the IPA one now included;
+- the band lever (~14 duty points, ≈12 mA) as a measured lead, not a knob.
+
+☠️ **The methodological lesson of the night is worth more than the leads it
+killed:** *before building on "nothing happened", find the log line a success
+would print.* Four instruments in a row measured our side's intent — a source
+constant, a module list, a service listing, a socket guard — and none measured
+whether the thing had happened. A kprobe on the function answered it in one run.
+
 ### ★★★★★ 2026-08-29: the goal now has an arithmetic, and it says what is reachable
 
 Fitted across the three radio-low legs, **`current [mA] = 54.9 + 135.0 x

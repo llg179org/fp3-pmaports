@@ -15,13 +15,15 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
-Last updated: **2026-08-29 (18:05) — the consumption model closes
+Last updated: **2026-08-30 (02:30) — the consumption model closes
 (`mA = 54.9 + 135.0 x MPSS-duty`, both systems on one line), which puts the halving
-target BELOW the modem and oracle parity exactly AT it; the sleep blocker is named
-(ModemManager, separated from the duty by a one-boot A-B-A′, and its mechanism
-pinned to a live QMI indication subscription rather than a daemon timer); **the
-audio stack is measured off the idle bill and its series is free to go upstream**;
-the carrier-configuration lead is closed as the tenth dead candidate; the oracle turns
+target BELOW the modem and oracle parity exactly AT it; **the audio stack is
+measured off the idle bill and its series is free to go upstream**; the
+carrier-configuration lead is closed as the tenth dead candidate; ☠️ **an entire
+evening's IPA chain was built on silence and is retracted in full — the handshake
+works**; and ☠️ **every residency measurement so far went down a suspend path that
+bypasses ModemManager's own preparation**, so "the daemon kills every sleep" is
+under re-measurement; the oracle turns
 out to have been measured on the *expensive* cell all along, which kills the
 network-configuration explanation; and the instrument built to price that sleep was
 caught reading a gauge the suspend switches off.**
@@ -749,6 +751,53 @@ costs a modem more.
 (36.2 / 35.6 / 37.4 per second). ☠️ The current column of those legs is unusable —
 the phone was charging, so `cur_mA` is charge current and its p10 reads 0.0. The
 bitmask is the measure, which is why the instrument records it.
+
+### ☠️☠️☠️ 2026-08-30 — the IPA handshake WORKS; the whole evening's chain is retracted
+
+A probe attached to the module by name (`p:newsrv ipa2_lite:ipa_client_new_server`,
+so it arms when the module loads) shows the callback firing and
+`ipa_client_init_driver_work` running. Every failure path in that work calls
+`dev_err()` and `dmesg` has not one driver line ⇒ **the handshake succeeds. There
+is nothing to fix.**
+
+Five claims made that evening fall with it:
+
+| claim | status |
+|---|---|
+| "the modem's IPA service has no client" | ☠️ `qrtr-lookup` lists **servers**, never clients |
+| "the handshake never starts, silently" | ☠️ it starts and completes |
+| "we ask instance 2, the modem advertises 1" | ☠️ **node roles inverted** — the announce fires only for local servers and fired for `@[1:16398]`, so node 1 is *us*; the modem advertises instance 2, exactly what the driver asks |
+| "`qmi->sock` is NULL, the registration is dropped" | ☠️ it is sent and received |
+| `rmnet_ipa0` DOWN | not a fault — a netdev nothing brings up without a data call |
+
+☠️ **The mistake underneath all five: silence read as failure on a path where
+success is also silent.** The driver has no `dev_info` on its success path, so
+"zero IPA lines" was compatible with both outcomes from the start. **Rule: before
+building on "nothing happened", find the line a success would print. If there is
+none, silence is not evidence and the next instrument is a probe on the code
+path.**
+
+☠️ A second correction on top: the same night's "the module subsystem is broken —
+`lsmod` segfaults" was a generalisation from one episode. `lsmod` returns 136
+modules, rc=0. One `rmmod` hung in `__arm64_sys_delete_module` holding the module
+lock, and busybox `lsmod` fails by segfaulting rather than blocking. That also
+re-opens the morning's `.ko` post-mortem, which had been retracted on the strength
+of the wrong claim — **neither it nor its retraction is now supported.**
+
+### 🔨 2026-08-30 — every residency number so far may be an artefact of the suspend path
+
+`suspend-rate.sh`, `sleep-night.sh` and the four ModemManager legs all sleep with
+`rtcwake -m mem`, which writes `/sys/power/state` directly and **bypasses logind**
+— so ModemManager never receives `PrepareForSleep` and never prepares, although it
+has handling for it. Real-world suspends (gsd-power, `IdleAction`) go through
+logind. ⇒ "ModemManager ends every suspend" may be measuring a path that skips the
+step where the daemon would quiet the modem. A-B-A′ alternating the two paths with
+the same 300 s alarm is running.
+
+★ Also found: ModemManager ships `--test-low-power-suspend-resume` ("put the modem
+in low power mode during suspend/resume") and `--test-quick-suspend-resume`. The
+first likely cuts the call path like the `--disable` leg did, but prices what the
+daemon's suspend handling is worth.
 
 ### ✅ 2026-08-29 evening — the audio stack costs nothing at idle
 
