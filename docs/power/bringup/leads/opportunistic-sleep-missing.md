@@ -138,3 +138,48 @@ Not "enable AUTOSLEEP". First **R1b** (`idle-suspend-window.sh`): with
 all, and does anything let it stay down? A `success` delta of 0 over the window
 means the policy layer alone is enough to explain the absence of sleep, and the
 kernel option is not yet the question.
+
+## Who wrote `'nothing'`? — narrowed 2026-08-30 18:0x, not yet answered
+
+Checked against upstream rather than asserted this time.
+`gnome-settings-daemon/data/org.gnome.settings-daemon.plugins.power.gschema.xml.in`
+on GNOME's `main`:
+
+| key | upstream default | on this device |
+|---|---|---|
+| `sleep-inactive-ac-type` | `'suspend'` | `'nothing'` |
+| `sleep-inactive-battery-type` | `'suspend'` | **`'nothing'`** |
+| `sleep-inactive-ac-timeout` | 900 | — |
+| `sleep-inactive-battery-timeout` | 900 | 900 |
+
+(The earlier paragraph said the battery timeout default was 1200. It is 900.)
+
+So the **timeout is untouched and the type was explicitly changed**. pmaports
+does not obviously do it: `postmarketos-ui-phosh`'s gschema override only sets
+`sm.puri.phosh favorites`, and `postmarketos-base-ui` carries no gsettings or
+dconf step at all. `postmarketos-base-ui-gnome` sets the *AC* branch, and this
+device does not run GNOME Shell.
+
+⇒ **The `'nothing'` on the battery branch has no identified source yet**, and the
+candidates differ in how easy it is to undo:
+
+* a **user-level dconf write** — from the Settings "Automatic Suspend" toggle, or
+  from our own earlier work on this device. One line to reverse.
+* a **gschema override shipped by some other installed package** — in
+  `/usr/share/glib-2.0/schemas/*.gschema.override`, which needs a package-level
+  answer.
+
+The two are distinguished by one read, queued for after R1b so it does not
+disturb the window:
+
+```sh
+dconf read /org/gnome/settings-daemon/plugins/power/sleep-inactive-battery-type
+grep -rn sleep-inactive /usr/share/glib-2.0/schemas/
+```
+
+A value from `dconf read` means a user-level override; empty means it comes from
+a schema override file, and the `grep` names the package.
+
+☠️ **Do not draw the conclusion this invites** — that "the phone would sleep if
+we flipped it back". That is a hypothesis about a *policy*, and R1b is already
+measuring what happens when the policy is set to suspend. Read R1b first.
