@@ -1,0 +1,3 @@
+9: rmnet_data0    inet 10.17.128.83/29 scope global rmnet_data0\       valid_lft forever preferred_lft forever
+11: rmnet_data2    inet 10.84.91.57/30 scope global rmnet_data2\       valid_lft forever preferred_lft forever
+11: rmnet_data2    inet 10.84.91.57/30 scope global noprefixroute rmnet_data2\       valid_lft forever preferred_lft forever
