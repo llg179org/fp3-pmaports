@@ -183,3 +183,28 @@ by, while **eDRX keeps it registered** and only lengthens the paging interval.
 Only the second is worth wanting here. Not checked, and therefore not claimed:
 whether this modem's firmware supports either, and whether this network offers
 eDRX.
+
+### The one DRX lever libqmi *does* expose — and why it is not this one
+
+Re-checked 2026-08-30, one layer more carefully than "libqmi has nothing":
+`qmicli --nas-get-drx` exists (NAS `0x0089`, since libqmi 1.28) and is **read
+only** — the tree has no `Set DRX`, so it reports a value it cannot change. What
+it reports is the **2G/3G CN paging cycle**, whose whole range is
+`QMI_NAS_DRX_CN6_T32` … `CN9_T256` (`qmi-enums-nas.h`), i.e. 32–256 radio frames
+= **0.32 s to 2.56 s**.
+
+That range settles it without a measurement: the thing under investigation is a
+wake roughly **once a minute**, and the longest paging cycle this control can
+describe is 2.56 s. Two orders of magnitude apart, so the paging cycle cannot be
+what schedules our wakes — and it would not be even if it were slower, because a
+paging occasion is serviced inside the modem and only becomes an AP wake when
+the modem sends a QMI indication about it. **The AP-visible event is the
+indication, not the paging.**
+
+Worth one read anyway (it is free and it is data), but do not spend a session on
+it, and ☠️ do not let its name make it look like the eDRX lever: eDRX is a
+different, longer-timescale mechanism that this control neither reports nor
+sets. The eDRX question therefore stays exactly where it was — needing a raw
+QMI message whose id is **not in libqmi and must not be guessed**; an invented
+message id is indistinguishable from a real one until it silently does something
+else.
