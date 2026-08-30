@@ -59,3 +59,47 @@ interrupts produce no packet to judge.
   headers. The label is wrong and the next revision should remove it.
 
 Instrument: `tools/wake-service.sh`.
+
+
+# The logind re-run — and it breaks the morning's conclusion
+
+☠️ The census above ran over `rtcwake`, which bypasses logind, so ModemManager
+was never told to go terse: it described the *unquieted* modem. Re-run down the
+logind path, terse confirmed applied (4 journal lines every round),
+`wake-service-logind.log`:
+
+| round | slept | ended by |
+|---|---|---|
+| 1 | **280 s** of 600 | modem edge — **the operator's call**, 10:39:15 `ringing-in` |
+| 2 | 64 s of 600 | modem edge |
+| 3 | **601 s of 600** | **`pm_wakeup_irq=72` — the RTC alarm** |
+
+**Two results, and the second is a retraction.**
+
+**1. A call woke a phone that had been asleep 280 s, and it rang.** Third
+independent confirmation that terse does not cost the call path — this time with
+the sleep duration measured around it.
+
+**2. ☠️ "The modem edge terminates every suspend" is false.** Round 3 slept its
+entire alarm with the radio up and registered, ended by the clock. It is the
+first full sleep with a live radio in this project.
+
+## ☠️ What must NOT be concluded from it
+
+The obvious reading — *"so terse works after all"* — is contradicted by our own
+data. The morning's `terse-ab-clean` legs used the **same** configuration, logind
+path with terse applied and its four journal lines, and gave **52–63 s in six legs
+out of six**. Same knob, same path, same day: 61 s six times, then 280 / 64 /
+601 s.
+
+So the honest statement is narrower than either conclusion:
+
+> **Sleep length under an unchanged configuration varies by an order of
+> magnitude** (61 s to 601 s), and six consistent samples in the morning
+> concealed that. What drives the variance — time of day, network activity, cell
+> state — **is not known and is not guessed here.**
+
+That also re-frames the morning's terse verdict: it was not "terse does not
+help", it was **six samples from a distribution wide enough that six was not
+enough**. Any future A/B on this front needs a sample size chosen against this
+spread, not against a hoped-for effect.
