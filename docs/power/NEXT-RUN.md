@@ -92,6 +92,14 @@ asleep. It can be now: four consecutive 600 s windows were filled today.
   number is not a measurement and step 0 has not been done.**
 - ☠️ gate: the pack must be **off the cable** — a charging leg makes `cur_mA` the
   charge current and its p10 read 0.0. That has already spoiled one capture.
+  `sleep-night.sh` cuts the charge input itself and restores it on every exit
+  path, so no separate pre-drain is needed.
+- ☠️ **The `floor_pct` argument is a safety stop, not a finish line.** Measured
+  2026-08-30: starting at 93 %, the cycle average is ~14 mA at a 10 mA floor and
+  ~44 mA at a 40 mA one, so reaching the 55 % default takes **26–83 hours**. The
+  fit reads whatever arc has accumulated; the control leg travelled 92.7 mV in
+  1.42 h at ~122 mA, so the same travel asleep needs **4–17 h**. Plan to read it
+  the next morning, not the same evening.
 
 ☠️ **What step 0 measures is a FLOOR, not a night.** `sleep-night.sh` refuses to
 run with ModemManager up — *"this would measure the daemon, not the phone"* — and
@@ -224,6 +232,34 @@ losing its data context.
 ☠️ Note which way this cuts: the second outcome retires the most attractive
 remaining story (the `netmgrd`/`ipacm` one) and points at a harder problem. Record
 that here so the reading afterwards is not free to prefer the first.
+
+### ✅ D1 ANSWERED 2026-08-30 13:35–13:54 — the context is not the difference
+
+`ut-context-ab.sh 360` on slot_a, three windows, one instrument
+(`captures/2026-08-30_oracle-context-ab/`):
+
+| leg | data contexts | **MPSS awake** | signal |
+|---|---|---|---|
+| A | two | **6.9 %** | 30 |
+| B | one (`DeactivateAll`) | **5.2 %** | 20 |
+| A′ | two, restored | **5.4 %** | 22 |
+
+**The duty did not rise — it fell slightly**, and A′ sits closer to B than to A,
+so the spread is baseline drift rather than the lever. The oracle runs at 5–7 %
+with a bearer and without one; pmOS runs at 34.8 %.
+
+⇒ **The second branch of the reading table.** The `netmgrd` / `ipacm` story is
+**retired** — the outcome the table named as the one that retires it, written
+down before the run. It also *confirms* the pmOS-side bearer A/B rather than
+casting doubt on it: two independent systems, same lever, same flat answer.
+
+⇒ The duty gap therefore points at **attach-time configuration** — DRX, paging
+cycle, or what the vendor RIL negotiates at registration. That is step D2.
+
+☠️ Two notes that weaken rather than help: `DeactivateAll` left the IMS context
+up, so leg B was *one context instead of two*, not *no bearer*; and the signal
+drifted 30 → 20 → 22, which costs a modem **more**, so the confound pushes
+against the observed direction rather than producing it.
 
 ### Step D2 (track D, only if D1 says "attach configuration")
 
