@@ -1311,9 +1311,28 @@ PM: Triggering wakeup from IRQ 141
 ```
 
 **IRQ 141 = hwirq 57 = `GIC_SPI 25` = `remoteproc@4080000/smd-edge` — the
-modem's.** The edge reads `disabled` in `power/wakeup`, and that is *why* it
-aborts: an interrupt arriving during s2idle on a source that is not registered
-for wakeup is treated as an unexpected wakeup and **terminates the suspend**.
+modem's.**
+
+> ☠️ **The second half of this paragraph is superseded — read the correction
+> before using it.** As written on 2026-08-26 it said the edge reads `disabled`
+> in `power/wakeup`, and that the abort was the kernel treating an interrupt on
+> an *unarmed* source as an unexpected wakeup. **The edge has since been armed
+> deliberately** (the r66 `qcom_smd` wake-IRQ patch plus the
+> `fp3-modem-wake-arm` oneshot), because disarming it makes the phone sleep to
+> the alarm and *lose incoming calls* — which the goal forbids. The regression
+> guard for the current state is `tests/checks/58-call-wake-test.sh`, and the
+> design that lives on top of it is
+> `power/bringup/leads/selective-smd-wakeup.md`. So the sentence below describes
+> a state the device is no longer in, and the mechanism it names is not the
+> mechanism now in play: **the wake is legitimate and registered, and the
+> problem is that it fires for traffic nobody needed to be woken for.**
+>
+> The naming result — IRQ 141 is the modem's SMD edge, four suspends of four —
+> stands unchanged; it is only the arm-state explanation that moved.
+
+~~The edge reads `disabled` in `power/wakeup`, and that is *why* it aborts: an
+interrupt arriving during s2idle on a source that is not registered for wakeup
+is treated as an unexpected wakeup and terminates the suspend.~~
 
 **The modem sends the AP something over SMD while the phone is asleep, and the
 kernel aborts.** Everything else falls out: modem cut → 0 aborts in 6; the abort
