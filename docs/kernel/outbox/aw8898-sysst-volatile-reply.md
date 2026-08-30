@@ -67,7 +67,7 @@ still no v3 (details in "Before sending" below).
 > ours to chase, and I mention it only to be clear about what the change is and
 > is not evidence for: it shows the poll became real, not that the PLL locks.
 >
-> Marking the status register volatile fixes it here:
+> The change itself is one function:
 >
 >     +static bool aw8898_volatile_reg(struct device *dev, unsigned int reg)
 >     +{
