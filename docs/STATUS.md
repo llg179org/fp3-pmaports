@@ -445,6 +445,28 @@ never suspended, so the terse path never ran. The ladder measured an
 whole of the reachable parity, it is still unexplained, and *nothing done on
 2026-08-30 touched it*.
 
+### ☠️ Correction to the row above, 2026-08-30 afternoon — the residency front is not "responsiveness only"
+
+The table says the residency front does not reach the goal. That was written
+while the third column of the arithmetic was still assumed rather than measured,
+and the slot trip changed it:
+
+- **The oracle's APSS never parks the crystal either** (`xo_count` `0x0` at two
+  uptimes, against 3 112 then 19 181 power-collapses;
+  `captures/2026-08-30_oracle-xo-and-deepstate/`). So the deep-vote track — get
+  the RPM or the APSS into a state they are not in — **closes**: the 63 mA system
+  does not do it.
+- With that closed, the ≤50 mA target has **only one remaining route**, and it is
+  the residency front. The night is
+  `(1 - r) x 98.5 + r x floor_mA`, and neither `r` (residency with the modem
+  still callable) nor `floor_mA` (what a suspend actually costs) has ever been
+  measured on this phone.
+
+So the corrected reading of the table: the **duty** front reaches parity and
+stops there; the **residency** front is not a side quest, it is the only path to
+the halving — and it is currently unpriced at both ends. `NEXT-RUN.md` step 0
+exists to price one of them.
+
 ### ☠️ 2026-08-30 — which front the GOAL actually runs through
 
 Read this before picking up either front, because a whole day was spent on one
