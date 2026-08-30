@@ -412,6 +412,33 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+### Orientation — two fronts, and which numbers belong to which
+
+Asked on 2026-08-30 after a long instrument-heavy day, and worth keeping because
+the confusion is structural rather than personal: **two different measurements
+have been running side by side, they use different words for "the modem", and
+their numbers do not combine.**
+
+| | **duty front** | **residency front** |
+|---|---|---|
+| what it measures | how busy the modem is **while the phone is awake** (MPSS duty %) | how long a **suspend** lasts before something ends it |
+| the number | pmOS **34.8 %** vs oracle **6.1 %** → 98.5 mA vs ~63 mA | 52–63 s vs 601 s sleeps |
+| the instrument | `idle-ab.sh` / the ladder, RPM master stats | `wake-qmi.sh`, the host USB log, `pm_wakeup_irq` |
+| does it reach the goal? | ✅ **this is the oracle-parity term** | ❌ responsiveness only — see the row below |
+
+☠️ **Was the ladder running in "terse mode"? No — terse never engaged.** The
+flag was on the command line (`--test-quick-suspend-resume` is a pmOS distro
+default, discovered 2026-08-30), but `CLEANUP_TERSE` is a **suspend hook**: it
+runs when logind announces a suspend. During the ladder,
+`/sys/power/suspend_stats/success` was **0** at three hours of uptime — the phone
+never suspended, so the terse path never ran. The ladder measured an
+**awake, fully-subscribed** modem, and everything measured about terse on
+2026-08-30 belongs to the other column and cannot move that 34.8 %.
+
+**The single most useful consequence:** the 34.8 % → 6.1 % gap is still the
+whole of the reachable parity, it is still unexplained, and *nothing done on
+2026-08-30 touched it*.
+
 ### ☠️ 2026-08-30 — which front the GOAL actually runs through
 
 Read this before picking up either front, because a whole day was spent on one
