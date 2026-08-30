@@ -1,0 +1,6 @@
+2026-08-30 14:25:57 borrowing a 20 s idle-ab window to lock the session and take the panel down
+2026-08-30 14:26:38 panel: bl_power='4'
+2026-08-30 14:26:43 charge input cut: status=Discharging
+2026-08-30 14:26:43 start cap=98% v=4297585uV minutes=90 gap=300s
+2026-08-30 15:56:45 end cap=93% v=4204938uV rounds=18
+2026-08-30 15:56:45 /var/log/fp3/awake-ocv-1788092757
