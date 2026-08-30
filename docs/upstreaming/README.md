@@ -33,11 +33,19 @@ mainline **v7.2** was released 2026-08-16, `v7.3-rc1` was not yet tagged, so the
 7.3 merge window was open and closing. Check before sending:
 
 ```sh
-git ls-remote --tags https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
-  | sed 's|.*refs/tags/||;s|\^{}||' | sort -u -V | tail -3
+curl -s https://www.kernel.org/releases.json |
+  python3 -c 'import json,sys; r=[x for x in json.load(sys.stdin)["releases"] if x["moniker"]=="mainline"][0]; print(r["version"], r["released"]["isodate"])'
 ```
 
-`vX.Y-rcN` on the last line ⇒ send. A bare `vX.Y` ⇒ wait.
+A version containing `-rc` means the rc phase is running and you may send. A
+bare `vX.Y` means that release has just been tagged and the **merge window is
+open** — wait.
+
+☠️ **Do not answer this from the tag list.** `git ls-remote --tags … | sort -V |
+tail` looks like the obvious check and is wrong in a way that always reads
+"safe to send": version sort places `v7.2` *before* `v7.2-rc1`, so the last line
+is an `-rc` tag whether the release is out or not. Measured 2026-08-30 — the
+heuristic was in this page for a day before it was tried against a known state.
 
 ## The audio series
 

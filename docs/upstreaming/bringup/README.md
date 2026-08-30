@@ -135,12 +135,19 @@ So the number you are aiming at is always one release ahead of the one being
 stabilised. The state is one command away:
 
 ```sh
-git ls-remote --tags https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
-  | sed 's|.*refs/tags/||;s|\^{}||' | sort -u -V | tail -3
+curl -s https://www.kernel.org/releases.json |
+  python3 -c 'import json,sys; r=[x for x in json.load(sys.stdin)["releases"] if x["moniker"]=="mainline"][0]; print(r["version"], r["released"]["isodate"])'
 ```
 
-If the last line is `vX.Y-rcN`, the rc phase is running and you may send. If it
-is a bare `vX.Y`, the merge window is open and you wait. Send early in the rc
+A version containing `-rc` means the rc phase is running and you may send. A
+bare `vX.Y` means that release has just been tagged and the **merge window is
+open** — wait.
+
+☠️ **Do not answer this from the tag list.** `git ls-remote --tags … | sort -V |
+tail` looks like the obvious check and is wrong in a way that always reads
+"safe to send": version sort places `v7.2` *before* `v7.2-rc1`, so the last line
+is an `-rc` tag whether the release is out or not. Measured 2026-08-30 — the
+heuristic was in this page for a day before it was tried against a known state. Send early in the rc
 phase: a series posted at rc1 has weeks of review time; one posted at rc6
 realistically targets the release after next.
 
