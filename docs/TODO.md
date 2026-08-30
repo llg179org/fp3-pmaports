@@ -1225,7 +1225,25 @@ chain preserved. Details and the checkpatch split in
 [`kernel/README.md`](kernel/README.md#camera-imx363c). The DCO chain turned out to
 be **intact**, so the camera never had the sensor series' problem.
 
-### ☠️ 2026-08-29 — `submit/7.1.3/audio` has fallen behind `wip/7.1.3/audio` and must be regenerated
+### ✅ DONE 2026-08-30 — `submit/7.1.3/audio` regenerated (was: fallen behind `wip`)
+
+> Regenerated from `wip/7.1.3/audio` on 2026-08-30 (`0eed9f3d`): the five missing
+> commits carried over, trailers swapped to the upstream form, two churn-only
+> hunks dropped. The acceptance test is the one this table implies —
+> **`git diff wip/7.1.3/audio submit/7.1.3/audio` is empty** — which is a
+> stronger statement than any per-file count, because it cannot pass while
+> anything is missing. Trailers audited: no `Signed-off-by` from the assistant
+> anywhere in the series. The previous tip is reachable as
+> `archive/submit-7.1.3-audio-pre-20260830`, tagged before the force-push, and
+> the tarball for the package's pinned commit still answers 200.
+>
+> The analysis below is kept because its *method* is the reusable part: compare
+> a reshaped series by **content**, never by patch-id — `git cherry` reports
+> nearly the whole branch as missing here, since every id differs by
+> construction, and reading that as a real gap would have sent someone hunting
+> for commits that are present.
+
+#### (done) The gap as it stood on 2026-08-29
 
 The question that prompted the check was whether the audio work can go upstream
 *before* the power work. On the power side it can — measured, see below — but the
@@ -3586,7 +3604,16 @@ layer fixed the floor and the wakeup count (median −35 %, `cluster-pc` and
 
 Even at UT's consumption the phone never sleeps: `suspend_stats/success = 0`,
 `IdleAction=ignore`, `sleep-inactive-battery-type='nothing'` — not blocked, never
-requested. And when requested it holds ~7.5 s, because the armed modem edge rings
+requested.
+
+> ☠️ **Read "never sleeps" as "is never asked to", which is what the evidence
+> says.** Once asked, it does: on 2026-08-30 it completed **600, 600, 601 and
+> 600 s** windows back to back, each filling its alarm, radio up and registered.
+> The same configuration also produced six consecutive 52–63 s sleeps that
+> morning, so the sentence below about a ~2 s ring is one regime rather than a
+> property — see `power/bringup/leads/sleep-length-is-a-state.md`. What has not
+> changed is the policy: nothing on this system requests a suspend on its own,
+> so every one of those numbers came from an explicit `systemctl suspend`. And when requested it holds ~7.5 s, because the armed modem edge rings
 about every 2 s (IPCRTR, signal-level). ☠️ That channel is also how a call arrives,
 so the channel is not a lever — but the ring is the modem's own behaviour, so if 4
 stops the modem waking, it likely stops the ring. **Then** enable the idle-suspend
