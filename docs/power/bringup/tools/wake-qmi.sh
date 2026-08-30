@@ -139,6 +139,34 @@ decode() {
 	done
 }
 
+# ☠️ THE MARKER MUST BE WRITTEN BY THE KERNEL'S OWN SLEEP PATH, NOT BY US.
+# `systemctl suspend` is not the suspend: it goes to logind, which announces the
+# sleep, which runs ModemManager's terse handshake and WAITS FOR ITS REPLIES, and
+# only then does the kernel freeze. A marker written before that call therefore
+# means "about to ask", and the handshake lands inside the window - which is
+# exactly the reading published and withdrawn on 2026-08-30, twice, at two
+# different edges. A hook in /usr/lib/systemd/system-sleep/ runs AFTER every
+# inhibitor and delay handler, ModemManager's included, so `pre` there is the
+# last userspace instant before the freeze and `post` the first after the thaw.
+# `zz-` so it sorts last among sleep hooks.
+HOOK=/usr/lib/systemd/system-sleep/zz-fp3-trace-marker
+if [ ! -x "$HOOK" ]; then
+	mkdir -p "$(dirname "$HOOK")"
+	# ☠️ Trivial and unconditionally exit 0: a sleep hook that fails or hangs
+	# blocks the suspend it is supposed to be measuring.
+	cat > "$HOOK" <<'HOOKEOF'
+#!/bin/sh
+T=/sys/kernel/tracing
+[ -w "$T/trace_marker" ] || exit 0
+case "$1" in
+	pre)  echo FP3_FREEZE > "$T/trace_marker" 2>/dev/null ;;
+	post) echo FP3_THAW   > "$T/trace_marker" 2>/dev/null ;;
+esac
+exit 0
+HOOKEOF
+	chmod +x "$HOOK"
+fi
+
 r=1
 while [ $r -le $N ]; do
 	echo > $T/trace; echo 1 > $T/tracing_on
@@ -183,13 +211,23 @@ while [ $r -le $N ]; do
 	# everything up to the marker is the sleep; everything after it is the resume
 	# ☠️ /tmp, NOT under $T - tracefs is not a writable filesystem.
 	SLEPT=/tmp/fp3-trace-slept.$$
-	awk '/tracing_mark_write: SUSPENDING/{on=1; next} /tracing_mark_write: RESUMED/{exit} on' $T/trace > "$SLEPT" 2>/dev/null || cp $T/trace "$SLEPT"
-	if ! grep -q 'RESUMED' $T/trace 2>/dev/null || ! grep -q 'SUSPENDING' $T/trace 2>/dev/null; then
-		say "   ☠️ a marker is missing from the trace - the window was NOT bounded,"
-		say "      so the counts below include the suspend-entry handshake and/or the"
-		say "      post-wake storm and must NOT be read as 'what arrived while asleep'."
+	# ☠️ The FP3_FREEZE/FP3_THAW pair comes from the system-sleep hook, i.e. from
+	# inside the kernel's own sleep path. SUSPENDING/RESUMED are this script's
+	# own, one hop too early and one hop too late, and are kept only so an old
+	# capture still parses. If the hook markers are absent the window is NOT the
+	# sleep, and this refuses to report rather than printing a number that has
+	# been wrong twice already.
+	if grep -q 'tracing_mark_write: FP3_FREEZE' $T/trace 2>/dev/null &&
+	   grep -q 'tracing_mark_write: FP3_THAW' $T/trace 2>/dev/null; then
+		awk '/tracing_mark_write: FP3_FREEZE/{on=1; next} /tracing_mark_write: FP3_THAW/{exit} on' $T/trace > "$SLEPT"
+		say "   (window bounded by the system-sleep hook: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
 	else
-		say "   (trace split at the resume marker: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
+		: > "$SLEPT"
+		say "   ☠️ THE SLEEP-HOOK MARKERS DID NOT FIRE - no window, so nothing is"
+		say "      reported for this round. Either the hook is not installed, or the"
+		say "      phone never actually froze. Check $HOOK and suspend_stats/success."
+		say "      (a marker written by this script instead would sit OUTSIDE the"
+		say "       freeze and would count the terse handshake as sleep traffic)"
 	fi
 	say "-- QMI messages BETWEEN the two markers, i.e. while asleep (count / port / kind / id / name)"
 	# require ver=1 AND ty=1: the offsets are v1-only, and only QRTR_TYPE_DATA
