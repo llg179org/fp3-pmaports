@@ -136,6 +136,27 @@ measurement: across a real 601 s sleep `APSS` read `XO total duration: 0` with
 `XO shutdown count: 0`. If the application processor never lets the crystal go
 *while suspended*, suspending buys far less than the arithmetic assumes.
 
+#### ☠️ What "without the cable" actually means here — added 2026-08-30
+
+The run does **not** have the cable pulled. It sets the PMIC's `input_suspend`
+bit, which cuts the charge input: measured this evening, the supply reads
+`Discharging` for the duration and `Charging` once the run stops. Electrically
+that is what unplugging would do, and it is what makes the current columns mean
+anything.
+
+**What it does not do is remove the USB link.** The PHY stays powered and the
+CDC-NCM interface stays enumerated, deliberately — the cable *is* the remote
+link, and the host cannot cut VBUS, so a real unplug would end unattended access
+and with it the measurement.
+
+⇒ **`floor_mA` therefore includes whatever the USB link costs**, and that term
+has never been measured in mA. What *is* on record (`captures/2026-08-24_usb-controller-not-the-vlow-blocker.txt`)
+is that the USB controller and its PHY do runtime-suspend, so the contamination
+is plausibly small — but "plausibly small" is not a number, and it must be
+written next to the result rather than assumed away. If step 0 lands in the
+`15–40 mA` band, this is the first term to go and measure, because it could
+decide which side of the decision table the phone is really on.
+
 ### ☠️ Step X1 as first written was already answered — corrected 2026-08-30
 
 The first draft of this page sent the next run to "census the rails that never
