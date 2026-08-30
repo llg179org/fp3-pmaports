@@ -66,7 +66,7 @@ echo 16384 > $T/buffer_size_kb 2>/dev/null
 echo -n > $T/kprobe_events 2>/dev/null
 
 ARMED=""
-if echo 'p:qmi qrtr_endpoint_post ver=+0x0(%x1):u32 src_port=+0xc(%x1):u32 dst_port=+0x1c(%x1):u32 fl=+0x20(%x1):u8 msg=+0x23(%x1):u16' >> $T/kprobe_events 2>/dev/null; then
+if echo 'p:qmi qrtr_endpoint_post ver=+0x0(%x1):u32 ty=+0x4(%x1):u32 src_port=+0xc(%x1):u32 dst_port=+0x1c(%x1):u32 fl=+0x20(%x1):u8 msg=+0x23(%x1):u16' >> $T/kprobe_events 2>/dev/null; then
 	echo 1 > $T/events/kprobes/qmi/enable; ARMED="$ARMED qmi"; fi
 say "# probes armed:${ARMED:- NONE - the rest of this file is meaningless}"
 [ -n "$ARMED" ] || exit 1
@@ -117,9 +117,14 @@ while [ $r -le $N ]; do
 	say "== round $r: slept ${d:-?}s of ${S}s  pm_wakeup_irq=${w:-?}$([ "${w:-}" = "${EDGE:-x}" ] && echo '  <= modem edge')"
 	bad=$(grep -c 'ver=[^1]' $T/trace 2>/dev/null || echo 0)
 	[ "${bad:-0}" -gt 0 ] && say "   ☠️ $bad lines with ver!=1 - their decode is GARBAGE, do not interpret"
+	ctl=$(grep -c 'ver=1 ty=[^1]' $T/trace 2>/dev/null || echo 0)
+	say "   (QRTR control packets excluded from the decode: ${ctl:-0}; they carry no QMI SDU)"
 	say "-- QMI messages seen (count / port / kind / id / name)"
-	# require ver=1: the offsets are v1-only, so a v2 line must not be decoded
-	sed -n 's/.*ver=1 src_port=\([0-9]*\).*fl=\([0-9]*\) msg=\([0-9]*\).*/\1 \3 \2/p' $T/trace \
+	# require ver=1 AND ty=1: the offsets are v1-only, and only QRTR_TYPE_DATA
+	# (include/uapi/linux/qrtr.h:18) carries a QMI SDU - a control packet's
+	# payload is a router command, so decoding it as a QMI header yields a
+	# plausible-looking message id for a message that was never sent.
+	sed -n 's/.*ver=1 ty=1 src_port=\([0-9]*\).*fl=\([0-9]*\) msg=\([0-9]*\).*/\1 \3 \2/p' $T/trace \
 		| sort | uniq -c | sort -rn | head -14 | decode >> "$O"
 	say "-- terse lines this round: $(journalctl -u ModemManager --since "@$t0" --no-pager 2>/dev/null | grep -ci terse)"
 	sleep 15
