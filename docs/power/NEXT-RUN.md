@@ -86,6 +86,28 @@ asleep. It can be now: four consecutive 600 s windows were filled today.
 - ☠️ gate: the pack must be **off the cable** — a charging leg makes `cur_mA` the
   charge current and its p10 read 0.0. That has already spoiled one capture.
 
+☠️ **What step 0 measures is a FLOOR, not a night.** `sleep-night.sh` refuses to
+run with ModemManager up — *"this would measure the daemon, not the phone"* — and
+it uses `rtcwake -m mem`, which goes straight to `/sys/power/state` and bypasses
+logind. So the number it returns is what a suspend costs on a phone that **cannot
+receive a call**, which is the opposite corner of the goal. It is still the right
+first measurement, because it is the term the night average cannot go below.
+
+The night the goal is actually about is
+
+```
+night_mA = (1 - r) x 98.5 + r x floor_mA
+```
+
+where `r` is the fraction of the night actually spent suspended **with the modem
+subscribed and callable**. Step 0 gives `floor_mA`; the R-track gives `r`. Both
+are needed before any lever can be priced, and neither exists today.
+
+Worked, to show what is at stake: at a 10 mA floor, reaching ≤50 mA needs
+`r ≥ 0.55`. At a 40 mA floor it needs `r ≥ 0.83`, and no arrangement of sleeps
+that keeps a phone callable has come close to that here. **The floor decides
+whether the residency work is worth doing at all**, which is why it blocks.
+
 **Pre-registered reading:**
 
 | suspend current | what it means | next step |
