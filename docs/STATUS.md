@@ -412,6 +412,29 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+### ☠️ 2026-08-30 — which front the GOAL actually runs through
+
+Read this before picking up either front, because a whole day was spent on one
+of them and the goal does not run through it.
+
+- **The modem/wake front is about RESPONSIVENESS, not about the number.** What
+  it delivered today is real and worth having — the wake list is measured (Voice
+  port 39, Wireless Messaging port 51), the low-power arm is dead by measurement,
+  the terse residency verdict is withdrawn, and the instrument was corrected five
+  times. None of it lowers the idle current, and nothing on that front can:
+  the arithmetic puts oracle parity in the modem term and the **halving below the
+  intercept**, which is the AP, the WiFi core and the SoC.
+- ☠️ **The halving's binding constraint is that the RPM never reaches `vlow` /
+  `vmin`** — `Count: 0` in every capture ever taken here. That is a *vote*
+  problem, and `leads/rpm-sleep-set.md` plus 42 files in this directory already
+  work it, including the decoded `Client Votes` mask and its retraction.
+- ☠️☠️ **The XO branch is CLOSED and was re-derived by accident today.** The APSS
+  `XO shutdown count` has been driven 0 → 1952 before (2026-08-19) and the
+  discharge slope moved by 0.4 %. Today's window measured the same zero more
+  carefully and briefly read as though it priced the target. It does not.
+  `tools/prior-art.sh <field>` exists because of that hour: run it before
+  measuring anything, by the counter name rather than the topic.
+
 ### 2026-08-30 midday — three results and two withdrawals, read this order
 
 **Measured and standing:**
