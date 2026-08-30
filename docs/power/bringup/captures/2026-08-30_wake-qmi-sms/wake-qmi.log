@@ -1,0 +1,101 @@
+# wake-qmi 2026-08-30 11:50:35 alarm=600s rounds=3 path=logind edge=139
+#   ExecStart: /usr/sbin/ModemManager --test-quick-suspend-resume
+#   modem: registered
+#   msgid table: /usr/local/bin/qmi-msgids.txt (386 lines)
+# probes armed: qmi
+-- qrtr services at start (service:instance node:port)
+     Service Version Instance Node  Port
+          43       2       18    0     1 Subsystem control service
+          15       1        0    0    15 Test service
+          24       1        0    0    17 Thermal mitigation device service
+          23       1        0    0    18 Thermal sensors service
+          22       1        0    0    19 Time service
+          36       1        0    0    21 Persistent device configuration service
+          49       1        2    0    22 IPA control service
+          41       1        1    0    24 RF radiated performance enhancement service
+          70       1        1    0    25 LTE service
+          54       1        0    0    26 <unknown>
+          17       1        0    0    27 Specific absorption rate service
+          34       1        0    0    28 Coexistence service
+          55       1        2    0    37 QMI-SLIM service
+           9       2        0    0    39 Voice service
+           3       1        0    0    40 Network Access Service
+          12       1        0    0    41 Phonebook Management service
+          10       2        0    0    42 Card Application Toolkit service (v2)
+          47       1        0    0    43 Data Port Mapper service
+          11       1        0    0    44 User Identity Module service
+           1       1        0    0    45 Wireless Data Service
+           4       1        0    0    46 Quality Of Service service
+          26       1        0    0    47 Wireless data administrative service
+           7       1        0    0    48 Authentication service
+           8       1        0    0    49 AT service
+          29       1        0    0    50 Circuit switched videotelephony service
+           5       1        0    0    51 Wireless Messaging Service
+          42       1        0    0    52 Data system determination service
+           2       1        0    0    53 Device Management Service
+          16       2        0    0    54 Location service (~ PDS v2)
+          48       1        0    0    56 QMI DFS service
+          68       1        0    0    57 <unknown>
+          77       1        0    0    58 IMS QMI Priv service
+          33       1        0    0    61 IMS application service
+          18       1        0    0    63 IMS settings service
+          14       1        0    1    14 Remote file system service
+          52       1        1    1 16384 Dynamic Heap Memory Sharing
+        4096       1        0    1 16392 TFTP
+         271       2        0    1 16395 Sensor Registry service
+          49       1        1    1 16397 IPA control service
+
+== round 1: slept 601s of 600s  pm_wakeup_irq=72
+   (QRTR control packets excluded from the decode: 4; they carry no QMI SDU)
+   (trace split at the resume marker: 3742 of 3743 lines are from the sleep)
+-- QMI messages seen WHILE ASLEEP (count / port / kind / id / name)
+      21  src_port=10     IND  msg=34  PDC: Get Selected Config | SSC: Report Large | WDS: Packet Service Status
+       5  src_port=40     RSP  msg=3  NAS: Register Indications | PBM: Get All Capabilities | VOICE: Indication Register | WDS: Indication Register
+       2  src_port=52     RSP  msg=37  DMS: Get IDs | DSD: System Status Change | NAS: Get Home Network | OMA: Set Feature Setting | PDC: Delete Config | UIM: Set PIN Protection | WDS: Go Dormant
+       2  src_port=45     RSP  msg=1  DMS: Set Event Report | NAS: Abort | OMA: Set Event Report | PBM: Indication Register | PDS: Set Event Report | SAR: RF Set State | WDS: Set Event Report | WMS: Set Event Report
+       2  src_port=44     RSP  msg=32  CTL: Set Instance ID | DMS: Get Capabilities | DPM: Open Port | IMSA: Get IMS Registration Status | IMSDCM: PDP Activate Request | NAS: Get Signal Strength | OMA: Start Session | PDC: Register | PDS: Get GPS Service State | SSC: Control | UIM: Read Transparent | VOICE: Dial Call | WDA: Set Data Format | WDS: Start Network | WMS: Raw Send
+       1  src_port=52     RSP  msg=36  DMS: Get MSISDN | DSD: Get System Status | IMSP: Get Enabler State | NAS: Get Serving System | OMA: Get Feature Setting | PDC: List Configs | UIM: Get File Attributes | WDS: Get Packet Statistics | WMS: Delete
+       1  src_port=45     RSP  msg=133  NAS: Incremental Network Scan | WDS: Get LTE Attach Parameters
+       1  src_port=44     RSP  msg=47  DMS: Get Time | PDS: Set AGPS Config | UIM: Get Card Status | VOICE: Get All Call Info | WDA: Loopback Configuration
+       1  src_port=40     RSP  msg=77  DMS: Get Alt Net Config | NAS: Get System Info | WDS: Set IP Family
+       1  src_port=40     RSP  msg=68  DMS: UIM Get State | LOC: Delete Assistance Data | NAS: Get PLMN Name | UIM: Refresh Register All | WDS: Get Current Data Bearer Technology
+       1  src_port=40     RSP  msg=125  NAS: Get Network Time
+       1  src_port=40     RSP  msg=108  NAS: Config Signal Info v2 | WDS: Get PDN Throttle Info
+-- terse lines this round: 4
+
+== round 2: slept 601s of 600s  pm_wakeup_irq=72
+   (QRTR control packets excluded from the decode: 4; they carry no QMI SDU)
+   (trace split at the resume marker: 3843 of 3844 lines are from the sleep)
+-- QMI messages seen WHILE ASLEEP (count / port / kind / id / name)
+       5  src_port=40     RSP  msg=3  NAS: Register Indications | PBM: Get All Capabilities | VOICE: Indication Register | WDS: Indication Register
+       2  src_port=52     RSP  msg=37  DMS: Get IDs | DSD: System Status Change | NAS: Get Home Network | OMA: Set Feature Setting | PDC: Delete Config | UIM: Set PIN Protection | WDS: Go Dormant
+       2  src_port=45     RSP  msg=1  DMS: Set Event Report | NAS: Abort | OMA: Set Event Report | PBM: Indication Register | PDS: Set Event Report | SAR: RF Set State | WDS: Set Event Report | WMS: Set Event Report
+       2  src_port=44     RSP  msg=32  CTL: Set Instance ID | DMS: Get Capabilities | DPM: Open Port | IMSA: Get IMS Registration Status | IMSDCM: PDP Activate Request | NAS: Get Signal Strength | OMA: Start Session | PDC: Register | PDS: Get GPS Service State | SSC: Control | UIM: Read Transparent | VOICE: Dial Call | WDA: Set Data Format | WDS: Start Network | WMS: Raw Send
+       1  src_port=52     RSP  msg=36  DMS: Get MSISDN | DSD: Get System Status | IMSP: Get Enabler State | NAS: Get Serving System | OMA: Get Feature Setting | PDC: List Configs | UIM: Get File Attributes | WDS: Get Packet Statistics | WMS: Delete
+       1  src_port=45     RSP  msg=133  NAS: Incremental Network Scan | WDS: Get LTE Attach Parameters
+       1  src_port=44     RSP  msg=47  DMS: Get Time | PDS: Set AGPS Config | UIM: Get Card Status | VOICE: Get All Call Info | WDA: Loopback Configuration
+       1  src_port=40     RSP  msg=77  DMS: Get Alt Net Config | NAS: Get System Info | WDS: Set IP Family
+       1  src_port=40     RSP  msg=68  DMS: UIM Get State | LOC: Delete Assistance Data | NAS: Get PLMN Name | UIM: Refresh Register All | WDS: Get Current Data Bearer Technology
+       1  src_port=40     RSP  msg=125  NAS: Get Network Time
+       1  src_port=40     RSP  msg=108  NAS: Config Signal Info v2 | WDS: Get PDN Throttle Info
+-- terse lines this round: 4
+
+== round 3: slept 321s of 600s  pm_wakeup_irq=139  <= modem edge
+   (QRTR control packets excluded from the decode: 5; they carry no QMI SDU)
+   (trace split at the resume marker: 3901 of 3903 lines are from the sleep)
+-- QMI messages seen WHILE ASLEEP (count / port / kind / id / name)
+       5  src_port=40     RSP  msg=3  NAS: Register Indications | PBM: Get All Capabilities | VOICE: Indication Register | WDS: Indication Register
+       2  src_port=52     RSP  msg=37  DMS: Get IDs | DSD: System Status Change | NAS: Get Home Network | OMA: Set Feature Setting | PDC: Delete Config | UIM: Set PIN Protection | WDS: Go Dormant
+       2  src_port=51     RSP  msg=55  DMS: Read User Data | LOC: Get Predicted Orbits Data Validity | WDS: Get Data Bearer Technology | WMS: Send Ack
+       2  src_port=45     RSP  msg=1  DMS: Set Event Report | NAS: Abort | OMA: Set Event Report | PBM: Indication Register | PDS: Set Event Report | SAR: RF Set State | WDS: Set Event Report | WMS: Set Event Report
+       2  src_port=44     RSP  msg=32  CTL: Set Instance ID | DMS: Get Capabilities | DPM: Open Port | IMSA: Get IMS Registration Status | IMSDCM: PDP Activate Request | NAS: Get Signal Strength | OMA: Start Session | PDC: Register | PDS: Get GPS Service State | SSC: Control | UIM: Read Transparent | VOICE: Dial Call | WDA: Set Data Format | WDS: Start Network | WMS: Raw Send
+       1  src_port=52     RSP  msg=36  DMS: Get MSISDN | DSD: Get System Status | IMSP: Get Enabler State | NAS: Get Serving System | OMA: Get Feature Setting | PDC: List Configs | UIM: Get File Attributes | WDS: Get Packet Statistics | WMS: Delete
+       1  src_port=51     IND  msg=1  ATR: Received | DMS: Event Report | OMA: Event Report | PDS: Event Report | WDS: Event Report | WMS: Event Report
+       1  src_port=45     RSP  msg=133  NAS: Incremental Network Scan | WDS: Get LTE Attach Parameters
+       1  src_port=44     RSP  msg=47  DMS: Get Time | PDS: Set AGPS Config | UIM: Get Card Status | VOICE: Get All Call Info | WDA: Loopback Configuration
+       1  src_port=40     RSP  msg=77  DMS: Get Alt Net Config | NAS: Get System Info | WDS: Set IP Family
+       1  src_port=40     RSP  msg=68  DMS: UIM Get State | LOC: Delete Assistance Data | NAS: Get PLMN Name | UIM: Refresh Register All | WDS: Get Current Data Bearer Technology
+       1  src_port=40     RSP  msg=125  NAS: Get Network Time
+       1  src_port=40     RSP  msg=108  NAS: Config Signal Info v2 | WDS: Get PDN Throttle Info
+-- terse lines this round: 4
+# done 2026-08-30 12:17:13
