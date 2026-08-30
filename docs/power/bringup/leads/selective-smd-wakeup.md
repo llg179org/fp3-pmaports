@@ -318,3 +318,44 @@ interrupt. Therefore, in the window bounded by `SUSPENDING` and `RESUMED`:
 sketched, argued and half-documented is the second one. **The first outcome
 retires it**, and the first is what the mechanism predicts. Record that here so
 the reading afterwards is not free to prefer the other.
+
+## ✅ ANSWERED 2026-08-30 14:23 — the prediction held, so this lead is PARKED
+
+The census was re-run with the window bounded by
+`/usr/lib/systemd/system-sleep/zz-fp3-trace-marker`, which runs after every
+inhibitor including ModemManager's terse path — the third boundary attempt, and
+the first one that is actually the sleep.
+Full capture: [`../captures/2026-08-30_wake-qmi-sleephook/`](../captures/2026-08-30_wake-qmi-sleephook/).
+
+| round | slept | ended by | QMI messages inside the window |
+|---|---|---|---|
+| 1 | 46 s of 600 | `141 smd-edge` | **1** |
+| 2 | **600 s of 600** | `56 pm8xxx_rtc_alarm` | **0** |
+
+Both IRQ names resolved from that boot's own `/proc/interrupts`.
+
+**The prediction above held exactly**, and by this page's own pre-registration
+that is the outcome which **retires the filter**:
+
+> *"Then in this regime the modem is genuinely quiet … the filter's premise
+> ('much arrives, little deserves a wake') is **false here**. There would be
+> nothing for a filter to filter, and the lead should be parked rather than
+> built."*
+
+One packet in 646 s of sleep is not a filtering problem. **Parked.**
+
+### What would reopen it
+
+Only one thing, and it is named in the pre-registration too: **the short-sleep
+regime.** This morning's sleeps were 52–63 s and every one of them ended on the
+modem edge; the two rounds above were taken in the long regime, where the phone
+fills a 600 s alarm. If a census run *inside* the short regime shows many packets
+per sleep, the premise is true there and the design comes back. Until that
+measurement exists, this page is closed.
+
+☠️ **A note on how this was read, because it went wrong first.** Within an hour
+of the result the capture's own write-up concluded that the census *justified*
+the filter — the exact reading this section's pre-registration was written to
+prevent, by a page that says in bold which way the reading would be tempted to
+cut. Pre-registration only works if it is re-read **at reading time**, not only
+at writing time. Corrected in `fdaf2a4`.
