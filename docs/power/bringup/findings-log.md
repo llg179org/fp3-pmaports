@@ -9250,3 +9250,37 @@ path, not another reading of the same absence.**
 
 Back where it was: eleven candidates dead, this one included. The IPA data-path
 handshake is **not** what the oracle does and we don't — we do it too.
+
+## ☠️ 2026-08-30 01:55 — correction: the module subsystem is not broken, one stuck `rmmod` was
+
+Re-measured on the current boot, no experiment running:
+
+```
+lsmod            -> rc=0, 136 modules      (unprivileged)
+sudo lsmod       -> rc=0
+sudo sh -c lsmod -> rc=0
+head /proc/modules, wc -l  -> fine
+```
+
+**`lsmod` works.** The entry two hours ago called this "the module subsystem on
+this kernel is broken … lsmod segfaults on a clean boot with stock modules" — and
+that generalised a single episode into a property of the kernel.
+
+**What actually happened**: an `rmmod ipa2_lite` hung inside
+`__arm64_sys_delete_module` (that stack trace is real and was captured), holding
+the module lock; every later reader of `/proc/modules` in that window then failed,
+and busybox's `lsmod` fails by segfaulting rather than by blocking. One stuck
+unload, two symptoms — not a standing defect.
+
+☠️ **And that in turn re-opens this morning's `.ko` post-mortem in the other
+direction.** I retracted it earlier tonight on the strength of "the phone does
+this with stock modules anyway"; the phone does not. What is left is that a stuck
+`delete_module` produces exactly this pair of symptoms, and both the morning
+episode and tonight's involved unloading a module the driver was actively bound
+to. Whether the branch mismatch mattered is **undetermined** — the honest state is
+that neither the original write-up nor its retraction is supported.
+
+☠️ The generalisation is the error worth keeping: **one episode is not a property
+of the system.** The claim was written from a single observation inside a window
+that had a stuck syscall in it, and the check that refutes it — running `lsmod`
+when nothing is wrong — takes one second.
