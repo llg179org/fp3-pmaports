@@ -932,7 +932,30 @@ then pd-mapper may stay broken until reboot); per-suspend voltage slopes
 scatter ±87 mV/h — only whole-leg fitted slopes resolve effects this size.
 
 
-## The modem edge is not armed at boot, so automatic sleep must stay off
+## ✅ CLOSED 2026-08-30 — the modem edge IS armed at boot
+
+> ☠️ **Read this before the section below, which is the state as of 2026-08-25
+> and is now false in its load-bearing sentence.** The gap it describes — "the
+> arm knob defaults to `disabled` on every boot and nothing arms it" — has since
+> been filled: `userspace-power/fp3-modem-wake-arm.service` exists, and
+> `tests/checks/58-call-wake-test.sh` fails when it is missing or not enabled,
+> so the regression is guarded rather than remembered.
+>
+> The running phone is armed, proved two ways on 2026-08-30 and neither by
+> reading the knob: an incoming call woke it out of a 280 s sleep at 10:39, and
+> every suspend that morning reported `pm_wakeup_irq` = the modem edge — a line
+> `irq_pm_handle_wakeup()` emits only for a **wake-armed** IRQ, so its presence
+> is itself the proof.
+>
+> The conclusion drawn from the old text is therefore also void: **automatic
+> sleep no longer has to stay off** on this account. Whatever else gates it, it
+> is not this.
+>
+> Kept rather than deleted because the constraint it states — idle low *and*
+> calls still arriving — is the one the goal is defined by, and the paragraph
+> below is where its reasoning is written down.
+
+### (superseded) The modem edge is not armed at boot, so automatic sleep must stay off
 
 **The wake fix itself is done, shipped and call-proven — it has moved to
 [`TODO-DONE.md`](TODO-DONE.md)** ("An incoming call cannot wake the phone from
