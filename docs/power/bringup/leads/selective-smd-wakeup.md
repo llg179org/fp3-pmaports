@@ -283,3 +283,38 @@ sleeps and these full windows is still unnamed, and the same traffic was present
 in both. It does mean the design question moves. "The modem sends packets, so we
 wake" is now known to be false as stated; the filter's job is narrower than it
 looked, and possibly unnecessary in this regime.
+
+## Pre-registered: what the corrected census must show, and what would falsify the filter
+
+Written before the run, because the reasoning is short enough to commit to and
+the outcome is decisive either way.
+
+**The mechanism forces a prediction.** The modem SMD edge is armed as a system
+wakeup source. `irq_pm_handle_wakeup()` turns any interrupt on a wake-armed IRQ
+into a system wakeup **before the handler runs**, so during s2idle *every* SMD
+interrupt ends the suspend. A QRTR packet cannot be delivered without that
+interrupt. Therefore, in the window bounded by `SUSPENDING` and `RESUMED`:
+
+| round | prediction |
+|---|---|
+| ended by the RTC (`pm_wakeup_irq=72`) | **zero** QMI messages. Nothing arrived, or the sleep would have ended |
+| ended by the modem edge (139/141) | exactly the packet(s) that ended it, and nothing else |
+
+**What each outcome means:**
+
+- **Prediction holds.** Then in this regime the modem is *genuinely quiet* — it
+  does not send indications that we absorb, it does not send them at all — and
+  the filter's premise ("much arrives, little deserves a wake") is **false
+  here**. There would be nothing for a filter to filter, and the lead should be
+  parked rather than built. The short-sleep regime becomes the only place the
+  design could still matter, and it has to be re-measured there.
+- **Packets appear in an RTC-ended round.** Then something is wrong in the
+  reasoning above — most likely the edge is not armed the way we believe, or a
+  packet path exists that does not raise that interrupt. Either would be a more
+  important finding than the filter, and would have to be chased before anything
+  is written.
+
+☠️ Note which way this cuts. The comfortable outcome for a design already
+sketched, argued and half-documented is the second one. **The first outcome
+retires it**, and the first is what the mechanism predicts. Record that here so
+the reading afterwards is not free to prefer the other.
