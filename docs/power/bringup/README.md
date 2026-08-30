@@ -32,6 +32,12 @@ below came from reading a single-sided observation as if it were a difference.
 
 ## The instruments
 
+> **The complete list is [`tools/INDEX.md`](tools/INDEX.md)** — one line per
+> script, generated from each tool's own header. This section keeps the few
+> that carry a story worth reading; the index exists because a hundred-odd
+> instruments are otherwise invisible from inside a session, and the way that
+> costs you is a second copy of one you already have.
+
 | what | how, and what it is good for |
 |---|---|
 | **`powerlog-pmos.sh` / `powerlog-ut.sh`** | one line a minute, identical fields on both operating systems, so a night on one can be laid against a night on the other. In the [FP3 skills](https://github.com/llg179org/Claude-skills-Fairphone3) repository; their output is in [`../`](../README.md) |
