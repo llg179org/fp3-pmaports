@@ -1,0 +1,6 @@
+# terse-ab 2026-08-30 07:08:47 rounds=3 alarm=300s
+#   ExecStart: /usr/sbin/ModemManager --test-quick-suspend-resume
+#   modem edge irq=139
+# leg  path      ASLEEP/alarm suspends wake_irq terse_lines
+#   asleep = wall_delta - monotonic_delta, i.e. actually spent suspended
+r1   rtcwake     -1s/300 s  susp=+1  139      0   <-modem-edge

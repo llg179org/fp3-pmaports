@@ -113,12 +113,36 @@ Clone the source rather than fetching pages: the upstream GitLab is behind an
 anti-bot wall that returns an access-denied page to a fetcher, so
 `git clone --depth 200 --filter=blob:none <repo>` is both faster and greppable.
 
+## ✅ Measured: terse keeps the call, and buys nothing
+
+Both halves are settled, and the residency half retracts what this page said
+when it was written (`captures/2026-08-30_terse-call/`):
+
+- **the call survives terse.** One second wide: terse applied at 07:17:04 (four
+  journal lines), asleep 07:17:04→07:17:19 by the kernel's own marks, and
+  `call state changed: unknown -> ringing-in` at 07:17:19. `TERSE` does not cost
+  the call path, so the distribution's default is right on this axis and
+  `--test-low-power-suspend-resume` stays disqualified;
+- ☠️ **terse buys no residency.** Six legs alternating the two paths with a
+  ModemManager restart before each slept **52 / 61 / 62 / 61 / 63 / 63 s** — the
+  same with terse as without. The "63 s vs 305 s" contrast on which this page was
+  originally written was an instrument artefact: `systemctl suspend` does not
+  block, so the script sat for `alarm + 5` seconds and printed that as the sleep.
+  Its own output said so — `wake_irq` was the modem edge on legs where no RTC
+  alarm had been armed.
+
+⇒ **terse is harmless and useless here**, and the modem-duty front stays open.
+The measure that settles it, and which no script bug can forge, is the kernel's
+own `PM: suspend entry (s2idle)` / `PM: suspend exit` pair; the host's USB
+disconnect/reconnect log is the second, independent witness and touches nothing
+on the phone.
+
 ## Still open
 
-- re-measure the residency front on the **logind** path (running: `terse-ab.sh`,
-  which restarts ModemManager per leg so terse cannot carry over);
-- price `--test-low-power-suspend-resume` against call delivery — expected to buy
-  residency and lose the call, which would disqualify it;
-- find out **why terse is not enough on this device** if the re-measurement still
-  shows the modem ending logind suspends: terse disables 3GPP unsolicited events,
-  but the SMD edge may be rung by something outside that set.
+- **why terse is not enough**: it disables the 3GPP unsolicited events, and the
+  SMD edge is evidently rung by something outside that set. Naming that something
+  is the open question on the modem-duty front — a per-channel or per-port census
+  across a suspend is the instrument;
+- **why the same phone slept 240 s at 05:00 and 60 s between 06:00 and 07:00.**
+  The wake source is the modem edge in both regimes, so the difference is a state,
+  not a mechanism. Naming the state may be cheaper than naming the mechanism.

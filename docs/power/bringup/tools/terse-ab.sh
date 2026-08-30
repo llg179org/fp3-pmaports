@@ -25,7 +25,8 @@ say(){ echo "$*" >> "$O"; }
 say "# terse-ab $(date '+%F %T') rounds=$N alarm=${S}s"
 say "#   ExecStart: $(systemctl show ModemManager -p ExecStart --value | sed 's/.*argv\[\]=//; s/ ;.*//')"
 say "#   modem edge irq=${EDGE:-?}"
-say "# leg  path      slept/alarm  wake_irq  terse_lines_in_leg"
+say "# leg  path      ASLEEP/alarm suspends wake_irq terse_lines"
+say "#   asleep = wall_delta - monotonic_delta, i.e. actually spent suspended"
 
 # ☠️ SH FUNCTIONS HAVE NO LOCAL SCOPE. The first version of this script used `i`
 # as the counter here AND as the outer loop's round counter, so a leg silently
@@ -39,19 +40,32 @@ leg(){ # $1 = path label
 	systemctl restart ModemManager
 	wait_reg || say "#   ☠️ modem did not register within 60s before $1 leg"
 	sleep 5
-	t0=$(date +%s); s0=$(cat /sys/power/suspend_stats/success)
+	# ☠️ THE ONLY HONEST MEASURE OF HOW LONG IT SLEPT IS THE DIVERGENCE BETWEEN THE
+	# WALL CLOCK AND THE MONOTONIC CLOCK. The monotonic clock stops across a
+	# suspend, so wall_delta - mono_delta IS the time spent asleep, on both paths
+	# and regardless of who woke it. The previous version timed the rtcwake leg by
+	# the call returning (correct - it blocks until the alarm or an early wake) and
+	# the logind leg by sitting in a loop for S+5 seconds (WRONG - systemctl suspend
+	# does not block, so that leg reported S+5 no matter what actually happened, and
+	# it printed a confident 306s three times over a sleep that may have been a
+	# minute). Its own data said so: the wake source on those legs was the modem
+	# edge, not an RTC alarm, and the logind path had no alarm set at all.
+	t0=$(date +%s); m0=$(cut -d. -f1 /proc/uptime); s0=$(cat /sys/power/suspend_stats/success)
 	if [ "$1" = rtcwake ]; then
 		rtcwake -m mem -s "$S" >/dev/null 2>&1
 	else
+		# arm the same alarm WITHOUT suspending, then go down the logind path, so
+		# the two legs differ only in the path and not in what can wake them
+		rtcwake -m no -s "$S" >/dev/null 2>&1
 		systemctl suspend
-		# ☠️ systemctl suspend does NOT block - wait for the counter, cap the wait
 		_sw=0; while [ "$(cat /sys/power/suspend_stats/success)" = "$s0" ] && [ $_sw -lt 60 ]; do sleep 1; _sw=$((_sw+1)); done
-		while [ $(( $(date +%s) - t0 )) -lt $((S + 5)) ]; do sleep 2; done
+		while [ $(( $(date +%s) - t0 )) -lt $((S + 8)) ]; do sleep 2; done
 	fi
-	t1=$(date +%s); s1=$(cat /sys/power/suspend_stats/success)
+	t1=$(date +%s); m1=$(cut -d. -f1 /proc/uptime); s1=$(cat /sys/power/suspend_stats/success)
+	slept=$(( (t1 - t0) - (m1 - m0) ))
 	w=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)
 	tl=$(journalctl -u ModemManager --since "@$t0" --no-pager 2>/dev/null | grep -ci terse)
-	printf '%-4s %-9s %4ds/%-4ds  %-8s %s%s\n' "$2" "$1" "$((t1-t0))" "$S" "${w:-?}" "$tl" \
+	printf '%-4s %-9s %4ds/%-4ds  susp=+%-2s %-8s %s%s\n' "$2" "$1" "$slept" "$S" "$((s1-s0))" "${w:-?}" "$tl" \
 		"$([ "${w:-}" = "${EDGE:-x}" ] && echo '   <-modem-edge')" >> "$O"
 }
 

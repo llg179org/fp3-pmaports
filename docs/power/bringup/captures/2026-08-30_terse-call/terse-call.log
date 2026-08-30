@@ -1,0 +1,30 @@
+# terse-call 2026-08-30 07:17:03 window=900s per-sleep=120s
+#   ExecStart: /usr/sbin/ModemManager --test-quick-suspend-resume
+#   modem state after restart: registered (waited 22s)   edge irq=139
+#   >>> CALL THE PHONE ANY TIME IN THE NEXT 900s <<<
+# a call was seen; stopping after round 1
+
+-- kernel suspend windows (the authoritative measure; the host's USB
+   disconnect/connect log is the independent second witness)
+   07:17:04 -> 07:17:19  =  15s asleep
+-- terse lines: 4
+-- calls seen (WITH TIMESTAMPS - compare against the windows above)
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0/call0] call state changed: unknown -> ringing-in (incoming-new)
+   Aug 30 07:17:22 fp3 [31249]: <msg> [modem0/call0] call state changed: ringing-in -> terminated (unknown)
+   Aug 30 07:17:22 fp3 fp3-voiced[1034]:   call 0 state=terminated (was ringing-in)
+-- ModemManager, whole run
+   Aug 30 07:17:04 fp3 [31249]: <msg> [sleep-monitor-systemd] system is about to suspend
+   Aug 30 07:17:04 fp3 [31249]: <msg> [modem0] terse state (1/2): 3GPP interface disable unsolicited events
+   Aug 30 07:17:04 fp3 [31249]: <msg> [modem0] terse state 3GPP (1/3): disable unsolicited registration events done
+   Aug 30 07:17:04 fp3 [31249]: <msg> [modem0] terse state 3GPP (2/3): disable unsolicited events done
+   Aug 30 07:17:04 fp3 [31249]: <msg> [modem0] setting terse state (2/2): all done
+   Aug 30 07:17:04 fp3 [31249]: <msg> [sleep-monitor-systemd] ready to sleep; dropping inhibitor
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0/call0] call state changed: unknown -> ringing-in (incoming-new)
+   Aug 30 07:17:19 fp3 [31249]: <msg> [sleep-monitor-systemd] system is resuming
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0] resume synchronization state (2/5): modem interface sync
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0] resume synchronization state (3/5): 3GPP interface sync
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0] resume synchronization state (4/5): time interface sync
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0] resume synchronization state (5/5): all done
+   Aug 30 07:17:19 fp3 [31249]: <msg> [modem0] synchronization finished
+   Aug 30 07:17:22 fp3 [31249]: <msg> [modem0/call0] call state changed: ringing-in -> terminated (unknown)
+# done 2026-08-30 07:19:19
