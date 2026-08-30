@@ -64,7 +64,23 @@ say "#   modem: $(mmcli -m any 2>/dev/null | sed -n 's/.*state: *//p' | head -1)
 [ -d "$T" ] || { say "☠️ no tracefs"; exit 1; }
 echo 0 > $T/tracing_on; echo > $T/trace
 echo 16384 > $T/buffer_size_kb 2>/dev/null
-echo -n > $T/kprobe_events 2>/dev/null
+
+# ☠️ A KILLED RUN LEAVES THE INSTRUMENT ARMED, AND THE NEXT RUN INHERITS IT.
+# `kprobe_events` cannot be cleared while any probe in it is still enabled - the
+# write fails with EBUSY - so a measurement stopped with SIGTERM (a systemctl
+# stop mid-round, say) blocks every later run from arming anything. Measured
+# 2026-08-30: three probes left over from two earlier tools, and the census that
+# followed armed nothing. Disable everything present first, then clear, and SAY
+# whether the clear worked - a silent failure here produces an empty capture
+# that looks like a quiet phone.
+for e in "$T"/events/kprobes/*/enable; do [ -e "$e" ] && echo 0 > "$e" 2>/dev/null; done
+if echo -n > $T/kprobe_events 2>/dev/null; then
+	say "# tracefs clean (kprobe_events cleared)"
+else
+	say "☠️ COULD NOT CLEAR kprobe_events - something is still enabled. Aborting:"
+	say "   leftovers: $(tr '\n' ';' < $T/kprobe_events 2>/dev/null | cut -c1-200)"
+	exit 1
+fi
 
 ARMED=""
 if echo 'p:qmi qrtr_endpoint_post ver=+0x0(%x1):u32 ty=+0x4(%x1):u32 src_port=+0xc(%x1):u32 dst_port=+0x1c(%x1):u32 fl=+0x20(%x1):u8 msg=+0x23(%x1):u16' >> $T/kprobe_events 2>/dev/null; then
