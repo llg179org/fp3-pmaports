@@ -63,11 +63,13 @@ case "$CMD" in
 start)
 	mkdir -p "$STATE"
 	echo "=== deploy $(date '+%T')"
-	for f in wake-qmi.sh qmi-msgids.txt rpm-xo-snapshot.sh; do
+	for f in wake-qmi.sh qmi-msgids.txt qmi-service-ids.txt rpm-xo-snapshot.sh radio-context.sh; do
 		fp3-ssh "cat > /tmp/$f" < "$D/$f"
 	done
 	fp3-ssh 'echo <pw> | sudo -S sh -c "install -m755 /tmp/wake-qmi.sh /usr/local/bin/wake-qmi.sh;
 		install -m755 /tmp/rpm-xo-snapshot.sh /usr/local/bin/rpm-xo-snapshot.sh;
+		install -m755 /tmp/radio-context.sh /usr/local/bin/radio-context.sh;
+		install -m644 /tmp/qmi-service-ids.txt /usr/local/bin/qmi-service-ids.txt;
 		install -m644 /tmp/qmi-msgids.txt /usr/local/bin/qmi-msgids.txt" 2>/dev/null'
 	# ☠️ identity, not well-formedness: `sh -n` answers "is this well-formed",
 	# never "is this the file I sent", and the two look identical when green.
@@ -85,6 +87,9 @@ start)
 	# message ids: a set with nothing beyond libqmi's closes the eDRX avenue at
 	# the firmware rather than at our tooling, which is a real answer; a larger
 	# set is a measured list of ids, still not a licence to name one eDRX.
+	echo "=== radio context BEFORE (the confound no capture here has ever carried)"
+	fp3-ssh '/usr/local/bin/radio-context.sh census-head 2>&1' | tee "$STATE/radio-head.txt" || true
+
 	echo "=== NAS reads before the census"
 	fp3-ssh 'qmicli -d qrtr://0 --nas-get-supported-messages 2>&1 | head -40' | tee "$STATE/nas-supported.txt" || true
 	fp3-ssh 'qmicli -d qrtr://0 --nas-get-drx 2>&1 | head -10' | tee "$STATE/nas-drx.txt" || true
@@ -111,6 +116,8 @@ post)
 	echo "--- ☠️ Compare the APSS row's delta against the SUMMED sleep time the"
 	echo "    census reports, not against the wall clock: the counter accumulates"
 	echo "    whenever that master lets the XO go, asleep or not."
+	echo "=== radio context AFTER - compare the cell and the signal against the head"
+	fp3-ssh '/usr/local/bin/radio-context.sh census-tail 2>&1' | tee "$STATE/radio-tail.txt" || true
 	echo "=== the census log"
 	fp3-ssh 'cat /var/log/fp3/wake-qmi.log' | tee "$STATE/wake-qmi.log"
 	;;
