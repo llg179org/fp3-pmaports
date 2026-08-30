@@ -105,6 +105,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `pll-vs-voltage.sh` | pll-vs-voltage.sh - run the same cpufreq sweep repeatedly while the battery |
 | `press-power-key.py` | Press the power key from software, via /dev/uinput |
 | `qmi-msgids.txt` | QMI message-id -> name, generated from libqmi data/*.json (llg179 clone) |
+| `radio-context.sh` | THE CONFOUND NOBODY HAS EVER RECORDED: which cell, how good the signal, which radio technology |
 | `radio-off-sleep.sh` | Is the thing that ends every sleep coming FROM THE NETWORK, or from the modem |
 | `rail-census-parse.py` | Turn a rail-census capture into the list of rails that vote active and never |
 | `rail-census.sh` | Name the rails that vote active and never vote sleep |
