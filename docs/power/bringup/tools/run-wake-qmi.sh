@@ -40,6 +40,21 @@ echo "=== state before the run (so a later reader can see what it described)"
 fp3-ssh 'systemctl show ModemManager -p ExecStart --value | sed "s/.*argv\[\]=//; s/ ;.*//";
 	 mmcli -m any 2>/dev/null | sed -n "s/.*state: *//p" | head -1'
 
+# Two free NAS reads, taken while the phone is awake and before the census, so
+# they cost nothing and cannot disturb it. They close (or fail to close) the
+# eDRX question without guessing a message id:
+#   * get-supported-messages returns the modem's own bitmask of NAS message ids.
+#     If it contains nothing beyond what libqmi defines, this firmware has no
+#     eDRX message to call and the avenue is closed by the modem, not by our
+#     tooling. If it does, the extra ids are a measured list to identify - still
+#     not a licence to guess which one is eDRX.
+#   * get-drx reports the 2G/3G paging cycle. Recorded as data; it cannot be the
+#     ~60 s wake (its whole range is 0.32-2.56 s) and it is not the eDRX lever
+#     despite the name.
+echo "=== NAS reads before the census"
+fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-supported-messages 2>&1 | head -40' || true
+fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-drx 2>&1 | head -10' || true
+
 echo "=== census starts $(date '+%T'); ${N} rounds of ${S}s"
 echo "    >>> SEND THE SMS during round 2, i.e. roughly $(date -d "+$((S + 40)) seconds" '+%H:%M') <<<"
 fp3-ssh "echo <pw> | sudo -S systemd-run --unit=wakeqmi --collect \

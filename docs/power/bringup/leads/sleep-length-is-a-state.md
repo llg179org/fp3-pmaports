@@ -208,3 +208,29 @@ sets. The eDRX question therefore stays exactly where it was — needing a raw
 QMI message whose id is **not in libqmi and must not be guessed**; an invented
 message id is indistinguishable from a real one until it silently does something
 else.
+
+### The eDRX question, taken as far as it goes without a device
+
+Searched 2026-08-30, so that the next session does not repeat it:
+
+- **libqmi**: no eDRX and no PSM message of any kind (`grep -ril edrx data/ src/`
+  and the PSM/T3324/T3412 spellings all return nothing at `b7913df`). The only
+  DRX thing is the read-only paging-cycle report dealt with above.
+- **the on-disk vendor tree** (`hadk22/`, the Sailfish/hybris build): searched
+  `hardware/` and `vendor/` for `edrx` and for `QMI_NAS_` in headers — **nothing**.
+  The telephony side of this device is closed blobs; there is no QMI NAS header
+  in the tree to read a message id out of.
+
+So the id is not obtainable from anything we hold, and ☠️ **it must not be
+guessed** — a wrong QMI message id is not rejected as nonsense, it is a
+*different* message, and one sent to a modem's NAS service with made-up TLVs is
+the kind of mistake whose symptom appears somewhere else entirely.
+
+**One admissible device-side step remains**, and it is free:
+`qmicli --nas-get-supported-messages` returns the modem's **own** bitmask of the
+NAS message ids it implements. If that set contains nothing beyond libqmi's
+definitions, this firmware has no eDRX message to call and the avenue is closed
+by the modem rather than by our tooling — a real answer either way. If it does
+contain more, the extra ids are a *measured* list, which is still not a licence
+to decide which of them is eDRX. Wired into `tools/run-wake-qmi.sh` as a
+pre-census read, since it costs one awake query.
