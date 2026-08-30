@@ -489,6 +489,16 @@ phone:**
   `System Status Change` replies, identical in every round. That is our traffic.
   Whether the modem sends anything unprompted while asleep is **unmeasured**.
   `wake-qmi.sh` now marks both edges.
+- ☠️☠️ **And marking both edges was still not enough (13:00).** The two-marker
+  re-run slept 601 s twice, RTC-ended both times, and *still* showed ~20 QMI
+  messages inside the window — with **identical counts in both rounds**, which is
+  the fixed-handshake signature again. `systemctl suspend` is not the suspend: it
+  goes to logind, which runs ModemManager's terse path and waits for the replies,
+  and only then does the kernel freeze. So `SUSPENDING` means "about to ask", not
+  "system is down". Third boundary in one day that was not where it was assumed
+  to be. The marker has to move into `/usr/lib/systemd/system-sleep/`, which runs
+  after every inhibitor. Until then the question stays open —
+  `captures/2026-08-30_wake-qmi-2marker/`.
 - ☠️ *"Terse buys nothing on residency."* The confound is worth ten times the
   effect: 52–63 s in the morning, 601 s at midday, same configuration.
   Withdrawn, not reversed. The *call* half stands.
