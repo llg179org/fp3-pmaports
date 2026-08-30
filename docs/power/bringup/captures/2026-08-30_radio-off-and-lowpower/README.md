@@ -66,11 +66,22 @@ which it is — the mode's intent or a defect — is **not distinguishable from 
 run and is not claimed**.
 
 **★ Residency did improve**: 88 s and 228 s, against 8–33 s in the normal mode the
-same morning. ☠️ **And the 228 s did not reach its 300 s alarm**, so something
-still woke the phone with the modem disabled — which contradicts the radio-off
-leg's 1802 s. The two disable the modem by different means (`mmcli --disable`
-versus MM's low-power path) and the log does not record the wake source here, so
-this is left open as a measurement rather than explained.
+same morning.
+
+☠️☠️ **The 228 s ended because the operator pressed the power button** — reported
+at 10:22, against a resume at 10:21:30. It had been written up here, minutes
+earlier, as an unexplained contradiction with the radio-off leg's 1802 s, and
+filed as something to measure. **The experimenter's own action had become an
+unexplained phenomenon**, and would have entered the record as a mystery for the
+next session to chase, had they not said so.
+
+The rule this earns is the mirror of *"your own polling can be the wake source"*:
+**a human at the device is an uninstrumented wake source, and the instrument
+cannot see them.** Anything touching the phone during a sleep measurement —
+a button, a cable, a glance at the screen — belongs in the log, and where it
+cannot be logged, the run belongs in the bin. This particular resolution rests on
+a report rather than on `pm_wakeup_irq`, so it removes the contradiction without
+establishing how long that sleep would have run: **≥228 s, value unknown.**
 
 ## What the three levers now look like, all measured
 
