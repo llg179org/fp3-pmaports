@@ -100,6 +100,25 @@ waking for.
 - **The handler would run with devices suspended.** SMD reads shared memory, which
   survives s2idle, but that is an argument, not a measurement.
 
+## Plan B, if the call and the noise share a channel
+
+Checked in the tree, not assumed: `qrtr_endpoint_post()` in `net/qrtr/af_qrtr.c`
+parses the header before delivery and has `cb->src_node`, `cb->src_port`,
+`cb->dst_port` and `cb->type` in hand, then resolves the destination with
+`qrtr_port_lookup(cb->dst_port)`. **So one layer up from SMD the identity is not
+a channel but a local socket** — i.e. the service — which is a strictly better
+place to decide whether this packet was worth waking for.
+
+That makes the design robust to the measurement going the wrong way: if
+`wakesrc-rested.sh` finds the call and the heartbeat arriving on the same SMD
+channel, the filter moves here instead of dying. ☠️ Two things would have to be
+established first, and neither is: that this path runs in a context where
+`pm_system_wakeup()` may be called, and that the port carrying a call is stable
+enough to recognise (a QRTR port is dynamic; the *service* behind it is what is
+stable, and mapping one to the other at interrupt time is the part that may not
+be cheap). Do not write code against this section until the channel-layer
+measurement says it is needed.
+
 ## Order of work
 
 1. `wakesrc-rested.sh` — name what ends a **rested** phone's sleep (running after
