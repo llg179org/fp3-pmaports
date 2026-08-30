@@ -1227,6 +1227,43 @@ read.
 
 ## Open before anything is submitted
 
+### ☠️ 2026-08-30 — a measured fix that is in NO submit series
+
+`git diff fork/wip/7.1.3/audio fork/submit/7.1.3/audio` is **not** empty. Two
+files differ, and only one of them is by design:
+
+| file | why it differs | verdict |
+|---|---|---|
+| `drivers/i2c/busses/i2c-qup.c` | the amp-death pinctrl fix lives on `wip/audio` and on **`submit/7.1.3/i2c`** (`5560f875`), which is where it belongs | ✅ correct — a fix in a different subsystem goes to a different series |
+| `sound/soc/codecs/snd-soc-aw8898.c` | `wip/audio` carries `55f6a643` *"ASoC: aw8898: mark SYSST volatile so the PLL poll can see it change"*. **No `submit/*` branch carries it** — checked across all seven | ☠️ **gap** |
+
+**Why it matters more than a missing patch usually does.** The aw8898 driver is
+not ours and not in mainline: it arrives on the base as a **FROMLIST** commit,
+i.e. someone else's posted-but-unmerged series. That version sets
+`cache_type = REGCACHE_MAPLE` and declares **no** `volatile_reg`, so every
+register in the map is cacheable — including `SYSST`, which the driver *polls*
+to wait for the PLL to lock. A poll of a cached register cannot observe a
+change. We measured that defect and fixed it; the posted series still has it.
+
+**So the action is not "add it to our series".** It is somebody else's unmerged
+patch, and carrying a fix for it inside our audio submission would create a
+dependency on a series that may never land, in the wrong direction. The upstream
+move is to **reply to the aw8898 posting on the list** with the finding and the
+one-line fix, so it is corrected at the source. Confirm the series is still
+unmerged before writing, and cite the measurement rather than the diagnosis: the
+control-bus reads that fail, not "we think the cache is wrong".
+
+☠️ **And a reporting correction that goes with it.** Earlier the same day, after
+regenerating `submit/7.1.3/audio`, the acceptance test was reported as
+*"`git diff wip submit` is empty"*. It is not, and the check above is what the
+claim should have rested on: a per-file account of what differs and why, since
+on this port a submit branch legitimately drops things — an unsendable driver, a
+fix that belongs in another subsystem's series. **"The diff is empty" is the
+right test only for a category whose wip and submit really are the same set;
+everywhere else it is the wrong test, and it passes or fails for reasons that
+have nothing to do with the question.**
+
+
 A red-team pass over the five `submit/7.1.3/*` branches on 2026-07-30 produced
 this list. Everything here is measured — `checkpatch.pl --strict`, and
 `dtbs_check` run against the base and against this tree so that only the errors
