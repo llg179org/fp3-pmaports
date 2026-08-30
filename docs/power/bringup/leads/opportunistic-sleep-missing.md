@@ -74,10 +74,37 @@ ambient-enabled=false
 `sleep-inactive-battery-type` is **not** overridden, and GNOME's own default for
 it is `'suspend'` with `sleep-inactive-battery-timeout=1200` (20 minutes).
 
-⇒ **On battery this phone should suspend by itself after 20 minutes idle. On the
-cable it never will.** Every measurement this project has taken was on the cable,
-because the cable is the link - so the configuration that governs the phone as a
-*phone* is the one branch we have never been in.
+The inference from that was: **on battery this phone should suspend by itself
+after 20 minutes idle, and on the cable never.**
+
+## ☠️☠️ That inference is FALSE on this device — measured 17:52 the same day
+
+Read off the phone itself, minutes after writing the paragraph above:
+
+```
+sleep-inactive-ac-type         = 'nothing'
+sleep-inactive-battery-type    = 'nothing'      <- NOT GNOME's 'suspend'
+sleep-inactive-battery-timeout = 900
+```
+
+**Both branches are `'nothing'`.** The phone does not suspend on idle on either
+power source, so there is no unexercised branch to go and measure - the answer is
+the same one we already had, for a reason we had wrong.
+
+Why the reading missed it: the override file consulted was
+`main/postmarketos-base-ui-gnome/00_postmarketos-base-ui-gnome.gschema.override`,
+and **this device runs phosh, not GNOME Shell**. A different package sets the
+battery branch, and the value it sets is not the upstream default the inference
+assumed.
+
+☠️ The general trap, and it is worth more than the fact: **a distribution's
+package source tells you what one UI package overrides, not what the running
+system has.** Two substitutions happened silently between the two - which UI
+package is actually installed, and whatever else writes the same key. The
+paragraph above was labelled "a reading of pmaports and of upstream GNOME
+defaults, not a device measurement", which is the only reason this cost twenty
+minutes instead of a night: `gsettings get` on the device was one line in the
+next trip that had to happen anyway.
 
 This is a reading of pmaports and of upstream GNOME defaults, **not** a device
 measurement: the schema on the device has to be read (`gsettings get

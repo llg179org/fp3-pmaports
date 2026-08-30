@@ -323,11 +323,17 @@ see `bringup/leads/opportunistic-sleep-missing.md`.
   `CONFIG_PM_WAKELOCKS=y` **and** `CONFIG_PM_AUTOSLEEP=y`; `config-fp3.aarch64`
   has the first and `# CONFIG_PM_AUTOSLEEP is not set`, so `/sys/power/autosleep`
   does not exist. The userspace half (`stated`) is not packaged for pmOS either.
-* **★ We have only ever been in one policy branch.** pmaports overrides
-  `sleep-inactive-ac-type='nothing'` and nothing else; `sleep-inactive-battery-type`
-  keeps GNOME's `'suspend'` at 1200 s. On battery this phone should suspend by
-  itself after twenty minutes — on the cable never. **Every measurement this
-  project has taken was on the cable, because the cable is the link.**
+* ☠️☠️ **A claim that lived twenty minutes.** From pmaports it looked as though
+  only the AC branch was overridden, leaving `sleep-inactive-battery-type` at
+  GNOME's `'suspend'` — so the phone would suspend on battery and never on the
+  cable, and we had only ever measured the cable. **Measured on the device the
+  same afternoon: both branches read `'nothing'`.** The override file consulted
+  was the *GNOME Shell* package's and this device runs **phosh**. There is no
+  unexercised branch; the phone suspends on idle on neither supply.
+  The general trap: **a distribution's package source tells you what one UI
+  package overrides, not what the running system has.** It cost twenty minutes
+  rather than a night only because the claim was written down as a reading of
+  package sources rather than as a measurement.
 
 So R1b now carries three readings, not one: the `success` delta (does it suspend
 at all), the on-device `gsettings` values for both branches, and what UPower
