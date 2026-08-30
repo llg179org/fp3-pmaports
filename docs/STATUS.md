@@ -412,6 +412,37 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+### 2026-08-30 midday — three results and two withdrawals, read this order
+
+**Measured and standing:**
+
+1. **An SMS wakes the phone, on port 51** (Wireless Messaging), out of a 321 s
+   sleep — `captures/2026-08-30_wake-qmi-sms/`. The wake list is now Voice (39)
+   and WMS (51), both measured. The outcome that would have made the *present*
+   system the bug — an SMS lost in suspend — is ruled out.
+2. **The application processor never lets the crystal go.** `APSS` reads
+   `XO total duration: 0` and `XO shutdown count: 0` against `Shutdown count:
+   485401`, while LPASS, MPSS and PRONTO all read large non-zero values — so the
+   counter works and the zero is real. This is the sub-50 mA row of the goal's
+   arithmetic, now measured on a system that *did* stay asleep for 600 s at a
+   time.
+3. **The eDRX avenue is closed by the modem**, not by our tooling:
+   `--nas-get-supported-messages` answers `InvalidQmiCommand`. Blocked, not
+   answered — and an invented message id stays forbidden.
+
+**Withdrawn the same day, both mine, both from the instrument rather than the
+phone:**
+
+- ☠️ *"The noise arrives without ending the sleep."* The trace was bounded at the
+  resume and **not** at the suspend entry, so it also held ModemManager's own
+  terse handshake — five NAS `Register Indications` replies and two DSD
+  `System Status Change` replies, identical in every round. That is our traffic.
+  Whether the modem sends anything unprompted while asleep is **unmeasured**.
+  `wake-qmi.sh` now marks both edges.
+- ☠️ *"Terse buys nothing on residency."* The confound is worth ten times the
+  effect: 52–63 s in the morning, 601 s at midday, same configuration.
+  Withdrawn, not reversed. The *call* half stands.
+
 ### 2026-08-30 late morning — where the modem-wake front actually stands
 
 **The filter has both sides measured, and it may still be the wrong layer.**
