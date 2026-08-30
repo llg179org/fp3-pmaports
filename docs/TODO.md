@@ -236,6 +236,19 @@ Two things did fall out of that run, both smaller and both real:
   is now `wcn36xx_tx`, the WLAN transmit interrupt. Everything written here about
   "IRQ 141, the modem's SMD edge" was true when written. Identify it by the row,
   not the number: `awk '/smd-edge/ && $(NF-2)==57' /proc/interrupts`;
+- ☠️ **the run's empty `# MM inhibitor:` line was an instrument bug** — a heredoc
+  ate the awk quotes on the way to the phone. The daemon holds its `delay` sleep
+  inhibitor throughout, and the journal shows it notified about both logind legs
+  and neither `rtcwake` one, so the A/B contrast is *better* evidenced than the
+  first write-up said. **A field that reports "absent" is a claim about the
+  instrument first;**
+- ★★★★ **nobody asks the modem to sleep, and pmOS decided that, not us.**
+  `postmarketos-base-ui-modemmanager-systemd` ships a drop-in forcing
+  `--test-quick-suspend-resume`, where MM does nothing to the modem across a
+  suspend. Every consumption measurement so far ran in that mode. The other
+  branch, `--test-low-power-suspend-resume`, is the open lever — measured next,
+  with a live incoming call during the sleep, because a radio in low power may not
+  deliver one and the target is parity *at UT's responsiveness*;
 - ★ **the modem interrupted one of four suspends, not four of four.** "The SMD
   edge terminates every suspend" is a *state* — the same phone slept 601 s with
   `mmcli --disable` and the daemon still running — not a permanent property. That

@@ -816,10 +816,38 @@ was right on the boot it was written and is not a stable identifier. The stable
 one is the `smd-edge` row at hwirq 57:
 `awk '/smd-edge/ && $(NF-2)==57' /proc/interrupts`.
 
-☠️ **`# MM inhibitor:` came back empty in this run**, although the same query
-listed a `delay`-mode `sleep` inhibitor from ModemManager hours earlier ⇒ the
-inhibitor is state-dependent, and "the daemon always registers for sleep" does not
-hold as a premise.
+☠️ **The run's empty `# MM inhibitor:` line was MY BUG, not the system's state** —
+the heredoc that wrote the script onto the phone ate the awk quotes, leaving a
+truncated program. ModemManager holds its `delay` sleep inhibitor throughout, and
+the journal shows it being told about both logind legs and about neither `rtcwake`
+one (`[sleep-monitor-systemd] system is about to suspend` at 05:15:10 and
+05:24:34, nothing at 05:13 or 05:19) ⇒ **the A/B contrast is real and the result is
+better evidenced than first written.** Read it with
+`systemd-inhibit --list | grep ModemManager` and
+`journalctl -u ModemManager | grep sleep-monitor`. General form: **a field that
+reports "absent" is a claim about the instrument first.**
+
+### ★★★★ 2026-08-30 — nobody asks the modem to sleep, and it is a pmOS default
+
+The check above turned this up:
+
+```
+/usr/lib/systemd/system/ModemManager.service.d/quick-suspend-resume.conf
+  ExecStart=/usr/sbin/ModemManager --test-quick-suspend-resume
+  owner: postmarketos-base-ui-modemmanager-systemd
+```
+
+**Every consumption measurement on this device so far ran in quick mode**, where
+the daemon does nothing to the modem across a suspend and merely drops its
+inhibitor — so "the modem is never asked to sleep" is literally true, and it is
+the distribution's choice, not ours. Same shape as the camera's
+`GSK_RENDERER=cairo`: a distro quirk quietly settling a performance question.
+
+The other branch, `--test-low-power-suspend-resume`, puts the modem in low power
+across the suspend. ☠️ It plausibly works *against* the goal — a sleeping radio
+does not deliver a call, and the target is parity **at UT's responsiveness** — so
+it must be measured on both sides at once: residency and call wake-up. Verify
+which mode is live with `systemctl show ModemManager -p ExecStart --value`.
 
 ★ **Secondary, and it softens an earlier headline:** the modem interrupted **one**
 of these four suspends, not all four. "The modem's SMD edge terminates every
@@ -827,10 +855,8 @@ suspend" (2026-08-26) describes a **state**, not a permanent property — consis
 with the `mmcli --disable` leg, where the same phone went from 8 s to 601 s of
 sleep with the daemon still running.
 
-★ Still to price: ModemManager ships `--test-low-power-suspend-resume` ("put the
-modem in low power mode during suspend/resume") and `--test-quick-suspend-resume`.
-The first likely cuts the call path like the `--disable` leg did, but prices what
-the daemon's suspend handling is worth.
+★ Still to price: `--test-low-power-suspend-resume`, with a live incoming call
+during the sleep as the responsiveness half of the measurement.
 
 ### ✅ 2026-08-29 evening — the audio stack costs nothing at idle
 
