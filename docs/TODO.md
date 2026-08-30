@@ -313,6 +313,24 @@ goal:
 | **oracle parity, 55-64 mA** | **yes, and exactly by the modem term.** 34.8 % → 6.1 % of duty is 63 mA. That is the whole of this front and its ceiling |
 | **≤50 mA** | **not from the modem at all** — it is below the intercept. It needs the AP to sleep, and `APSS XO off` reads 0.0 s in every window on *both* systems |
 
+> ☠️ **2026-08-30 — scope correction on the second row, not a new number.** The
+> `APSS XO off = 0.0 s` evidence was gathered on a system that **could not stay
+> asleep**: 2 completed suspends in 120 attempts. So it says the AP never slept
+> *in those windows*, which is true, and it does not say the AP cannot — the two
+> read identically and only one of them prices the target. On this date the
+> phone filled **four consecutive 600 s windows**, radio up and registered.
+>
+> The row is therefore **unpriced**, not disproven, and the instrument that
+> prices it is free: `xo_accumulated_duration` accumulates and is readable only
+> while awake, so **two snapshots around a suspend give the integral directly** —
+> no sampling during the sleep, which is impossible here anyway (the battery
+> attributes that look readable across a suspend are cached; that is the case
+> that produced 209 mA in an awake control window reading 130). Wired into
+> `power/bringup/tools/run-wake-qmi.sh`.
+>
+> Do not quote either reading as progress until that delta exists. The first row
+> — oracle parity by the modem term — is untouched by this.
+
 ☠️ This **retracts** the same morning's "~15 mA has no owner", which mixed a
 coefficient from one run with a floor from another. A model assembled out of two
 runs is not a model.
