@@ -68,6 +68,16 @@ restore() {
 }
 trap restore EXIT HUP INT TERM
 
+# ☠️ THE COUNTER MUST BE READ BEFORE, OR THE ANSWER IS NOT A NUMBER. This
+# script used to print /sys/power/suspend_stats/success only at the end, as an
+# absolute value - which cannot say how many suspends happened IN the window,
+# only how many have happened since boot. On a phone that has already suspended
+# 75 times today, "success=75" afterwards is compatible with the window
+# containing zero suspends, which is the exact outcome this exists to detect.
+S0=$(cat /sys/power/suspend_stats/success 2>/dev/null)
+F0=$(cat /sys/power/suspend_stats/fail 2>/dev/null)
+say "#   BEFORE: suspend_stats success=${S0:-?} fail=${F0:-?}"
+
 mkdir -p "$(dirname $DROPIN)"
 printf '[Login]\nIdleAction=suspend\nIdleActionSec=%s\n' "$I" > "$DROPIN"
 reload_logind
@@ -79,8 +89,19 @@ systemd-inhibit --list --no-pager 2>/dev/null | sed 's/^/   /' | head -20 >> "$O
 sleep "$W"
 
 say "# window closed $(date '+%F %T')"
-say "-- suspends completed in this window (the phone's own count)"
-say "   success=$(cat /sys/power/suspend_stats/success 2>/dev/null) fail=$(cat /sys/power/suspend_stats/fail 2>/dev/null)"
+say "-- inhibitors held AT THE END (an ssh session here invalidates the run)"
+systemd-inhibit --list --no-pager 2>/dev/null | sed 's/^/   /' | head -20 >> "$O"
+S1=$(cat /sys/power/suspend_stats/success 2>/dev/null)
+F1=$(cat /sys/power/suspend_stats/fail 2>/dev/null)
+say "-- suspends completed IN THIS WINDOW (delta, which is the answer)"
+say "   success ${S0:-?} -> ${S1:-?}  = $(( ${S1:-0} - ${S0:-0} ))"
+say "   fail    ${F0:-?} -> ${F1:-?}  = $(( ${F1:-0} - ${F0:-0} ))"
+if [ "$(( ${S1:-0} - ${S0:-0} ))" -eq 0 ]; then
+	say "   ⇒ THE PHONE NEVER ASKED FOR A SUSPEND in ${W}s with IdleAction=suspend"
+	say "     and a ${I}s idle threshold. That is a result, not a failed run -"
+	say "     but check the inhibitor list below before believing it: an ssh"
+	say "     session left open would have produced exactly this."
+fi
 say "-- kernel's view of each sleep"
 journalctl -k --since "-${W}s" --no-pager 2>/dev/null \
 	| grep -E "PM: suspend (entry|exit)|Timekeeping suspended" | tail -30 | sed 's/^/   /' >> "$O"
