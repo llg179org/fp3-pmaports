@@ -9284,3 +9284,88 @@ that neither the original write-up nor its retraction is supported.
 of the system.** The claim was written from a single observation inside a window
 that had a stuck syscall in it, and the check that refutes it — running `lsmod`
 when nothing is wrong — takes one second.
+
+## ☠️☠️☠️ 2026-08-30 morning — the frame was wrong: sleep length is a state, and every alarm we ever set was shorter than it
+
+The whole morning ran on the modem-duty front under the frame *"something rings
+the SMD edge every ~60 s"*, and it produced two results that both died the same
+way. The instrument that killed them was on the host machine all along.
+
+**The host's `dmesg` is a complete sleep log.** The phone's USB gadget drops on
+suspend and re-enumerates on resume, within a second of the kernel's own
+`PM: suspend entry/exit` marks — so every `disconnect`/`new` pair is one sleep
+window, acquired **with no observer effect at all** (`tools/host-sleep-census.sh`).
+Three instrument generations were written and debugged before it was used once.
+
+| what | reading |
+|---|---|
+| 02:30, 02:41 | 300 s of a **300 s** alarm |
+| 05:15, 05:19, 05:24 | 240 s of a **240 s** alarm |
+| 06:08 – 07:17 | 11–76 s of 240–600 s alarms |
+| 07:50 | 258 s of a **600 s** alarm |
+| 07:55, 07:56 | 27 s, 3 s of 600 s alarms |
+
+1. ☠️ **Every "full" sleep equals its alarm exactly**, so none of them measured
+   the phone. The good regime may never have been observed at all.
+2. ☠️ **The short regime is a state that recovers** — left alone from 07:17 to
+   07:50 the next sleep ran 258 s.
+3. ☠️ **The disturbance is the waking itself** — 258 → 27 → 3 s in one run with
+   no daemon restart, no call and no knob between the legs.
+
+**What it costs.** Every back-to-back A/B on this front compared two saturated
+arms, the terse comparison included — and *"no difference between the arms"* and
+*"both arms saturated"* produce the identical table. The eleven dead duty
+candidates stay dead as hypotheses, but any of them killed by "the duty did not
+change" was judged inside this frame.
+
+**What survives untouched:** the consumption model, the audio result, the
+call-under-terse measurement. None depends on a sleep duration.
+
+### ☠️ And the instrument written to study the trap reproduced it
+
+`decay.sh`, written *after* the above was documented, slept fifteen times with a
+**ten second** gap and returned 43/1/3/7/18 s on a 900 s alarm — the disturbed
+regime measuring itself, within the hour. The rule that follows is sharper than
+"leave a gap": **when an effect has an unknown time constant, the recovery
+interval is the independent variable, not a setting.** `tools/restwake.sh` is the
+corrected form — rest N minutes, take exactly one sleep on an alarm longer than
+any yet observed, one number per round, rounds vary N.
+
+☠️ Its first two points do **not** support the decay hypothesis: 2 min → 22 s,
+5 min → 5 s. If the longer rests do not climb, the 258 s was an outlier and
+nothing should be built on it. Running.
+
+## ★★★★ 2026-08-30 08:30 — the two halves of the goal, and only one has an oracle
+
+| half | target | route |
+|---|---|---|
+| oracle parity | 55–64 mA | the **modem duty**; 34.8 % → 6.1 % lands at 63 mA by the model |
+| **halving (≤50 mA)** | below the model's **54.9 mA** intercept | **suspend only** |
+
+☠️ **And the halving has no oracle.** `captures/2026-08-24_ut-coulomb-and-sleep-attempt.txt`
+settled that the vendor stack does not sleep either — 120 attempts in a 603 s
+window, 2 completed suspends, 93 s total, aborted by *"~5 wakeups/s from the
+MODEM IPC router"*, the same actor that ends ours. So for that half there is no
+working system to imitate, which is a harder problem than "find what UT does
+differently" and had not been put in those terms before.
+
+☠️ **A retracted figure travelled again, into a paragraph written to the user.**
+That capture's summary sentence — *"the oracle idles below our phone asleep"* —
+rests on a ~30 mA reading this log had already retracted as the flattering
+outlier (earliest of four windows, half-empty pack, its own warning attached,
+against 55–64 mA from the other three). It was quoted straight out of the capture
+without checking for a later retraction, by the same process that wrote the
+retraction. **A capture is true as of its date; the retraction lives elsewhere.**
+
+### ★ The design that follows: wake for a call, not for a heartbeat
+
+`leads/selective-smd-wakeup.md`, written as a design and labelled as one.
+`kernel/irq/pm.c` explains why the current code cannot be tuned — a wake-armed
+IRQ becomes a system wakeup in `irq_pm_handle_wakeup()` **before the handler
+runs** — and `IRQF_NO_SUSPEND` is the mechanism that can be: during s2idle such
+an interrupt runs its handler without triggering a system wakeup, so the driver
+decides per interrupt whether it was worth waking for. It depends entirely on
+whether a call and the noise are separable at the channel layer, which
+`tools/wakesrc-rested.sh` measures on a **rested** phone — the 2026-08-22
+per-channel census that answered "IPCRTR, signal-level" ran entirely inside the
+disturbed regime.
