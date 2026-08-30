@@ -53,3 +53,52 @@ itself.
 
 - `leads/sleep-length-is-a-state.md` — the regime this window belongs to (long).
 - `TODO.md` "the goal now has an arithmetic" — the row this prices.
+
+---
+
+## ☠️☠️ CORRECTION, same afternoon: this does not price the target, and the repository already knew
+
+The measurement above is sound. **The conclusion drawn from it was not**, and the
+answer was in this repository before the window was spent.
+
+`findings-log.md` (2026-08-19) records an A/B in which the APSS `XO shutdown
+count` was deliberately moved **from 0 to 1952** over a 90-minute suspend leg —
+so the application processor *can* be made to drop its XO vote on this device.
+The result:
+
+| | XO off 0× | XO off 1952× |
+|---|---|---|
+| sleep discharge slope | **−35.29 mV/h** | **−35.44 mV/h** |
+
+**The same number to 0.4 %.** The apparent 74.4 vs 86.3 mA difference in that
+capture comes entirely from the two legs' *awake* references disagreeing, not
+from anything the sleeping phone did. The log's own verdict: *"making the RPM
+shut the XO down 1952 times over a 90-minute suspend leg changed the measured
+discharge rate by nothing at all"*, and *"do not spend more on `xo_sleep_off`"*.
+
+**Why it bought nothing, also already recorded:** `vlow` and `vmin` read 0 in
+every capture ever taken here, **including that leg**. The APSS master can drop
+its XO vote all it likes; the RPM still never enters a low-power mode, because
+some other master or some rail keeps voting. The oracle points the same way —
+the vendor's APSS does not shut the XO down either, and the vendor phone still
+idles far below this.
+
+**So what today's window actually adds** is narrower than what was written above,
+and worth keeping in that narrower form:
+
+- the zero is now measured **across a real 601 s sleep**, with two moving masters
+  in the same file as a control and PRONTO's 98.1 % fixing the tick rate — the
+  earlier zeros came from windows in which the phone could not stay asleep;
+- and it therefore **rules out** the reading that today's long sleeps might have
+  changed the AP's behaviour. They did not.
+
+**What it does not do is price the ≤50 mA row**, because the lever it names has
+already been pulled and paid nothing. The binding constraint is the RPM never
+reaching `vlow`/`vmin`, and the APSS XO vote is demonstrably not what holds that.
+
+☠️ **How this was nearly published wrong.** Four hours before writing it I
+promoted two rules into `/fp3-kernel-test` — *grep the captures for the field,
+not the topic* and *read the closed leads before spending a window* — and then
+did neither. `grep -rn 'XO shutdown count' captures/ leads/ findings-log.md`
+would have surfaced the closure in one command. **A rule you wrote this morning
+is not a rule you followed this afternoon.**
