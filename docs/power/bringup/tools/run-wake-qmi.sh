@@ -55,7 +55,39 @@ echo "=== NAS reads before the census"
 fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-supported-messages 2>&1 | head -40' || true
 fp3-ssh 'qmicli -p -d qrtr://0 --nas-get-drx 2>&1 | head -10' || true
 
+# ☠️ THE OTHER QUESTION THIS WINDOW CAN ANSWER FOR FREE, and it is on the goal.
+# The project's arithmetic says the halving target is below the modem's reach and
+# has to come out of the intercept - "with APSS XO off reading 0.0 s in every
+# window ever taken on either system. The application processor never sleeps."
+# Every one of those windows was taken on a system that could not STAY asleep
+# (2 completed suspends in 120 attempts), so the reading describes awake-idle,
+# not a floor. On 2026-08-30 this phone filled four consecutive 600 s windows.
+#
+# APSS XO off is an ACCUMULATING counter, readable only while awake - which makes
+# two snapshots around a suspend the right instrument rather than a worse one:
+# the difference IS the integral, and it needs no sampling during the sleep (the
+# battery attributes cannot be read there at all, and the ones that look like
+# they can are cached - see findings-log, the 209 mA control).
+#
+# Take it before and after the whole census. A delta near the summed sleep time
+# says the AP really does collapse and the intercept was measured on a system
+# that never got the chance; a delta near zero says the suspends are shallow and
+# the arithmetic stands. Either is an answer, and neither costs a run.
+rpm_snapshot() {
+	fp3-ssh 'echo <pw> | sudo -S sh -c "modprobe rpm_master_stats 2>/dev/null;
+		for m in /sys/kernel/debug/qcom_rpm_master_stats/*; do
+			printf \"%s \" \"$(basename $m)\";
+			sed -n \"s/^[[:space:]]*xo_accumulated_duration[[:space:]]*:[[:space:]]*//p\" \"$m\" | head -1;
+		done" 2>/dev/null' || echo "   (master stats unreadable - it is root-only debugfs; a BLANK row is not a zero)"
+}
+echo "=== RPM master XO accumulation BEFORE"
+rpm_snapshot
+
 echo "=== census starts $(date '+%T'); ${N} rounds of ${S}s"
 echo "    >>> SEND THE SMS during round 2, i.e. roughly $(date -d "+$((S + 40)) seconds" '+%H:%M') <<<"
 fp3-ssh "echo <pw> | sudo -S systemd-run --unit=wakeqmi --collect \
 	/usr/local/bin/wake-qmi.sh $S $N logind 2>/dev/null"
+
+echo "=== RPM master XO accumulation AFTER (compare against BEFORE, and against"
+echo "    the summed sleep time the census reports - the delta is the integral)"
+rpm_snapshot
