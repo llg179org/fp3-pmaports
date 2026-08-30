@@ -74,6 +74,22 @@ trap restore EXIT HUP INT TERM
 # only how many have happened since boot. On a phone that has already suspended
 # 75 times today, "success=75" afterwards is compatible with the window
 # containing zero suspends, which is the exact outcome this exists to detect.
+# --- WHICH POLICY BRANCH IS THIS PHONE IN? (added 2026-08-30)
+# pmaports overrides sleep-inactive-ac-type only; the battery branch keeps
+# GNOME's default 'suspend' at 1200 s. Which branch applies depends on what
+# UPower thinks the phone is running on, which is NOT the same question as
+# whether a cable is plugged in - the PMIC input-suspend bit can make a cabled
+# phone report as discharging. These are RECORDED, never acted on: a wrong read
+# here must not be able to change what the window measures.
+for k in sleep-inactive-ac-type sleep-inactive-ac-timeout \
+         sleep-inactive-battery-type sleep-inactive-battery-timeout; do
+	v=$(gsettings get org.gnome.settings-daemon.plugins.power "$k" 2>/dev/null)
+	say "#   gsettings $k = ${v:-<unreadable: no session bus from here>}"
+done
+say "#   power supply: online=$(cat /sys/class/power_supply/*/online 2>/dev/null | tr '\n' ' ')"
+say "#   charger status=$(cat /sys/class/power_supply/pmi632-charger/status 2>/dev/null)"
+say "#   upower on-battery=$(upower -i /org/freedesktop/UPower/devices/DisplayDevice 2>/dev/null | sed -n 's/.*state: *//p' | head -1)"
+
 S0=$(cat /sys/power/suspend_stats/success 2>/dev/null)
 F0=$(cat /sys/power/suspend_stats/fail 2>/dev/null)
 say "#   BEFORE: suspend_stats success=${S0:-?} fail=${F0:-?}"

@@ -309,6 +309,35 @@ Only after step 0 has priced suspend. Three open threads, in order:
    (52). Design only; it must not be built before 1 answers whether there is
    anything to filter.
 
+#### ★ R1b's question got bigger 2026-08-30 — read this before running it
+
+Prompted by an outside claim that pmOS drains double because "suspend is
+broken". Checked, and the claim is half right in a way that moves the work:
+see `bringup/leads/opportunistic-sleep-missing.md`.
+
+* **Suspend is not broken here** — ten consecutive step-0 rounds each slept the
+  full 602 s and every one ended on the RTC alarm. With ModemManager running,
+  `sleep-night.sh`'s own header records every suspend dying within 16–53 s. It is
+  *interrupted*, not broken.
+* **Half the autosleep mechanism is not compiled in.** The wiki names
+  `CONFIG_PM_WAKELOCKS=y` **and** `CONFIG_PM_AUTOSLEEP=y`; `config-fp3.aarch64`
+  has the first and `# CONFIG_PM_AUTOSLEEP is not set`, so `/sys/power/autosleep`
+  does not exist. The userspace half (`stated`) is not packaged for pmOS either.
+* **★ We have only ever been in one policy branch.** pmaports overrides
+  `sleep-inactive-ac-type='nothing'` and nothing else; `sleep-inactive-battery-type`
+  keeps GNOME's `'suspend'` at 1200 s. On battery this phone should suspend by
+  itself after twenty minutes — on the cable never. **Every measurement this
+  project has taken was on the cable, because the cable is the link.**
+
+So R1b now carries three readings, not one: the `success` delta (does it suspend
+at all), the on-device `gsettings` values for both branches, and what UPower
+reports the phone is running on while the PMIC input is suspended. ☠️ **Do not
+turn on `CONFIG_PM_AUTOSLEEP` off the back of this** — the wiki's own caveat is
+that a wakelock must be held while the display is on, so autosleep without a
+daemon is a phone that suspends while in use. And ☠️ none of this touches the
+**awake** duty gap (34.8 % vs 6.1 %), which is where the arithmetic says the
+halving actually lives; this lead must not be allowed to absorb track D.
+
 ---
 
 ## 4. Standing gates for the whole run
