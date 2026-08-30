@@ -60,6 +60,38 @@ CONFIG_PM_WAKELOCKS_GC=y
 ⇒ `/sys/power/autosleep` does not exist on this kernel. Half the mechanism is
 compiled in and the half that drives it is not.
 
+## ☠️ The policy list above is only half of it — checked 2026-08-30
+
+`sleep-inactive-ac-type='nothing'` is the **AC** branch. pmaports overrides only
+that one; the whole of `00_postmarketos-base-ui-gnome.gschema.override` under
+`[org.gnome.settings-daemon.plugins.power]` reads:
+
+```
+sleep-inactive-ac-type='nothing'
+ambient-enabled=false
+```
+
+`sleep-inactive-battery-type` is **not** overridden, and GNOME's own default for
+it is `'suspend'` with `sleep-inactive-battery-timeout=1200` (20 minutes).
+
+⇒ **On battery this phone should suspend by itself after 20 minutes idle. On the
+cable it never will.** Every measurement this project has taken was on the cable,
+because the cable is the link - so the configuration that governs the phone as a
+*phone* is the one branch we have never been in.
+
+This is a reading of pmaports and of upstream GNOME defaults, **not** a device
+measurement: the schema on the device has to be read (`gsettings get
+org.gnome.settings-daemon.plugins.power sleep-inactive-battery-type` and
+`-timeout`), and whether UPower reports "on battery" when the PMIC input is
+suspended is a separate question. Both fold into R1b.
+
+Note also pmaports issue
+[#990](https://gitlab.postmarketos.org/postmarketOS/pmaports/-/work_items/990)
+("radically reduce suspend time", closed): pmOS *does* suspend on idle as a
+matter of policy - the default timeout was cut from 15 minutes to two in v21.12.
+So "pmOS never suspends" is wrong as a general statement about the distribution;
+it is right about *this phone on a cable*.
+
 ## What this does NOT explain — read before acting on it
 
 ☠️ The measured model for this device is `mA = 54.9 + 135.0 x MPSS-duty`, and the
