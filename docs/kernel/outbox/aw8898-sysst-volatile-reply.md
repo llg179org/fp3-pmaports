@@ -24,7 +24,8 @@ wrong direction. The correct move is to report it against the posting.
 - Thread as fetched: <https://lore-kernel.gnuweeb.org/linux-sound/20250705-aw8898-v2-0-9c3adb1fc1a2@lucaweiss.eu/T/>
 
 ☠️ Confirm the status again immediately before sending — this table is dated, and
-a v3 may have landed since.
+a v3 may have landed since. **Re-confirmed 2026-08-30**: still not in mainline,
+still no v3 (details in "Before sending" below).
 
 ## The draft
 
@@ -43,13 +44,28 @@ a v3 may have landed since.
 > cache and every later one is answered from it, so the loop spins on a single
 > sample and times out whether or not the PLL locked in the meantime.
 >
-> What we measured, rather than what we inferred: on this board the poll times
-> out and the driver takes the amplifier into PDN, which shows up as a silent
-> speaker; writes to the amp's mixer controls then return -EIO on the control
-> bus while playback is running. The distinguishing evidence for the cache
-> (rather than a genuinely unlocking PLL) is that a *real* bus read of `SYSST`,
-> taken with the cache bypassed, shows the lock bit set at a point where the
-> driver's own poll is still reading its first sample back.
+> What we measured, rather than what we inferred, is an A/B on the error code
+> itself. With the driver as posted, `.prepare` logs
+>
+>     aw8898 4-0034: iis clock not detected (-110), playing anyway
+>
+> `-110` is `-ETIMEDOUT`: the poll ran its full timeout without the condition
+> ever becoming true, which is what a loop spinning on one cached sample looks
+> like. With `SYSST` marked volatile and nothing else changed, the same line on
+> the same board reads
+>
+>     aw8898 4-0034: iis clock not detected (-5), playing anyway
+>
+> `-5` is `-EIO`, i.e. `regmap_read_poll_timeout()` now performs a real bus read
+> on every iteration and that read fails. The timing says the same thing
+> independently: the retries are then tens of milliseconds apart across ~0.6 s,
+> where the cached version had spent the whole one-second timeout.
+>
+> So on our board the fix does not make the amplifier work — it turns a wrong
+> answer into an honest one, and reveals a separate problem one layer down (the
+> chip stops answering on I2C at the point DAPM powers the widget). That part is
+> ours to chase, and I mention it only to be clear about what the change is and
+> is not evidence for: it shows the poll became real, not that the PLL locks.
 >
 > Marking the status register volatile fixes it here:
 >
@@ -82,11 +98,21 @@ a v3 may have landed since.
 
 ## ☠️ Before sending
 
-1. Re-check the thread for a v3 or an "Applied to" (see the dated table above).
-2. Fill in the one sentence that is currently a summary, not a citation: the
-   exact cache-bypassed read that shows the lock bit set. **If that measurement
-   cannot be produced from a capture, cut the sentence** — the rest of the report
-   stands on the code and the timeout alone, and an unsupported measurement claim
-   in a first message to a maintainer is worse than a shorter message.
+1. **Re-check the thread for a v3 or an "Applied to."** Verified 2026-08-30:
+   `snd-soc-aw8898.c` is **not** in mainline (`raw.githubusercontent.com` → 404,
+   absent from `sound/soc/codecs/Makefile`), and patchwork lists v1 (2025-04-06)
+   and v2 (2025-07-05) with every patch in state `new` — **no v3**. Re-run the
+   check if this sits for more than a few days.
+2. ~~Fill in the cache-bypassed read that shows the lock bit set.~~ **Resolved by
+   removing it, 2026-08-30.** That measurement does not exist and our own record
+   says the opposite happened: when the poll became real it returned `-EIO`, and
+   the conclusion of 2026-08-16 was that the amplifier does not answer on I2C at
+   all — the PLL-lock question was never answered positively. The draft now
+   reports the `-110` → `-5` A/B, which is measured, and says plainly what it is
+   and is not evidence for. ☠️ **This is the class of error to keep watching for
+   in an outgoing draft: a plausible positive observation, written from the
+   shape of the argument rather than from a capture.**
 3. `Assisted-by:` and **no** `Signed-off-by` from the assistant — this is
-   upstream-bound.
+   upstream-bound. (Judgement call: that trailer is a *commit* convention and
+   this is a plain report, so a sentence would read more naturally. Keeping it
+   costs nothing and matches the disclosure practice used everywhere else here.)
