@@ -100,6 +100,42 @@ waking for.
 - **The handler would run with devices suspended.** SMD reads shared memory, which
   survives s2idle, but that is an argument, not a measurement.
 
+## ★★★★ 2026-08-30: the filter criterion now exists, and plan B became plan A
+
+The page below was written with a hole in it — *"the filter criterion does not
+exist"* — and the service-level census filled it
+(`captures/2026-08-30_wake-service/`). Every QRTR packet arriving across three
+sleeps, with the ports resolved against the name-service map captured in the same
+run:
+
+| src | port | service |
+|---|---|---|
+| node 0 (modem) | **52** | Data System Determination |
+| node 0 (modem) | **40** | Network Access Service |
+
+and from the same map, **port 39 is the Voice service** — a different port from
+either.
+
+⇒ **The noise is NAS/DSD indication traffic and a call arrives elsewhere, so the
+two are separable at the QRTR port layer.** The channel layer cannot do it (both
+ride IPCRTR), which is why the census had to name the service. **Plan B below —
+filter one layer up, in `qrtr_endpoint_post()` — is therefore the main plan, and
+the SMD-layer version is the fallback.**
+
+★ **And the ratio is what makes the design viable at all**: 35–47 IPCRTR
+interrupts per sleep against **1–3 QRTR packets**. Most of the edge's interrupts
+carry no message, so a handler that only calls `pm_system_wakeup()` for a packet
+worth waking for has little to judge and a great deal to ignore.
+
+☠️ **Still not established, and load-bearing:** four packets across three sleeps
+is a direction, not a ratio; the call's port comes from the service map rather
+than from an observed call, so a census taken across a real incoming call is what
+would confirm the separation; and ☠️ **that census ran over `rtcwake`, which
+bypasses logind, so ModemManager was never told to go terse** — the NAS/DSD
+traffic it saw is the *unquieted* state. If terse removes those indications, the
+kernel filter may be unnecessary and the question becomes why terse bought no
+residency. That re-run is in flight.
+
 ## Plan B, if the call and the noise share a channel
 
 Checked in the tree, not assumed: `qrtr_endpoint_post()` in `net/qrtr/af_qrtr.c`

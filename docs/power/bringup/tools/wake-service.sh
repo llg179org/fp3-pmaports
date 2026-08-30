@@ -28,16 +28,24 @@
 # ☠️ Do not poll the phone while this runs - a login is a wake, and the wake IS
 # the measurement.
 #
-#   wake-service.sh [alarm_s] [rounds]      default 600 3
+# ☠️ THE SUSPEND PATH IS PART OF THE MEASUREMENT, NOT A DETAIL. `rtcwake -m mem`
+# writes /sys/power/state directly and never reaches logind, so ModemManager is
+# never told to go terse - which means a census taken that way describes the
+# NON-terse state. The first run of this script did exactly that and its NAS/DSD
+# result is therefore about a modem nobody had quieted. Running the same census
+# down the logind path answers the sharper question: does terse actually remove
+# those indications? If it does, the puzzle moves to why it bought no residency.
+#
+#   wake-service.sh [alarm_s] [rounds] [rtcwake|logind]   default 600 3 rtcwake
 set -u
-S=${1:-600}; N=${2:-3}
+S=${1:-600}; N=${2:-3}; P=${3:-rtcwake}
 O=/var/log/fp3/wake-service.log
 T=/sys/kernel/tracing
 mkdir -p /var/log/fp3
 say(){ echo "$*" >> "$O"; }
 : > "$O"
 EDGE=$(awk '/smd-edge/ && $(NF-2)==57 {l=$1; sub(":","",l); print l}' /proc/interrupts | head -1)
-say "# wake-service $(date '+%F %T') alarm=${S}s rounds=$N edge=${EDGE:-?}"
+say "# wake-service $(date '+%F %T') alarm=${S}s rounds=$N path=$P edge=${EDGE:-?}"
 say "#   ExecStart: $(systemctl show ModemManager -p ExecStart --value | sed 's/.*argv\[\]=//; s/ ;.*//')"
 say "#   modem: $(mmcli -m any 2>/dev/null | sed -n 's/.*state: *//p' | head -1)"
 
@@ -65,7 +73,15 @@ r=1
 while [ $r -le $N ]; do
 	echo > $T/trace; echo 1 > $T/tracing_on
 	t0=$(date +%s)
-	rtcwake -m mem -s "$S" >/dev/null 2>&1
+	if [ "$P" = logind ]; then
+		rtcwake -m no -s "$S" >/dev/null 2>&1        # arm the alarm, do not suspend
+		s0=$(cat /sys/power/suspend_stats/success)
+		systemctl suspend
+		_w=0; while [ "$(cat /sys/power/suspend_stats/success)" = "$s0" ] && [ $_w -lt 45 ]; do sleep 1; _w=$((_w + 1)); done
+		sleep 8    # execution resumes when the phone is awake; give the resume a moment
+	else
+		rtcwake -m mem -s "$S" >/dev/null 2>&1
+	fi
 	echo 0 > $T/tracing_on
 	d=$(journalctl -k --since "@$t0" --no-pager 2>/dev/null | grep -E "PM: suspend (entry|exit)" \
 	    | awk '{t=$3; m=$0; sub(/.*PM: /,"",m); split(t,c,":"); s=c[1]*3600+c[2]*60+c[3];
@@ -78,9 +94,14 @@ while [ $r -le $N ]; do
 	say "-- QRTR headers seen (the answer, if any arrived)"
 	grep -o 'type=[0-9]* src_node=[0-9]* src_port=[0-9]* dst_node=[0-9]* dst_port=[0-9]*' $T/trace \
 		| sort | uniq -c | sort -rn | head -12 | sed 's/^/   /' >> "$O"
+	say "-- terse lines in this round: $(journalctl -u ModemManager --since "@$t0" --no-pager 2>/dev/null | grep -ci terse)"
 	say "-- local ports looked up"
 	grep -o 'port=[0-9]*' $T/trace | sort | uniq -c | sort -rn | head -8 | sed 's/^/   /' >> "$O"
-	say "-- THE LAST few events before the wake (the tail is the wake itself)"
+	# ☠️ NOT "the wake itself": tracing stays on across the resume, so this tail is
+	# POST-wake traffic - which is why it reads as all rpm_requests, the RPM's edge
+	# rather than the modem's. Kept as context only; the witnesses are
+	# pm_wakeup_irq and the QRTR headers above.
+	say "-- last trace lines (POST-wake traffic, context only - not the wake)"
 	tail -6 $T/trace | sed 's/^/   /' >> "$O"
 	sleep 15
 	r=$((r + 1))
