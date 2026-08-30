@@ -99,6 +99,15 @@ r=1
 while [ $r -le $N ]; do
 	echo > $T/trace; echo 1 > $T/tracing_on
 	t0=$(date +%s)
+	# ☠️ TWO MARKERS, NOT ONE. RESUMED alone separates the sleep from the resume
+	# and NOT the sleep from what came before it - and what comes before it is
+	# not quiet: `systemctl suspend` runs logind, which runs ModemManager's terse
+	# path, which sends NAS Register Indications and DSD System Status Change and
+	# gets answers. Those land in the buffer while tracing is on and the phone is
+	# still awake. Counting them as "traffic that arrived while asleep" turns
+	# ModemManager's own handshake into evidence of modem noise; that reading was
+	# published on 2026-08-30 and withdrawn the same afternoon.
+	echo SUSPENDING > $T/trace_marker 2>/dev/null
 	if [ "$P" = logind ]; then
 		rtcwake -m no -s "$S" >/dev/null 2>&1
 		s0=$(cat /sys/power/suspend_stats/success)
@@ -130,15 +139,15 @@ while [ $r -le $N ]; do
 	# everything up to the marker is the sleep; everything after it is the resume
 	# ☠️ /tmp, NOT under $T - tracefs is not a writable filesystem.
 	SLEPT=/tmp/fp3-trace-slept.$$
-	awk '/tracing_mark_write: RESUMED/{exit} {print}' $T/trace > "$SLEPT" 2>/dev/null || cp $T/trace "$SLEPT"
-	if ! grep -q 'RESUMED' $T/trace 2>/dev/null; then
-		say "   ☠️ no RESUMED marker in the trace - the split did not happen, so the"
-		say "      counts below include post-wake traffic and must NOT be read as"
-		say "      'what arrived while asleep'."
+	awk '/tracing_mark_write: SUSPENDING/{on=1; next} /tracing_mark_write: RESUMED/{exit} on' $T/trace > "$SLEPT" 2>/dev/null || cp $T/trace "$SLEPT"
+	if ! grep -q 'RESUMED' $T/trace 2>/dev/null || ! grep -q 'SUSPENDING' $T/trace 2>/dev/null; then
+		say "   ☠️ a marker is missing from the trace - the window was NOT bounded,"
+		say "      so the counts below include the suspend-entry handshake and/or the"
+		say "      post-wake storm and must NOT be read as 'what arrived while asleep'."
 	else
 		say "   (trace split at the resume marker: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
 	fi
-	say "-- QMI messages seen WHILE ASLEEP (count / port / kind / id / name)"
+	say "-- QMI messages BETWEEN the two markers, i.e. while asleep (count / port / kind / id / name)"
 	# require ver=1 AND ty=1: the offsets are v1-only, and only QRTR_TYPE_DATA
 	# (include/uapi/linux/qrtr.h:18) carries a QMI SDU - a control packet's
 	# payload is a router command, so decoding it as a QMI header yields a

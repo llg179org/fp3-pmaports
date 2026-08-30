@@ -62,3 +62,48 @@ comfortably and are **not** claimed here:
 Neither affects the port-level result. Before any message id from this capture
 is used to justify a change, decode a second known positive — the cleanest being
 a placed call, whose Voice-port ids can be checked the same way.
+
+---
+
+## ☠️ WITHDRAWN the same afternoon: "the noise arrives without ending the sleep"
+
+Written above, and wrong. The `RESUMED` marker separates the sleep from the
+resume — and **nothing separated the sleep from what came before it**. Tracing is
+switched on, and only *then* does `systemctl suspend` run: logind calls
+ModemManager, ModemManager runs its terse path, and that path sends
+**NAS Register Indications** and **DSD System Status Change** and gets answers.
+All of it lands in the buffer while the phone is still awake.
+
+The decode says so plainly once read with MM's source beside it:
+
+```
+5  src_port=40  RSP  msg=3   →  NAS: Register Indications   (0x0003)
+2  src_port=52  RSP  msg=37  →  DSD: System Status Change   (0x0025)
+```
+
+Those are **exactly the two calls the terse path makes** — sourced from
+`mm-broadband-modem-qmi.c:4334` and `:4369`, read hours before this capture
+existed. Identical counts in all three rounds, which is what a fixed handshake
+looks like and not what network traffic looks like.
+
+**So the claim inverts.** What the capture shows on NAS and DSD is not modem
+noise that failed to wake us; it is **ModemManager's own suspend handshake**, and
+whether any modem-initiated indication arrives during the sleep is **not
+answered by this capture at all**.
+
+Two things survive, and they are the two that never depended on the boundary:
+
+- **the SMS result** — port 51 appears in round 3 only, and round 3 is the only
+  round the modem ended. A wake is an event at a point in time, not a count over
+  a window;
+- **the message-id decode is now validated twice.** The SMS pair was one known
+  positive; the terse handshake is a second, and a better one, because its
+  identity comes from reading ModemManager's source rather than from what the
+  answer was expected to be. The `RSP` labels that looked wrong ("who is asking,
+  with userspace frozen?") were right all along — **the question was wrong, not
+  the decode**: userspace was not yet frozen.
+
+`tools/wake-qmi.sh` now writes a `SUSPENDING` marker before the suspend call and
+decodes only what falls **between** the two, refusing to report at all if either
+marker is missing. Validated on a synthetic trace: of three messages, only the
+one between the markers survives.
