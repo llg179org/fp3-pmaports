@@ -233,6 +233,26 @@ DIAG path is the instrument that can say it (`diag-handshake.py`, `diag-probe.py
 right one before reverse-engineering its protocol; a content-independent echo
 means a stub endpoint, not a wrong framing.
 
+☠️☠️ **Three constraints that make D2 a project, not a measurement**, all read out
+of the tools' own headers before planning anything around them:
+
+1. **DIAG is an intervention, not an observation.** `struct diag_ctrl_msg_diagmode`
+   carries a **`sleep_vote`**, so bringing DIAG up changes the peripheral's sleep
+   behaviour. It can therefore never run *during* a duty or residency
+   measurement — it would be measuring its own instrument.
+2. **One attempt per boot.** The peripheral answers the feature mask exactly once;
+   a second endpoint afterwards draws 9 bytes instead of 2225 and gets no reply.
+   A retry inside one boot measures an already-consumed state machine, which
+   looks identical to "the modem does not answer" — and probably *was* what
+   several earlier attempts measured. Reboot between attempts.
+3. **The data channel does not answer yet.** As of `leads/diag-bringup.md`, the
+   control channel talks (2225 bytes, 30 packets, parsed) and the data channel
+   does not; the AP half of the handshake has to be copied from the vendor
+   driver, not guessed.
+
+⇒ Treat D2 as **bring-up work with a reboot per attempt**, and schedule it only
+when nothing else is in flight.
+
 ### Step R1 (track R, responsiveness — carried over, demoted)
 
 Only after step 0 has priced suspend. Three open threads, in order:
