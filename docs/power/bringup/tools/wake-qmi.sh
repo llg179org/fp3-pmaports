@@ -202,8 +202,18 @@ while [ $r -le $N ]; do
 	    | awk '{t=$3; m=$0; sub(/.*PM: /,"",m); split(t,c,":"); s=c[1]*3600+c[2]*60+c[3];
 	            if (m ~ /entry/) e=s; else if (e) {print s-e; exit}}')
 	w=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)
+	# ☠️ A LINUX IRQ NUMBER IS BOOT-LOCAL - they are assigned in probe order and
+	# move between boots. On the 2026-08-30 14:00 boot 56 is pm8xxx_rtc_alarm and
+	# 72 is a camss interrupt, while every capture written earlier that day reads
+	# 72 as "the RTC". Print the NAME from this boot's own /proc/interrupts, so
+	# the capture carries the context the number does not.
+	case "${w:-}" in
+		''|*[!0-9]*) wn=none ;;
+		*) wn=$(awk -v k="${w}:" '$1 == k { print $NF }' /proc/interrupts 2>/dev/null)
+		   wn=${wn:-<not in /proc/interrupts>} ;;
+	esac
 	say ""
-	say "== round $r: slept ${d:-?}s of ${S}s  pm_wakeup_irq=${w:-?}$([ "${w:-}" = "${EDGE:-x}" ] && echo '  <= modem edge')"
+	say "== round $r: slept ${d:-?}s of ${S}s  pm_wakeup_irq=${w:-?} (${wn})$([ "${w:-}" = "${EDGE:-x}" ] && echo '  <= modem edge')"
 	bad=$(grep -c 'ver=[^1]' $T/trace 2>/dev/null || echo 0)
 	[ "${bad:-0}" -gt 0 ] && say "   ☠️ $bad lines with ver!=1 - their decode is GARBAGE, do not interpret"
 	ctl=$(grep -c 'ver=1 ty=[^1]' $T/trace 2>/dev/null || echo 0)
