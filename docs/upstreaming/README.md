@@ -123,6 +123,18 @@ the right thing — **no per-SoC hardcode, no `bool use_ibit_clk`, no
 remains from Adam's series is the Quinary MI2S support and the compatible plus its
 binding, neither of which drew an objection.
 
+**Re-checked on the destination tree, 2026-08-30.** The reading above was taken
+on `torvalds/master`, which is the wrong tree to conclude from — `q6afe` is
+actively developed (Richard Acayan's "internal mi2s support" was accepted
+2026-07-30, Val Packett's clk-vote fix went through in May), so the claim had to
+be re-tested against `sound/for-next` before any mail could rest on it. Result:
+`q6afe.c` is **byte-identical** on the two trees (same md5, 61 750 B), so on
+`for-next` too `q6afe_port_set_sysclk()` still dispatches by clock id alone and
+`afe->ainfo` occurs exactly twice in the file — its declaration and the probe
+that fills it. Nothing reads it. The finding holds where it matters.
+(`for-7.4` does not exist yet — 404 — which is what an open merge window looks
+like on the maintainer's side.)
+
 ☠️ Not yet verified, and it is the next thing to measure: **which `api_version`
 this device's ADSP actually reports** for the AFE service, and therefore what the
 condition should test. That is a device-side reading, not an argument — and it is

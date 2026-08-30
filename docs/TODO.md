@@ -2935,6 +2935,10 @@ six to `psy/for-next`, two dts and one `adc5` channel to mainline. Gaps, in
     on firmware that wants `AFE_PARAM_ID_CLOCK_SET`. Making that switch consult
     `afe->ainfo` is the whole job, and it is generic across msm8909/8916/8917/
     8953/8976.
+    **Verified against the destination tree 2026-08-30**: `q6afe.c` is
+    byte-identical on `torvalds/master` and `broonie/sound.git for-next`, so the
+    gap is real where the patch would land, not merely on a stale mirror — worth
+    re-checking before sending, since this file is actively developed.
     **Step 1 is a measurement, on the device:** what `api_version` does this ADSP
     report for the AFE service? The condition turns on that number and nothing
     else. **Step 2 is the mail, not the patch:** Otto Pflüger's series
