@@ -1,0 +1,201 @@
+# radio-cycle leg=A 2026-08-30 12:22:27 alarm=600s rounds=1
+# radio-context 2026-08-30 12:22:27 [leg-A-head]
+-- ModemManager's view
+     Status   |                   lock: sim-pin2
+              |         unlock retries: sim-pin (3), sim-puk (10), sim-pin2 (3), sim-puk2 (10)
+              |                  state: registered
+              |            power state: on
+              |            access tech: lte
+              |         signal quality: 86% (cached)
+     ----------------------------------
+     Modes    |              supported: allowed: 2g; preferred: none
+-- serving system (registration, RAT, PLMN)
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+-- signal info (the confound itself)
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-59 dBm'
+   	RSRQ: '-16 dB'
+   	RSRP: '-96 dBm'
+   	SNR: '17.4 dB'
+-- serving cell (which cell, so two windows can be compared at all)
+   [qrtr://0] Successfully got cell location info
+   Intrafrequency LTE Info
+   	UE In Idle: 'no'
+   	PLMN: '21670'
+   	Tracking Area Code: '5300'
+   	Global Cell ID: '1470732'
+   	EUTRA Absolute RF Channel Number: '1300' (E-UTRA band 3: 1800+)
+   	Serving Cell ID: '272'
+   	Cell [0]:
+   		Physical Cell ID: '272'
+   		RSRQ: '-14.9' dB
+   		RSRP: '-95.5' dBm
+   		RSSI: '-58.5' dBm
+   	Cell [1]:
+   		Physical Cell ID: '285'
+   		RSRQ: '-20.0' dB
+   		RSRP: '-103.0' dBm
+   		RSSI: '-71.1' dBm
+   Interfrequency LTE Info
+   	UE In Idle: 'no'
+   	Frequency [0]:
+   		EUTRA Absolute RF Channel Number: '6200' (E-UTRA band 20: 800 DD)
+   		Selection RX Level Low Threshold: '0'
+   		Cell Selection RX Level High Threshold: '0'
+   		Cell [0]:
+   			Physical Cell ID: '109'
+   			RSRQ: '-13.1' dB
+   			RSRP: '-93.9' dBm
+   			RSSI: '-71.8' dBm
+   			Cell Selection RX Level: '0'
+   LTE Info Neighboring GSM
+   	UE In Idle: 'no'
+   LTE Info Neighboring WCDMA
+   	UE In Idle: 'no'
+   LTE Timing Advance: '4' us
+-- RF band
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+# end 2026-08-30 12:22:27 - a section that printed only an error is NOT a zero
+-- XO accumulation before (the difference across the leg is the integral)
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=486400
+LPASS    xo_total=301938891566     xo_shutdowns=26         shutdowns=40
+MPSS     xo_total=407752071752     xo_shutdowns=89972      shutdowns=90547
+PRONTO   xo_total=620629416836     xo_shutdowns=256380     shutdowns=256472
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+== A round 1: slept 601s of 600s  pm_wakeup_irq=72
+-- XO accumulation after
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=487279
+LPASS    xo_total=301938891566     xo_shutdowns=26         shutdowns=40
+MPSS     xo_total=414366727225     xo_shutdowns=91329      shutdowns=91905
+PRONTO   xo_total=632415807543     xo_shutdowns=256555     shutdowns=256652
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+# radio-context 2026-08-30 12:32:53 [leg-A-tail]
+-- ModemManager's view
+     Status   |                   lock: sim-pin2
+              |         unlock retries: sim-pin (3), sim-puk (10), sim-pin2 (3), sim-puk2 (10)
+              |                  state: registered
+              |            power state: on
+              |            access tech: lte
+              |         signal quality: 86% (cached)
+     ----------------------------------
+     Modes    |              supported: allowed: 2g; preferred: none
+-- serving system (registration, RAT, PLMN)
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+-- signal info (the confound itself)
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-60 dBm'
+   	RSRQ: '-18 dB'
+   	RSRP: '-96 dBm'
+   	SNR: '17.4 dB'
+-- serving cell (which cell, so two windows can be compared at all)
+   [qrtr://0] Successfully got cell location info
+   Intrafrequency LTE Info
+   	UE In Idle: 'no'
+   	PLMN: '21670'
+   	Tracking Area Code: '5300'
+   	Global Cell ID: '1470732'
+   	EUTRA Absolute RF Channel Number: '1300' (E-UTRA band 3: 1800+)
+   	Serving Cell ID: '272'
+   	Cell [0]:
+   		Physical Cell ID: '272'
+   		RSRQ: '-17.2' dB
+   		RSRP: '-95.1' dBm
+   		RSSI: '-59.3' dBm
+   	Cell [1]:
+   		Physical Cell ID: '285'
+   		RSRQ: '-20.0' dB
+   		RSRP: '-103.7' dBm
+   		RSSI: '-73.3' dBm
+   Interfrequency LTE Info
+   	UE In Idle: 'no'
+   	Frequency [0]:
+   		EUTRA Absolute RF Channel Number: '6200' (E-UTRA band 20: 800 DD)
+   		Selection RX Level Low Threshold: '0'
+   		Cell Selection RX Level High Threshold: '0'
+   		Cell [0]:
+   			Physical Cell ID: '109'
+   			RSRQ: '-13.6' dB
+   			RSRP: '-94.1' dBm
+   			RSSI: '-71.3' dBm
+   			Cell Selection RX Level: '0'
+   LTE Info Neighboring GSM
+   	UE In Idle: 'no'
+   LTE Info Neighboring WCDMA
+   	UE In Idle: 'no'
+   LTE Timing Advance: '4' us
+-- RF band
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+# end 2026-08-30 12:32:53 - a section that printed only an error is NOT a zero
+# leg A: 1 of 1 rounds filled at least three quarters of the window
+
+☠️ STOP. Leg A is already in the LONG regime (1/1). Leg B must not be
+   run against this: it would produce the hoped-for result while measuring
+   nothing, and nothing about the output would look wrong afterwards.
+   Wait for the short regime and repeat leg A.
+# done 2026-08-30 12:32:53
