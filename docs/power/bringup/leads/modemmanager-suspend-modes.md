@@ -146,3 +146,53 @@ on the phone.
 - **why the same phone slept 240 s at 05:00 and 60 s between 06:00 and 07:00.**
   The wake source is the modem edge in both regimes, so the difference is a state,
   not a mechanism. Naming the state may be cheaper than naming the mechanism.
+
+## ☠️ "terse done" is not evidence that anything was unregistered
+
+Read in ModemManager `306f625` (2026-08-17), which is the tree this device runs.
+Not measured — this is a source claim about what the log can and cannot report,
+and it matters because the measurement already contradicts the log.
+
+**What terse is supposed to do.** `MM_BASE_MANAGER_CLEANUP_TERSE`
+(`src/main.c:98`) runs the 3GPP terse steps
+(`src/mm-iface-modem-3gpp.c:3450`): disable unsolicited *registration* events,
+then disable unsolicited events. On a QMI modem those reach
+`mm-broadband-modem-qmi.c` and unregister a specific list —
+NAS `serving_system_events` (`:4334`), NAS `system_info` (`:4388`), NAS
+`network_reject_information` (both), and, when `dsd_supported`, the DSD
+`System Status Change` indication (`:4369`) — plus, on the other step, the
+signal-info config and the WDS data-system-status.
+
+**So the measured noise is precisely what terse claims to remove.** The
+2026-08-30 census under terse still saw NAS (port 40) and DSD (port 52)
+indications, in a round where the journal carried the terse lines. Those two
+statements cannot both describe a working unregister.
+
+**And the journal cannot arbitrate, because it is built not to.** Three
+properties, all in the code:
+
+- every one of those completion handlers ends `/* Just ignore errors for now */`
+  followed by `g_task_return_boolean (task, TRUE)` (`:4293`, `:4321`) — the step
+  reports success whatever the modem answered;
+- the failure messages are `mm_obj_dbg`, i.e. **invisible at the default log
+  level**;
+- ☠️ and on the *disable* path they are not merely invisible, they are not
+  emitted at all: both sites guard the message with `if (ctx->enable)`
+  (`:4262`, `:4316`), so a failed **un**register logs nothing even at debug.
+
+The consequence is the whole reason this section exists: **the "terse state 3GPP
+… done" line in the journal is a statement that the step ran, not that the modem
+obeyed.** It is a witness that cannot say no, and reading it as confirmation is
+the same error as trusting a `grep` that was never validated against a known
+positive.
+
+### What to run, in order
+
+1. `mmcli --set-logging=debug` (or start MM with `--log-level=DEBUG`) across a
+   terse suspend, then `grep -i "couldn't register"` the journal. A hit names
+   the failing unregister outright. ☠️ A miss is **not** a pass — on the disable
+   path the message is suppressed by `if (ctx->enable)` — so this can only
+   confirm, never clear.
+2. `tools/wake-qmi.sh`, which does not depend on MM's self-report at all: if
+   NAS/DSD indications keep arriving under terse, the unregister did not take,
+   whatever the journal says. That is the instrument that can say no.
