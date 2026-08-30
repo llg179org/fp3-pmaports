@@ -113,7 +113,29 @@ Clone the source rather than fetching pages: the upstream GitLab is behind an
 anti-bot wall that returns an access-denied page to a fetcher, so
 `git clone --depth 200 --filter=blob:none <repo>` is both faster and greppable.
 
-## ✅ Measured: terse keeps the call, and buys nothing
+## ✅ Measured: terse keeps the call. The "buys nothing" half is now withdrawn
+
+> ☠️ **2026-08-30 midday — the residency half of this section is not a result,
+> because the effect it looked for is an order of magnitude smaller than a
+> confound nobody had noticed.** The same configuration produced 52–63 s sleeps
+> that morning and **601 / 601 / 600 / 601 s** at midday, the latter four all
+> ended by the RTC rather than by the modem
+> (`captures/2026-08-30_spread/`). Whatever separates those two regimes is worth
+> ~10×; terse was being credited or debited with a few tens of seconds inside
+> that. **Every terse comparison on this page and in the captures it cites was
+> taken without knowing which regime it ran in**, so none of them can carry a
+> residency verdict either way.
+>
+> The call half stands. It is a one-second coincidence between two logs, not a
+> difference between two averages, so the regime cannot touch it.
+>
+> **What a real terse residency measurement now requires**, and none of the
+> earlier ones had any of it: `tools/radio-context.sh` at the head and tail of
+> every leg, so the regime is on the record rather than inferred afterwards; a
+> return leg (A‑B‑A′), because the day has already produced two "results" that
+> were drift; and both legs inside **one** regime, which means checking A before
+> trusting B rather than discovering the regime in the numbers.
+
 
 Both halves are settled, and the residency half retracts what this page said
 when it was written (`captures/2026-08-30_terse-call/`):
