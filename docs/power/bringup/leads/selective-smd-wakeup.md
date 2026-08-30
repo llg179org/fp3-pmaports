@@ -206,3 +206,31 @@ and should not be built**.
 ☠️ Note the asymmetry that makes this worth doing first: a kernel filter that
 turns out to have been unnecessary is invisible once merged — it works, so
 nothing ever says it was the wrong layer.
+
+## Pre-registered reading of the QMI census
+
+Written **before** the run, so the result is read off a table rather than
+rationalised afterwards. The port→service map is not assumed: `qrtr-lookup` on
+the device gives it, and both `wake-service.sh` and `wake-qmi.sh` capture it at
+the top of every run because QRTR ports are dynamic. Measured 2026-08-30:
+**39 = Voice, 40 = Network Access, 44 = UIM, 45 = Wireless Data,
+51 = Wireless Messaging, 52 = Data System Determination.**
+
+| what the noise turns out to be | what it means | what to do |
+|---|---|---|
+| NAS `0x0024` Serving System, `0x004e` System Info, `0x0068` Network Reject, or the DSD `0x0026` System Status | terse asks the modem to unregister exactly these and the modem kept sending them | **not a kernel problem** — the unregister failed or is not honoured. Chase it in ModemManager; the journal cannot tell you, by construction |
+| NAS `0x0051` Signal Info or `0x0002` Event Report | signal-strength reporting MM subscribed to via its signal-info config | **userspace** — stop subscribing, or widen the terse step to cover it |
+| something MM never registered for | genuinely unsolicited | **this lead** — build the kernel filter |
+| ids absent from `qmi-msgids.txt` | libqmi has no definition; the id is still data | identify before deciding; do not assume unsolicited from a missing name |
+
+And the half that decides whether a filter is *allowed* to exist at all:
+
+| the SMS | consequence |
+|---|---|
+| arrives on port 51 with a WMS indication id | that id joins the wake list next to Voice, and the filter stays viable |
+| arrives on a port or service not predicted here | the wake list was incomplete in a way we could not have reasoned our way to — which is the whole reason this run exists |
+| does not wake the phone at all | ☠️ **stop**: the current system already loses SMS in suspend, and that is a bug to report before optimising anything |
+
+Note the last row: it is the only outcome that would make the *present* state,
+not the proposed one, the problem — and no measurement so far would have caught
+it, because nobody has ever sent this phone an SMS while it was asleep.
