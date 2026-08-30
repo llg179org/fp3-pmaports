@@ -412,6 +412,41 @@ to remote `fork` only, over port 443, and never to `origin`.
 
 ## ☠️ Resume here after a compact or a long gap
 
+### 2026-08-30 late morning — where the modem-wake front actually stands
+
+**The filter has both sides measured, and it may still be the wrong layer.**
+
+- The noise arrives **from the network**, proved by a clean A‑B‑A′: radio on 8 s,
+  radio off **1802 s of an 1800 s window** (the first sleep in this project to
+  fill its window), radio on 33 s.
+- The noise is **NAS (QRTR port 40) and DSD (52)** indications; an incoming call
+  is **Voice (port 39)**, and port 39 appears in **no** quiet round. So call and
+  noise are separable by service.
+- ☠️ **The low-power arm is dead, measured not predicted**: under
+  `--test-low-power-suspend-resume` the network answers "the number you have
+  dialled is not available" — the modem deregisters and the call is lost. Any
+  design that buys residency that way is disqualified by the goal itself.
+- ☠️ **Do not start writing the kernel filter.** Two causes produce that same
+  census and need opposite fixes: an unsolicited indication (kernel) versus one
+  **ModemManager subscribed to** (userspace, no patch, reversible over ssh). The
+  QMI *message id* decides it and the service-layer probe never read it.
+  `tools/wake-qmi.sh` does — run it first.
+- ☠️ **The wake list is incomplete.** Only the call's port is measured. An SMS
+  has never been captured, so a filter built on today's data would swallow SMS
+  exactly as low-power swallowed the call. `tools/run-wake-qmi.sh` covers both in
+  one window and prints when to send the SMS.
+- ☠️ **The terse journal line proves nothing.** ModemManager returns success from
+  those unregisters regardless of the modem's answer, and on the disable path
+  suppresses the error message entirely — see
+  `power/bringup/leads/modemmanager-suspend-modes.md`.
+
+**The open question is the spread, not the mean.** The same configuration gives
+sleeps from ~60 s to a full window: six consistent 52–63 s legs in the morning,
+then 600/600/601 s in the first three rounds of the afternoon census. Six
+consistent samples looked like a property and were one regime. Whatever flips
+the regime is now the subject; more samples of one regime will not name it.
+
+
 ## ✅ RESOLVED — r74 no-boot cause found + reverted (2026-08-24); device since moved to r76
 
 The device is up and answers on SSH. ☠️ The heading and the paragraph here said
