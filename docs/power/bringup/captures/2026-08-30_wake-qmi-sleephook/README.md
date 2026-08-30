@@ -39,8 +39,35 @@ filter was designed around, stated as a prediction in
 "noise that arrives without waking us" — that reading was withdrawn earlier today
 on instrument grounds, and the correctly-bounded window now says the opposite.
 
-⇒ **R1c, the selective wake filter, is justified rather than speculative.** The
-thing it would filter is real and is the only thing that ends a sleep.
+⇒ ☠️☠️ **And that RETIRES the selective filter, it does not justify it** — which
+is the opposite of what the first draft of this file said, written within the
+hour and corrected here.
+
+`leads/selective-smd-wakeup.md` pre-registered exactly this, in the section
+headed *"what would falsify the filter"*:
+
+> **Prediction holds.** Then in this regime the modem is *genuinely quiet* — it
+> does not send indications that we absorb, it does not send them at all — and
+> the filter's premise ("much arrives, little deserves a wake") is **false
+> here**. There would be nothing for a filter to filter, and the lead should be
+> parked rather than built.
+>
+> ☠️ Note which way this cuts. The comfortable outcome for a design already
+> sketched, argued and half-documented is the second one. **The first outcome
+> retires it**, and the first is what the mechanism predicts.
+
+One packet in 646 s of sleep across two rounds is nothing to filter. The design's
+premise was *"much arrives, little deserves a wake"*; what arrives is one packet,
+and it is the one that woke us.
+
+**The filter could still matter in the short-sleep regime** — the 52–63 s sleeps
+of this morning, where something ends every suspend quickly — but that is a
+different regime and the census has to be re-run inside it. The lead is parked,
+not built, exactly as its own pre-registration says.
+
+☠️ The note in that lead was written precisely to stop the reading that was
+nevertheless made an hour after the measurement landed. Pre-registration only
+works if it is re-read at reading time, not only at writing time.
 
 ## ☠️ What this does not say
 
