@@ -23,6 +23,11 @@ as "this exists and this is what it was for", never as "this is current".
 
 ## Where to start
 
+- ☠️ **`prior-art.sh <field>` FIRST.** Before measuring anything, ask whether
+  it is already measured — by the field or counter name, never by the topic.
+  It exists because the prose rule failed: the same session that wrote it spent
+  a window re-measuring a branch this repository had closed eleven days earlier.
+
 - `host-sleep-census.sh` — sleep lengths from the **host's** USB log. Costs the
   phone nothing and cannot perturb what it measures; use it to watch any run.
 - `wake-service.sh` / `wake-qmi.sh` — what ended a sleep, by QRTR service and by
@@ -105,6 +110,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `pll-sweep.sh` | pll-sweep.sh - force N cpufreq transitions on one cluster and count how many |
 | `pll-vs-voltage.sh` | pll-vs-voltage.sh - run the same cpufreq sweep repeatedly while the battery |
 | `press-power-key.py` | Press the power key from software, via /dev/uinput |
+| `prior-art.sh` | HAS THIS ALREADY BEEN MEASURED? Ask before spending a window, not after |
 | `qmi-msgids.txt` | QMI message-id -> name, generated from libqmi data/*.json (llg179 clone) |
 | `qmi-service-ids.txt` | QMI service id -> short name, generated from libqmi src/libqmi-glib/qmi-enums.h |
 | `radio-context.sh` | THE CONFOUND NOBODY HAS EVER RECORDED: which cell, how good the signal, which |
