@@ -82,3 +82,35 @@ about the system.** 0 %, 100 %, and a counter that does not move are the three
 values a broken channel produces most often. The struct being read here carried
 its own disambiguation in two other fields the whole time, and the closed lead
 had already written down how to use them.
+
+## Follow-up the same morning: Wi-Fi was up through the floor measurement
+
+Read from the journal, not from a new window — the pre-registered rule for this
+question was "look in the log first".
+
+```sh
+journalctl --since "2026-08-30 18:00" --until "2026-08-31 05:00" | grep -ci "wlan\|wifi"
+```
+
+**2803** matching lines across the step-0 night, with NetworkManager renewing the
+DHCP lease on `wlan0` (`192.168.100.17`) at 04:37:03 — the interface was
+associated and working for the whole run.
+
+The step-0 night's three gates are ModemManager stopped, `bl_power=4` and
+`Discharging`. **None of them touches Wi-Fi.** So `floor_mA = 48 ± 5 mA`
+includes an associated Wi-Fi link, and PRONTO's 16.7–19.1 % awake is inside that
+number rather than beside it.
+
+The lever exists and was measured on 2026-08-22
+([`findings-log.md`](../../findings-log.md), "WiFi down erases the WLAN_CTRL
+chatter"): `ip link set wlan0 down` takes WLAN_CTRL from 32 sends to zero and
+`rpm_requests` from 221 to 151. ☠️ That entry says in its own words that the
+result is *"priceable on the battery with the slope harness"* — and it never
+was. **Wi-Fi has never been costed in mA.**
+
+Pricing it needs the other arm of the night: the same `sleep-night.sh` under the
+same three gates plus `wlan0` down, against the 48 ± 5 mA arm already in hand.
+Two preconditions, neither optional: the battery is at 100 % `Full`, so charge
+input has to be cut and the surface charge allowed to decay before the window
+opens; and `wlan0` is the USB-independent rescue link, so the script must bring
+it back on every exit path.
