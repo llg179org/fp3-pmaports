@@ -1,0 +1,47 @@
+rc=0
+=== eredmeny ===
+# xo-total-dur semantics probe 2026-08-31_05:39:07 kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+=== T0 mono=63535.79
+APSS 	Last XO shutdown enter @ 0
+APSS 	Last XO shutdown exit @ 0
+APSS 	XO total duration: 0
+APSS 	XO shutdown count: 0
+APSS 	Active cores bitmask: 0x1
+MPSS 	Last XO shutdown enter @ 1220148809512
+MPSS 	Last XO shutdown exit @ 1220148535966
+MPSS 	XO total duration: 1039254140599
+MPSS 	XO shutdown count: 186073
+MPSS 	Active cores bitmask: 0x0
+LPASS 	Last XO shutdown enter @ 1106369760183
+LPASS 	Last XO shutdown exit @ 1106369627426
+LPASS 	XO total duration: 1105640257488
+LPASS 	XO shutdown count: 75
+LPASS 	Active cores bitmask: 0x0
+PRONTO 	Last XO shutdown enter @ 1220152152699
+PRONTO 	Last XO shutdown exit @ 1220151911541
+PRONTO 	XO total duration: 1136793485452
+PRONTO 	XO shutdown count: 194318
+PRONTO 	Active cores bitmask: 0x0
+=== T1 mono=63655.82
+APSS 	Last XO shutdown enter @ 0
+APSS 	Last XO shutdown exit @ 0
+APSS 	XO total duration: 0
+APSS 	XO shutdown count: 0
+APSS 	Active cores bitmask: 0x1
+MPSS 	Last XO shutdown enter @ 1222452806459
+MPSS 	Last XO shutdown exit @ 1222452526259
+MPSS 	XO total duration: 1041446442578
+MPSS 	XO shutdown count: 186448
+MPSS 	Active cores bitmask: 0x0
+LPASS 	Last XO shutdown enter @ 1106369760183
+LPASS 	Last XO shutdown exit @ 1106369627426
+LPASS 	XO total duration: 1105640257488
+LPASS 	XO shutdown count: 75
+LPASS 	Active cores bitmask: 0x0
+PRONTO 	Last XO shutdown enter @ 1222456412397
+PRONTO 	Last XO shutdown exit @ 1222456164646
+PRONTO 	XO total duration: 1138759057478
+PRONTO 	XO shutdown count: 195499
+PRONTO 	Active cores bitmask: 0x0
+
+[exited with code 0]
