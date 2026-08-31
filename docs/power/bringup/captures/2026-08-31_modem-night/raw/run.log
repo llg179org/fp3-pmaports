@@ -1,0 +1,99 @@
+# dead-man armed: WiFi returns unconditionally in 510 min
+# modem-night 2026-08-31 11:42:01 hours=8 alarm=600s floor=35%
+# kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# modem: registered
+# battery at start: 100%  v=4310042uV
+# panel: bl_power=4
+# taking WiFi down (it is a dev link - the dead-man above is why this is safe)
+# wifi radio now: disabled  wlan0: DOWN
+# waiting for the cable to come out (up to 30 min) - UNPLUG NOW
+# cable out at 11:43:54 after 110s
+# settling 300 s before the first round
+# round 1 (rtcwake) done 11:50:29 cap=100%
+# round 2 (logind) done 12:00:55 cap=100%
+# round 3 (rtcwake) done 12:02:33 cap=100%
+# round 4 (logind) done 12:13:00 cap=100%
+# round 5 (rtcwake) done 12:15:43 cap=100%
+# round 6 (logind) done 12:26:10 cap=100%
+# round 7 (rtcwake) done 12:28:50 cap=87%
+# round 8 (logind) done 12:39:17 cap=87%
+# round 9 (rtcwake) done 12:39:34 cap=87%
+# round 10 (logind) done 12:50:01 cap=87%
+# round 11 (rtcwake) done 12:50:40 cap=87%
+# round 12 (logind) done 13:01:07 cap=87%
+# round 13 (rtcwake) done 13:01:35 cap=87%
+# round 14 (logind) done 13:12:02 cap=87%
+# round 15 (rtcwake) done 13:12:42 cap=87%
+# round 16 (logind) done 13:23:08 cap=87%
+# round 17 (rtcwake) done 13:24:14 cap=87%
+# round 18 (logind) done 13:34:40 cap=87%
+# round 19 (rtcwake) done 13:35:00 cap=87%
+# round 20 (logind) done 13:45:26 cap=87%
+# round 21 (rtcwake) done 13:45:48 cap=87%
+# round 22 (logind) done 13:56:15 cap=87%
+# round 23 (rtcwake) done 13:56:32 cap=87%
+# round 24 (logind) done 14:06:59 cap=87%
+# round 25 (rtcwake) done 14:08:32 cap=87%
+# round 26 (logind) done 14:18:58 cap=87%
+# round 27 (rtcwake) done 14:19:20 cap=87%
+# round 28 (logind) done 14:29:47 cap=87%
+# round 29 (rtcwake) done 14:30:04 cap=87%
+# round 30 (logind) done 14:40:31 cap=87%
+# round 31 (rtcwake) done 14:41:08 cap=87%
+# round 32 (logind) done 14:51:35 cap=87%
+# round 33 (rtcwake) done 14:52:02 cap=87%
+# round 34 (logind) done 15:02:28 cap=87%
+# round 35 (rtcwake) done 15:02:48 cap=87%
+# round 36 (logind) done 15:13:15 cap=87%
+# round 37 (rtcwake) done 15:13:32 cap=86%
+# round 38 (logind) done 15:23:58 cap=86%
+# round 39 (rtcwake) done 15:24:16 cap=86%
+# round 40 (logind) done 15:34:43 cap=86%
+# round 41 (rtcwake) done 15:35:09 cap=86%
+# round 42 (logind) done 15:45:35 cap=86%
+# round 43 (rtcwake) done 15:45:59 cap=86%
+# round 44 (logind) done 15:56:26 cap=86%
+# round 45 (rtcwake) done 15:57:57 cap=86%
+# round 46 (logind) done 16:08:24 cap=86%
+# round 47 (rtcwake) done 16:08:41 cap=86%
+# round 48 (logind) done 16:19:08 cap=86%
+# round 49 (rtcwake) done 16:19:27 cap=86%
+# round 50 (logind) done 16:29:53 cap=86%
+# round 51 (rtcwake) done 16:30:51 cap=86%
+# round 52 (logind) done 16:41:17 cap=86%
+# round 53 (rtcwake) done 16:41:54 cap=86%
+# round 54 (logind) done 16:52:20 cap=86%
+# round 55 (rtcwake) done 16:52:44 cap=86%
+# round 56 (logind) done 17:03:10 cap=86%
+# round 57 (rtcwake) done 17:04:22 cap=86%
+# round 58 (logind) done 17:14:48 cap=86%
+# round 59 (rtcwake) done 17:15:05 cap=86%
+# round 60 (logind) done 17:25:32 cap=86%
+# round 61 (rtcwake) done 17:26:03 cap=86%
+# round 62 (logind) done 17:36:29 cap=86%
+# round 63 (rtcwake) done 17:36:51 cap=86%
+# round 64 (logind) done 17:47:18 cap=86%
+# round 65 (rtcwake) done 17:47:35 cap=86%
+# round 66 (logind) done 17:58:01 cap=86%
+# round 67 (rtcwake) done 17:59:05 cap=86%
+# round 68 (logind) done 18:09:32 cap=86%
+# round 69 (rtcwake) done 18:09:56 cap=86%
+# round 70 (logind) done 18:20:22 cap=86%
+# round 71 (rtcwake) done 18:20:54 cap=86%
+# round 72 (logind) done 18:31:21 cap=86%
+# round 73 (rtcwake) done 18:31:51 cap=86%
+# round 74 (logind) done 18:42:18 cap=86%
+# round 75 (rtcwake) done 18:42:39 cap=86%
+# round 76 (logind) done 18:53:06 cap=86%
+# round 77 (rtcwake) done 18:53:40 cap=86%
+# round 78 (logind) done 19:04:07 cap=86%
+# round 79 (rtcwake) done 19:04:24 cap=86%
+# round 80 (logind) done 19:14:50 cap=86%
+# round 81 (rtcwake) done 19:15:11 cap=86%
+# round 82 (logind) done 19:25:37 cap=86%
+# round 83 (rtcwake) done 19:26:17 cap=86%
+# round 84 (logind) done 19:36:43 cap=86%
+# round 85 (rtcwake) done 19:39:11 cap=86%
+# round 86 (logind) done 19:49:37 cap=86%
+# loop ended after 86 rounds, 2026-08-31 19:49:37, battery 86%
+# RESTORED 2026-08-31 19:49:37 wifi=enabled charger=Discharging

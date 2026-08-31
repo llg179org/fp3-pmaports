@@ -1,0 +1,95 @@
+ rnd path      slept         waking irq    MPSS   LPASS  PRONTO   REQ   RSP   IND      v_uV
+   1 rtcwake    78.0       141:smd-edge    22.1 ☠️IMPOS ☠️IMPOS     ?     ?     ?   4244449   ☠️ no sleep window
+   2 logind    602.0 56:pm8xxx_rtc_alarm    33.9    84.4 ☠️IMPOS     0     0     0   4250094
+   3 rtcwake    82.0       141:smd-edge    23.1 ☠️IMPOS    55.2     ?     ?     ?   4233744   ☠️ no sleep window
+   4 logind    602.0 56:pm8xxx_rtc_alarm    33.7    83.7 ☠️IMPOS     0     0     0   4207857
+   5 rtcwake   147.0       141:smd-edge    28.8 ☠️IMPOS     7.7     ?     ?     ?   4179440   ☠️ no sleep window
+   6 logind    602.0 56:pm8xxx_rtc_alarm    33.1    72.8 ☠️IMPOS     0     0     0   4222844
+   7 rtcwake   145.0       141:smd-edge    31.5 ☠️IMPOS     6.6     ?     ?     ?   4224596   ☠️ no sleep window
+   8 logind    602.0 56:pm8xxx_rtc_alarm    34.0    73.3 ☠️IMPOS     0     0     0   4199488
+   9 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4194233   ☠️ no sleep window
+  10 logind    602.0 56:pm8xxx_rtc_alarm    34.5    97.1 ☠️IMPOS     0     0     0   4167373
+  11 rtcwake    24.0       141:smd-edge ☠️IMPOS ☠️IMPOS    70.7     ?     ?     ?   4204354   ☠️ no sleep window
+  12 logind    602.0 56:pm8xxx_rtc_alarm    33.5    93.4    11.3     0     0     0   4165232
+  13 rtcwake    12.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4180803   ☠️ no sleep window
+  14 logind    602.0 56:pm8xxx_rtc_alarm    33.9    95.3    10.1     0     0     0   4187810
+  15 rtcwake    23.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4155889   ☠️ no sleep window
+  16 logind    601.0 56:pm8xxx_rtc_alarm    33.7    93.4    10.0     0     0     0   4182944
+  17 rtcwake    50.0       141:smd-edge    13.2 ☠️IMPOS ☠️IMPOS     ?     ?     ?   4180997   ☠️ no sleep window
+  18 logind    601.0 56:pm8xxx_rtc_alarm    34.0    89.0    10.2     0     0     0   4173212
+  19 rtcwake     3.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4143627   ☠️ no sleep window
+  20 logind    602.0 56:pm8xxx_rtc_alarm    33.8    96.7    10.1     0     0     0   4143043
+  21 rtcwake     6.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4116573   ☠️ no sleep window
+  22 logind    602.0 56:pm8xxx_rtc_alarm    33.1    96.3     1.6     0     0     0   4134285
+  23 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4127667   ☠️ no sleep window
+  24 logind    602.0 56:pm8xxx_rtc_alarm    34.3    97.1 ☠️IMPOS     0     0     0   4129808
+  25 rtcwake    76.0       141:smd-edge    24.5 ☠️IMPOS    68.2     ?     ?     ?   4138177   ☠️ no sleep window
+  26 logind    601.0 56:pm8xxx_rtc_alarm    32.7    84.5 ☠️IMPOS     0     0     0   4114626
+  27 rtcwake     6.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4125137   ☠️ no sleep window
+  28 logind    602.0 56:pm8xxx_rtc_alarm    33.3    96.2    -1.3     0     0     0   4079981
+  29 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4132727   ☠️ no sleep window
+  30 logind    602.0 56:pm8xxx_rtc_alarm    33.7    97.0 ☠️IMPOS     0     0     0   4071611
+  31 rtcwake    21.0       141:smd-edge ☠️IMPOS ☠️IMPOS    71.2     ?     ?     ?   4074726   ☠️ no sleep window
+  32 logind    602.0 56:pm8xxx_rtc_alarm    34.8    93.7    11.2     0     0     0   4092048
+  33 rtcwake    10.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4099444   ☠️ no sleep window
+  34 logind    601.0 56:pm8xxx_rtc_alarm    33.9    95.5    10.0     0     0     0   4110150
+  35 rtcwake     4.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4110150   ☠️ no sleep window
+  36 logind    602.0 56:pm8xxx_rtc_alarm    33.3    96.6     5.1     0     0     0   4056235
+  37 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4074142   ☠️ no sleep window
+  38 logind    601.0 56:pm8xxx_rtc_alarm    33.0    97.1    -0.1     0     0     0   4062658
+  39 rtcwake     2.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4098277   ☠️ no sleep window
+  40 logind    602.0 56:pm8xxx_rtc_alarm    34.3    96.9 ☠️IMPOS     0     0     0   4070054
+  41 rtcwake    10.0       141:smd-edge ☠️IMPOS ☠️IMPOS    -0.7     ?     ?     ?   4051953   ☠️ no sleep window
+  42 logind    601.0 56:pm8xxx_rtc_alarm    34.0    95.6    11.7     0     0     0   4076672
+  43 rtcwake     8.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4066745   ☠️ no sleep window
+  44 logind    602.0 56:pm8xxx_rtc_alarm    34.4    95.9    10.0     0     0     0   4078618
+  45 rtcwake    75.0       141:smd-edge    21.4 ☠️IMPOS ☠️IMPOS     ?     ?     ?   4047282   ☠️ no sleep window
+  46 logind    602.0 56:pm8xxx_rtc_alarm    34.4    84.8    10.0     0     0     0   4068692
+  47 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4019449   ☠️ no sleep window
+  48 logind    602.0 56:pm8xxx_rtc_alarm    33.0    97.1    10.1     0     0     0   4024704
+  49 rtcwake     2.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4038328   ☠️ no sleep window
+  50 logind    601.0 56:pm8xxx_rtc_alarm    33.8    96.8     4.6     0     0     0   3999790
+  51 rtcwake    42.0       141:smd-edge    14.6 ☠️IMPOS ☠️IMPOS     ?     ?     ?   3993951   ☠️ no sleep window
+  52 logind    601.0 56:pm8xxx_rtc_alarm    32.9    90.3    -0.8     0     0     0   4044946
+  53 rtcwake    20.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4046309   ☠️ no sleep window
+  54 logind    601.0 56:pm8xxx_rtc_alarm    32.4    93.9     0.5     0     0     0   4034046
+  55 rtcwake     8.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4015945   ☠️ no sleep window
+  56 logind    601.0 56:pm8xxx_rtc_alarm    33.7    96.0    -1.5     0     0     0   4022368
+  57 rtcwake    55.0       141:smd-edge    19.8 ☠️IMPOS    27.1     ?     ?     ?   4008160   ☠️ no sleep window
+  58 logind    601.0 56:pm8xxx_rtc_alarm    33.1    88.0 ☠️IMPOS     0     0     0   4004656
+  59 rtcwake     1.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   4019449   ☠️ no sleep window
+  60 logind    602.0 56:pm8xxx_rtc_alarm    33.8    97.1    -1.8     0     0     0   4024704
+  61 rtcwake    14.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3999012   ☠️ no sleep window
+  62 logind    601.0 56:pm8xxx_rtc_alarm    33.6    94.9 ☠️IMPOS     0     0     0   3989280
+  63 rtcwake     6.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3985582   ☠️ no sleep window
+  64 logind    602.0 56:pm8xxx_rtc_alarm    34.0    96.3    12.3     0     0     0   3989085
+  65 rtcwake       ?       141:smd-edge     —       —       —       ?     ?     ?   3977602   ☠️ no sleep window
+  66 logind    601.0 56:pm8xxx_rtc_alarm    33.1    97.2     9.9     0     0     0   3990448
+  67 rtcwake    48.0       141:smd-edge    16.1 ☠️IMPOS ☠️IMPOS     ?     ?     ?   3963199   ☠️ no sleep window
+  68 logind    602.0 56:pm8xxx_rtc_alarm    32.7    89.3    10.1     0     0     0   3980911
+  69 rtcwake     8.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3978575   ☠️ no sleep window
+  70 logind    601.0 56:pm8xxx_rtc_alarm    33.6    96.0     4.3     0     0     0   3982857
+  71 rtcwake    16.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3990837   ☠️ no sleep window
+  72 logind    602.0 56:pm8xxx_rtc_alarm    34.1    94.6     0.1     0     0     0   3985387
+  73 rtcwake    14.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3980911   ☠️ no sleep window
+  74 logind    602.0 56:pm8xxx_rtc_alarm    33.6    94.9 ☠️IMPOS     0     0     0   3946654
+  75 rtcwake     5.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3945097   ☠️ no sleep window
+  76 logind    602.0 56:pm8xxx_rtc_alarm    34.1    96.4 ☠️IMPOS     0     0     0   3951326
+  77 rtcwake    18.0       141:smd-edge ☠️IMPOS ☠️IMPOS    43.7     ?     ?     ?   3959306   ☠️ no sleep window
+  78 logind    602.0 56:pm8xxx_rtc_alarm    34.3    94.2    11.8     0     0     0   3930694
+  79 rtcwake       ?       141:smd-edge     —       —       —       ?     ?     ?   3916486   ☠️ no sleep window
+  80 logind    601.0 56:pm8xxx_rtc_alarm    33.2    97.2    10.0     0     0     0   3930305
+  81 rtcwake     4.0       141:smd-edge ☠️IMPOS ☠️IMPOS ☠️IMPOS     ?     ?     ?   3957359   ☠️ no sleep window
+  82 logind    601.0 56:pm8xxx_rtc_alarm    33.1    96.5     3.7     0     0     0   3953856
+  83 rtcwake    24.0       141:smd-edge    -1.1 ☠️IMPOS ☠️IMPOS     ?     ?     ?   3927969   ☠️ no sleep window
+  84 logind    601.0 56:pm8xxx_rtc_alarm    33.1    93.3    -1.2     0     0     0   3948601
+  85 rtcwake   132.0       141:smd-edge    26.9 ☠️IMPOS ☠️IMPOS     ?     ?     ?   3883008   ☠️ no sleep window
+  86 logind    601.0 56:pm8xxx_rtc_alarm    33.2    75.3 ☠️IMPOS     0     0     0   3938869
+
+=== the internal A/B: the two suspend paths, same night, same cell
+  logind   rounds=43   mean sleep=602s     mean MPSS awake=33.6%    (n=43)  QMI REQ=0 RSP=0 IND=0
+  rtcwake  rounds=43   mean sleep=28s      mean MPSS awake=20.1%    (n=12)  QMI REQ=0 RSP=0 IND=0   ☠️ 43 round(s) had NO sleep window and are excluded
+
+☠️ Read the difference between the two rows as the sleep handshake's share,
+   and a round with a HIGH MPSS duty and ZERO QMI as evidence for candidate (c):
+   the modem is not being kept awake by anyone, it simply does not go down.
