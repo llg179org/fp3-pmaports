@@ -153,7 +153,29 @@ when it was written (`captures/2026-08-30_terse-call/`):
   Its own output said so — `wake_irq` was the modem edge on legs where no RTC
   alarm had been armed.
 
-⇒ **terse is harmless and useless here**, and the modem-duty front stays open.
+> ☠️☠️☠️ **WITHDRAWN 2026-08-31 by a 86-round measurement.** See
+> [`../captures/2026-08-31_modem-night/`](../captures/2026-08-31_modem-night/README.md).
+> Alternating the two suspend paths round by round through one night on one cell,
+> **43 of 43 logind rounds slept the full 602 s and were ended by the RTC, while
+> 43 of 43 rtcwake rounds died in a mean of 28 s and were ended by the modem's
+> SMD edge.** No overlap, 21× in sleep length. Terse is not harmless-and-useless;
+> it is the difference between a phone that sleeps out its alarm and one the
+> modem wakes within half a minute.
+>
+> The six legs below are not contradicted, they are explained — this page already
+> says they were taken without knowing which regime they ran in, and its own list
+> of what a real terse residency measurement would require (a return leg, one
+> regime, radio context on the record) is exactly what the 86-round run supplied.
+>
+> **What survives from below unchanged:** the call survives terse; the
+> low-power arm stays disqualified; and the modem keeps sending during a sleep —
+> though the new run shows that under terse *nothing* reaches us while the AP is
+> frozen, so "the traffic that still arrives" belongs to the non-terse path.
+
+⇒ ~~**terse is harmless and useless here**~~, and the modem-duty front stays open
+— which it does, and for a sharper reason than this page had: under terse the AP
+sleeps out its alarm and **the modem is still 33.6 % awake with zero QMI traffic
+in either direction**. Nobody is keeping it awake.
 The measure that settles it, and which no script bug can forge, is the kernel's
 own `PM: suspend entry (s2idle)` / `PM: suspend exit` pair; the host's USB
 disconnect/reconnect log is the second, independent witness and touches nothing
