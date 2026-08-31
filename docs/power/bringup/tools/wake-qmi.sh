@@ -244,8 +244,15 @@ while [ $r -le $N ]; do
 	# been wrong twice already.
 	if grep -q 'suspend_resume: machine_suspend.*begin' $T/trace 2>/dev/null &&
 	   grep -q 'suspend_resume: machine_suspend.*end' $T/trace 2>/dev/null; then
-		awk '/suspend_resume: machine_suspend.*begin/{on=1; next} /suspend_resume: machine_suspend.*end/{exit} on' $T/trace > "$SLEPT"
-		say "   (window bounded by the KERNEL's machine_suspend: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
+		# ☠️ DROP OUR OWN TRACEPOINT'S LINES FROM THE WINDOW. The kernel emits
+		# `timekeeping_freeze begin/end` between the two machine_suspend marks,
+		# so a naive line count reports exactly 2 and reads as "two packets
+		# arrived while asleep" - measured 2026-08-31, on a round whose decode
+		# was empty because neither line was a QMI SDU. An instrument that
+		# counts its own marks as signal is worse than one that counts nothing.
+		awk '/suspend_resume: machine_suspend.*begin/{on=1; next} /suspend_resume: machine_suspend.*end/{exit} on' $T/trace |
+			grep -v 'suspend_resume:' > "$SLEPT"
+		say "   (window bounded by the KERNEL's machine_suspend: $(grep -c . "$SLEPT") non-tracepoint of $(grep -vc 'suspend_resume:' $T/trace) lines are from the sleep)"
 	elif grep -q 'tracing_mark_write: FP3_FREEZE' $T/trace 2>/dev/null &&
 	   grep -q 'tracing_mark_write: FP3_THAW' $T/trace 2>/dev/null; then
 		awk '/tracing_mark_write: FP3_FREEZE/{on=1; next} /tracing_mark_write: FP3_THAW/{exit} on' $T/trace > "$SLEPT"
