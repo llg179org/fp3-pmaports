@@ -31,7 +31,30 @@ operator, daemon running: **4.9 %**.
 day and 4.9 % on another, and nothing in the plan explains the difference.
 Everything built on "pmOS runs a 34.8 % modem duty" needs that caveat.
 
-## ★★★★★ What was in the captures all along
+## ☠️☠️ CORRECTION — the LPASS finding below is a REDISCOVERY, not a discovery
+
+Written before checking `leads/`. It was already there, measured four days
+earlier with a better instrument:
+[`../leads/lpass-never-sleeps.md`](../leads/lpass-never-sleeps.md), entry
+2026-08-27, five independent `burst-master.sh` windows of 189 samples each —
+`LPASS_xopct` **0 in every sample of every window**, `XO total duration` 9.4 s
+against 5½ hours of uptime (**0.05 %**), against the oracle's **97.1 %** over a
+565 s window. That page also carries a **root cause**: an unconditional
+`clk_prepare_enable(mclk)` in the `msm8916-wcd-digital` probe, where on msm8953
+mclk is a q6afecc ADSP clock request.
+
+What the table below actually adds is small and worth keeping: the same fact is
+visible in the `modem-window` captures too, so any run of that instrument can see
+it without reaching for `burst-master.sh`. The stars were for a result somebody
+had already written down.
+
+☠️ The lead's own banner warns about exactly this failure — *"A closed result in
+a file the resume path does not read is not a closed result"* — and it says the
+2026-08-22 closing banner is **false on the device today**. So the open question
+is not "is the LPASS awake" but "why is it still awake after r64's two fixes",
+which that page owns.
+
+## What was in the captures all along
 
 `modem-window-fit.py` prints every master, every run. Read across the same files:
 
