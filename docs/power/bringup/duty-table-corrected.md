@@ -80,3 +80,40 @@ the skill note `004d681`): **read every column on every run, and when a value is
 saturated — 0%, 100%, a counter that does not move — decide explicitly whether
 it is a finding or an artefact.** Neither defect needed new hardware or a new
 capture to find. Both needed someone to disbelieve a round number.
+
+
+## Was the WiFi even on during the floor measurement? (item 24)
+
+Asked of the **log**, not of a new measurement, because the answer was already
+written down twice.
+
+**1. The `# wifi: ?` in every night-ladder header is a known blind spot, not an
+"off".** `tools/idle-ab.sh` says so in its own comment: `/proc/net/wireless`
+needs `CONFIG_CFG80211_WEXT`, which pmOS does not build, and *"every pmOS
+capture from 2026-08-26 and -27 recorded `wifi: ?` **with the link plainly
+associated**"*. Reading that field as "no WiFi" inverts it.
+
+**2. The harder witness is in the same header, and it is unambiguous:**
+
+```
+# remote processors: 4080000.remoteproc=running a204000.remoteproc=running adsp=running
+```
+
+`a204000` is `wcnss: remoteproc@a204000`, `qcom,pronto-v3-pil`
+(`arch/arm64/boot/dts/qcom/msm8953.dtsi:1955`) — the PRONTO subsystem itself.
+**16 of 16** header samples across all eight rungs of
+`captures/2026-08-26_pmos-night-ladder/` say `running`.
+
+⇒ **PRONTO was loaded and running for the whole night**, and the step-0 gates
+(ModemManager stopped, `bl_power=4`, `status=Discharging`) never gated WiFi. The
+48 mA floor therefore **contains** whatever WCNSS costs, alongside the ~7 mA
+modem term — which is exactly the room the unexplained ~41 mA lives in.
+
+☠️ **What this does not establish.** The 48 mA fit comes from the 58-round
+`sleep-night.sh` discharge run, and *that* run's capture is not in this
+repository — the `running` lines above are from the ladder night of the same
+regime, not from the fitted run itself. Same phone, same gates, same days; still
+a different file. Until the night run's own environment header is read, "PRONTO
+was up during the fitted night" is an inference from a sibling capture, not a
+direct reading. It is also **not** evidence that the radio was transmitting: a
+loaded remoteproc is a floor on the subsystem's state, not a duty.
