@@ -26,10 +26,14 @@ GOAL: pmOS fogyasztás felezése (≤50 mA) UT reagálási paraméterei mellett 
         · egy ejszaka a telefonbol - a felhasznalo donti el, mikor adhato oda. Az inditas egysoros: modem-night.sh 8 600 35 stopped
 ```
 
-**☠️ Results have landed that the plan does not mention yet:**
-
-  - uncommitted changes under /mnt/1TB/pmos/fp3-pmaports/docs:
-      M docs/power/bringup/tools/wake-qmi.sh
+```
+MEASURED and standing:
+  · A kernel machine_suspend zarojele MINDKET suspend-uton megtalalja az alvas-ablakot (rtcwake: 22 s, modem-el; logind: 61 s, RTC) - a rtcwake ag, ami tegnap 43 korben vak volt, mostantol jelent
+      witness: commit:7f56463
+☠️ RETRACTED — do not rebuild on these:
+  · A machine_suspend ablakban '2 of 46 lines' = ket csomag erkezett alvas kozben
+      fell because: A KETTO A SAJAT TRACEPOINTOM: a kernel a ket machine_suspend marka koze teszi a timekeeping_freeze begin/end part. A dekodolas ezert volt ures (egyik sem ver=1 ty=1). Javitva: a suspend_resume sorok kiesnek a szamlalasbol
+```
 
 Last pre-compaction transcript snapshot: `/home/fp3/.claude/.state/precompact-status/_mnt_1TB_Fp3-Sailfish/latest.md`
 
