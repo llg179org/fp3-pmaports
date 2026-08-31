@@ -66,10 +66,18 @@ def parse(path):
             phase, body = "AFTER", line[5:].strip()
         else:
             continue
-        body = body.strip("[]")
-        if body in MASTERS:
-            master = body
+        # ☠️ A SECTION HEADER FOR A MASTER THIS SCRIPT DOES NOT KNOW MUST CLOSE
+        # THE PREVIOUS ONE. Measured 2026-08-31: every capture carries a [TZ]
+        # block of all-zero fields directly after [PRONTO], and because "TZ" is
+        # not in MASTERS the old parser kept writing into PRONTO - so every
+        # PRONTO number this script ever printed was TZ's zeros, which then read
+        # as "awake 100.0%". Recognise a header by its shape, not by whether it
+        # is one of ours.
+        hdr = re.match(r"^\[?([A-Z0-9_]+)\]?:?$", body.strip())
+        if hdr:
+            master = hdr.group(1) if hdr.group(1) in MASTERS else None
             continue
+        body = body.strip("[]")
         if master is None:
             continue
         for k in XO_KEYS:
