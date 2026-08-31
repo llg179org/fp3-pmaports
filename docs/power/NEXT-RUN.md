@@ -40,12 +40,45 @@ most consequential fact on this page, and it forces the split:
 
 | track | what it buys | ceiling |
 |---|---|---|
-| **D — modem duty** (34.8 % → 6.1 %) | 98.5 → **63 mA** | parity. **Cannot reach ≤50 mA, however complete** |
-| **R — suspend** (the phone actually asleep, for real spans) | the only thing under the intercept | **this is where the halving lives** |
+| **D — modem duty** (34.8 % → 6.1 %) | 98.5 → **63 mA** *awake* | parity while awake |
+| **R — suspend** (the phone actually asleep, for real spans) | removes the 54.9 mA intercept | see below — **not** what it was thought to be |
 
-So: **track D is necessary and insufficient; track R is where the goal is won.**
-Any run that spends a day entirely inside one of them has, at best, done half the
-job — and both halves have been mistaken for the whole at least once.
+### ☠️☠️ The split above was rewritten 2026-08-31, and the tracks turned out to be one
+
+The paragraph that stood here said *"track D is necessary and insufficient; track
+R is where the goal is won."* **Step 0 falsified it.** Measured over 10.02 h, 58
+consecutive 602 s suspends, all ending on the RTC alarm, 96.8 % asleep:
+
+```
+floor_mA = 48 ± 5 mA          (fit 45.5 → 51.0 as the flat top is cut back)
+```
+
+and the model's modem term at this phone's duty is `135.0 × 0.348 = 47.0 mA`.
+
+⇒ **Suspend removes the 54.9 mA AP term almost exactly and leaves the modem term
+untouched.** Track R does not reach *under* the intercept — it reaches *the modem*,
+and stops there. Substituting into `night_mA = (1−r)·98.5 + r·floor_mA`:
+
+| `floor_mA` | sleep fraction needed for 50 mA |
+|---|---|
+| 45.5 | 91.5 % |
+| 48.0 | 96.0 % |
+| 51.0 | **unreachable** |
+
+So the honest statement is the opposite of the old one: **track R is already
+bought — the AP term goes away for free the moment the phone sleeps — and after
+that only the MPSS duty is left.** The two tracks have collapsed onto one
+quantity. Reaching ≤ 50 mA with any margin means moving 34.8 % toward 6.1 %,
+which is **track D**, and specifically step D2.
+
+☠️ Track R is not worthless: without residency the phone sits at 98.5 mA and no
+duty reduction alone reaches 50 mA either (63 mA at the oracle's duty). **Both are
+needed; neither is sufficient.** What changed is that R has no *remaining*
+headroom to find — it is a policy question (does the phone sleep when idle?), not
+a power question, and its ceiling is now a measured number rather than a hope.
+
+Full derivation, with what it does not say:
+[`bringup/what-sleeps-and-what-does-not.md`](bringup/what-sleeps-and-what-does-not.md).
 
 ---
 
@@ -76,6 +109,27 @@ pmOS holds up. It is what the vendor stack *sets up* that ours never does.
 ## 3. The ladder — in order, with the decision rule stated first
 
 ### Step 0 (track R, blocks everything) — **what does this phone draw while asleep?**
+
+
+> ## ✅ ANSWERED 2026-08-31 — and it rewrote §1
+>
+> `floor_mA = 48 ± 5 mA`. 58 rounds of 602 s over 10.02 h, every one ending on
+> `56:pm8xxx_rtc_alarm`, `suspend_stats` 14 → 71 with `fail=0`, 96.8 % asleep.
+> Gates all held (ModemManager stopped, `bl_power=4`, `Discharging`) — they are
+> hard `exit 1` checks, so the data existing proves it. `mem_sleep` is
+> **`[s2idle]`** and `deep` is not offered, so there is no deeper state that was
+> missed.
+>
+> ☠️ **The pre-registered decision table read `>40 mA ⇒ the AP is not really
+> going down`. The number landed there and the reasoning is wrong.** That branch
+> assumed a high floor could only mean a failed suspend; 58/58 succeeded. The
+> floor is high because **the floor is the modem** — the model's modem term is
+> 47.0 mA and the measurement is 48.
+>
+> Consequences are in §1 above and the derivation in
+> [`bringup/what-sleeps-and-what-does-not.md`](bringup/what-sleeps-and-what-does-not.md).
+> ☠️ The floor still contains the USB link, never measured in mA; that is now the
+> single numeric weakness of the "the floor is the modem" claim.
 
 Nothing else can be prioritised until this number exists. The goal's ≤50 mA row is
 a *suspend* row, and it has never been measured on a system that could stay
