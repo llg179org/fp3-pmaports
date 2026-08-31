@@ -1,0 +1,12 @@
+=== 21:20:47
+unit: inactive
+# known-positive #2 (injected failure) 2026-08-31_19:15:39
+# modem: registered
+=== JOURNAL terse + warnings
+Aug 31 21:16:19 fp3 [47379]: <wrn> [modem0] couldn't unregister serving system indications: 'Cannot write message: Error sending data: Broken pipe'; the modem may keep sending them
+Aug 31 21:16:46 fp3 [85388]: <msg> [modem0] terse state (1/2): 3GPP interface disable unsolicited events
+=== RESTORE to the normal build
+# modem after restore: 
+# binary sha now: ed056596bbbf1851
+
+[exited with code 0]

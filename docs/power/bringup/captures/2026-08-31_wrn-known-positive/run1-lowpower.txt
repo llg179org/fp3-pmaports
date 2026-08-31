@@ -1,0 +1,17 @@
+=== 21:12:45
+unit: inactive
+# known-positive 2026-08-31_19:07:06
+# modem BEFORE: registered
+successfully set new power state in the modem
+# modem in low power: disabled
+=== JOURNAL (MM)
+Aug 31 21:07:47 fp3 [47379]: <msg> [modem0] power state updated: low
+Aug 31 21:07:47 fp3 [47379]: <wrn> [modem0] couldn't reload extended signal information: No way to load extended signal information
+Aug 31 21:07:52 fp3 [47379]: <msg> [modem0] setting terse state (2/2): all done
+Aug 31 21:09:23 fp3 [47379]: <msg> [modem0] power state updated: on
+Aug 31 21:09:23 fp3 [47379]: <wrn> [modem0] couldn't reload extended signal information: No way to load extended signal information
+=== RESTORE
+error: couldn't set new power state in the modem: 'GDBus.Error:org.freedesktop.ModemManager1.Error.Core.WrongState: Wrong state: Must be in disabled or failed state'
+# modem AFTER: registered
+
+[exited with code 0]
