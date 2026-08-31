@@ -47,7 +47,11 @@
 #   wake-qmi.sh [alarm_s] [rounds] [rtcwake|logind]     default 600 3 logind
 set -u
 S=${1:-600}; N=${2:-3}; P=${3:-logind}
-O=/var/log/fp3/wake-qmi.log
+# ☠️ Overridable so an orchestrator can drive this once per round and keep every
+# round's log: the truncate below is correct for a standalone census and fatal
+# for a driven one. Env, not a positional, so the validated argument order and
+# every existing caller stay exactly as they were.
+O=${WAKE_QMI_LOG:-/var/log/fp3/wake-qmi.log}
 IDS=$(dirname "$0")/qmi-msgids.txt
 IDS_SVC=$(dirname "$0")/qmi-service-ids.txt
 T=/sys/kernel/tracing
