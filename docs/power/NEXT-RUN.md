@@ -43,7 +43,33 @@ most consequential fact on this page, and it forces the split:
 | **D — modem duty** (34.8 % → 6.1 %) | 98.5 → **63 mA** *awake* | parity while awake |
 | **R — suspend** (the phone actually asleep, for real spans) | removes the 54.9 mA intercept | see below — **not** what it was thought to be |
 
-### ☠️☠️ The split above was rewritten 2026-08-31, and the tracks turned out to be one
+### ☠️☠️☠️ RETRACTED the same morning — read this before the section below
+
+The section that follows was written at 05:0x on 2026-08-31 and was falsified at
+05:33 by a ten-minute measurement that should have been taken first.
+
+**It rests on an assumption never stated: that the modem's duty during the
+step-0 night was 34.8 %.** The night ran with ModemManager stopped, and with the
+daemon stopped the MPSS is awake **5.1 %** — so the modem term was ~6.9 mA, not
+47.0, and the agreement it is built on is a coincidence. Of the 48 mA floor about
+**41 mA has no explanation yet**.
+
+`floor_mA = 48 ± 5 mA` stands as a measurement. "The floor is the modem" does
+not. What replaces it is two open questions, both sharper than what they replace:
+
+* **what ModemManager does that keeps the modem awake 35 % of the time** —
+  measured 5.1 % stopped versus 34.8 % running, with the oracle reaching 5–7 %
+  *while running its own stack*. So this is our daemon, not attach-time
+  configuration. ☠️ Confounded until an A-B-A′ in one boot rules out that the
+  5.1 % came from the daemon having been stopped for eleven hours;
+* **what draws ~41 mA while the AP is in s2idle** — the USB link is a suspect and
+  has never been measured in mA.
+
+☠️ The method error is the transferable part: the duty was **inferred from
+current** under an assumption about the sleeping AP, when the direct instrument
+takes ten minutes. Everything below was written in that gap.
+
+### The retracted section, kept for the record
 
 The paragraph that stood here said *"track D is necessary and insufficient; track
 R is where the goal is won."* **Step 0 falsified it.** Measured over 10.02 h, 58

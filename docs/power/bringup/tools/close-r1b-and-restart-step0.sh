@@ -38,8 +38,14 @@ FP3_SSH_TRIES=${FP3_SSH_TRIES:-150} fp3-ssh "echo $PW | sudo -S sh -c '
   chmod 755 /usr/local/bin/r1b-close-probe.sh /usr/local/bin/sleep-night.sh
   /usr/local/bin/r1b-close-probe.sh
   echo \"===== ARMING STEP 0 =====\"
-  if [ \"\$(systemctl show systemd-logind -p IdleAction --value)\" != ignore ]; then
-    echo \"REFUSED: IdleAction is not back to ignore - step 0 NOT armed\"
+  # ☠️ The first version of this gate asked systemd-logind for its IdleAction
+  # property. That property is NOT exposed on this systemd, so the query returns
+  # an EMPTY string, the comparison against \"ignore\" failed, and the gate
+  # refused - costing a night of step-0 data on 2026-08-30. A gate must test
+  # something that exists: the drop-in file itself is the state that matters, and
+  # its absence is what \"the policy is gone\" means.
+  if [ -e /run/systemd/logind.conf.d/zz-fp3-idle-window.conf ]; then
+    echo \"REFUSED: the R1b logind drop-in is still in place - step 0 NOT armed\"
     exit 0
   fi
   systemctl reset-failed step0sleep 2>/dev/null

@@ -35,8 +35,13 @@ awake, read from the RPM master stats. At this phone's measured LTE-idle duty of
 `54.9 + 47.0 = 101.9 mA` matches the measured awake idle of **98.5 mA** to within
 the spread of the awake band (88.5–128 mA across four legs).
 
-☠️ **Suspending Linux removes the first term and leaves the second untouched.**
-That is not an inference — see §5.
+☠️☠️ **An earlier revision of this page said here: "Suspending Linux removes the
+first term and leaves the second untouched. That is not an inference — see §5."
+Both sentences were wrong**, and the second one was the worse of the two: it
+declared a conclusion to be a measurement. See the retraction at the head of §5.
+The 47.0 mA figure is the modem term **at the duty this phone shows with
+ModemManager running**; it is not a constant, and it does not describe a run in
+which that daemon was stopped.
 
 ---
 
@@ -269,7 +274,40 @@ discharge curve.
 
 ---
 
-## 5. The result, and why it says the floor is the radio
+## 5. ☠️☠️ RETRACTED — the result stands, the explanation did not
+
+**Kept in place rather than deleted, because the shape of the error is worth more
+than a clean page.**
+
+The measurement below is good: **`floor_mA` = 48 ± 5 mA** over 10.02 h with the
+phone asleep 96.8 % of it. Everything after the fit is wrong.
+
+**The hidden assumption**, never stated and never checked: that the modem's duty
+during that night was **34.8 %**. It was not measured — it was carried in from a
+different regime. The night ran with **ModemManager stopped** (a hard gate, §4),
+and measured 2026-08-31 with the daemon stopped the MPSS is awake **5.1 %** of a
+600 s window, not 34.8 %. At 5.1 % the modem term is `135.0 × 0.051 = 6.9 mA`, so
+of the 48 mA floor roughly **41 mA is unexplained** and the 47.0 ≈ 48 agreement
+below is a coincidence.
+
+☠️ **The "What this does not say" list at the end of this section names three
+caveats and misses the load-bearing one.** That is worse than having written no
+caveats at all: a thorough-looking list gave false comfort about exactly the
+assumption that broke. A caveat list is only worth what its *omissions* cost.
+
+☠️ **The method error, stated plainly:** the duty was *inferred from current*
+under an assumption about what the AP draws asleep, when the direct instrument
+(`modem-window.sh`) takes **ten minutes**. Half a day of documents was built on
+the inference before the ten minutes were spent.
+
+What survives: `floor_mA` as a number, the gates of §4, and everything in
+§§1–4 that is a direct reading. What is now open is carried by two new questions —
+what ModemManager does that keeps the modem awake, and what draws ~41 mA while
+the AP is in s2idle. Neither is answered here.
+
+---
+
+### The retracted derivation, kept for the record
 
 `tools/sleep-night-fit.py`, refitted with the flat top of the discharge curve
 progressively removed (the tool's own `skip_hours` argument):
@@ -319,7 +357,9 @@ independent have collapsed onto one quantity: suspend already takes the AP term
 away for free, and after that only the **MPSS duty** is left. Reaching ≤ 50 mA
 with margin means moving 34.8 % toward the oracle's 6.1 %.
 
-### What this does not say
+### What this does not say (as written at the time — see the retraction above)
+
+☠️ None of the three items below is the assumption that actually broke.
 
 * The 47.0 mA modem term is computed from two fitted coefficients, each with its
   own uncertainty; the agreement with the measured floor is `n=1`.
