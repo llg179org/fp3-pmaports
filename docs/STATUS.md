@@ -14,7 +14,8 @@ GOAL: pmOS fogyasztás felezése (≤50 mA) UT reagálási paraméterei mellett 
         · capture megirva (dcb3e9a) es a lead verdiktje visszavonva a helyen
   [x] 2. ★ mA-ATVALTAS: a 86 kor v_uV oszlopa -> meredekseg -> mA a 2026-08-28_discharge-to-shutdown referencia-gorbevel. ☠️ A capacity oszlop hasznalhatatlan (fagyott integrator). Adapter kell a sleep-night-fit.py formatumara  ⟨commit:57541d4⟩
         · 86 +/- 4 mA (43 kor, 91,7% alvas, stabil minden vagasnal). A ket ALVO pontbol: meredekseg 133 (az ebren-illesztett 135-hoz kepest 1,5%-on belul), tengelymetszet 41,4 mA (nem 54,9). A tengelymetszet UGYANAZ a szam, mint a reggeli 'gazdatlan ~41 mA'.
-  [ ] 3. ☠️ MUSZER-HIANY: a 43 rtcwake kornek NINCS QMI-adata, mert az 'rtcwake -m mem' a /sys/power/state-be ir es NEM futtatja a systemd system-sleep hookjait, tehat a FP3_FREEZE/THAW markerek nem sultek el. A census fele vak. Javitani kell (sajat marker az rtcwake ag koré) vagy kimondani a lefedettseget
+  [~] 3. ☠️ MUSZER-HIANY: a 43 rtcwake kornek NINCS QMI-adata, mert az 'rtcwake -m mem' a /sys/power/state-be ir es NEM futtatja a systemd system-sleep hookjait, tehat a FP3_FREEZE/THAW markerek nem sultek el. A census fele vak. Javitani kell (sajat marker az rtcwake ag koré) vagy kimondani a lefedettseget
+        · Javitva: a kernel sajat machine_suspend[N] begin/end zarojele hatarolja az ablakot, a systemd hook csak tartalek. Mindket uton mukodik es szukebb (a hook pre-agaba a ~360 ms dpm_suspend is beleesik). Telepitve, sha egyeztetve. ☠️ A ket-utas validacio MEG FUT - amig nem lattam mindket uton ablakot talalni, a javitas nincs igazolva.
   [x] 4. ★ A MODELL ELLENORZESE: mA = 54,9 + 135 x duty AZ EBREN-ABLAKOKRA lett illesztve. Ez a futas az elso, ahol magas modem-duty (33,6%) EGYUTT all egy 93%-ban alvo AP-vel. Ha az aram nem a josolt ~100 mA, a modell alvo telefonra NEM ervenyes - es akkor a D-palya erteke sokkal kisebb, mint hittuk  ⟨commit:57541d4⟩
         · A MODELL ATVISZ, csak a tengelymetszet mas: a 135-os egyutthato reprodukalodik alvo telefonon is (133), de a tengelymetszet 54,9 helyett 41,4. VISSZAVONVA az egesz napon at ismetelt allitasom, hogy a D-palya csak paritast vehet: az orakulum 6,1%-os dutyjan a szamitott ertek 49,5 mA, azaz A CEL, kizarolag a modem-palyarol.
   […] 5. ★ USB-link bearazasa - az egyetlen megmaradt nev a ~41 mA-re (ejszaka-hosszu, felhasznaloi dontes a telefonrol)
@@ -22,11 +23,6 @@ GOAL: pmOS fogyasztás felezése (≤50 mA) UT reagálási paraméterei mellett 
   [ ] 6. Ismert-pozitiv a <wrn> agra: a mai 'a modem nem utasitja el' negativum csak annyit er, amennyire igazolt, hogy a figyelmeztetes tudna is elsulni
   [ ] 7. ★★★★★ A KONTROLL, ami a ket-pontos vonalat vezerelte kiserlette teszi: UGYANEZ a 8 oras census, de ModemManager LEALLITVA. Ugyanaz a WiFi-down, kabel-out, ugyanaz a valtakozas. Harmadik pont ~5% dutynal, ahol CSAK a daemon ter el. ☠️ Elore rogzitve: ha ~48 mA jon ki, a 133-as meredekseg es a 41,4-es tengelymetszet MEGERSODIK es a D-palya onmagaban eleri a celt; ha erdemben mas, a ket-pontos vonal ket KONFIGURACION at volt huzva es a kovetkeztetes megdol
 ```
-
-**☠️ Results have landed that the plan does not mention yet:**
-
-  - uncommitted changes under /mnt/1TB/pmos/fp3-pmaports/docs:
-      M docs/power/bringup/tools/wake-qmi.sh
 
 Last pre-compaction transcript snapshot: `/home/fp3/.claude/.state/precompact-status/_mnt_1TB_Fp3-Sailfish/latest.md`
 
