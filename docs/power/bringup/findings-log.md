@@ -9383,3 +9383,29 @@ whether a call and the noise are separable at the channel layer, which
 `tools/wakesrc-rested.sh` measures on a **rested** phone — the 2026-08-22
 per-channel census that answered "IPCRTR, signal-level" ran entirely inside the
 disturbed regime.
+
+
+## 2026-08-31 — every duty number re-read; MPSS survives, LPASS dies, PRONTO appears
+
+Two parser defects in `modem-window-fit.py`, found within an hour, both faking
+the same `awake 100.0%`: the XO counter is **edge-updated on exit**, so a master
+that stays down contributes a zero delta (`87be062`), and an unknown section
+header (`[TZ]`, all zeros, directly after `[PRONTO]`) did not close the previous
+master, so every PRONTO number ever printed was TZ's (`474ff79`).
+
+Re-ran the fixed tool over all 15 parseable captures. Full table:
+`duty-table-corrected.md`.
+
+* **MPSS bit-identical** before and after, in every capture. The D-track's
+  34.8% / 5–8% / 4.9% all stand, now from a repaired instrument.
+* **LPASS**: pmOS *asleep the whole window* in all four captures; oracle
+  2.8–3.0%. The "stable two-sided differential is LPASS" claim is retracted.
+* **PRONTO**: 16.7–26.7% awake, **on both systems**, ranges overlapping. Not a
+  differential. A named suspect for the ~41 mA only, and a weak one — these are
+  awake windows, and PRONTO under s2idle has never been measured.
+
+☠️ The instrument was not the only thing that failed. Three days of write-ups
+carried the LPASS 100% as a ★★★★★ finding, and the number that would have
+disproved it — the oracle's own 2.9% from the same tool — sat in the same
+output. A saturated reading needs an explicit finding-or-artefact decision; that
+rule now exists twice over.
