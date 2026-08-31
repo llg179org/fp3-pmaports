@@ -89,6 +89,17 @@ fi
 ARMED=""
 if echo 'p:qmi qrtr_endpoint_post ver=+0x0(%x1):u32 ty=+0x4(%x1):u32 src_port=+0xc(%x1):u32 dst_port=+0x1c(%x1):u32 fl=+0x20(%x1):u8 msg=+0x23(%x1):u16' >> $T/kprobe_events 2>/dev/null; then
 	echo 1 > $T/events/kprobes/qmi/enable; ARMED="$ARMED qmi"; fi
+# ☠️ THE KERNEL'S OWN SUSPEND BRACKET, because the systemd hook cannot see half
+# the runs. `rtcwake -m mem` writes /sys/power/state directly, so systemd never
+# runs its system-sleep hooks and FP3_FREEZE/FP3_THAW never fire - measured
+# 2026-08-31, where 43 of 86 rounds came back with no window at all and their
+# QMI census was simply absent. `machine_suspend[N] begin/end` is emitted by the
+# kernel on BOTH paths, lands in this same buffer with this same clock, and is
+# TIGHTER than the hook: the hook's `pre` runs before dpm_prepare, so its window
+# also contains the ~360 ms of device suspend, while machine_suspend brackets
+# only the state the phone is actually in.
+if echo 1 > $T/events/power/suspend_resume/enable 2>/dev/null; then
+	ARMED="$ARMED suspend_resume"; fi
 say "# probes armed:${ARMED:- NONE - the rest of this file is meaningless}"
 [ -n "$ARMED" ] || exit 1
 
@@ -231,13 +242,17 @@ while [ $r -le $N ]; do
 	# capture still parses. If the hook markers are absent the window is NOT the
 	# sleep, and this refuses to report rather than printing a number that has
 	# been wrong twice already.
-	if grep -q 'tracing_mark_write: FP3_FREEZE' $T/trace 2>/dev/null &&
+	if grep -q 'suspend_resume: machine_suspend.*begin' $T/trace 2>/dev/null &&
+	   grep -q 'suspend_resume: machine_suspend.*end' $T/trace 2>/dev/null; then
+		awk '/suspend_resume: machine_suspend.*begin/{on=1; next} /suspend_resume: machine_suspend.*end/{exit} on' $T/trace > "$SLEPT"
+		say "   (window bounded by the KERNEL's machine_suspend: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
+	elif grep -q 'tracing_mark_write: FP3_FREEZE' $T/trace 2>/dev/null &&
 	   grep -q 'tracing_mark_write: FP3_THAW' $T/trace 2>/dev/null; then
 		awk '/tracing_mark_write: FP3_FREEZE/{on=1; next} /tracing_mark_write: FP3_THAW/{exit} on' $T/trace > "$SLEPT"
-		say "   (window bounded by the system-sleep hook: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
+		say "   (window bounded by the system-sleep hook - the kernel bracket was absent: $(grep -c . "$SLEPT") of $(grep -c . $T/trace) lines are from the sleep)"
 	else
 		: > "$SLEPT"
-		say "   ☠️ THE SLEEP-HOOK MARKERS DID NOT FIRE - no window, so nothing is"
+		say "   ☠️ NEITHER THE KERNEL BRACKET NOR THE SLEEP-HOOK MARKERS FIRED - no window, so nothing is"
 		say "      reported for this round. Either the hook is not installed, or the"
 		say "      phone never actually froze. Check $HOOK and suspend_stats/success."
 		say "      (a marker written by this script instead would sit OUTSIDE the"
@@ -256,5 +271,6 @@ while [ $r -le $N ]; do
 	r=$((r + 1))
 done
 echo 0 > $T/events/kprobes/qmi/enable 2>/dev/null
+echo 0 > $T/events/power/suspend_resume/enable 2>/dev/null
 echo -n > $T/kprobe_events 2>/dev/null
 say "# done $(date '+%F %T')"
