@@ -1,0 +1,189 @@
+
+# modem-window stack=pmos secs=600 2026-08-31 05:38:18
+# kernel=7.1.3-postmarketos-qcom-msm8953 #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# uptime=56287
+# BEFORE ------------------------------------------------------------
+#   --- mmcli -m 0
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4413394 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=86
+# t0=56287
+BEFORE [APSS]
+BEFORE APSS:
+BEFORE 	Last shutdown @ 1080976364170
+BEFORE 	Last bringup req @ 1080977911997
+BEFORE 	Last bringup ack @ 1080977926182
+BEFORE 	Last wakeup idx: 1080818590826
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 12281
+BEFORE 	Last wake transition duration: 12384
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 227680
+BEFORE 	Active cores bitmask: 0x1
+BEFORE [MPSS]
+BEFORE MPSS:
+BEFORE 	Last shutdown @ 1080975204655
+BEFORE 	Last bringup req @ 1080974952423
+BEFORE 	Last bringup ack @ 1080974952535
+BEFORE 	Last wakeup idx: 1080974952056
+BEFORE 	Last XO shutdown enter @ 1080975219087
+BEFORE 	Last XO shutdown exit @ 1080974938273
+BEFORE 	XO total duration: 907162726861
+BEFORE 	Last sleep transition duration: 19433
+BEFORE 	Last wake transition duration: 21562
+BEFORE 	XO shutdown count: 163326
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 163374
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [PRONTO]
+BEFORE PRONTO:
+BEFORE 	Last shutdown @ 1080978722915
+BEFORE 	Last bringup req @ 1080978504198
+BEFORE 	Last bringup ack @ 1080978504309
+BEFORE 	Last wakeup idx: 1080978503787
+BEFORE 	Last XO shutdown enter @ 1080978734077
+BEFORE 	Last XO shutdown exit @ 1080978496580
+BEFORE 	XO total duration: 1020596331125
+BEFORE 	Last sleep transition duration: 12038
+BEFORE 	Last wake transition duration: 13409
+BEFORE 	XO shutdown count: 124369
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 124390
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [TZ]
+BEFORE TZ:
+BEFORE 	Last shutdown @ 0
+BEFORE 	Last bringup req @ 0
+BEFORE 	Last bringup ack @ 0
+BEFORE 	Last wakeup idx: 0
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 0
+BEFORE 	Last wake transition duration: 0
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 0
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [LPASS]
+BEFORE LPASS:
+BEFORE 	Last shutdown @ 29909474255
+BEFORE 	Last bringup req @ 29909434678
+BEFORE 	Last bringup ack @ 29909458986
+BEFORE 	Last wakeup idx: 932249210
+BEFORE 	Last XO shutdown enter @ 29909490497
+BEFORE 	Last XO shutdown exit @ 29909453590
+BEFORE 	XO total duration: 29181131963
+BEFORE 	Last sleep transition duration: 6659
+BEFORE 	Last wake transition duration: 7238
+BEFORE 	XO shutdown count: 53
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 63
+BEFORE 	Active cores bitmask: 0x0
+# t1=56887
+AFTER [APSS]
+AFTER APSS:
+AFTER 	Last shutdown @ 1092496309929
+AFTER 	Last bringup req @ 1092499292711
+AFTER 	Last bringup ack @ 1092499306895
+AFTER 	Last wakeup idx: 1092475395963
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 12230
+AFTER 	Last wake transition duration: 12384
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 236688
+AFTER 	Active cores bitmask: 0x1
+AFTER [MPSS]
+AFTER MPSS:
+AFTER 	Last shutdown @ 1092495180706
+AFTER 	Last bringup req @ 1092494924834
+AFTER 	Last bringup ack @ 1092494924947
+AFTER 	Last wakeup idx: 1092494924469
+AFTER 	Last XO shutdown enter @ 1092495195154
+AFTER 	Last XO shutdown exit @ 1092494910686
+AFTER 	XO total duration: 918096215285
+AFTER 	Last sleep transition duration: 19469
+AFTER 	Last wake transition duration: 21560
+AFTER 	XO shutdown count: 165212
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 165260
+AFTER 	Active cores bitmask: 0x0
+AFTER [PRONTO]
+AFTER PRONTO:
+AFTER 	Last shutdown @ 1092499994226
+AFTER 	Last bringup req @ 1092499774691
+AFTER 	Last bringup ack @ 1092499774802
+AFTER 	Last wakeup idx: 1092499774280
+AFTER 	Last XO shutdown enter @ 1092500005439
+AFTER 	Last XO shutdown exit @ 1092499767075
+AFTER 	XO total duration: 1029913930170
+AFTER 	Last sleep transition duration: 12650
+AFTER 	Last wake transition duration: 13408
+AFTER 	XO shutdown count: 130030
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 130057
+AFTER 	Active cores bitmask: 0x0
+AFTER [TZ]
+AFTER TZ:
+AFTER 	Last shutdown @ 0
+AFTER 	Last bringup req @ 0
+AFTER 	Last bringup ack @ 0
+AFTER 	Last wakeup idx: 0
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 0
+AFTER 	Last wake transition duration: 0
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 0
+AFTER 	Active cores bitmask: 0x0
+AFTER [LPASS]
+AFTER LPASS:
+AFTER 	Last shutdown @ 29909474255
+AFTER 	Last bringup req @ 29909434678
+AFTER 	Last bringup ack @ 29909458986
+AFTER 	Last wakeup idx: 932249210
+AFTER 	Last XO shutdown enter @ 29909490497
+AFTER 	Last XO shutdown exit @ 29909453590
+AFTER 	XO total duration: 29181131963
+AFTER 	Last sleep transition duration: 6659
+AFTER 	Last wake transition duration: 7238
+AFTER 	XO shutdown count: 53
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 63
+AFTER 	Active cores bitmask: 0x0
+# AFTER -------------------------------------------------------------
+#   --- mmcli -m 0
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+# v=4413199 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=87
+# done
