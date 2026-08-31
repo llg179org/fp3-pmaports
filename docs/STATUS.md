@@ -82,6 +82,95 @@ Last pre-compaction transcript snapshot: `/home/fp3/.claude/.state/precompact-st
 
 <!-- FP3-AUTONOMY-RESUME:END -->
 
+## ★ 2026-08-31 afternoon — hand-written; the autonomy run is STOPPED so the block above is stale
+
+### ☠️ A MEASUREMENT IS RUNNING AND THE PHONE IS UNREACHABLE
+
+`fp3-modemnight` — the 8 h cable-free, WiFi-free modem census.
+
+| | |
+|---|---|
+| launched | 11:42:01 |
+| cable out | **11:43:48** — witness: host `dmesg`, `cdc_ncm … fp3: unregister` |
+| rounds from | ~11:48:48 (after the 300 s settle) |
+| **ends** | **~19:49**, last round out by 19:50–20:00 |
+| dead-man | 20:12 — restores WiFi unconditionally |
+
+**Do not poll the phone.** No cable and no WiFi: there is no link at all, and an
+ssh would be a wake even if there were. Data is written per round to
+`/var/log/fp3/modem-night-<ts>/round-NNN-{rtcwake,logind}/`, which is persistent,
+so a crash keeps the completed rounds.
+
+Read it with [`docs/power/bringup/tools/modem-night-fit.py <dir>`](power/bringup/tools/modem-night-fit.py).
+
+What it answers: the MPSS duty regime with n≈45 rounds instead of n=1; the
+internal A/B between the two suspend paths (odd rounds `rtcwake`, so logind and
+ModemManager's sleep handshake never run; even rounds `logind`, the real path);
+what ends each sleep, by IRQ **name**; and the per-round QMI census split by
+direction, which is what can name what terse does not cover.
+
+☠️ It also records rest voltage per round, so a slope falls out of it — but that
+slope is **not** comparable to `floor_mA = 48 ± 5 mA`. The floor arm ran
+ModemManager *stopped* and WiFi *up*; this runs the daemon and no WiFi. Two
+variables, not an A/B.
+
+☠️ If the phone crashes, the dead-man dies with it (runtime state) and
+`nmcli radio wifi off` survives a reboot — so it would come back unreachable
+until it is given a cable.
+
+### The device is not carrying its packaged ModemManager
+
+A locally built daemon from upstream `5e91dd2` + three local patches is installed
+at `/usr/sbin/ModemManager`; the packaged binary is `…/ModemManager.pkg.bak`, and
+one `mv` restores it. Four plugins (MTK, Fibocom, Rolling) fail to load with
+symbol errors because they are from the older packaged snapshot — irrelevant
+hardware, and the modem comes up on `qcom-soc`, `registered / LTE / attached`.
+
+### What today measured, and what it retracted
+
+| stands | witness |
+|---|---|
+| the modem **accepts** the terse unregister — no `<wrn>` in a real logind suspend | `captures/2026-08-31_terse-patched-mm/` |
+| ⇒ the terse **list** is incomplete, not its execution | same |
+| MPSS 5.0 % awake across a real 602 s suspend, MM stopped | `captures/2026-08-31_mpss-across-suspend-nomm/` |
+| ⇒ the retraction of "the floor is the modem" **stands**; ~41 mA unowned | same |
+| LPASS is **asleep**; PRONTO 99.9 % down across a suspend | `captures/2026-08-31_xo-dur-semantics/` |
+| four masters accounted for ⇒ **one named suspect left: the USB link**, never priced in mA | — |
+| WiFi was **up** through the floor measurement, so the 48 mA contains it | `captures/2026-08-31_xo-dur-semantics/README.md` |
+| mainline `net/qrtr` has **no** wakeup-source handling at all | `leads/who-decides-what-wakes-the-ap.md` |
+
+☠️ **Retracted today:** "the LPASS 100 % is the stable two-sided differential"
+(instrument inverted — the RPM updates `XO total duration` on *exit*); every
+PRONTO number ever printed (a `[TZ]` block of zeros was written into PRONTO by
+the parser); and, from an hour earlier the same day, "the `if (ctx->enable)` guard
+is why the journal cannot say no" — the larger half is that the `terse … done`
+line is printed **before** the operation completes.
+
+### ModemManager patches — local only, upstreaming DEFERRED by the user
+
+Three commits on `qmi-report-failed-unregister` in `/home/fp3/git/ModemManager`
+(no fork, nothing pushed, `origin` is upstream): warn on a failed unregister;
+report each terse step from its completion callback; replace
+`/* Just ignore errors for now */` with the derived reason. Built clean for
+aarch64 (552/552). **The user's decision: upstream them after the final solution,
+not now.** Before any submission: the freedesktop/NetworkManager-style policy
+requires the author to have built and tested it and to answer review themselves.
+
+### Next, in order
+
+1. **Read the census** when it lands (~19:50) — nothing else may touch the phone first.
+2. **Price the USB link** — the only named suspect for the ~41 mA. Night-length,
+   same shape as the floor arm, needs the user's decision on the phone.
+3. **Price WiFi** — same shape.
+4. **A known positive for the `<wrn>` branch** — today's negative is only as
+   strong as a demonstration that the warning can fire.
+5. Then: extend terse (ModemManager) or a selective wake filter in QRTR (kernel,
+   a mainline gap and a `linux-arm-msm` design discussion, not a downstream port).
+
+☠️ Even a perfect modem-duty track buys 98.5 → 63 mA — **parity, not the ≤50 mA
+goal.** Only the floor gets under the 54.9 mA intercept.
+
+
 > ⚠️ **AI-generated.** This page was written by Claude working under the
 > direction of Lajosházi, László Gergely, who reviewed every change and made or
 > reviewed every measurement it rests on.
