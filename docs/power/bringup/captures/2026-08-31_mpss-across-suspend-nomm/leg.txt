@@ -1,0 +1,28 @@
+=== 08:05:53 figyelo ebred, csatlakozas ===
+unit: inactive
+# mpss-across-suspend MM-stopped 2026-08-31_05:52:31 kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# MM=inactive bl_power=4
+# charger=Full
+# suspend_stats before: ok=72 fail=0
+# radio: no MM - as intended
+=== BEFORE mono=64339.48
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=347537
+LPASS    xo_total=1105640257488    xo_shutdowns=75         shutdowns=85
+MPSS     xo_total=1053908257930    xo_shutdowns=188593     shutdowns=188649
+PRONTO   xo_total=1149838392938    xo_shutdowns=202174     shutdowns=202221
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+=== RTCWAKE 600s
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Fri Jan  9 19:26:46 1970
+# rtcwake rc=0
+=== AFTER mono=64941.64
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=347538
+LPASS    xo_total=1105640257488    xo_shutdowns=75         shutdowns=85
+MPSS     xo_total=1064896229834    xo_shutdowns=190481     shutdowns=190537
+PRONTO   xo_total=1161392294011    xo_shutdowns=202178     shutdowns=202225
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+# suspend_stats after: ok=73 fail=0
+# wakeup_irq=56
+=== DONE
+
+[exited with code 0]
