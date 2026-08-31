@@ -5,7 +5,16 @@
 # WHY DOES THE MODEM NOT DROP ITS DUTY WHILE EVERYTHING ELSE SLEEPS?
 # Eight hours, no USB cable, no WiFi, ModemManager RUNNING.
 #
-#   modem-night.sh [hours] [alarm_s] [floor_pct]        defaults 8 600 35
+#   modem-night.sh [hours] [alarm_s] [floor_pct] [mm]   defaults 8 600 35 running
+#
+# `mm` is `running` or `stopped`, and it is the ONLY thing the control arm may
+# change. The 2026-08-31 run gave 86 mA at 33.6 % modem duty; the step-0 night
+# gave 48 mA at 5.0 %; the line through them has slope 133 mA per unit duty and
+# an intercept of 41.4 mA, which says the oracle's 6.1 % duty would land at
+# 49.5 mA - the goal, from the modem track alone. But those two points differ in
+# WiFi and cable state as well as duty, so the line is drawn across two
+# configurations. `mm stopped` repeats THIS census with only the daemon moved,
+# and that is what turns it into a controlled measurement.
 #
 # ☠️ READ THIS BEFORE CHANGING THE PREMISE. "The modem does not drop its duty"
 # is true only with ModemManager RUNNING. Measured 2026-08-31 across a clean
@@ -52,6 +61,8 @@ set -u
 HOURS=${1:-8}
 ALARM=${2:-600}
 FLOOR=${3:-35}
+MM=${4:-running}
+case "$MM" in running|stopped) ;; *) echo "mm must be running or stopped"; exit 2;; esac
 
 BAT=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
@@ -67,6 +78,7 @@ restore() {
 	[ "$restored" = 1 ] && return
 	restored=1
 	echo Charging > $CHG/status 2>/dev/null
+	[ "${MM:-running}" = stopped ] && systemctl start ModemManager 2>/dev/null
 	nmcli radio wifi on 2>/dev/null
 	ip link set wlan0 up 2>/dev/null
 	rfkill unblock all 2>/dev/null
@@ -98,7 +110,7 @@ systemd-run --unit=fp3-modemnight-deadman --collect \
 	&& say "# dead-man armed: WiFi returns unconditionally in $((DEADMAN/60)) min" \
 	|| { say "☠️ COULD NOT ARM THE DEAD-MAN TIMER - refusing to cut the only remaining link"; exit 1; }
 
-say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}%"
+say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}% mm=$MM"
 say "# kernel=$(uname -v)"
 
 # ---------------------------------------------------------------- gates
@@ -115,14 +127,31 @@ gate_fail(){ say "☠️ GATE FAILED: $*"; exit 1; }
 modprobe rpm_master_stats 2>/dev/null
 [ -d /sys/kernel/debug/qcom_rpm_master_stats ] || gate_fail "no RPM master stats - the duty column would be blank"
 
-# ☠️ ModemManager RUNNING and REGISTERED is the instrument here, not a mistake.
-[ "$(systemctl is-active ModemManager)" = active ] || gate_fail "ModemManager is not running - that is the OTHER experiment"
+# ☠️ The daemon's state is the instrument here, in BOTH directions, so the gate
+# checks the one that was asked for rather than assuming.
+#
+# The modem must be REGISTERED either way, and that has to be read while the
+# daemon is still up - with it stopped there is no mmcli answer, and "no answer"
+# is indistinguishable from "not registered". So: read first, stop second.
+[ "$(systemctl is-active ModemManager)" = active ] ||
+	gate_fail "ModemManager is not running, so the modem's state cannot be read before the run"
 MMSTATE=$(mmcli -m any 2>/dev/null | sed -n 's/.*state: *//p' | head -1)
 case "$MMSTATE" in
 	*registered*|*connected*) : ;;
 	*) gate_fail "modem is '$MMSTATE', not registered - an unregistered modem is a different question" ;;
 esac
-say "# modem: $MMSTATE"
+say "# modem before the run: $MMSTATE  (daemon will be: $MM)"
+if [ "$MM" = stopped ]; then
+	systemctl stop ModemManager
+	sleep 5
+	[ "$(systemctl is-active ModemManager)" = active ] &&
+		gate_fail "ModemManager refused to stop - the control arm would measure the wrong thing"
+	# ☠️ Verify the PROCESS, not the label: a daemon can ignore SIGTERM while
+	# systemd reports it stopping.
+	pgrep -x ModemManager >/dev/null 2>&1 &&
+		gate_fail "systemd says stopped but a ModemManager process is still alive"
+	say "# ModemManager STOPPED for this run; restore() starts it again on every exit path"
+fi
 
 cap=$(cat $BAT/capacity)
 [ "$cap" -gt $((FLOOR + 30)) ] || gate_fail "battery $cap% is too close to the $FLOOR% floor for $HOURS h"
