@@ -15,6 +15,61 @@ picking a winner.
 ☠️ Every line below is the kind that goes stale first. Each row says how to read
 it off the device instead of trusting it.
 
+## ★ 2026-08-31 morning — read this block first; four claims were retracted in 24 h
+
+**What is MEASURED and stands:**
+
+| fact | witness |
+|---|---|
+| `floor_mA` = **48 ± 5 mA** — the phone asleep, 96.8 % of 10.02 h | `sleep-night-1788107097`, 58 rounds × 602 s, all ending on the RTC alarm, `suspend_stats` 14→71 `fail=0`; fit 45.5→51.0 mA as the flat top is cut |
+| `mem_sleep` = **`[s2idle]`**, `deep` not offered | read on device 2026-08-31 |
+| suspend **works** and is *interrupted*, not broken | 58/58 with ModemManager stopped; with it running, `sleep-night.sh`'s header records every suspend dying in 16–53 s |
+| the logind `/run` drop-in **does load** | `busctl … Manager IdleAction` `ignore`→`suspend`, `IdleActionUSec` 1800000000→60000000 |
+| the idle policy is off on **both** branches | `gsettings`: ac and battery both `'nothing'`; battery is a **user-level dconf write**, ac comes from `00_postmarketos-base-ui-gnome.gschema.override` |
+| ModemManager is **not** the modem's duty | A-B-A′ one boot: 5.1 % stopped / **4.9 % running, LTE-attached** / 4.9 % stopped |
+| the MPSS duty is **not a standing property** | 34.8 % (2026-08-28) → 4.9 % (2026-08-31), same stack |
+| mainline has no `smp2p_sleepstate` | `drivers/soc/qcom/` has `smp2p.c` only; no `sleepstate` in drivers or qcom DTs; no PM notifier in `smp2p.c` |
+
+**☠️ RETRACTED — do not rebuild on these:**
+
+1. **"The floor is the modem."** The 47.0 ≈ 48 mA agreement was a coincidence. The
+   night ran ModemManager-stopped, where the duty is ~5 %, so the modem term was
+   ~7 mA and **~41 mA of the floor is unexplained**. The duty had been *inferred
+   from current* under an assumption about the sleeping AP, when the direct
+   instrument takes ten minutes.
+2. **"ModemManager drives the 34.8 % duty."** Flat A-B-A′, retired the same hour.
+3. **"On battery the phone suspends after 20 min."** Read from pmaports for the
+   *GNOME Shell* package; this device runs phosh, and both branches read
+   `'nothing'` on the device.
+4. **"The pinned LPASS is a new ★★★★★ finding."** It was measured 2026-08-27 with a
+   better instrument and has a root cause, in
+   [`power/bringup/leads/lpass-never-sleeps.md`](power/bringup/leads/lpass-never-sleeps.md).
+   ☠️ **And that page already priced it: with the DSP stopped entirely the current
+   moved ~4 %, inside the instrument's spread — LPASS is a correctness item and a
+   sufficient explanation for `vlow`=0, NOT a lever on the floor.** So it is not
+   the ~41 mA either.
+
+**Open, in order:**
+
+* **what draws ~41 mA while the AP is in s2idle.** The USB link has never been
+  measured in mA and the step-0 run does not unplug the cable — it sets the PMIC
+  `input_suspend` bit, so the PHY stays powered and CDC-NCM enumerated.
+* **why R1b saw zero self-suspends** although all three `logind.conf(5)` conditions
+  are now measured to have held. Missing witness: the manager `IdleHint` during an
+  unobserved window — every interactive read makes it false, because an ssh session
+  is `Class=user`.
+* **`smp2p_sleepstate` port** — to the **ADSP** (remote-pid 2; the modem is pid 1,
+  so downstream does not tell the modem either). Semantics measured from the vendor
+  source in `power/bringup/leads/smp2p-sleepstate-missing.md`.
+
+**New method rules promoted to the skills today:** cite the *conditions* a number
+was measured under, not where it is written (a number crossing a regime boundary
+is a new claim); a lever has preconditions and one that never fired is not a
+negative result; read a tool's usage text before reporting it lacks something;
+`FP3_SSH_TRIES` for spans longer than the wrapper's two-minute patience.
+
+---
+
 Last updated: **2026-08-30 (10:30) — ★★★★★ **the noise comes from the NETWORK**
 (radio off: 1802 s of an 1800 s alarm, against 8 s and 33 s controls), and ☠️
 **powering the modem down is not available** — a call to a low-power phone is told
