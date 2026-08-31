@@ -15,6 +15,22 @@ run, correctly, because leg A came out in the long regime). One 600 s alarm,
 |---|---:|---:|---:|---:|
 | **APSS** | **0** | **0.0 s** | **0.0 %** | **879** |
 | LPASS | 0 | 0.0 s | 0.0 % | 0 |
+
+> ☠️☠️ **CORRECTION 2026-08-31 — the LPASS row above reads backwards.** Its
+> `0.0 %` sits in a column headed "share of the window", so it reads as *the
+> crystal was never off* — i.e. LPASS awake for the whole sleep. It is the
+> opposite. Measured the next morning with a 120 s double-sample
+> ([`../2026-08-31_xo-dur-semantics/`](../2026-08-31_xo-dur-semantics/README.md)):
+> the RPM updates `XO total duration` **on exit from XO shutdown, not while the
+> master is down**, so a master that stays down for a whole window contributes a
+> delta of exactly zero. LPASS was **asleep** here — which its own `0`
+> power-collapses in the same row already implied, and which the closed lead
+> `leads/lpass-mclk-gate-state.md` had stated since 2026-08-21.
+>
+> The other three rows are unaffected: APSS's zero is a genuine never-off (its
+> `enter` and `exit` are both 0, it has never entered XO shutdown at all), and
+> MPSS and PRONTO both moved.
+
 | MPSS | 6 614 655 473 | 344.5 s | 55.0 % | 1358 |
 | PRONTO | 11 786 390 707 | 613.9 s | **98.1 %** | 180 |
 
