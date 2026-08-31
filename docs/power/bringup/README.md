@@ -12,6 +12,13 @@ disproved, and one device that was named wrongly. The reference material — wha
 the numbers are today, which files hold them, how to repeat any of it — is in
 the README; this is the reasoning.
 
+> **Start here if you are new to this device's power picture:**
+> [`what-sleeps-and-what-does-not.md`](what-sleeps-and-what-does-not.md) — the
+> two-processor model, what each sleep knob (`gsettings`, logind `IdleAction`,
+> `rtcwake`) actually controls, which of them the modem ignores, and the
+> measurement that showed the sleeping floor *is* the radio. Read it before
+> interpreting any number on this page.
+
 > **Where things stand is deliberately not on this page.** What the phone draws
 > today is in [`../README.md`](../README.md); what is still open is in
 > [`../../TODO.md`](../../TODO.md). This is a record of how the current
