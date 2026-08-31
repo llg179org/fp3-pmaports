@@ -45,12 +45,60 @@ not even at debug level, and the handler then does
 ⇒ *"terse … done"* in the journal means **the step ran**, never that the modem
 obeyed. A witness built so it cannot say no.
 
-Patched upstream-bound, branch `qmi-report-failed-unregister` in the
-ModemManager checkout: keep the register direction exactly as it was — a failure
-there is benign and the code deliberately assumes the indication is already on —
-and `mm_obj_warn` on the unregister direction. Control flow is unchanged; the
-task still returns success, so no state transition behaves differently. It only
-makes the refusal visible, which is the prerequisite for every question after it.
+### ☠️ And the guard is the smaller half — the message is printed before the work
+
+Found on a second read, after the observation that *"just ignore errors for now"*
+is a landmine because it carries no reason. Both terse steps
+(`src/mm-iface-modem-3gpp.c`, `interface_terse_step`) printed
+
+```c
+    MM_IFACE_MODEM_3GPP_GET_IFACE (self)->disable_unsolicited_registration_events (…);
+    mm_obj_msg (self, "terse state 3GPP (%d/%d): disable unsolicited registration events done", …);
+    return;
+```
+
+— the `done` line sits on the statement **after dispatching the asynchronous
+operation**, before its callback has run. The word is not "done", it is
+"dispatched", and it is emitted identically whether the modem accepted the
+request, refused it, or never answered.
+
+⇒ **Every `terse … done` line quoted anywhere in this repository, including in
+[`modemmanager-suspend-modes.md`](modemmanager-suspend-modes.md), says only that
+the request was sent.** The earlier reading — that the guard in the QMI backend
+was what made the witness mute — was right about the guard and wrong about which
+half mattered. Even with the backend propagating errors perfectly, this line
+would still have printed "done".
+
+### ☠️ And a fallback the generic layer implements never runs on QMI
+
+`enable_unsolicited_registration_events_ready` logs the failure and calls
+`periodic_registration_check_enable()` — polling instead of indications, which is
+exactly what a modem that refuses these indications needs. The QMI backend
+returns success unconditionally, and the **only** error it can produce in this
+path is "no DSD client" (`common_enable_disable_unsolicited_registration_events_system_status`,
+the single `g_task_return_error` in the whole chain). A modem that answers the
+request with a failure is therefore indistinguishable from one that accepted it,
+and that fallback is unreachable.
+
+Not changed: propagating the error is a behaviour change on every QMI modem in
+the field and cannot be tested here. It is now written down in the code instead
+of rediscovered.
+
+Patched upstream-bound, three commits on branch `qmi-report-failed-unregister`
+in the ModemManager checkout:
+
+1. `96f73d7` — warn on a failed **un**register; the register direction is left
+   exactly as it was, because a failure there is benign and the code below
+   deliberately assumes the indication is already on;
+2. `323e133` — report each terse step **from its completion callback** rather
+   than at dispatch. The success text is byte-identical, so anything parsing
+   those lines keeps working; a failure now says so at warning level;
+3. `fcacc98` — replace `/* Just ignore errors for now */` with the reason,
+   including the unreachable fallback above. A decision recorded without its
+   reason outlives the situation that justified it.
+
+None of the three changes control flow. Together they turn "terse done" from an
+assertion into a report, which is the prerequisite for every question after it.
 
 ☠️ Noted while reading, deliberately **not** in that patch:
 `self->priv->unsolicited_registration_events_enabled` is written at two sites and
