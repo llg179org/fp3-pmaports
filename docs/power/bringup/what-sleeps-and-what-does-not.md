@@ -203,6 +203,32 @@ behave differently under suspend.
 
 ---
 
+## 3a. What the AP does *not* tell the other processors
+
+Downstream carries a 90-line driver, `drivers/soc/qcom/smp2p_sleepstate.c`, whose
+whole job is to raise a flag before the application processor suspends and lower
+it on resume: bit 12 of an SMP2P entry named `sleepstate`, **1 = AP awake**,
+**0 = AP going down**, with a deliberate 10 ms pause after clearing it so the
+remote can see it before the freeze.
+
+**Mainline has nothing equivalent.** In this tree:
+
+```sh
+ls drivers/soc/qcom/ | grep smp2p          # smp2p.c, trace-smp2p.h — no sleepstate
+grep -rn sleepstate drivers/soc/qcom/ arch/arm64/boot/dts/qcom/    # nothing
+grep -n PM_SUSPEND_PREPARE drivers/soc/qcom/smp2p.c                # nothing
+```
+
+☠️ **But read which remote it talks to before drawing the obvious conclusion.**
+The vendor DT for this SoC family declares exactly one sleepstate entry and it
+carries `qcom,remote-pid = <2>`; our own `msm8953.dtsi` says pid 2 is the **ADSP**
+and pid 1 is the **modem**. So downstream does not tell the modem either, and this
+mechanism cannot be the reason our modem behaves the same asleep and awake.
+
+The full write-up, including the pre-registered experiment and the readings that
+would make it a null result, is in
+[`leads/smp2p-sleepstate-missing.md`](leads/smp2p-sleepstate-missing.md).
+
 ## 4. What the night measurement did, step by step
 
 `tools/sleep-night.sh`, run 2026-08-30 18:25 → 2026-08-31 04:37. Its three
