@@ -112,11 +112,52 @@ Archived and active journals take up 21.5M in the file system.
 **One boot. Nothing before 17:10 today.** Every earlier boot — including the one
 this capture reads — has been discarded, and 21.5 MB is all journald is keeping.
 
-The mechanism is not a mystery and it is not a mistake anyone made: `/` is a
-2.4 G filesystem at **85 %**, with ~330 MB free. journald's default
-`SystemKeepFree` is **15 % of the filesystem** (~360 MB), so the free space is
-*below* the floor journald is trying to preserve — and it responds by rotating
-history away continuously, whatever `SystemMaxUse` would otherwise allow.
+### ☠️ And the mechanism I first wrote down here was wrong
+
+The first version of this section blamed journald's default `SystemKeepFree`
+(15 % of a 2.4 G filesystem is ~360 MB, more than the ~330 MB free), and said
+journald was rotating to reach a floor it could never reach. That story is
+plausible, it fits the symptom, and it is **not what was happening**.
+
+Asking the daemon instead of reasoning about the defaults:
+
+```
+Sep 01 17:10:53 systemd-journald[504]: System Journal (...) is 29.6M, max 30M, 320K free.
+```
+
+**`max 30M`.** The journal was not fighting a percentage floor; it was sitting
+against an explicit 30 MB cap, full, discarding the oldest thing every time it
+wrote. And the cap is ours: `/etc/systemd/journald.conf.d/` held **five**
+drop-ins, written on four different days of this port, each capping the journal
+again —
+
+```
+00-cap.conf        2026-07-23   SystemMaxUse=20M
+00-size-cap.conf   2026-07-24   SystemMaxUse=32M
+00-size.conf       2026-07-20   SystemMaxUse=30M
+cap.conf           2026-07-13   SystemMaxUse=30M
+```
+
+systemd merges drop-ins in **filename order and the last one wins**, so the file
+that decided everything was `cap.conf`, from July 13, purely because `c` sorts
+after `0`. A sixth drop-in added tonight as `10-fp3-retention.conf` would have
+been overridden by all of them and changed nothing — the config listing showed
+`SystemMaxUse=96M` on one line and `SystemMaxUse=30M` two lines below it, which
+is the only reason the mistake was caught before it was written up as a fix.
+
+It is now `zz-fp3-retention.conf`, sorting last on purpose, and the daemon
+confirms it took:
+
+```
+Sep 01 20:44:02 systemd-journald[56984]: System Journal (...) is 21.5M, max 96M, 74.4M free.
+```
+
+Nothing was deleted; the four older caps are still there and still lose.
+
+The lesson is not about journald. **The floor was set four times by hand and
+never once read back**, and the story I nearly published would have sent the
+next reader to free disk space that was not the problem. Ask the component what
+limit it is enforcing; do not derive it from the documented defaults.
 
 Two consequences, both operational:
 
@@ -126,5 +167,7 @@ Two consequences, both operational:
    anything. Anything wanted from the journal must be **extracted to the repo the
    same day**, and the extract must be wider than the question that prompted it —
    this one was cut at 06:00 and the run-up is gone with it.
-2. **Free space on `/` is a measurement resource**, not just a build concern.
-   Below ~15 % the device silently stops keeping its own history.
+2. **A retention budget has to be stated once and read back.** Free space on `/`
+   turned out not to be the operative limit at all, but the journal still
+   evaporated - because five separate sessions each wrote their own cap and none
+   of them checked which one was in force.
