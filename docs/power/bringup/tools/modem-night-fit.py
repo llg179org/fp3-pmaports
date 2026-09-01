@@ -20,6 +20,7 @@
 # throughout; delta 0 AND count moved = genuinely awake.
 import os
 import re
+from datetime import datetime
 import sys
 
 TICK = 19.2e6
@@ -34,10 +35,17 @@ def masters(path):
             phase = "BEFORE"; out[phase] = {}; continue
         if line.startswith("=== AFTER"):
             phase = "AFTER"; out[phase] = {}; continue
-        m = re.match(r"#\s*round=(\d+)\s+path=(\w+).*cap=(\d+)%\s+v=(\d+)uV", line)
+        m = re.match(r"#\s*round=(\d+)\s+path=(\w+)\s+t=(\S+ \S+)\s+cap=(\d+)%\s+v=(\d+)uV", line)
         if m:
-            meta.update(round=int(m.group(1)), path=m.group(2),
-                        cap=int(m.group(3)), v=int(m.group(4)))
+            meta.update(round=int(m.group(1)), path=m.group(2), t=m.group(3),
+                        cap=int(m.group(4)), v=int(m.group(5)))
+        elif re.match(r"#\s*round=", line):
+            # Older captures carry no t= field. Keep reading them rather than
+            # dropping the round: the elapsed column simply stays blank.
+            m2 = re.match(r"#\s*round=(\d+)\s+path=(\w+).*cap=(\d+)%\s+v=(\d+)uV", line)
+            if m2:
+                meta.update(round=int(m2.group(1)), path=m2.group(2),
+                            cap=int(m2.group(3)), v=int(m2.group(4)))
         m = re.match(r"#\s*after: cap=(\d+)%\s+v=(\d+)uV", line)
         if m:
             meta.update(cap_after=int(m.group(1)), v_after=int(m.group(2)))
@@ -82,7 +90,15 @@ def main(root):
     rounds = sorted(d for d in os.listdir(root) if d.startswith("round-"))
     if not rounds:
         print(f"no round-* directories under {root}"); return 2
-    print(f"{'rnd':>4} {'path':<8} {'slept':>6} {'waking irq':>18} "
+    # ☠️ The elapsed column exists because the duty turned out to be a function
+    # of how long the phone had been up, not of any configuration. A ladder is
+    # unreadable without it, and every round already carries its wall clock.
+    t0 = None
+    for d in rounds:
+        _, mt = masters(os.path.join(root, d, "masters.txt"))
+        if mt.get("t"):
+            t0 = datetime.strptime(mt["t"], "%Y-%m-%d %H:%M:%S"); break
+    print(f"{'rnd':>4} {'t_h':>6} {'path':<8} {'slept':>6} {'waking irq':>18} "
           f"{'MPSS':>7} {'LPASS':>7} {'PRONTO':>7} {'REQ':>5} {'RSP':>5} {'IND':>5}  {'v_uV':>8}")
     agg = {}
     for d in rounds:
@@ -108,7 +124,10 @@ def main(root):
         p = meta.get("path", "?")
         qmi = (f"{kinds['REQ']:>5} {kinds['RSP']:>5} {kinds['IND']:>5}" if not nowin
                else f"{'?':>5} {'?':>5} {'?':>5}")
-        print(f"{meta.get('round','?'):>4} {p:<8} {slept if slept else '?':>6} "
+        th = "     ?"
+        if t0 and meta.get("t"):
+            th = f"{(datetime.strptime(meta['t'], '%Y-%m-%d %H:%M:%S') - t0).total_seconds()/3600:6.2f}"
+        print(f"{meta.get('round','?'):>4} {th:>6} {p:<8} {slept if slept else '?':>6} "
               f"{(irq or meta.get('irq','?')):>18} {cells['MPSS']:>7} {cells['LPASS']:>7} "
               f"{cells['PRONTO']:>7} {qmi}"
               f"  {meta.get('v_after', meta.get('v','?')):>8}"
