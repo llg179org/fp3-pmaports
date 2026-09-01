@@ -107,6 +107,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `modem-night-fit.py` | Per-round MPSS/LPASS/PRONTO duty beside the QMI census, split by suspend path |
 | `modem-night-to-rounds.py` | Adapter: a modem-night.sh run into the rows sleep-night-fit.py prices |
 | `modem-night.sh` | Eight cable-free, WiFi-free hours alternating two suspend paths: what wakes the |
+| `modem-story.sh` | Capture the modem's own configuration story in one file: serving system, attach-PDN list, profiles, PDC, SIM, IMS |
 | `modem-window-fit.py` | Read one or more modem-window.sh captures and print the per-master awake duty |
 | `modem-window.sh` | ONE instrument, BOTH systems: an RPM master-stats window with the modem's full |
 | `mpss-leg.sh` | mpss-leg.sh — two things at once |
