@@ -87,7 +87,13 @@ snap() {
 	  /xo_count/                      { s=$0; sub(/.*:[[:space:]]*/,"",s); c=strtonum(s) }
 	  /xo_last_entered_at/            { s=$0; sub(/.*:[[:space:]]*/,"",s); en=strtonum(s) }
 	  /xo_last_exited_at/             { s=$0; sub(/.*:[[:space:]]*/,"",s); ex=strtonum(s) }
-	  END { if (d != "") printf "%d %d %s %s %s\n", d, c+0, en+0, ex+0, (ac == "" ? "?" : ac) }' "$F"
+	  # ☠️ %.0f, NEVER %d. This counter is ~4e11 and the device awk clamps %d to
+	  # INT_MAX: measured on the device, printf "%d", 407012504635 prints
+	  # 2147483647. Every sample then returns the SAME constant, every delta is
+	  # zero, and the tool reports a flawless "100 % awake, CV 0.01, SMOOTH" for
+	  # a master that toggled up to 4 times a second. It did exactly that on its
+	  # first real run. A double holds it exactly to 2^53.
+	  END { if (d != "") printf "%.0f %.0f %.0f %.0f %s\n", d, c+0, en+0, ex+0, (ac == "" ? "?" : ac) }' "$F"
 }
 
 now() { awk '{printf "%.3f\n", $1}' /proc/uptime; }
