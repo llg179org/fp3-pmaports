@@ -1,0 +1,354 @@
+# modem-window stack=pmos secs=600 2026-09-01 17:00:30
+# kernel=7.1.3-postmarketos-qcom-msm8953 #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# uptime=18210
+# BEFORE ------------------------------------------------------------
+#   --- mmcli -m 0
+#                |      firmware revision: MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.356774.1.425464.1  1  [Aug 04 2021 08:00:00]
+#                |                current: gsm-umts, lte
+#                |                  state: registered
+#                |            power state: on
+#                |            access tech: lte
+#                |         signal quality: 89% (recent)
+#                |                current: allowed: 2g, 3g, 4g; preferred: 4g
+#                |                current: egsm, dcs, pcs, g850, utran-1, utran-4, utran-5, utran-8, 
+#                |            operator id: 21670
+#                |          operator name: vodafone HU
+#                |           registration: home
+#                |   packet service state: attached
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+#   --- radio context [BEFORE]
+#     qmi transport: qrtr://0
+#     --nas-get-rf-band-info
+#       [qrtr://0] Successfully got RF band info
+#       Band Information:
+#       	Radio Interface:   'lte'
+#       	Active Band Class: 'eutran-20'
+#       	Active Channel:    '6200'
+#       Band Information (Extended):
+#       	Radio Interface:   'lte'
+#       	Active Band Class: 'eutran-20'
+#       	Active Channel:    '6200'
+#     --nas-get-cell-location-info
+#       [qrtr://0] Successfully got cell location info
+#       Intrafrequency LTE Info
+#       	UE In Idle: 'no'
+#       	PLMN: '21670'
+#       	Tracking Area Code: '5300'
+#       	Global Cell ID: '1470722'
+#       	EUTRA Absolute RF Channel Number: '6200' (E-UTRA band 20: 800 DD)
+#       	Serving Cell ID: '109'
+#       	Cell [0]:
+#       		Physical Cell ID: '109'
+#       		RSRQ: '-5.1' dB
+#       		RSRP: '-85.6' dBm
+#       		RSSI: '-61.2' dBm
+#       Interfrequency LTE Info
+#       	UE In Idle: 'no'
+#       	Frequency [0]:
+#       		EUTRA Absolute RF Channel Number: '500' (E-UTRA band 1: 2100)
+#       		Selection RX Level Low Threshold: '0'
+#       		Cell Selection RX Level High Threshold: '0'
+#       		Cell [0]:
+#       			Physical Cell ID: '272'
+#       			RSRQ: '-9.3' dB
+#       			RSRP: '-95.1' dBm
+#       			RSSI: '-76.7' dBm
+#       			Cell Selection RX Level: '0'
+#       LTE Info Neighboring GSM
+#       	UE In Idle: 'no'
+#       LTE Info Neighboring WCDMA
+#       	UE In Idle: 'no'
+#       LTE Timing Advance: '5' us
+#     --nas-get-signal-info
+#       [qrtr://0] Successfully got signal info
+#       LTE:
+#       	RSSI: '-60 dBm'
+#       	RSRQ: '-7 dB'
+#       	RSRP: '-86 dBm'
+#       	SNR: '20.0 dB'
+#     --nas-get-system-selection-preference
+#       [qrtr://0] Successfully got system selection preference
+#       	Emergency mode: 'no'
+#       	Mode preference: 'cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma'
+#       	Disabled modes: 'none'
+#       	Band preference: 'gsm-dcs-1800, gsm-900-extended, gsm-900-primary, gsm-850, gsm-pcs-1900, wcdma-2100, wcdma-pcs-1900, wcdma-1700-us, wcdma-850-us, wcdma-900'
+#       	LTE band preference: '1, 2, 3, 4, 5, 7, 8, 13, 20, 26'
+#       	LTE band preference (extended): '1, 2, 3, 4, 5, 7, 8, 13, 20, 26'
+#       	TD-SCDMA band preference: 'a, b, c, d, e, f'
+#       	Roaming preference: 'any'
+#       	Network selection preference: 'automatic'
+#       	Service domain preference: 'cs-ps'
+#       	GSM/WCDMA acquisition order preference: 'automatic'
+#       	Usage preference: 'voice-centric'
+#       	Voice domain preference: 'ps-preferred'
+#       	Registration restriction: 'unrestricted'
+#       	Acquisition order preference: 'lte, umts, gsm, cdma-1x, cdma-1xevdo'
+#     --pdc-list-configs
+#       error: Missing argument for --pdc-list-configs
+#     --pdc-get-selected-config
+#       error: Unknown option --pdc-get-selected-config
+# v=4050785 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=72
+# t0=18210
+BEFORE [APSS]
+BEFORE APSS:
+BEFORE 	Last shutdown @ 349893858315
+BEFORE 	Last bringup req @ 349893862313
+BEFORE 	Last bringup ack @ 349893868595
+BEFORE 	Last wakeup idx: 349893740199
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 15575
+BEFORE 	Last wake transition duration: 2163
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 179226
+BEFORE 	Active cores bitmask: 0x1
+BEFORE [MPSS]
+BEFORE MPSS:
+BEFORE 	Last shutdown @ 349907295562
+BEFORE 	Last bringup req @ 349907160789
+BEFORE 	Last bringup ack @ 349907181947
+BEFORE 	Last wakeup idx: 349899417926
+BEFORE 	Last XO shutdown enter @ 349907302196
+BEFORE 	Last XO shutdown exit @ 349907167422
+BEFORE 	XO total duration: 192537730540
+BEFORE 	Last sleep transition duration: 15862
+BEFORE 	Last wake transition duration: 19348
+BEFORE 	XO shutdown count: 45162
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 45547
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [PRONTO]
+BEFORE PRONTO:
+BEFORE 	Last shutdown @ 349904829308
+BEFORE 	Last bringup req @ 349905283789
+BEFORE 	Last bringup ack @ 349905302103
+BEFORE 	Last wakeup idx: 349898684645
+BEFORE 	Last XO shutdown enter @ 349904840503
+BEFORE 	Last XO shutdown exit @ 349905293139
+BEFORE 	XO total duration: 296757627451
+BEFORE 	Last sleep transition duration: 12095
+BEFORE 	Last wake transition duration: 14346
+BEFORE 	XO shutdown count: 89775
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 89803
+BEFORE 	Active cores bitmask: 0x1
+BEFORE [TZ]
+BEFORE TZ:
+BEFORE 	Last shutdown @ 0
+BEFORE 	Last bringup req @ 0
+BEFORE 	Last bringup ack @ 0
+BEFORE 	Last wakeup idx: 0
+BEFORE 	Last XO shutdown enter @ 0
+BEFORE 	Last XO shutdown exit @ 0
+BEFORE 	XO total duration: 0
+BEFORE 	Last sleep transition duration: 0
+BEFORE 	Last wake transition duration: 0
+BEFORE 	XO shutdown count: 0
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 0
+BEFORE 	Active cores bitmask: 0x0
+BEFORE [LPASS]
+BEFORE LPASS:
+BEFORE 	Last shutdown @ 349907204008
+BEFORE 	Last bringup req @ 349907161004
+BEFORE 	Last bringup ack @ 349907190403
+BEFORE 	Last wakeup idx: 946503504
+BEFORE 	Last XO shutdown enter @ 349907249099
+BEFORE 	Last XO shutdown exit @ 349907185047
+BEFORE 	XO total duration: 349152983084
+BEFORE 	Last sleep transition duration: 7001
+BEFORE 	Last wake transition duration: 6975
+BEFORE 	XO shutdown count: 123
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 139
+BEFORE 	Active cores bitmask: 0x0
+# t1=18810
+AFTER [APSS]
+AFTER APSS:
+AFTER 	Last shutdown @ 361426546971
+AFTER 	Last bringup req @ 361428662969
+AFTER 	Last bringup ack @ 361428677210
+AFTER 	Last wakeup idx: 361425680653
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 12204
+AFTER 	Last wake transition duration: 12383
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 189307
+AFTER 	Active cores bitmask: 0x1
+AFTER [MPSS]
+AFTER MPSS:
+AFTER 	Last shutdown @ 361426885484
+AFTER 	Last bringup req @ 361425789195
+AFTER 	Last bringup ack @ 361425789307
+AFTER 	Last wakeup idx: 361425788824
+AFTER 	Last XO shutdown enter @ 361426899587
+AFTER 	Last XO shutdown exit @ 361425775116
+AFTER 	XO total duration: 199748143897
+AFTER 	Last sleep transition duration: 18689
+AFTER 	Last wake transition duration: 21524
+AFTER 	XO shutdown count: 46593
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 46978
+AFTER 	Active cores bitmask: 0x0
+AFTER [PRONTO]
+AFTER PRONTO:
+AFTER 	Last shutdown @ 361428252566
+AFTER 	Last bringup req @ 361427818978
+AFTER 	Last bringup ack @ 361427819089
+AFTER 	Last wakeup idx: 361427818528
+AFTER 	Last XO shutdown enter @ 361428263634
+AFTER 	Last XO shutdown exit @ 361427811478
+AFTER 	XO total duration: 305113654323
+AFTER 	Last sleep transition duration: 11795
+AFTER 	Last wake transition duration: 13075
+AFTER 	XO shutdown count: 95048
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 95077
+AFTER 	Active cores bitmask: 0x0
+AFTER [TZ]
+AFTER TZ:
+AFTER 	Last shutdown @ 0
+AFTER 	Last bringup req @ 0
+AFTER 	Last bringup ack @ 0
+AFTER 	Last wakeup idx: 0
+AFTER 	Last XO shutdown enter @ 0
+AFTER 	Last XO shutdown exit @ 0
+AFTER 	XO total duration: 0
+AFTER 	Last sleep transition duration: 0
+AFTER 	Last wake transition duration: 0
+AFTER 	XO shutdown count: 0
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 0
+AFTER 	Active cores bitmask: 0x0
+AFTER [LPASS]
+AFTER LPASS:
+AFTER 	Last shutdown @ 349907204008
+AFTER 	Last bringup req @ 349907161004
+AFTER 	Last bringup ack @ 349907190403
+AFTER 	Last wakeup idx: 946503504
+AFTER 	Last XO shutdown enter @ 349907249099
+AFTER 	Last XO shutdown exit @ 349907185047
+AFTER 	XO total duration: 349152983084
+AFTER 	Last sleep transition duration: 7001
+AFTER 	Last wake transition duration: 6975
+AFTER 	XO shutdown count: 123
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 139
+AFTER 	Active cores bitmask: 0x0
+# AFTER -------------------------------------------------------------
+#   --- mmcli -m 0
+#                |      firmware revision: MPSS.TA.3.1.c1-00026-8953_GEN_PACK-1.356774.1.425464.1  1  [Aug 04 2021 08:00:00]
+#                |                current: gsm-umts, lte
+#                |                  state: registered
+#                |            power state: on
+#                |            access tech: lte
+#                |         signal quality: 83% (recent)
+#                |                current: allowed: 2g, 3g, 4g; preferred: 4g
+#                |                current: egsm, dcs, pcs, g850, utran-1, utran-4, utran-5, utran-8, 
+#                |            operator id: 21670
+#                |          operator name: vodafone HU
+#                |           registration: home
+#                |   packet service state: attached
+#   --- modem remoteproc: running
+#   --- rfkill
+#     0: nfc0: NFC
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     1: hci0: Bluetooth
+#     	Soft blocked: no
+#     	Hard blocked: no
+#     2: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+#   --- radio context [AFTER]
+#     qmi transport: qrtr://0
+#     --nas-get-rf-band-info
+#       [qrtr://0] Successfully got RF band info
+#       Band Information:
+#       	Radio Interface:   'lte'
+#       	Active Band Class: 'eutran-20'
+#       	Active Channel:    '6200'
+#       Band Information (Extended):
+#       	Radio Interface:   'lte'
+#       	Active Band Class: 'eutran-20'
+#       	Active Channel:    '6200'
+#     --nas-get-cell-location-info
+#       [qrtr://0] Successfully got cell location info
+#       Intrafrequency LTE Info
+#       	UE In Idle: 'no'
+#       	PLMN: '21670'
+#       	Tracking Area Code: '5300'
+#       	Global Cell ID: '1470722'
+#       	EUTRA Absolute RF Channel Number: '6200' (E-UTRA band 20: 800 DD)
+#       	Serving Cell ID: '109'
+#       	Cell [0]:
+#       		Physical Cell ID: '109'
+#       		RSRQ: '-7.7' dB
+#       		RSRP: '-84.7' dBm
+#       		RSSI: '-59.8' dBm
+#       Interfrequency LTE Info
+#       	UE In Idle: 'no'
+#       	Frequency [0]:
+#       		EUTRA Absolute RF Channel Number: '500' (E-UTRA band 1: 2100)
+#       		Selection RX Level Low Threshold: '0'
+#       		Cell Selection RX Level High Threshold: '0'
+#       		Cell [0]:
+#       			Physical Cell ID: '272'
+#       			RSRQ: '-14.8' dB
+#       			RSRP: '-96.4' dBm
+#       			RSSI: '-69.9' dBm
+#       			Cell Selection RX Level: '0'
+#       		Cell [1]:
+#       			Physical Cell ID: '285'
+#       			RSRQ: '-20.0' dB
+#       			RSRP: '-101.4' dBm
+#       			RSSI: '-69.9' dBm
+#     --nas-get-signal-info
+#       [qrtr://0] Successfully got signal info
+#       LTE:
+#       	RSSI: '-63 dBm'
+#       	RSRQ: '-6 dB'
+#       	RSRP: '-86 dBm'
+#       	SNR: '21.2 dB'
+#     --nas-get-system-selection-preference
+#       [qrtr://0] Successfully got system selection preference
+#       	Emergency mode: 'no'
+#       	Mode preference: 'cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma'
+#       	Disabled modes: 'none'
+#       	Band preference: 'gsm-dcs-1800, gsm-900-extended, gsm-900-primary, gsm-850, gsm-pcs-1900, wcdma-2100, wcdma-pcs-1900, wcdma-1700-us, wcdma-850-us, wcdma-900'
+#       	LTE band preference: '1, 2, 3, 4, 5, 7, 8, 13, 20, 26'
+#       	LTE band preference (extended): '1, 2, 3, 4, 5, 7, 8, 13, 20, 26'
+#       	TD-SCDMA band preference: 'a, b, c, d, e, f'
+#       	Roaming preference: 'any'
+#       	Network selection preference: 'automatic'
+#       	Service domain preference: 'cs-ps'
+#       	GSM/WCDMA acquisition order preference: 'automatic'
+#       	Usage preference: 'voice-centric'
+#       	Voice domain preference: 'ps-preferred'
+#       	Registration restriction: 'unrestricted'
+#       	Acquisition order preference: 'lte, umts, gsm, cdma-1x, cdma-1xevdo'
+#     --pdc-list-configs
+#       error: Missing argument for --pdc-list-configs
+#     --pdc-get-selected-config
+#       error: Unknown option --pdc-get-selected-config
+# v=4103143 (/sys/class/power_supply/pmi632-battery/voltage_now)
+# cc_soc=
+# cap=75
+# done
