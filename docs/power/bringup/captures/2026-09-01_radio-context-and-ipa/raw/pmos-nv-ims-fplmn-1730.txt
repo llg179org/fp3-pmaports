@@ -1,0 +1,47 @@
+=== PDC list (software):
+Total configurations: 25
+Configuration 1:
+	Description: ROW_Commercial
+	Type:        software
+	Size:        43484
+	Status:      Active
+	Version:     0x7010804
+	ID:          5C:F9:CA:DA:5C:35:85:17:BA:3B:B8:88:D0:34:2B:79:BD:5F:AD:ED
+
+Configuration 2:
+	Description: APT_Taiwan_Commercial
+	Type:        software
+	Size:        41092
+	Status:      Inactive
+	Version:     0x7014201
+	ID:          84:DC:C0:ED:CC:38:1A:A7:FC:94:8E:88:03:B6:9F:76:BE:D1:87:67
+
+Configuration 3:
+	Description: FarEastOne_Taiwan_Commercial
+	Type:        software
+=== PDC list (platform):
+Total configurations: 1
+Configuration 1:
+	Description: SR_DSDS-LA-7+7_mode-SDM632
+	Type:        platform
+	Size:        12144
+	Status:      Inactive
+	Version:     0x7001900
+	ID:          1E:28:02:C6:21:25:3A:2B:3E:3E:1B:EB:8D:EC:43:68:18:41:1C:9B
+
+=== IMS registration status:
+error: couldn't get IMS registration status: QMI protocol error (70): 'InvalidOperation'
+=== IMS services status:
+error: couldn't get IMS services status: QMI protocol error (70): 'InvalidOperation'
+=== IMS enabler state:
+error: couldn't create client for the 'imsp' service: QMI protocol error (3): 'Internal'
+=== IMS services enabled setting:
+error: couldn't get IMS services enabled setting: QMI protocol error (70): 'InvalidOperation'
+=== EF_FPLMN (USIM 3F00/7FFF/6F7B):
+[qrtr://0/] Successfully read information from the UIM:
+Card result:
+	SW1: '0x90'
+	SW2: '0x00'
+Read result:
+	12:F6:03:FF:FF:FF:FF:FF:FF:FF:FF:FF
+
