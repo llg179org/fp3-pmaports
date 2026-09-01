@@ -1,0 +1,21 @@
+ rnd path      slept         waking irq    MPSS   LPASS  PRONTO   REQ   RSP   IND      v_uV
+   1 rtcwake   602.0 56:pm8xxx_rtc_alarm    39.5    48.4    -1.5     0     0     0   3734111
+   2 logind    600.0 56:pm8xxx_rtc_alarm    36.6 ☠️IMPOS ☠️IMPOS     0     0     0   3754548
+   3 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.8 ☠️IMPOS    -1.4     0     0     0   3736641
+   4 logind    600.0 56:pm8xxx_rtc_alarm    34.9 ☠️IMPOS ☠️IMPOS     0     0     0   3727493
+   5 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.9 ☠️IMPOS    -1.7     0     0     0   3750655
+   6 logind    600.0 56:pm8xxx_rtc_alarm    36.8 ☠️IMPOS ☠️IMPOS     0     0     0   3760581
+   7 rtcwake   601.0 56:pm8xxx_rtc_alarm    35.5 ☠️IMPOS    -1.6     0     0     0   3762722
+   8 logind    600.0 56:pm8xxx_rtc_alarm    35.8 ☠️IMPOS ☠️IMPOS     0     0     0   3756299
+   9 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.7 ☠️IMPOS    -1.6     0     0     0   3717567
+  10 logind    600.0 56:pm8xxx_rtc_alarm    36.2 ☠️IMPOS ☠️IMPOS     0     0     0   3732554
+  11 rtcwake   601.0 56:pm8xxx_rtc_alarm    38.1 ☠️IMPOS    -1.3     0     0     0   3716010
+  12 logind    600.0 56:pm8xxx_rtc_alarm    36.7 ☠️IMPOS ☠️IMPOS     0     0     0   3742870
+
+=== the internal A/B: the two suspend paths, same night, same cell
+  logind   rounds=6    mean sleep=600s     mean MPSS awake=36.2%    (n=6)  QMI REQ=0 RSP=0 IND=0
+  rtcwake  rounds=6    mean sleep=601s     mean MPSS awake=37.6%    (n=6)  QMI REQ=0 RSP=0 IND=0
+
+☠️ Read the difference between the two rows as the sleep handshake's share,
+   and a round with a HIGH MPSS duty and ZERO QMI as evidence for candidate (c):
+   the modem is not being kept awake by anyone, it simply does not go down.
