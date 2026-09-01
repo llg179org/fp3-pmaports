@@ -1,0 +1,20 @@
+# cpuidle-ab 2026-09-01 18:59:09 arm=600s deep=state1
+# gate: /dev/cpu_dma_latency target = 2000000000
+# deep-idle usage per cpu at start: 287638 100448 83552 61463 243360 238715 215308 202013 
+--- arm A-free (deep idle free)
+#   A-free before t=5499 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-93.7 rsrq=-9 snr=18.2
+#   A-free after t=6099 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-95.4 rsrq=-9 snr=18.4
+RESULT A-free mpss_up=51.7%  state1_entries=+80645 (134.4/s)
+--- arm B-barred (deep idle BARRED)
+#   B-barred before t=6120 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-94.9 rsrq=-10 snr=17.8
+    constraint now: 0 (0 = deep idle barred)
+    constraint released: 2000000000
+#   B-barred after t=6720 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-94.5 rsrq=-9 snr=18.2
+RESULT B-barred mpss_up=50.5%  state1_entries=+27 (0.0/s)
+    witness OK: deep idle really was barred (0.045/s vs 134.408/s free, 100.0% cut)
+--- arm C-free (deep idle free)
+#   C-free before t=6740 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-94.3 rsrq=-9 snr=18.2
+#   C-free after t=7341 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-95.3 rsrq=-8 snr=18.8
+RESULT C-free mpss_up=50.4%  state1_entries=+82381 (137.3/s)
+# deep-idle usage per cpu at end:   325351 115211 87376 63991 275955 271449 242960 227319 
+# done 2026-09-01 19:30:11
