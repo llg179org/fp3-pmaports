@@ -9571,3 +9571,57 @@ above: six rounds over one hour at 3.6 V price the three runs at 251 / 335 /
 rms residual, with the pack voltage moving ±26 mV *between* rounds. The numbers
 are recorded inside the capture so that nobody re-derives them and believes them.
 An hour resolves duty; current still needs a night.
+
+### The 2026-09-01 plan review, and what it changed
+
+The plan was put to an outside reviewer (a different model, given the goal, the
+measured state, the retraction list and the queue). Its central criticism is
+recorded here because it changed the order of everything below it.
+
+☠️ **The oracle's 6.1 % is an uncontrolled covariate.** It is a measurement from
+days ago, and the whole "persistent device state" hunt rests on it still being
+true today. Every device-side arm is now negative — daemon, Wi-Fi, cable, modem
+power cycle, reboot, time of day — and the most parsimonious reading of that is
+not a hidden state in the phone but **a variable in the network that moves in
+time**: the band is the largest known effect (13.6 points) and the network
+assigns it; the 34-minute 5 % episode behaves like a regime that came and went;
+and the duty is made of *wake length* (148 ms against 16 ms at the same ~2.4/s
+rate), which is what neighbour-cell and IRAT measurement work looks like, and
+that is cell- and RSRP-dependent rather than stack-dependent.
+
+**So the one measurement that settles the most at once is to re-measure the
+oracle now**, on the same morning, with the same instrument set on both slots,
+recording band/cell/RSRP on each side. Oracle still ~6 % on the same cell ⇒ a
+real stack/NV difference, readable where we already stand. Oracle now 30 %+ ⇒
+**the reference is stale**, the persistent-state hunt stops, and the question
+becomes which network condition produces the cheap regime and whether the UE can
+ask for it.
+
+What else the review changed:
+
+- **`detach`+`attach` dropped.** The modem-core cycle already re-attached and
+  moved nothing, so a per-attach network negotiation is eliminated.
+- **The ModemManager binary A/B dropped**: the 2026-08-29 high readings were
+  already made with the packaged binary.
+- **The generic "read the NV" step got named instruments**: the active PDC
+  carrier config, the system-selection preference (a RAT list that still
+  contains GSM/WCDMA makes the UE run IRAT measurements — which *is* wake
+  length), the IMS registration state (a modem stuck retrying an IMS PDN is a
+  classic duty sink and is carrier-config driven, i.e. exactly the
+  survives-everything profile), and `EF_FPLMN` off the SIM.
+- **A band lock ladder was added** — `eutran-1` / `-3` / `-20`, the last never
+  measured — because it is the only known large effect the UE can *force*.
+- ☠️ **An unpriced anomaly was named**: with the daemon stopped the ADSP sleeps
+  through the whole window, yet the system draws 14 mA *more*. Something else,
+  tied to the daemon's absence, eats the ADSP saving, and it has no name yet.
+- ☠️ **The floor is deferred, not dropped.** Full success on the duty front is
+  41.4 + 133 × 0.061 ≈ 49–50 mA — the target exactly, with no margin. The
+  oracle's ~30 mA floor says there is ~10 mA there too, so ≤50 mA only becomes
+  robust from both fronts together.
+
+**And the method note that outlived the specific findings:** every retraction on
+this page has the same shape — *windows measured on different days or in
+different regimes, compared as if they came from one population*. From
+2026-09-01 the network is a named covariate: a window without band, cell and
+RSRP is an anecdote, not a datum, and every "X has no effect" is written with
+the number of regimes it was measured across.
