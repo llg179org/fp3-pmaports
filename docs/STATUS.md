@@ -39,11 +39,13 @@ GOAL: pmOS fogyasztás felezése (≤50 mA) UT reagálási paraméterei mellett 
   [x] 14. ☠️ NAPLO-BISZEKCIO: 2026-08-31 06:12 (meg 5%) es 11:48 (mar 33,6%) kozott 5,6 ora telt el, amiben merések, MM-ujrainditasok es a patchelt MM telepitese tortent. A journal az eszkozon van; vegignezni, mi tortent a lepcso elott. Az elso dolog a futas utan, mert ssh kell hozza  ⟨capture:docs/power/bringup/captures/2026-09-01_duty-step-journal⟩
         · ☠️ A naplo PERZISZTENS (/var/log/journal), a -1 boot lefedi 08-30 14:00 - 09-01 11:56-ot ⇒ a rebootom NEM semmisitette meg a bizonyitekot. A reggel rogzitett kockazat nem valosult meg, de a proceduralis tanulsag all
   […] 15. ★★★★★ PERZISZTENS ALLAPOT: ez az egyetlen kategoria, ami tulel daemont, WiFit, kabelt, modem-power-cyclet, rebootot ES napszakot. Ket alcsoport, es szetvalaszthatok: (a) MODEM NV / carrier config - amit 08-31 reggel valami beleirt; (b) a HALOZAT allapota erre az IMSI-re. Szetvalasztas: detach+attach (a halozati oldalt ujraalkuja), illetve a modem NV/carrier-config olvasasa qmiclivel es osszevetes azzal, amit a leads/modem-carrier-config.md mar tud
-        · A 16. tetel MERI: a 15. csak a kategoriat nevezte meg, a bearer-kar az, ami eldonti
-  [~] 16. ★★★★★ ADAT-CONTEXT KAR: huzz fel egy bearert (mmcli --simple-connect), igazold hogy a rmnet interfesz UP es van cime, majd merd a dutyt ugyanazzal a karral. ☠️ ELORE ROGZITVE: ~5-8% ⇒ MEGVAN a D-palya kar, es a magyarazat az, hogy a modem context nelkul nem kap/nem hasznal mely DRX-et; ~34% ⇒ az adat-context sem az, es a 08-31 reggeli epizod tovabbra is magyarazatlan. ☠️ Ellenorizni kell, hogy a bearer VEGIG fent marad-e a meres alatt - egy kozben leeso context ket regimet atlagolna
-        · FUT: fp3-bearer inditva 13:19:30 (modem-night.sh 1 600 15 running up in), utolso kor ~14:26. A modem allapota a futas elejen: CONNECTED. ★ A bearer felhuzva: mmcli --simple-connect apn=internet.vodafone.net -> Bearer/1, connected: yes, cim 10.112.79.62/30, gw 10.112.79.61; a host-oldali qmapmux0.0-t KEZZEL kellett felhuzni (ip link up + ip addr add), mert pmOS-en nincs netmgrd/ipacm - es utana 3/3 ping ment a 8.8.8.8-ra az LTE-n. ☠️ MM-nek FUTNIA kell, kulonben a bearer leesik, tehat ez a kar mm=running (a daemon hatasa korabban merve: nincs). ☠️ Ellenorizni a futas UTAN, hogy a bearer vegig fent maradt-e
-  [ ] 17. ★ MM-BINARIS A/B: /usr/sbin/ModemManager.pkg.bak egy mv-re van. Csomagolt binaris visszaallitasa + ujraindites, majd ugyanaz a duty-meres. ☠️ ELORE ROGZITVE: ~5% ⇒ az uj build a kulonbseg; ~34% ⇒ nem a binaris. ☠️ Es a 08-29-i 48,9-52,7% MAR a csomagolt binarissal keszult, tehat az onmagaban nem magyarazza a harom regimet
-  [ ] 18. ☠️ A 2026-09-01_duty-step-journal capture RAW resze hianyzik: a 186 soros ablak az eszkozon van /tmp/win.txt-ben, a masolas a meres miatt maradt el. Lehuzni es bemasolni
+        · A 16. tetel meri; annak eredmenyere var
+  […] 16. ★★★★★ ADAT-CONTEXT KAR: huzz fel egy bearert (mmcli --simple-connect), igazold hogy a rmnet interfesz UP es van cime, majd merd a dutyt ugyanazzal a karral. ☠️ ELORE ROGZITVE: ~5-8% ⇒ MEGVAN a D-palya kar, es a magyarazat az, hogy a modem context nelkul nem kap/nem hasznal mely DRX-et; ~34% ⇒ az adat-context sem az, es a 08-31 reggeli epizod tovabbra is magyarazatlan. ☠️ Ellenorizni kell, hogy a bearer VEGIG fent marad-e a meres alatt - egy kozben leeso context ket regimet atlagolna
+        · Az 1 oras ablaknak le kell futnia: inditva 13:19:30, utolso kor ~14:26, dead-man 14:49. ☠️ WiFi fent, pingelni TILOS; tiszta idozito 14:30-ra
+  […] 17. ★ MM-BINARIS A/B: /usr/sbin/ModemManager.pkg.bak egy mv-re van. Csomagolt binaris visszaallitasa + ujraindites, majd ugyanaz a duty-meres. ☠️ ELORE ROGZITVE: ~5% ⇒ az uj build a kulonbseg; ~34% ⇒ nem a binaris. ☠️ Es a 08-29-i 48,9-52,7% MAR a csomagolt binarissal keszult, tehat az onmagaban nem magyarazza a harom regimet
+        · A telefon foglalt a 16. tetel meresevel ~14:26-ig
+  […] 18. ☠️ A 2026-09-01_duty-step-journal capture RAW resze hianyzik: a 186 soros ablak az eszkozon van /tmp/win.txt-ben, a masolas a meres miatt maradt el. Lehuzni es bemasolni
+        · ssh kell hozza; a 16. meres utan, ugyanabban a menetben
 ```
 
 ```
@@ -86,11 +88,6 @@ MEASURED and standing:
   · Az 5,0%-os MPSS leletnek nincs tarsa 55 mintaban, tehat kiugro ertek
       fell because: NEGY meres 34 perc alatt (mm-duty-ab A/B/A' 5,1/4,9/4,9% + a 05:52-es alvas-ablak 5,0%), es a B-leg FUTO ModemManagerrel, registered, LTE, attached vodafone HU-n ⇒ nem lekapcsolt modem, hanem egy ~34 perces REGIME ugyanabban a bootban
 ```
-
-**☠️ Results have landed that the plan does not mention yet:**
-
-  - uncommitted changes under /mnt/1TB/pmos/fp3-pmaports/docs:
-     ?? docs/power/bringup/captures/2026-09-01_duty-step-journal/
 
 Last pre-compaction transcript snapshot: `/home/fp3/.claude/.state/precompact-status/_mnt_1TB_Fp3-Sailfish/latest.md`
 
