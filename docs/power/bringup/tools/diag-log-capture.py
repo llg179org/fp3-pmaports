@@ -117,6 +117,19 @@ def ctrl_log_mask(codes, num_items=NUM_ITEMS):
     return hdr + bytes(m)
 
 
+def ctrl_log_mask_clear(equip_id, num_items=NUM_ITEMS):
+    """The same packet with an all-zero mask: stop logging this equipment.
+
+    ☠️ Reading the mask back would need the diag COMMAND path, which is dead on
+    this device. Writing it is the control path, which works - so the mask can be
+    cleared but not verified, and a capture must say so rather than imply it
+    checked.
+    """
+    size = (num_items + 7) // 8
+    hdr = struct.pack("<IIBBBII", 9, 11 + size, 1, 3, equip_id, num_items, size)
+    return hdr + bytes(size)
+
+
 # Whole equipment ranges, for when the question is "what is this subsystem
 # saying" rather than "is this one message present". equip_id = code >> 12.
 #   0x0B  LTE (RRC, NAS) - the default codes above live here
@@ -204,6 +217,21 @@ def main():
         ta += a; tb += b
         print("  +%4ds  cntl %7d  diag %7d" % (time.time() - t0, ta, tb),
               flush=True)
+
+    # ☠️ TEARDOWN IS PART OF THE INSTRUMENT. The log mask is MODEM-side state
+    # and outlives this process: the 2026-09-02 IMS-off duty window was ruined by
+    # masks left armed with no consumer (the modem did not enter XO shutdown once
+    # in 600 s, still true 950 s later). Same family as "restore the power state
+    # you changed" - a probe must put back what it moved, and say that it did.
+    for equip in sorted(set(equips) | {0x0B}):
+        try:
+            os.write(cfd, ctrl_log_mask_clear(equip))
+            print("cleared LOG_MASK(equip 0x%02X)" % equip)
+        except OSError as e:
+            print("☠️ mask clear for equip 0x%02X FAILED: %s - the modem may "
+                  "still be logging, and any duty measured next is suspect"
+                  % (equip, e))
+    drain(2.0)
 
     cnt_raw.close(); dat_raw.close()
     print("\ntotal: cntl %d bytes, diag %d bytes -> %s" % (ta, tb, out))

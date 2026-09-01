@@ -76,3 +76,34 @@ seven times too long at the same wake rate.** That is what the remaining
 candidates have to explain — the carrier/PDC configuration the vendor stack
 applies, the RAT list that makes the UE run inter-RAT measurements inside every
 DRX cycle, or an IMS registration our side never performs.
+
+---
+
+## ☠️ 2026-09-02 — the oracle slot may have been reconfigured from the pmOS slot
+
+On 2026-09-02 the IMS service switches were written on the **modem** from pmOS
+(`QMI_IMS Set IMS Services Enabled Setting`, all switches False, then restored to
+True) as the intervention in
+[`../2026-09-02_diag-ota-pmos/`](../2026-09-02_diag-ota-pmos/). IMS settings of
+this kind are commonly **NV-backed**, and the modem's NV is *one store shared by
+both A/B slots* — the same argument this repo already used to rule NV out as an
+explanation for the slot difference (item: "the modem NV is the same on both
+slots, a slot switch does not change it") cuts the other way here: **a write from
+one slot lands on the other.**
+
+So if the oracle's call, SMS or VoLTE behaviour differs from its earlier
+recordings after this date, **this write is the first suspect**, not a new
+finding about the vendor stack.
+
+Two honest limits on the restore:
+
+- The pre-write read recorded only **four** switches (voice, video telephony,
+  SMS, UT — all True). The rest of the vector was never written down, so the
+  restore is *known-good for those four and best-effort for the others*.
+- The mask/settings **cannot be read back on the command path** (dead on this
+  device), so "restored" means "written and read back through the same QMI
+  getter", not independently verified.
+
+Whether the write is persistent at all is answered by the firmware-restart leg of
+[`../../tools/ims-ab.sh`](../../tools/ims-ab.sh); if it is **not** persistent,
+this whole warning is void and should be struck rather than left standing.
