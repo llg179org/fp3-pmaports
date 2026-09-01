@@ -1,0 +1,10 @@
+# rrc-probe 2026-09-01 19:43:02 samples=60 interval=2s
+-- A: as found
+RESULT A-as-found   TX-in-traffic  6/60 (10.0%)  MPSS 52.3% awake over 120s
+#   A-as-found t=8261 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-95.6 rsrq=-10 snr=17.6
+-- forcing the radio down and back up so the UE must re-attach
+   ☠️ DID NOT RE-REGISTER within 200 s - leg B is not a measurement
+-- B: after a fresh attach
+RESULT B-fresh-attach TX-in-traffic  6/60 (10.0%)  MPSS 33.5% awake over 120s
+#   B-fresh-attach t=8634 state=disabled cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-3 chan=1300 cell=1470732 tac=5300 rsrp=-87.4 rsrq=-11 snr=24.6
+# done 2026-09-01 19:51:25

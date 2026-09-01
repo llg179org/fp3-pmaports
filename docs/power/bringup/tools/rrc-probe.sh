@@ -57,10 +57,17 @@ sample(){ # sample LABEL
 	/usr/local/bin/leg-covariates.sh "$1" 2>/dev/null | tee -a "$O" >/dev/null
 }
 
+# ☠️ ASK THE NETWORK, NOT THE DAEMON. The first version polled ModemManager's
+# own state and declared "DID NOT RE-REGISTER within 200 s" while the modem was,
+# at the NAS layer, registered with CS and PS both attached on LTE. What it had
+# actually detected was that MM sat in `disabled` - which is a real problem, but
+# a different one, and the wrong verdict masked it. Registration is a property of
+# the radio; read it there.
 wait_reg(){
 	i=0; while [ $i -lt 40 ]; do
-		case "$(mmcli -m any 2>/dev/null | sed -n 's/.*  state: *//p' | head -1)" in
-			registered|connected) return 0 ;;
+		case "$(qmicli -d $D --nas-get-serving-system 2>/dev/null |
+		        sed -n "s/.*Registration state: *'\([a-z]*\)'.*/\1/p" | head -1)" in
+			registered) return 0 ;;
 		esac
 		sleep 5; i=$((i + 1))
 	done
@@ -71,13 +78,35 @@ say "-- A: as found"
 sample A-as-found
 
 say "-- forcing the radio down and back up so the UE must re-attach"
+# ☠️ THE CYCLE IS FOUR STEPS, NOT TWO, AND THE MISSING TWO LEAVE THE PHONE
+# UNABLE TO TAKE A CALL. --set-power-state-low requires the modem disabled and
+# leaves it that way; without the closing --enable, ModemManager stays in
+# `disabled` and will not deliver an incoming call, even though the radio is
+# registered and attached. This script did exactly that on its first run. The
+# sequence is disable -> power-state-low -> power-state-on -> enable, which is
+# what the repo's own modem-core-cycle item already said.
+mmcli -m any --disable            >/dev/null 2>&1 || say "   ☠️ disable FAILED"
 mmcli -m any --set-power-state-low >/dev/null 2>&1 || say "   ☠️ power-state-low FAILED"
 sleep 10
 mmcli -m any --set-power-state-on  >/dev/null 2>&1 || say "   ☠️ power-state-on FAILED"
+mmcli -m any --enable              >/dev/null 2>&1 || say "   ☠️ enable FAILED"
 if wait_reg; then say "   re-registered after $(date '+%T')"; else
 	say "   ☠️ DID NOT RE-REGISTER within 200 s - leg B is not a measurement"; fi
 sleep 30   # let any attach-time signalling finish before sampling
 
 say "-- B: after a fresh attach"
 sample B-fresh-attach
+
+# ☠️ LEAVE THE PHONE ABLE TO RING. Whatever happened above, the last thing this
+# does is check the two states a user cares about and say so plainly.
+st=$(mmcli -m any 2>/dev/null | sed -n 's/.*  state: *//p' | head -1)
+reg=$(qmicli -d $D --nas-get-serving-system 2>/dev/null | sed -n "s/.*Registration state: *'\([a-z]*\)'.*/\1/p" | head -1)
+if [ "$st" = registered ] || [ "$st" = connected ]; then
+	say "# final: ModemManager=$st, NAS=$reg - the phone can take a call"
+else
+	mmcli -m any --enable >/dev/null 2>&1
+	st2=$(mmcli -m any 2>/dev/null | sed -n 's/.*  state: *//p' | head -1)
+	say "☠️ final: ModemManager was '$st' (NAS=$reg) - re-enabled, now '$st2'."
+	say "   A modem left disabled does NOT deliver incoming calls."
+fi
 say "# done $(date '+%F %T')"
