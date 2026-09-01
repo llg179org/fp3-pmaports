@@ -1,0 +1,15 @@
+Sep 01 17:38:09 fp3 systemd[1]: Started [systemd-run] /tmp/adsp-ab.sh 90.
+Sep 01 17:38:09 fp3 adsp-ab.sh[4485]: --- leg A (ModemManager=active)
+Sep 01 17:38:09 fp3 adsp-ab.sh[4485]:     qrtr node1: 5 services
+Sep 01 17:39:39 fp3 adsp-ab.sh[4485]:     LPASS XO-off 0.0s of 90s  shutdowns +0
+Sep 01 17:39:59 fp3 adsp-ab.sh[4485]: --- leg B (ModemManager=inactive)
+Sep 01 17:39:59 fp3 adsp-ab.sh[4485]:     qrtr node1: 5 services
+Sep 01 17:41:29 fp3 adsp-ab.sh[4485]:     LPASS XO-off 0.0s of 90s  shutdowns +0
+Sep 01 17:41:51 fp3 adsp-ab.sh[4485]: --- leg Ap (ModemManager=active)
+Sep 01 17:41:51 fp3 adsp-ab.sh[4485]:     qrtr node1: 5 services
+Sep 01 17:43:21 fp3 adsp-ab.sh[4485]:     LPASS XO-off 0.0s of 90s  shutdowns +0
+Sep 01 17:43:21 fp3 adsp-ab.sh[4485]: final: ModemManager=active
+Sep 01 17:43:21 fp3 systemd[1]: fp3-adspab2.service: Deactivated successfully.
+Tue Sep  1 05:43:33 PM CEST 2026
+
+[exited with code 0]
