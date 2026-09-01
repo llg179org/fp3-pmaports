@@ -1,0 +1,161 @@
+=== 0. state
+Tue Sep  1 16:07:30 CEST 2026
+15029.46 55363.80
+19123 ash -c #!/bin/sh # One ssh round trip after the A' window closes: everything that has been # waiting on the phone. Read-only except the ModemManager stop/start in the # last block, which is restored before it exits. echo "=== 0. state"; date; cat /proc/uptime pgrep -af "modem-night|wake-qmi" || echo "   (no measurement running - good)"  echo "=== 1. IPA lead, direct read (item 20)" lsmod | grep -i ipa || echo "   ☠️ no ipa module listed" qrtr-lookup 2>/dev/null | grep -iE "^ *49 | 49 " || echo "   ☠️ qrtr-lookup gave no line for service 49" dmesg 2>/dev/null | grep -iE "ipa|init_driver" | tail -20 || echo "   ☠️ no ipa lines in dmesg"  echo "=== 2. radio context NOW (the covariate that was never recorded)" qmicli -d qrtr://0 --nas-get-rf-band-info 2>&1 | head -12 qmicli -d qrtr://0 --nas-get-cell-location-info 2>&1 | head -40 qmicli -d qrtr://0 --nas-get-signal-info 2>&1 | head -20 qmicli -d qrtr://0 --nas-get-system-selection-preference 2>&1 | head -30  echo "=== 3. the named NV instruments (ite
+=== 1. IPA lead, direct read (item 20)
+ipa2_lite              32768  0
+qcom_common            16384  5 qcom_wcnss_pil,ipa2_lite,qcom_q6v5_pas,slim_qcom_ngd_ctrl,qcom_q6v5_mss
+qmi_helpers            28672  8 qcom_pd_mapper,ipa2_lite,qcom_sysmon,qcom_pdr_msg,slim_qcom_ngd_ctrl,pdr_interface,qcom_memshare,smgr
+       49       1        2    0    22 IPA control service
+       11       1        0    0    49 User Identity Module service
+       49       1        1    1 16387 IPA control service
+      279       1       50    5    49 <unknown>
+[    0.294395] platform 7900000.ipa: Adding to iommu group 3
+=== 2. radio context NOW (the covariate that was never recorded)
+[qrtr://0/] Successfully got RF band info
+Band Information:
+	Radio Interface:   'lte'
+	Active Band Class: 'eutran-1'
+	Active Channel:    '500'
+Band Information (Extended):
+	Radio Interface:   'lte'
+	Active Band Class: 'eutran-1'
+	Active Channel:    '500'
+[qrtr://0/] Successfully got cell location info
+Intrafrequency LTE Info
+	UE In Idle: 'no'
+	PLMN: '21670'
+	Tracking Area Code: '5300'
+	Global Cell ID: '1470762'
+	EUTRA Absolute RF Channel Number: '500' (E-UTRA band 1: 2100)
+	Serving Cell ID: '272'
+	Cell [0]:
+		Physical Cell ID: '272'
+		RSRQ: '-11.1' dB
+		RSRP: '-94.0' dBm
+		RSSI: '-59.9' dBm
+	Cell [1]:
+		Physical Cell ID: '285'
+		RSRQ: '-20.0' dB
+		RSRP: '-108.1' dBm
+		RSSI: '-76.5' dBm
+Interfrequency LTE Info
+	UE In Idle: 'no'
+	Frequency [0]:
+		EUTRA Absolute RF Channel Number: '6200' (E-UTRA band 20: 800 DD)
+		Selection RX Level Low Threshold: '0'
+		Cell Selection RX Level High Threshold: '0'
+		Cell [0]:
+			Physical Cell ID: '109'
+			RSRQ: '-9.7' dB
+			RSRP: '-87.2' dBm
+			RSSI: '-68.5' dBm
+			Cell Selection RX Level: '0'
+LTE Info Neighboring GSM
+	UE In Idle: 'no'
+LTE Info Neighboring WCDMA
+	UE In Idle: 'no'
+LTE Timing Advance: '5' us
+[qrtr://0/] Successfully got signal info
+LTE:
+	RSSI: '-67 dBm'
+	RSRQ: '-9 dB'
+	RSRP: '-95 dBm'
+	SNR: '18.4 dB'
+[qrtr://0/] Successfully got system selection preference
+	Emergency mode: 'no'
+	Mode preference: 'cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma'
+	Disabled modes: 'none'
+	Band preference: 'bc-0-a-system, bc-0-b-system, bc-1-all-blocks, bc-2, bc-3-a-system, bc-4-all-blocks, bc-5-all-blocks, gsm-dcs-1800, gsm-900-extended, gsm-900-primary, bc-6, bc-7, bc-8, bc-9, bc-10, bc-11, gsm-450, gsm-480, gsm-750, gsm-850, gsm-900-railways, gsm-pcs-1900, wcdma-2100, wcdma-pcs-1900, wcdma-dcs-1800, wcdma-1700-us, wcdma-850-us, wcdma-800, bc-12, bc-14, bc-15, wcdma-2600, wcdma-900, wcdma-1700-japan, bc-16, bc-17, bc-18, bc-19, wcdma-850-japan, wcdma-1500'
+	LTE band preference: '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43'
+	LTE band preference (extended): '1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 46, 47, 48, 66, 71, 250, 252, 255'
+	TD-SCDMA band preference: 'a, b, c, d, e, f'
+	Roaming preference: 'any'
+	Network selection preference: 'automatic'
+	Service domain preference: 'cs-ps'
+	GSM/WCDMA acquisition order preference: 'automatic'
+	Usage preference: 'voice-centric'
+	Voice domain preference: 'ps-preferred'
+	Registration restriction: 'unrestricted'
+	Acquisition order preference: 'lte, umts, gsm, cdma-1x, cdma-1xevdo'
+=== 3. the named NV instruments (item 25)
+error: Missing argument for --pdc-list-configs
+error: Unknown option --pdc-get-selected-config
+[qrtr://0/] Successfully got serving system:
+	Registration state: 'registered'
+	CS: 'attached'
+	PS: 'attached'
+	Selected network: '3gpp'
+	Radio interfaces: '1'
+		[0]: 'lte'
+	Roaming status: 'off'
+	Data service capabilities: '1'
+		[0]: 'lte'
+	Current PLMN:
+		MCC: '216'
+		MNC: '70'
+		Description: 'One HU'
+	Roaming indicators: '1'
+		[0]: 'off' (lte)
+	3GPP time zone offset: '120' minutes
+	3GPP daylight saving time adjustment: '1' hours
+	3GPP location area code: '65534'
+	3GPP cell ID: '1470762'
+	Detailed status:
+		Status: 'available'
+		Capability: 'cs-ps'
+		HDR Status: 'none'
+		HDR Hybrid: 'no'
+           |                  state: registered
+           |            power state: on
+           |            access tech: lte
+           |         signal quality: 75% (recent)
+           |            operator id: 21670
+           |          operator name: vodafone HU
+           |   packet service state: attached
+=== 4. ADSP clients with MM RUNNING (item 22)
+  Service Version Instance Node  Port
+       43       2       18    0     1 Subsystem control service
+       15       1        0    0    15 Test service
+       24       1        0    0    17 Thermal mitigation device service
+       23       1        0    0    18 Thermal sensors service
+       22       1        0    0    19 Time service
+       36       1        0    0    21 Persistent device configuration service
+       49       1        2    0    22 IPA control service
+       41       1        1    0    25 RF radiated performance enhancement service
+       70       1        1    0    26 LTE service
+       54       1        0    0    27 <unknown>
+       17       1        0    0    28 Specific absorption rate service
+       34       1        0    0    29 Coexistence service
+       55       1        2    0    38 QMI-SLIM service
+        9       2        0    0    39 Voice service
+        3       1        0    0    41 Network Access Service
+       12       1        0    0    42 Phonebook Management service
+       10       2        0    0    43 Card Application Toolkit service (v2)
+       47       1        0    0    44 Data Port Mapper service
+        1       1        0    0    45 Wireless Data Service
+        4       1        0    0    46 Quality Of Service service
+       26       1        0    0    47 Wireless data administrative service
+        7       1        0    0    48 Authentication service
+       11       1        0    0    49 User Identity Module service
+        8       1        0    0    50 AT service
+       29       1        0    0    51 Circuit switched videotelephony service
+        5       1        0    0    52 Wireless Messaging Service
+       42       1        0    0    53 Data system determination service
+        2       1        0    0    54 Device Management Service
+       48       1        0    0    55 QMI DFS service
+       68       1        0    0    56 <unknown>
+       77       1        0    0    57 IMS QMI Priv service
+       16       2        0    0    58 Location service (~ PDS v2)
+       33       1        0    0    62 IMS application service
+       18       1        0    0    64 IMS settings service
+       14       1        0    1    14 Remote file system service
+       52       1        1    1 16384 Dynamic Heap Memory Sharing
+       49       1        1    1 16387 IPA control service
+     4096       1        0    1 16394 TFTP
+      271       2        0    1 16400 Sensor Registry service
+/proc/asound/card0/pcm0p:0
+/proc/asound/card0/pcm1c:0
+/proc/asound/card0/pcm2p:0
+/proc/asound/card0/pcm4c:0
+/proc/asound/card0/pcm4p:0
