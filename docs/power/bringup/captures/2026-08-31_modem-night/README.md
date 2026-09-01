@@ -222,3 +222,29 @@ only record of the line.
 | 52 mA | 46.1 + 119 × d | 53.3 mA | goal **not** reached from the modem alone; the floor must also give |
 | 56 mA | 50.8 + 105 × d | 57.2 mA | the intercept is back near the awake-window 54.9 and the modem track is a partial fix |
 | 60 mA | 55.5 + 91 × d | 61.0 mA | the two-point line was an artefact of the two configurations |
+
+### The control arm is two matched pairs, and the second one was not planned
+
+Also written before its data was read. The control shares a *different* variable
+with each of the two existing nights, and at 5 % duty both comparisons are
+matched on duty rather than extrapolated:
+
+| pair | shared | differs | measures |
+|---|---|---|---|
+| control ↔ **census** (33.6 %) | Wi-Fi down, cable out | the daemon | the daemon's cost, uncontaminated — the pair this run was designed for |
+| control ↔ **step-0 floor** (5.0 %) | ≈5 % duty, MM stopped | Wi-Fi **up→down**, cable **in→out** | **the cost of the Wi-Fi link plus the USB link**, as a direct difference |
+
+The second pair is the one that matters for item 5. The step-0 night ran Wi-Fi up
+with the cable in (PMIC input suspended); the control runs neither. At the same
+duty and with the same daemon state, `48 − control` **is** the two links' combined
+cost, with no line and no extrapolation in it.
+
+So the intercept the control produces is a floor measured with **no USB and no
+Wi-Fi in it at all** — which is exactly the quantity item 5 was going to spend
+another night obtaining. If `48 − control` is small, the ~41 mA has no owner among
+the links either and the search has to move; if it is 8–10 mA, most of the
+unexplained floor is the two links and the remaining bare floor is ~33 mA.
+
+☠️ What it still cannot separate is Wi-Fi *from* USB — they moved together. That
+separation is a third arm (cable out, Wi-Fi **up**), and it is only worth a night
+if this difference turns out to be large.
