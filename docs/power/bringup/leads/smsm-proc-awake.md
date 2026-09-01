@@ -1,4 +1,13 @@
-# ★★★★★ We never tell the modem the AP is awake — `SMSM_PROC_AWAKE` is set on the oracle and permanently zero on mainline
+# ☠️ WITHDRAWN AS A MODEM LEAD, 2026-09-01 22:00 — the modem does not subscribe to the bit. It is now an ADSP lead
+
+> **Read [`../captures/2026-09-01_smsm-subscription-mask/`](../captures/2026-09-01_smsm-subscription-mask/README.md)
+> first.** The modem's subscription mask over the APPS entry is bit 23 alone, so
+> bit 12 cannot wake it and cannot change its work per wakeup. The **ADSP**
+> subscribes to bit 12 and to nothing else. Everything below is the source
+> reading that led here and is still accurate; only the target changed. It cost
+> one ssh login to find out instead of a flash and two windows.
+
+# (original) We never tell the modem the AP is awake — `SMSM_PROC_AWAKE` is set on the oracle and permanently zero on mainline
 
 > ⚠️ **AI-generated.** Written by Claude (Opus 5) under the direction of
 > Lajosházi, László Gergely, who reviewed the source reading it rests on.

@@ -142,6 +142,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `slope-fit.py` | Reduce a suspend-slope.sh run to a suspend current |
 | `slope-leg.sh` | A slope leg with an arbitrary cut applied - the generalisation of leg3.sh and |
 | `smd-wake-source.sh` | WHICH CHANNEL rings the modem's SMD edge and ends the suspend? |
+| `smsm-mask.py` | Read the SMSM state vector and the per-remote subscription masks from SMEM - passive, safe inside a measurement window |
 | `soc-ladder.sh` | Map the oracle's idle current against state of charge, on ONE boot |
 | `suspend-leg.sh` | How much does the phone draw while it is actually asleep? |
 | `suspend-rate.sh` | How OFTEN does a suspend end early, and under which conditions? |

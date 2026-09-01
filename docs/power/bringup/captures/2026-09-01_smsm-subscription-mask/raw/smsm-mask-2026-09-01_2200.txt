@@ -1,0 +1,30 @@
+[sudo: authenticate] Password: 
+SMEM master SBL version: 11
+size info: num_entries=5 num_hosts=8
+
+state vector (one entry per host, the value that host publishes):
+  entry 0 APPS     = 0x00000600
+  entry 1 MODEM    = 0x08000009
+  entry 2 Q6/ADSP  = 0x08000001
+  entry 3 WCNSS    = 0x08000001
+  entry 4 DSPS     = 0x00000000
+
+subscription masks: mask[entry][host] = bits of <entry> that <host> wants to be interrupted for
+  entry \ host        APPS       MODEM     Q6/ADSP       WCNSS        DSPS         RPM           6           7
+  APPS          0x00000000  0x00800000  0x00001000  0x00000640  0x00000000  0x00000000  0x00000000  0x00000000
+  MODEM         0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000
+  Q6/ADSP       0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000
+  WCNSS         0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000
+  DSPS          0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000  0x00000000
+
+== THE ANSWER ==
+  APPS     subscribes to bit 12 of the APPS entry: no
+  MODEM    subscribes to bit 12 of the APPS entry: no
+  Q6/ADSP  subscribes to bit 12 of the APPS entry: YES
+  WCNSS    subscribes to bit 12 of the APPS entry: no
+  DSPS     subscribes to bit 12 of the APPS entry: no
+  RPM      subscribes to bit 12 of the APPS entry: no
+  6        subscribes to bit 12 of the APPS entry: no
+  7        subscribes to bit 12 of the APPS entry: no
+
+☠️ A 'no' from MODEM kills leads/smsm-proc-awake.md without spending a measurement window. A 'YES' does not prove the firmware acts on it - it proves only that it asked to be told.
