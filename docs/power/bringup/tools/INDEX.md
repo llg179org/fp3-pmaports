@@ -87,6 +87,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `idle-ladder.sh` | The idle decomposition: what actually makes up the awake-idle draw, measured |
 | `idle-leg.sh` | One leg of an idle-current measurement on the FP3 |
 | `idle-suspend-window.sh` | DOES THE PHONE SUSPEND ON ITS OWN, AND WHAT DOES IT COST WHEN IT DOES? |
+| `ims-state.py` | Read the modem's IMS registration and service status - bind and read on ONE qrtr client, which qmicli cannot do |
 | `ipa-handshake-probe.sh` | Did our IPA driver ever complete its handshake with the modem? |
 | `kmsg-tap.sh` | kmsg-tap.sh OUTFILE - stream the device's kernel log to a file ON THE HOST |
 | `ladder-summary.py` | Summarise a night-ladder run: how much the pack actually gave up over the whole |
