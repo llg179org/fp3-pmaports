@@ -1,0 +1,5 @@
+TX in traffic: 8 / 60 minta (120 s)
+--- es a modem allapota kozben:
+registered
+
+[exited with code 0]
