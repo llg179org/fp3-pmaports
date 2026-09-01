@@ -361,3 +361,62 @@ was the version a patch would have come from.
 
 ☠️ Do not write a patch before step 1. The XO branch was mechanically plausible,
 moved its counter from 0 to 1952, and changed the discharge slope by nothing.
+
+## ★★★ 2026-09-01 — the ADSP *does* sleep now, and ModemManager is what stops it
+
+The 2026-08-27 re-opening above says the DSP "is still awake essentially all the
+time": `LPASS_xopct` 0 in every sample of five windows, 9.4 s of XO-off against
+5½ hours of uptime. That was measured **awake-idle**. Across a **600 s suspend**
+on `#80-fp3` the picture is different, and the difference is not the kernel —
+it is one userspace daemon.
+
+121 rounds that slept the full ~600 s, from six census runs on two days, read
+their LPASS XO-off delta straight out of
+`/sys/kernel/debug/qcom_rpm_master_stats/LPASS` on both sides of the sleep:
+
+| run | `mm` | n | LPASS XO-off, median |
+|---|---|---:|---:|
+| [`2026-08-31_modem-night`](../captures/2026-08-31_modem-night/README.md) | **running** | 43 | **27 s** |
+| [`2026-09-01_bearer-arm`](../captures/2026-09-01_bearer-arm/README.md) | **running** | 6 | **19 s** |
+| [`2026-09-01_modem-night-control`](../captures/2026-09-01_modem-night-control/README.md) | stopped | 43 | 617 s |
+| [`2026-09-01_wifi-up-arm`](../captures/2026-09-01_wifi-up-arm/README.md) | stopped | 12 | 618 s |
+| [`2026-09-01_cable-in-arm`](../captures/2026-09-01_cable-in-arm/README.md) | stopped | 11 | 618 s |
+| [`2026-09-01_modem-core-cycle`](../captures/2026-09-01_modem-core-cycle/README.md) | stopped | 6 | 618 s |
+
+★ **With ModemManager stopped the ADSP keeps its crystal off for the entire
+window** — 617–618 s of XO-off across a 601 s sleep, the counter slightly
+overrunning its own bracket because it accrues past the edges. **With
+ModemManager running it is awake for 96–97 % of that same window.** The split is
+perfect on `mm`, it holds across a reboot, and — importantly — the 2026-08-31
+census and the 2026-09-01 night control are **the same boot**, so it is not a
+per-boot state.
+
+**What this changes for this page:**
+
+- The 2026-08-19 finding — "LPASS shut down twice since boot, for 0.12 s" — and
+  the 2026-08-27 re-measurement were both taken with the full stack up, i.e.
+  with ModemManager running. Neither of them isolated the daemon, so neither is
+  contradicted; what they measured has a name now.
+- The two latches fixed in r64 were real and necessary, but they were not
+  sufficient *and they were not the last holder*. Something ModemManager does —
+  or something it keeps open on the modem, which in turn keeps the ADSP up — is
+  the remaining one.
+- ☠️ **It is still not obviously a lever.** The night control priced the daemon:
+  stopping it cost 14 mA *more*, not less
+  ([`../captures/2026-09-01_modem-night-control/`](../captures/2026-09-01_modem-night-control/README.md)),
+  so "stop ModemManager and the ADSP sleeps" is not a saving as it stands. The
+  question this opens is which *part* of what the daemon does holds the ADSP up,
+  and whether that part can be dropped while keeping the phone usable.
+
+☠️ **Where the mechanism is not yet known.** Nothing here says *how* a modem
+daemon holds the audio DSP awake. The obvious shapes are an APR/q6 client the
+daemon's voice-call setup leaves open, and a QMI/QRTR path that keeps a shared
+resource voted. Neither is measured. The cheap next read is the ADSP's client
+list with the daemon stopped and started inside one boot.
+
+☠️ **Confounded, and the control is already running.** Both `mm=running` rows
+predate today's `mm=running` control, and one of them also had a data bearer up.
+The A′ leg on the phone as this is written is `mm=running` with no bearer, which
+fills the missing cell. If its LPASS reads ~20 s, this table is the daemon; if it
+reads ~618 s, the separator is something these six runs share with `mm` by
+accident and the claim falls.
