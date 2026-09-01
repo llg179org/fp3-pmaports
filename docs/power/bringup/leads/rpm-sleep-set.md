@@ -631,3 +631,35 @@ Three compounding mistakes, all avoidable:
 `AWAKE` from the two timestamps and the core mask, and never a bare count.
 `../tools/votes-post-resume.sh` still prints bare counts and its output above
 must be read with this section in hand.
+
+## Addendum, 2026-09-01 — the gap is REGULATOR-ONLY, and it cannot explain an awake window
+
+Re-read from source when the modem-duty search turned to the kernel, to check
+whether "mainline does not fill the sleep set" is a statement about the whole
+RPM interface or only about rails. It is only about rails:
+
+| consumer | writes the sleep set? |
+|---|---|
+| `drivers/clk/qcom/clk-smd-rpm.c` | **yes**, unconditionally — every rate and enable goes to both states (lines 234/243, 261/275, 445/453) |
+| `drivers/interconnect/qcom/icc-rpm.c` | **yes** — it aggregates `active_rate` and `sleep_rate` separately and writes each |
+| `drivers/regulator/qcom_smd-regulator.c` | **no**, unless `both_sets=1` |
+
+And the interconnect provider is not theoretical here: `msm8953.c` exists in
+`drivers/interconnect/qcom/`, `CONFIG_INTERCONNECT_QCOM_MSM8953=y` is in the
+shipped config, and the device tree carries 34 interconnect references.
+
+So the sleep-set hole is exactly one subsystem wide. Its two possible closures
+are both already in place as instruments and both are off by default:
+
+* `both_sets=1`, the boot-time module parameter this fork added, which mirrors
+  every active-set write into the sleep set;
+* per-rail `regulator-state-mem` device tree nodes — **grep finds none** in
+  `sdm632-fairphone-fp3.dts` or `pm8953.dtsi`, so that path never fires either.
+
+### ☠️ And why this is NOT the modem-duty lead
+
+The RPM sleep set takes effect **when the applications processor power-collapses**.
+The 30-point modem duty gap is measured in 600 s windows with the AP **awake** —
+in those windows the RPM is using the active set on both systems, so a missing
+sleep-set request cannot be the difference. This lead keeps its own value for the
+vlow/suspend front; it was checked here and put back down.

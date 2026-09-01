@@ -147,15 +147,62 @@ bit set ⇒ the mechanism is found and it is a shippable fix. Duty unchanged
 within the ~3-point repeatability ⇒ this firmware does not read the bit, and the
 lead is dead — say so and move to the RPM sleep-set question below.
 
-## Two neighbours, and one of them is already dead
+## ☠️ This is NOT the smp2p `sleepstate` hypothesis, which is already withdrawn
 
-**`msm_ipc_router_set_ws_allowed()` — dead for this SoC.** It looked like a
-second missing interface (QRTR has no equivalent: grep for `wakeup_source` in
-`net/qrtr/` returns nothing). But its only two callers are in
-`smp2p_sleepstate.c`, and that driver never probes on msm8953 — the `sleepstate`
-smp2p node exists in the vendor `msm8937-smp2p.dtsi` and `sdm845-smp2p.dtsi`
-only. On the oracle this code does not run either, so it cannot be part of the
-difference.
+[`smp2p-sleepstate-missing.md`](smp2p-sleepstate-missing.md), opened 2026-08-31,
+looked at `smp2p_sleepstate.c` — the *same* semantic bit, number 12, "the AP is
+awake" — and **withdrew** it as a modem candidate, correctly: that entry's
+`qcom,remote-pid` is **2**, which our own `msm8953.dtsi` says is the **ADSP**.
+Downstream does not tell the modem over smp2p either. A second reason turned up
+tonight and points the same way: msm8953 has **no `sleepstate` node at all**, in
+any tree — the entry exists only in `msm8937-smp2p.dtsi` and
+`sdm845-smp2p.dtsi`, so that driver never probes on this SoC.
+
+**SMSM is a different transport, and it does reach the modem.** The shared state
+vector is per-host, every remote can subscribe to any bit of the APPS entry, and
+the vendor's `notify_other_smsm()` explicitly wakes the modem when a subscribed
+bit of `SMSM_APPS_STATE` changes:
+
+```c
+if (smsm_info.intr_mask &&
+    (__raw_readl(SMSM_INTR_MASK_ADDR(smsm_entry, SMSM_MODEM)) & notify_mask))
+        notify_modem_smsm();
+```
+
+The vendor `msm8953.dtsi` instantiates `qcom,smsm-modem` on edge 0 beside
+`qcom,smd-modem`, so the edge is live. So the withdrawal in that lead does not
+carry over to this one — but the two must be read together, and anyone who
+remembers "the sleepstate hypothesis died" should note that this is a different
+mechanism, not a resurrection.
+
+## ★ The subscription mask turns the unknown into a measurement
+
+The paragraph above also names a way to test the *firmware* side without
+flashing anything. `notify_other_smsm()` only wakes the modem for bits the modem
+**subscribed to**, and those subscriptions live in the same shared memory as the
+state itself — `SMEM_SMSM_CPU_INTR_MASK`, which mainline's `smsm.c` already maps
+(`smsm->subscription = intr_mask + smsm->local_host * smsm->num_hosts`).
+
+So: **read the modem's interrupt mask for the APPS entry and look at bit 12.**
+
+* set ⇒ this firmware asked to be told when the AP's awake flag changes, which is
+  strong evidence it acts on it, and the patch below is worth measuring;
+* clear ⇒ the modem never asked, the bit cannot wake it, and this lead is dead
+  before a single window is spent on it.
+
+Neither answer needs a reboot, a flash, or a slot switch. It does need a reader:
+mainline exposes none of this to userspace, so it is either a debugfs file in the
+debug layer or a `/dev/mem` + SMEM table walk of the kind
+[`../tools/rpmstats_raw.py`](../tools/rpmstats_raw.py) already does for the RPM
+records. **Do this before the A/B.**
+
+## One neighbour that is dead outright
+
+**`msm_ipc_router_set_ws_allowed()`.** It looked like a second missing interface
+(QRTR has no equivalent: grep for `wakeup_source` in `net/qrtr/` returns
+nothing). But its only two callers are in `smp2p_sleepstate.c`, which — as above
+— never probes on msm8953. On the oracle this code does not run either, so it
+cannot be part of the difference.
 
 **RPM sleep-set votes — open, and deeper.** The vendor votes separately for the
 active set and the sleep set (`rpm-smd.c`, and the whole `msm_bus` stack does
