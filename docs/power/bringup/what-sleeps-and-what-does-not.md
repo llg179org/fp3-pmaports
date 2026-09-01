@@ -306,6 +306,38 @@ phone asleep 96.8 % of it. Everything after the fit is wrong.
 > n=1, in a section whose own thesis is that a thorough-looking correction can be
 > the thing that misleads.
 
+> ☠️☠️☠️ **CORRECTED 2026-09-01 midday — "the 5 % has no companion" is false, and
+> the variable is the boot.** The 5 % is **four** measurements over 34 minutes on
+> 2026-08-31 05:38–06:12: legs A, B and A′ of
+> [`captures/2026-08-31_mm-duty-ab/`](captures/2026-08-31_mm-duty-ab/README.md)
+> (5.1 / 4.9 / 4.9 %) plus the 05:52 sleep window (5.0 %). **Leg B ran with
+> ModemManager running, `registered`, `access tech: lte`, `attached` on vodafone
+> HU** — so it is not a deregistered or powered-down modem.
+>
+> And every reading in this whole story — the 5 % episode and all 67 later
+> windows — comes from **one uninterrupted boot**, started 2026-08-30 14:00:11:
+>
+> | measurement | uptime | MPSS awake |
+> |---|---:|---:|
+> | `mm-duty-ab` A/B/A′ + the 05:52 window | **16 h** | **4.9 – 5.1 %** |
+> | the 86-round census | 22–30 h | 33.6 % |
+> | the 47-round control | 31–40 h | 35.7 % |
+> | the Wi-Fi-up arm | 40–42 h | 36.2 % |
+> | the cable-in arm | 42–44 h | 35.5 % |
+>
+> ⇒ **The duty stepped from ~5 % to ~34 % inside a single boot** and has stayed
+> there for 28 hours through every configuration tried — daemon on and off, Wi-Fi
+> up and down, cable in and out. Nothing I varied moved it because **the variable
+> was never a configuration**: it is elapsed state within the boot, or something
+> done to the phone between 06:12 and 11:48 that morning. That is what
+> [`tools/duty-vs-uptime.sh`](tools/duty-vs-uptime.sh) was written to ask and
+> [`leads/sleep-length-is-a-state.md`](leads/sleep-length-is-a-state.md) already
+> says about sleep length.
+>
+> **The good news is the size of it:** this stack *can* run a registered, attached
+> LTE modem at 5 % duty. The D-track target is not hypothetical — it has been
+> observed on this phone.
+
 **The hidden assumption**, never stated and never checked: that the modem's duty
 during that night was **34.8 %**. It was not measured — it was carried in from a
 different regime. The night ran with **ModemManager stopped** (a hard gate, §4),
