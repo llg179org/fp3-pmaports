@@ -1,0 +1,278 @@
+# modem-window stack=ut secs=600 2026-09-01 17:15:33
+# kernel=4.9.218-perf-ubuntutouch+ #1 SMP PREEMPT Wed Jul 1 23:32:52 CEST 2026
+# uptime=133
+# BEFORE ------------------------------------------------------------
+#   --- ofono /ril_0
+#         Online = 1
+#         Powered = 1
+#     [ /ril_0 ]
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470722
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 35
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- ofono /ril_1
+#     [ /ril_1 ]
+#         Online = 1
+#         Powered = 1
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470722
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 35
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- rfkill
+#     0: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     1: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+#   --- radio context [BEFORE]
+#     ☠️ NO QMI TRANSPORT ANSWERED - band, cell, RSRP and the config
+#        fields below are UNREAD on this stack, not empty.
+#     ofono cell/strength (the only radio context UT gives without QMI)
+#       /ril_0 [ /ril_0 ]
+#       /ril_0         Status = registered
+#       /ril_0         CellId = 1470722
+#       /ril_0         Technology = lte
+#       /ril_0         MobileNetworkCode = 70
+#       /ril_0         Name = One HU
+#       /ril_0         Strength = 35
+#       /ril_0         TechnologyPreference = nr
+#       /ril_0         MobileNetworkCode = 70
+#       /ril_1 [ /ril_1 ]
+#       /ril_1         Status = registered
+#       /ril_1         CellId = 1470722
+#       /ril_1         Technology = lte
+#       /ril_1         MobileNetworkCode = 70
+#       /ril_1         Name = One HU
+#       /ril_1         Strength = 35
+#       /ril_1         TechnologyPreference = nr
+#       /ril_1         MobileNetworkCode = 70
+# v=4047865 (/sys/class/power_supply/battery/voltage_now)
+# cc_soc=6787
+# cap=68
+# t0=135
+BEFORE APSS
+BEFORE 	shutdown_req:0xAA497430
+BEFORE 	wakeup_ind:0xA877B686
+BEFORE 	bringup_req:0xAA49D528
+BEFORE 	bringup_ack:0xAA4AB76D
+BEFORE 	xo_last_entered_at:0x0
+BEFORE 	xo_last_exited_at:0x0
+BEFORE 	xo_accumulated_duration:0x0
+BEFORE 	last_sleep_transition_duration:0x357c
+BEFORE 	last_wake_transition_duration:0x7fd
+BEFORE 	xo_count:0x0
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0xec4
+BEFORE 	active_cores:0x1
+BEFORE 		core0
+BEFORE MPSS
+BEFORE 	shutdown_req:0xAB050ABF
+BEFORE 	wakeup_ind:0xAAF0DABE
+BEFORE 	bringup_req:0xAB029FDB
+BEFORE 	bringup_ack:0xAB032C92
+BEFORE 	xo_last_entered_at:0xAB05298D
+BEFORE 	xo_last_exited_at:0xAAF92AA9
+BEFORE 	xo_accumulated_duration:0x4AF6C36F
+BEFORE 	last_sleep_transition_duration:0x41a2
+BEFORE 	last_wake_transition_duration:0x7a4
+BEFORE 	xo_count:0x146
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x177
+BEFORE 	active_cores:0x0
+BEFORE PRONTO
+BEFORE 	shutdown_req:0xAB281372
+BEFORE 	wakeup_ind:0xAB263496
+BEFORE 	bringup_req:0xAB263617
+BEFORE 	bringup_ack:0xAB26368A
+BEFORE 	xo_last_entered_at:0xAB2831A0
+BEFORE 	xo_last_exited_at:0xAB261B4E
+BEFORE 	xo_accumulated_duration:0x4D42A9D4
+BEFORE 	last_sleep_transition_duration:0x24ab
+BEFORE 	last_wake_transition_duration:0x29b0
+BEFORE 	xo_count:0x31f
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x320
+BEFORE 	active_cores:0x0
+BEFORE TZ
+BEFORE 	shutdown_req:0x0
+BEFORE 	wakeup_ind:0x0
+BEFORE 	bringup_req:0x0
+BEFORE 	bringup_ack:0x0
+BEFORE 	xo_last_entered_at:0x0
+BEFORE 	xo_last_exited_at:0x0
+BEFORE 	xo_accumulated_duration:0x0
+BEFORE 	last_sleep_transition_duration:0x0
+BEFORE 	last_wake_transition_duration:0x0
+BEFORE 	xo_count:0x0
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x0
+BEFORE 	active_cores:0x0
+BEFORE LPASS
+BEFORE 	shutdown_req:0xAB250390
+BEFORE 	wakeup_ind:0xAAE06EF3
+BEFORE 	bringup_req:0xAB24747F
+BEFORE 	bringup_ack:0xAB249A59
+BEFORE 	xo_last_entered_at:0xAB251F93
+BEFORE 	xo_last_exited_at:0xAB248298
+BEFORE 	xo_accumulated_duration:0x4BFEDA21
+BEFORE 	last_sleep_transition_duration:0x1dcc
+BEFORE 	last_wake_transition_duration:0x1e65
+BEFORE 	xo_count:0x390
+BEFORE 	wakeup_reason:0x0
+BEFORE 	numshutdowns:0x3c8
+BEFORE 	active_cores:0x0
+# t1=735
+AFTER APSS
+AFTER 	shutdown_req:0x359DDAFE4
+AFTER 	wakeup_ind:0x355889862
+AFTER 	bringup_req:0x359E011FE
+AFTER 	bringup_ack:0x359E0146F
+AFTER 	xo_last_entered_at:0x0
+AFTER 	xo_last_exited_at:0x0
+AFTER 	xo_accumulated_duration:0x0
+AFTER 	last_sleep_transition_duration:0x2380
+AFTER 	last_wake_transition_duration:0x251f
+AFTER 	xo_count:0x0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x9edc
+AFTER 	active_cores:0x1
+AFTER 		core0
+AFTER MPSS
+AFTER 	shutdown_req:0x3599A16E5
+AFTER 	wakeup_ind:0x359965E20
+AFTER 	bringup_req:0x359965F5D
+AFTER 	bringup_ack:0x359965FCD
+AFTER 	xo_last_entered_at:0x3599A4F9A
+AFTER 	xo_last_exited_at:0x359962753
+AFTER 	xo_accumulated_duration:0x2CA04FB9A
+AFTER 	last_sleep_transition_duration:0x4dca
+AFTER 	last_wake_transition_duration:0x5644
+AFTER 	xo_count:0x8a4
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x8e3
+AFTER 	active_cores:0x0
+AFTER PRONTO
+AFTER 	shutdown_req:0x359E07348
+AFTER 	wakeup_ind:0x359DE9751
+AFTER 	bringup_req:0x359DE9864
+AFTER 	bringup_ack:0x359DE98D3
+AFTER 	xo_last_entered_at:0x359E09177
+AFTER 	xo_last_exited_at:0x359DE7E08
+AFTER 	xo_accumulated_duration:0x2612CFA8F
+AFTER 	last_sleep_transition_duration:0x24aa
+AFTER 	last_wake_transition_duration:0x29ae
+AFTER 	xo_count:0x17c1
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x17c2
+AFTER 	active_cores:0x0
+AFTER TZ
+AFTER 	shutdown_req:0x0
+AFTER 	wakeup_ind:0x0
+AFTER 	bringup_req:0x0
+AFTER 	bringup_ack:0x0
+AFTER 	xo_last_entered_at:0x0
+AFTER 	xo_last_exited_at:0x0
+AFTER 	xo_accumulated_duration:0x0
+AFTER 	last_sleep_transition_duration:0x0
+AFTER 	last_wake_transition_duration:0x0
+AFTER 	xo_count:0x0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x0
+AFTER 	active_cores:0x0
+AFTER LPASS
+AFTER 	shutdown_req:0x359D13887
+AFTER 	wakeup_ind:0x359AEC6EC
+AFTER 	bringup_req:0x359D0ADBF
+AFTER 	bringup_ack:0x359D0D09A
+AFTER 	xo_last_entered_at:0x359D1545D
+AFTER 	xo_last_exited_at:0x359D0BA1A
+AFTER 	xo_accumulated_duration:0x2E5724148
+AFTER 	last_sleep_transition_duration:0x1bd4
+AFTER 	last_wake_transition_duration:0x1bb1
+AFTER 	xo_count:0x24d0
+AFTER 	wakeup_reason:0x0
+AFTER 	numshutdowns:0x257b
+AFTER 	active_cores:0x0
+# AFTER -------------------------------------------------------------
+#   --- ofono /ril_0
+#         Online = 1
+#         Powered = 1
+#     [ /ril_0 ]
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470762
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 10
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- ofono /ril_1
+#     [ /ril_1 ]
+#         Online = 1
+#         Powered = 1
+#         Online = 1
+#         Powered = 1
+#             Status = registered
+#             CellId = 1470762
+#             Technology = lte
+#             MobileNetworkCode = 70
+#             Name = One HU
+#             Strength = 10
+#             TechnologyPreference = nr
+#             Powered = 1
+#             Powered = 1
+#             MobileNetworkCode = 70
+#   --- rfkill
+#     0: hci0: Bluetooth
+#     	Soft blocked: yes
+#     	Hard blocked: no
+#     1: phy0: Wireless LAN
+#     	Soft blocked: no
+#     	Hard blocked: no
+#   --- radio context [AFTER]
+#     ☠️ NO QMI TRANSPORT ANSWERED - band, cell, RSRP and the config
+#        fields below are UNREAD on this stack, not empty.
+#     ofono cell/strength (the only radio context UT gives without QMI)
+#       /ril_0 [ /ril_0 ]
+#       /ril_0         Status = registered
+#       /ril_0         CellId = 1470762
+#       /ril_0         Technology = lte
+#       /ril_0         MobileNetworkCode = 70
+#       /ril_0         Name = One HU
+#       /ril_0         Strength = 10
+#       /ril_0         TechnologyPreference = nr
+#       /ril_0         MobileNetworkCode = 70
+#       /ril_1 [ /ril_1 ]
+#       /ril_1         Status = registered
+#       /ril_1         CellId = 1470762
+#       /ril_1         Technology = lte
+#       /ril_1         MobileNetworkCode = 70
+#       /ril_1         Name = One HU
+#       /ril_1         Strength = 10
+#       /ril_1         TechnologyPreference = nr
+#       /ril_1         MobileNetworkCode = 70
+# v=4109760 (/sys/class/power_supply/battery/voltage_now)
+# cc_soc=6989
+# cap=71
+# done
