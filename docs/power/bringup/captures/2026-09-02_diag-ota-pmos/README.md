@@ -112,3 +112,83 @@ about were all taken with logging off.
 
 `raw/diag.bin` (38 464 B, the log stream), `raw/cntl.bin` (9 502 B, the control
 handshake). Reproduce with `tools/diag-log-capture.py 120`.
+
+---
+
+# ★★★★★ INTERVENTION: switching IMS off stops the loop dead
+
+2026-09-02 00:00–00:30, same boot, same cell, three arms.
+
+| arm | what was changed | ESM messages / window | verdict |
+|---|---|---:|---|
+| baseline | nothing | **220 / 120 s** (22 full cycles) | the loop |
+| 1 | AP holds a bearer on APN `ims` (`mmcli --simple-connect`) | **18 cycles / 90 s** | **no change** |
+| 3 | every IMS service switch set False | **0 / 120 s** | **loop gone** |
+
+With IMS off: RRC OTA 391 → 179, whole log 38 299 → 9 620 bytes, and **not one
+ESM message of any kind**. The device stayed `registered` throughout.
+
+The lever is `Qmi.ClientIms.set_ims_services_enabled_setting`, reached with the
+bind-in-one-process pattern ([`../tools/ims-toggle.py`](../tools/ims-toggle.py)).
+Read *before* the write: **voice, video telephony, SMS and UT all True** — IMS was
+switched on, which is why the client kept asking.
+
+☠️ **The setter names and the getter names do not correspond.**
+`set_ims_service_enabled(False)` on its own came back with only **UT** flipped and
+voice, video and SMS still True. Every switch has to be set explicitly *and read
+back*. A write that is not read back is a hope, not a change.
+
+## Why arm 1 failed, and what it is evidence for
+
+An AP bearer on the same APN does not satisfy the requester — which rules out
+"an unclaimed context looking for an owner", and points at the shape of the
+protocol instead of the shape of the APN.
+
+The design this modem expects is a two-party one. The kernel knows nothing about
+IMS — `grep` for IMS across the vendor 4.9 tree's `drivers/` and `include/`
+returns **nothing**; it is entirely a userspace QMI client's job. And `qrtr-lookup`
+shows the role assignment: the **modem is the server** on all three IMS services
+(settings 18, application 33, QMI Priv 77), with **no client on our side** and no
+IMS process running. On Android and on the Ubuntu Touch oracle that client is
+`imsdatadaemon`, which drives PDN setup and teardown through the **IMSDCM** (IMS
+Data Connection Manager) service — the same service libqmi exposes here as
+`Qmi.Service.IMSDCM` with `PdpActivateRequest` / `PdpDeactivateRequest`.
+
+So the behaviour is **designed, but for a system that runs the other half**. The
+carrier config (`ROW_Commercial`) has IMS enabled; the modem plays its half,
+finds no counterpart, releases, and retries 8.4 s later. It is not waste by
+design — it is a half-configured stack.
+
+## ☠️ Two claims that are NOT established, and one that was refuted
+
+**Refuted, and kept here so nobody resurrects it.** The outside review's
+explanation was *P-CSCF starvation*: the granted PDN carries DNS but no P-CSCF, so
+the IMS client has nothing to register against. Decoded container by container,
+the network's PCO returns:
+
+```
+0x8021 len=16  IPCP
+0x000D len= 4  DNS IPv4                        80.244.99.36
+0x0005 len= 1  MS support NRBC                 02
+0x0002 len= 0  IM CN Subsystem Signaling Flag  (present)
+0x000C len= 4  P-CSCF IPv4                     10.149.10.129
+0x000C len= 4  P-CSCF IPv4                     10.150.10.129
+```
+
+**Two P-CSCF addresses and the IM CN flag** — exactly what the UE's own outgoing
+PCO asks for. The PDN is fully provisioned and the UE hangs up anyway. The review
+accepted the refutation and named its own error: a mechanism built on a partial
+decode instead of a container-level dump.
+
+**Still unknown: why it tears down.** Its own `PDN DISCONNECT REQUEST` is a bare
+`02 fc d2 06` — protocol discriminator, PTI, message type, linked EPS bearer
+identity 6, **and no ESM cause IE at all**. 30 ms is too fast for anything
+network-dependent, so it is a local precondition check failing between "bearer
+up" and "first SIP message". Which check is not yet read. The instrument for it
+is the same door one step further: enable the IMS/QIPCALL log equipment ranges
+and let the state machine narrate itself.
+
+**Still unmeasured: the milliamps.** The chain loop → RRC_CONNECTED → duty is
+measured. duty → current still rests on the fitted slope with its known ≥15 mA
+structural residual, so "the mechanism is the whole duty gap" must not quietly
+become "the power problem is solved".
