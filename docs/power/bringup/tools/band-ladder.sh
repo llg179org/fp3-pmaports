@@ -70,7 +70,22 @@ leg(){ # leg NAME BAND
 	wait_reg || s "#   ☠️ did not register within 150 s"
 	sleep 20
 	witness "$1 before"
+	# ☠️ MID-LEG COVARIATES. Endpoint witnesses missed a band that moved INSIDE a
+	# leg, and a leg whose band moved is not a measurement of anything it claims.
+	# The sampler perturbs the modem it watches, so it runs at the SAME interval
+	# in every leg - identical perturbation cancels in a comparison, a
+	# perturbation present in one arm only does not.
+	/usr/local/bin/leg-covariates.sh --watch 60 "$W" "$1 mid" >> "$L" 2>&1 &
+	COV=$!
+	# ☠️ leg names carry '|' (a mode list is spelled gsm|umts|lte); unsanitised
+	# that is a pipe in a filename, and the redirect writes somewhere nobody
+	# looks for it.
+	safe=$(printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '_')
+	/usr/local/bin/xo-series.sh "$W" MPSS > "${L%.txt}-xo-$safe.txt" 2>&1 &
+	XOS=$!
 	/usr/local/bin/burst-master.sh "$W" >/dev/null 2>&1
+	kill $COV $XOS 2>/dev/null
+	wait $COV $XOS 2>/dev/null
 	d=$(ls -dt /var/log/fp3/burst-master-* | head -1)
 	mv "$d/master.txt" "$O/$1.txt"; rm -rf "$d"
 	witness "$1 after"
