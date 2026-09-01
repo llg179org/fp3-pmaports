@@ -24,6 +24,17 @@ window recorded, and msg_len exactly consuming the remaining bytes.
 """
 import struct, sys, collections
 
+# 3GPP TS 24.301 §9.8 - ESM message identities, the ones this loop uses.
+ESM = {0xC1: "ACTIVATE DEFAULT EPS BEARER CTX REQUEST",
+       0xC2: "ACTIVATE DEFAULT EPS BEARER CTX ACCEPT",
+       0xCD: "DEACTIVATE EPS BEARER CTX REQUEST",
+       0xCE: "DEACTIVATE EPS BEARER CTX ACCEPT",
+       0xD0: "PDN CONNECTIVITY REQUEST",
+       0xD2: "PDN DISCONNECT REQUEST"}
+# ESM log codes. 0xB0E1 carries ciphered NAS (its message-type byte is random),
+# so it is counted and never decoded.
+ESM_CODES = {0xB0E2: "ESM in", 0xB0E3: "ESM out"}
+
 CH = {1: "BCCH_BCH", 2: "BCCH_DL_SCH", 3: "MCCH", 4: "PCCH(paging)",
       5: "DL_CCCH", 6: "DL_DCCH", 7: "UL_CCCH", 8: "UL_DCCH"}
 
@@ -76,3 +87,12 @@ for path in sys.argv[1:]:
         for k, n in sorted(ch.items()):
             print("      pdu_num=%-3d %5d   %s" % (k, n, CH.get(k, "?")))
         print("   -- covariates seen (pci, earfcn, hdr_ver): %s" % dict(cov))
+    # ESM payload: 4-byte log header, then the NAS PDU - pd/ebi, pti, msg type.
+    esm = collections.Counter()
+    for c, _, p in es:
+        if c in ESM_CODES and len(p) > 6:
+            esm[(ESM_CODES[c], p[6])] += 1
+    if esm:
+        print("   -- ESM message identities (TS 24.301 9.8)")
+        for (d, t), n in sorted(esm.items(), key=lambda x: -x[1]):
+            print("      %-8s 0x%02X %5d   %s" % (d, t, n, ESM.get(t, "?")))
