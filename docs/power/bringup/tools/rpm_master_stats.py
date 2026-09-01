@@ -214,11 +214,33 @@ class Window:
         return "undecidable"
 
     @property
+    def overflow(self):
+        """True when the delta claims MORE XO-off time than the window is long.
+
+        ☠️ Not an error, and not impossible: the counter is EDGE-UPDATED, so a
+        master that went down before the window opened and exits inside it dumps
+        its WHOLE sleep - including the part that happened earlier - into this
+        window's delta. Measured on the 2026-09-01 overnight watch, where a
+        10-minute LPASS bucket accumulated ~52 000 ms of "off" time.
+
+        The consequence is that such a bucket's duty is a LOWER BOUND on the
+        awake fraction (it is pinned at 0 %), and its ms-per-wake is not
+        computable at all - the first version of this module returned
+        -51849.1 ms/wake for exactly this case, which is how the effect was
+        found.
+        """
+        if self.d_ticks <= 0:
+            return False
+        return self.d_ticks / TICK_HZ > self.seconds + 1e-9
+
+    @property
     def off_s(self):
         """Seconds spent in XO shutdown during the window, or None."""
         v = self.verdict
         if v == "measured":
-            return self.d_ticks / TICK_HZ
+            # clamp: an edge-updated counter can report more off-time than the
+            # window is long (see .overflow)
+            return min(self.d_ticks / TICK_HZ, self.seconds)
         if v == "asleep":
             return self.seconds
         if v == "awake":
@@ -241,7 +263,9 @@ class Window:
     def ms_per_wake(self):
         if not self.d_count:
             return None
-        awake_s = self.seconds - (self.off_s or 0.0)
+        if self.overflow:
+            return None          # not computable; see .overflow
+        awake_s = max(0.0, self.seconds - (self.off_s or 0.0))
         return 1000.0 * awake_s / self.d_count
 
     def line(self):
@@ -256,9 +280,15 @@ class Window:
             return ("%-7s awake for the whole window (zero delta, never entered "
                     "XO shutdown), 0 wakes" % self.name)
         mw = self.ms_per_wake
-        return ("%-7s %5.1f %% awake  %6.2f wakes/s  %s"
+        tail = ""
+        if self.overflow:
+            tail = ("  ☠️ delta exceeds the window (%.0f s of off-time in %.0f s):"
+                    " an exit carried sleep from before it, so this duty is a"
+                    " LOWER BOUND and ms/wake is not computable"
+                    % (self.d_ticks / TICK_HZ, self.seconds))
+        return ("%-7s %5.1f %% awake  %6.2f wakes/s  %s%s"
                 % (self.name, 100.0 * self.duty, self.wakes_per_s,
-                   ("%.1f ms/wake" % mw) if mw is not None else "-"))
+                   ("%.1f ms/wake" % mw) if mw is not None else "-", tail))
 
 
 def window(before_text, after_text, seconds):
