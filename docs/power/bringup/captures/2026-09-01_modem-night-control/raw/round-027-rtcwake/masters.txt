@@ -1,0 +1,16 @@
+# round=27 path=rtcwake t=2026-09-01 02:01:38 cap=92% v=3872498uV
+=== BEFORE
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=719886
+LPASS    xo_total=2477176236471    xo_shutdowns=287        shutdowns=301
+MPSS     xo_total=1920250067392    xo_shutdowns=356276     shutdowns=356485
+PRONTO   xo_total=2328855271036    xo_shutdowns=373738     shutdowns=373822
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+=== AFTER
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=720178
+LPASS    xo_total=2489209320232    xo_shutdowns=288        shutdowns=302
+MPSS     xo_total=1927637532871    xo_shutdowns=357758     shutdowns=357967
+PRONTO   xo_total=2340873424300    xo_shutdowns=373744     shutdowns=373829
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+# after: cap=92% v=3844665uV
+# suspend_stats: ok=201 fail=0
+# wakeup_irq=56

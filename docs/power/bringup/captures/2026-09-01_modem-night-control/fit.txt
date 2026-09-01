@@ -1,0 +1,56 @@
+ rnd path      slept         waking irq    MPSS   LPASS  PRONTO   REQ   RSP   IND      v_uV
+   1 rtcwake   602.0 56:pm8xxx_rtc_alarm    36.0    50.4 ☠️IMPOS     0     0     0   4052148
+   2 logind    602.0 56:pm8xxx_rtc_alarm    33.4 ☠️IMPOS ☠️IMPOS     0     0     0   4035214
+   3 rtcwake   601.0 56:pm8xxx_rtc_alarm    33.8 ☠️IMPOS ☠️IMPOS     0     0     0   4041832
+   4 logind    602.0 56:pm8xxx_rtc_alarm    33.4 ☠️IMPOS ☠️IMPOS     0     0     0   4028791
+   5 rtcwake   601.0 56:pm8xxx_rtc_alarm    34.5 ☠️IMPOS ☠️IMPOS     0     0     0   3995898
+   6 logind    602.0 56:pm8xxx_rtc_alarm    34.3 ☠️IMPOS ☠️IMPOS     0     0     0   4010690
+   7 rtcwake   601.0 56:pm8xxx_rtc_alarm    34.2 ☠️IMPOS ☠️IMPOS     0     0     0   4005824
+   8 logind    602.0 56:pm8xxx_rtc_alarm    33.9 ☠️IMPOS ☠️IMPOS     0     0     0   3966897
+   9 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.1 ☠️IMPOS ☠️IMPOS     0     0     0   3935366
+  10 logind    602.0 56:pm8xxx_rtc_alarm    37.0 ☠️IMPOS    -0.2     0     0     0   3963783
+  11 rtcwake   601.0 56:pm8xxx_rtc_alarm    39.3 ☠️IMPOS ☠️IMPOS     0     0     0   3970400
+  12 logind    602.0 56:pm8xxx_rtc_alarm    37.4 ☠️IMPOS ☠️IMPOS     0     0     0   3947044
+  13 rtcwake   601.0 56:pm8xxx_rtc_alarm    42.9 ☠️IMPOS ☠️IMPOS     0     0     0   3948017
+  14 logind    602.0 56:pm8xxx_rtc_alarm    37.8 ☠️IMPOS ☠️IMPOS     0     0     0   3953272
+  15 rtcwake  -85799.0 56:pm8xxx_rtc_alarm   100.4   100.7   100.7     0     0     0   3940037
+  16 logind    602.0 56:pm8xxx_rtc_alarm    36.8 ☠️IMPOS ☠️IMPOS     0     0     0   3941399
+  17 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.7 ☠️IMPOS ☠️IMPOS     0     0     0   3927191
+  18 logind    602.0 56:pm8xxx_rtc_alarm    35.9 ☠️IMPOS ☠️IMPOS     0     0     0   3929721
+  19 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.5 ☠️IMPOS ☠️IMPOS     0     0     0   3928748
+  20 logind    602.0 56:pm8xxx_rtc_alarm    35.0 ☠️IMPOS ☠️IMPOS     0     0     0   3889626
+  21 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.2 ☠️IMPOS ☠️IMPOS     0     0     0   3898579
+  22 logind    602.0 56:pm8xxx_rtc_alarm    35.5 ☠️IMPOS ☠️IMPOS     0     0     0   3872692
+  23 rtcwake       ? 56:pm8xxx_rtc_alarm     —       —       —       0     0     0   3867048
+  24 logind    602.0 56:pm8xxx_rtc_alarm    35.4 ☠️IMPOS ☠️IMPOS     0     0     0   3899552
+  25 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.4 ☠️IMPOS ☠️IMPOS     0     0     0   3895465
+  26 logind    602.0 56:pm8xxx_rtc_alarm    34.4 ☠️IMPOS ☠️IMPOS     0     0     0   3893324
+  27 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.0 ☠️IMPOS ☠️IMPOS     0     0     0   3844665
+  28 logind    602.0 56:pm8xxx_rtc_alarm    35.5 ☠️IMPOS ☠️IMPOS     0     0     0   3860430
+  29 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.2 ☠️IMPOS ☠️IMPOS     0     0     0   3857511
+  30 logind    602.0 56:pm8xxx_rtc_alarm    34.7    19.6 ☠️IMPOS     0     0     0   3850504
+  31 rtcwake       ? 56:pm8xxx_rtc_alarm     —       —       —       0     0     0   3822281
+  32 logind    601.0 56:pm8xxx_rtc_alarm    34.0 ☠️IMPOS ☠️IMPOS     0     0     0   3866659
+  33 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.9 ☠️IMPOS ☠️IMPOS     0     0     0   3831819
+  34 logind    602.0 56:pm8xxx_rtc_alarm    36.6 ☠️IMPOS ☠️IMPOS     0     0     0   3833960
+  35 rtcwake   601.0 56:pm8xxx_rtc_alarm    36.4 ☠️IMPOS ☠️IMPOS     0     0     0   3824422
+  36 logind    602.0 56:pm8xxx_rtc_alarm    35.2 ☠️IMPOS ☠️IMPOS     0     0     0   3822087
+  37 rtcwake   601.0 56:pm8xxx_rtc_alarm    35.5 ☠️IMPOS ☠️IMPOS     0     0     0   3773038
+  38 logind    602.0 56:pm8xxx_rtc_alarm    36.9 ☠️IMPOS ☠️IMPOS     0     0     0   3818778
+  39 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.8 ☠️IMPOS ☠️IMPOS     0     0     0   3814107
+  40 logind    602.0 56:pm8xxx_rtc_alarm    37.3 ☠️IMPOS ☠️IMPOS     0     0     0   3808073
+  41 rtcwake   601.0 56:pm8xxx_rtc_alarm    35.8 ☠️IMPOS ☠️IMPOS     0     0     0   3773817
+  42 logind    602.0 56:pm8xxx_rtc_alarm    35.8 ☠️IMPOS ☠️IMPOS     0     0     0   3821892
+  43 rtcwake   601.0 56:pm8xxx_rtc_alarm    35.9 ☠️IMPOS    -0.9     0     0     0   3796589
+  44 logind    602.0 56:pm8xxx_rtc_alarm    38.3 ☠️IMPOS ☠️IMPOS     0     0     0   3810409
+  45 rtcwake   601.0 56:pm8xxx_rtc_alarm    37.4 ☠️IMPOS ☠️IMPOS     0     0     0   3752407
+  46 logind    602.0 56:pm8xxx_rtc_alarm    37.6 ☠️IMPOS ☠️IMPOS     0     0     0   3765642
+  47 rtcwake       ? 56:pm8xxx_rtc_alarm     —       —       —       0     0     0   3734305
+
+=== the internal A/B: the two suspend paths, same night, same cell
+  logind   rounds=23   mean sleep=602s     mean MPSS awake=35.7%    (n=23)  QMI REQ=0 RSP=0 IND=0
+  rtcwake  rounds=24   mean sleep=-3074s   mean MPSS awake=39.8%    (n=21)  QMI REQ=0 RSP=0 IND=0
+
+☠️ Read the difference between the two rows as the sleep handshake's share,
+   and a round with a HIGH MPSS duty and ZERO QMI as evidence for candidate (c):
+   the modem is not being kept awake by anyone, it simply does not go down.

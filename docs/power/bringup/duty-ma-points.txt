@@ -4,12 +4,17 @@
 #
 #   <label> <duty_fraction> <mA> <sigma_mA> <tags>
 #
-# ☠️ The tags are not decoration. The first two rows differ in Wi-Fi and cable
-# state as well as in duty, so the line drawn through them is not a controlled
-# one; --only wifi-down refits on the rows that share a configuration.
+# ☠️☠️ THE LINE THROUGH THESE POINTS IS RETRACTED, 2026-09-01. The control run was
+# expected at ~5% duty and landed at 35.7%, on top of the census point instead of
+# opposite it, so there is no second duty to fit against - and the two rows that
+# DO share a duty differ by 14 mA. That scatter is a third of the range the slope
+# was fitted over. See captures/2026-09-01_modem-night-control/.
+#
+# ☠️ The tags are not decoration. The first row differs in Wi-Fi and cable state
+# from the other two, and it is the only one that is not reproducible: it reads
+# 48 mA with two consumers PRESENT that the 100 mA row does not have.
 #
 # label                     duty     mA  sig  tags
-step0-floor-2026-08-30     0.050   48.0    5  wifi-up,cable-in,mm-stopped,ap-asleep
+step0-floor-2026-08-30     0.050   48.0    5  wifi-up,cable-in,mm-stopped,ap-asleep,suspect
 census-mm-on-2026-08-31    0.336   86.0    4  wifi-down,cable-out,mm-running,ap-asleep
-# census-mm-off-2026-09-01 pending: same census, ModemManager stopped. It shares
-# wifi-down,cable-out with the row above, so those two are the controlled pair.
+control-mm-off-2026-09-01  0.357  100.0    4  wifi-down,cable-out,mm-stopped,ap-asleep

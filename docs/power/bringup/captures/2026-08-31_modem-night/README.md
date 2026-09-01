@@ -248,3 +248,21 @@ unexplained floor is the two links and the remaining bare floor is ~33 mA.
 ☠️ What it still cannot separate is Wi-Fi *from* USB — they moved together. That
 separation is a third arm (cable out, Wi-Fi **up**), and it is only worth a night
 if this difference turns out to be large.
+
+---
+
+## ☠️☠️ SUPERSEDED IN PART, 2026-09-01
+
+The control arm ran and **broke the line this page built**:
+[`../2026-09-01_modem-night-control/`](../2026-09-01_modem-night-control/README.md).
+It landed at 35.7 % duty rather than the expected ~5 %, drew **100 mA** with the
+daemon stopped against this run's 86 mA with it running, and every round slept the
+full alarm on the RTC.
+
+Retracted from this page: the `41.4 + 133 × duty` line, the 49.5 mA prediction,
+the ~37 mA saving, and the reading of the 5.0 % MM-stopped duty (n=1, now
+contradicted by n=47).
+
+**Not** retracted, and strengthened: the terse result. With no daemon at all the
+`rtcwake` arm also sleeps out its alarm, which identifies the daemon's own
+subscriptions as the wake source rather than the network.

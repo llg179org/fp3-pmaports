@@ -1,0 +1,5 @@
+skip 0h: average draw = 100.3 mA   (rms residual 56.8 mAh)
+skip 1h: average draw = 96.1 mA   (rms residual 58.0 mAh)
+skip 2h: average draw = 99.6 mA   (rms residual 58.9 mAh)
+skip 3h: average draw = 97.7 mA   (rms residual 64.3 mAh)
+skip 4h: average draw = 103.9 mA   (rms residual 67.4 mAh)

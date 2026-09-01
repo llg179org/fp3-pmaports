@@ -1,0 +1,16 @@
+# round=32 path=logind t=2026-09-01 02:53:24 cap=92% v=3822281uV
+=== BEFORE
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=722462
+LPASS    xo_total=2536976492182    xo_shutdowns=293        shutdowns=307
+MPSS     xo_total=1957232740379    xo_shutdowns=363698     shutdowns=363907
+PRONTO   xo_total=2388638009108    xo_shutdowns=373771     shutdowns=373859
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+=== AFTER
+APSS     xo_total=0                xo_shutdowns=0          shutdowns=723327
+LPASS    xo_total=2548836160850    xo_shutdowns=294        shutdowns=308
+MPSS     xo_total=1964851630906    xo_shutdowns=365211     shutdowns=365420
+PRONTO   xo_total=2400502445351    xo_shutdowns=373777     shutdowns=373865
+TZ       xo_total=0                xo_shutdowns=0          shutdowns=0
+# after: cap=92% v=3866659uV
+# suspend_stats: ok=206 fail=0
+# wakeup_irq=56
