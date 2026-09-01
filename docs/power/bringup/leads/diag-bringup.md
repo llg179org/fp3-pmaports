@@ -1,4 +1,35 @@
-# Bringing the modem's DIAG interface up on mainline
+# ★★★★★ SOLVED 2026-09-02 — the data path was never the problem; we were knocking on the wrong door
+
+> **The log stream works.** 38 299 bytes of LTE RRC and NAS logs in 120 s, and it
+> named the duty gap in one capture:
+> [`../captures/2026-09-02_diag-ota-pmos/`](../captures/2026-09-02_diag-ota-pmos/README.md).
+>
+> **What changed:** this page spent days on the DIAG *command* path — asking the
+> modem a question and never being answered. The power question never needed a
+> question asked. It needed the modem's own **log stream**, and logs are turned
+> on by a **control** message on the channel that already worked:
+>
+> ```
+> DIAG_CTRL_MSG_LOG_MASK = 9      (diagchar.h, vendor tree on disk)
+> struct diag_ctrl_log_mask       (diagfwd_cntl.h)
+> ```
+>
+> The peripheral's own feature mask, 0x3EF7, decoded on this page on 2026-08-29,
+> sets **bit 11, MASK_CENTRALIZATION** — which means exactly "send me my masks as
+> control packets". The evidence that the door existed had been sitting in this
+> file for four days, one paragraph above the wall.
+>
+> ☠️ **The lesson is not about DIAG.** Everything below is correct: the command
+> path really is silent, and every combination tried really did return zero. The
+> error was scope — treating "the instrument does not work" as settled when what
+> had been shown was "one *use* of the instrument does not work". Ask what the
+> measurement actually needs before debugging the path it does not need.
+>
+> Tool: [`../tools/diag-log-capture.py`](../tools/diag-log-capture.py). It does
+> the whole sequence in one process, because the control handshake is answered
+> once per boot.
+
+# (original) Bringing the modem's DIAG interface up on mainline
 
 > ⚠️ **AI-generated.** Written by Claude (Opus 5) under the direction of
 > Lajosházi, László Gergely, who reviewed every measurement it rests on.
