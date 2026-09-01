@@ -100,47 +100,70 @@ transient the single window happened to catch, or the modem's duty depends on
 something neither run controlled — but it cannot be quoted as the MM-stopped duty
 any more.
 
-## ☠️☠️☠️ 5. The largest problem: the 48 mA floor does not reproduce cable-out
+## ☠️☠️☠️ 5. The largest problem: the 48 mA floor and the 5 % duty were never one measurement
 
-The step-0 floor — the number this whole project measures itself against — was
-`48 ± 5 mA`, taken with ModemManager stopped, **Wi-Fi up**, and the cable
-**physically in** with the PMIC's `input_suspend` bit set (`tools/sleep-night.sh`
-sets it and gates on `status=Discharging`).
+The step-0 floor — the number this whole project measures itself against — is
+`48 ± 5 mA`, and it has been quoted throughout as "48 mA at 5.0 % MPSS duty".
 
-This run is the same daemon state with **two consumers removed** — no Wi-Fi link,
-no cable — and it measures **100 mA**.
+**Those two numbers come from different runs on different days.**
 
-Both differences push the wrong way. Removing a consumer cannot raise
-consumption, so the difference is not explained by anything on the load side. The
-remaining explanations are about the *instrument*:
+| number | where it comes from |
+|---|---|
+| `48 ± 5 mA` | the 58-round `sleep-night.sh` run of **2026-08-30**, whose MPSS duty was never measured |
+| `5.0 %` | **one** 602 s window on **2026-08-31** ([`../2026-08-31_mpss-across-suspend-nomm/`](../2026-08-31_mpss-across-suspend-nomm/README.md)), which measured no current |
 
-- **the cable was carrying part of the system load.** `input_suspend` stops the
-  charger, and `status` then reads `Discharging`; whether it also stops VBUS from
-  supplying the system rail is a *separate* question this project has never
-  measured. If any of the load came from VBUS, the battery-side OCV slope
-  under-reports the true draw — by construction, and silently.
-- **or the OCV→mAh conversion is biased near the top of the curve.** The floor
-  night started at 100 % (4.24 V); this one started at 4.05 V and ran lower.
+So the low end of the line was not a measured point. It was a current from one
+night paired with a duty from another day's single window, and the pairing was
+never flagged because both were taken "with ModemManager stopped" — the same
+gate, a different run.
 
-☠️ **The floor night's raw capture is not in this repository.**
-[`../../duty-table-corrected.md`](../../duty-table-corrected.md) already says so
-in its own words: "the 48 mA fit comes from the 58-round `sleep-night.sh`
-discharge run, and *that* run's capture is not in this repository". So the number
-the goal is measured against cannot be re-examined — only re-measured.
+Tonight is the first run in that daemon state where **both** were measured
+together, and it reads **100 mA at 35.7 %**. Combined with the census, the only
+properly paired points this project has are the two cable-out nights, which are
+degenerate in duty. **There is no measured low-duty point at all.**
 
-### The measurement that settles it, and it is cheap
+### ☠️ The instrument hypothesis, raised and then killed from source
 
-Not a night: **one `sleep-night.sh`-style leg run twice back to back, cable in
-with `input_suspend` set and then cable out**, same duty, same Wi-Fi state, an
-hour each. If the cable-in leg reads materially lower on the same phone in the
-same hour, the floor was an artifact and every mA number taken cable-in has to be
-re-derived — including this project's target.
+Before checking the provenance above, the obvious suspicion was that
+`sleep-night.sh`'s charge cut leaves VBUS feeding the system rail, so that the
+battery-side OCV slope under-reports the draw. That would have explained the sign
+neatly, and it is wrong on two counts, both worth recording so it is not raised
+again:
 
-Until that runs, the honest statement of where the phone stands is:
+- ` sleep-night.sh` restores an `input_suspend` attribute that **does not exist on
+  this device** — `ls /sys/class/power_supply/*/input_suspend` returns "No such
+  file"; the glob never expands and that loop has always been a no-op.
+- The cut that *does* happen is `echo Unknown > .../pmi632-charger/status`, and in
+  our own driver that is a real input-path suspend:
 
-> **~100 mA asleep, cable-out, radio camped on LTE, Wi-Fi down.** The 48 mA
-> floor and the ≤50 mA goal derived beside it are both suspect, and the first
-> thing to do is not to optimise anything but to find out which number is real.
+  ```c
+  case POWER_SUPPLY_PROP_STATUS:
+      return regmap_update_bits(chip->regmap, chip->base + USBIN_CMD_IL,
+                                USBIN_SUSPEND_BIT, !val->intval);
+  ```
+
+  (`drivers/power/supply/qcom_smbx.c`, `smb_set_property`.) `Unknown` is
+  `POWER_SUPPLY_STATUS_UNKNOWN` = 0, so `!val->intval` is 1 and the bit is **set**;
+  `Charging` is 1 and clears it. USBIN is suspended at the PMIC, the system runs
+  off the pack, and the OCV slope measures the whole load.
+
+☠️ Source is not a measurement and this does not *prove* VBUS carries nothing —
+but it removes the mechanism that made the artifact story plausible, and the
+provenance defect above explains the discrepancy without needing one. Chasing the
+cable would have cost a night and answered a question that a `git grep` and an
+`ls` answered in two minutes.
+
+### What this leaves open, and it is the real question
+
+Two nights with ModemManager stopped, one reading ~5 % MPSS duty in a single
+window and one reading 35.7 % across 47, are still not reconciled. The
+differences between them are Wi-Fi (up vs down), the cable (in vs out), the day,
+and n (1 vs 47). Since 33.6 % and 35.7 % agree across the two cable-out nights,
+the 5 % is the outlier, and the cheapest test of it is not a night: **repeat that
+single window several times, cable in and Wi-Fi up, exactly as it was taken.** If
+it still reads 5 %, then something in the cable-in/Wi-Fi-up configuration really
+does quiet the modem — which would be the first lever found on the D track, and
+worth far more than the floor number it was originally quoted for.
 
 ## What still stands, unaffected
 

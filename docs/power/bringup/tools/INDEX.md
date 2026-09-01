@@ -144,6 +144,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `terse-ab.sh` | Does ModemManager's TERSE state buy residency, and does the suspend PATH decide |
 | `terse-call.sh` | Does an incoming call reach the phone while ModemManager has it in TERSE state? |
 | `usb-off-census.sh` | Take the rail census again with the USB PHY powered down |
+| `usbin-load-probe.sh` | Does VBUS still carry the system load while the PMIC input is SUSPENDED? (demoted) |
 | `ut-vlow-idle.sh` | Oracle half of the deep-sleep differential (UT 4.9, slot_a). The downstream |
 | `vlow-idle.sh` | Runtime-idle vlow/vmin witness, pmOS control half of the oracle differential |
 | `vlow-probe.sh` | Does zeroing the sleep-set XO vote let the RPM reach vlow? |

@@ -65,6 +65,8 @@ MM=${4:-running}
 case "$MM" in running|stopped) ;; *) echo "mm must be running or stopped"; exit 2;; esac
 WIFI=${5:-down}
 case "$WIFI" in down|up) ;; *) echo "wifi must be down or up"; exit 2;; esac
+CABLE=${6:-out}
+case "$CABLE" in out|in) ;; *) echo "cable must be out or in"; exit 2;; esac
 
 BAT=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
@@ -112,7 +114,7 @@ systemd-run --unit=fp3-modemnight-deadman --collect \
 	&& say "# dead-man armed: WiFi returns unconditionally in $((DEADMAN/60)) min" \
 	|| { say "☠️ COULD NOT ARM THE DEAD-MAN TIMER - refusing to cut the only remaining link"; exit 1; }
 
-say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}% mm=$MM wifi=$WIFI"
+say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}% mm=$MM wifi=$WIFI cable=$CABLE"
 say "# kernel=$(uname -v)"
 
 # ---------------------------------------------------------------- gates
@@ -193,16 +195,36 @@ fi
 say "# wifi radio now: $(nmcli radio wifi 2>/dev/null)  wlan0: $(ip -br link show wlan0 2>/dev/null | awk '{print $2}')"
 
 # ---------------------------------------------------------------- cable out
-# ☠️ Wait for the HUMAN to unplug rather than assuming it happened. A run that
-# starts with the cable in measures a charging phone and looks identical to one
-# that does not.
-say "# waiting for the cable to come out (up to 30 min) - UNPLUG NOW"
-w=0
-while [ "$(cat $CHG/online 2>/dev/null || echo 1)" != 0 ] && [ $w -lt 1800 ]; do
-	sleep 10; w=$((w + 10))
-done
-[ "$(cat $CHG/online 2>/dev/null || echo 1)" = 0 ] || gate_fail "cable still in after 30 min - nothing was measured"
-say "# cable out at $(date '+%T') after ${w}s"
+# Two arms again, and they are not interchangeable. `out` is the default and the
+# one both censuses used. `in` exists to reproduce a configuration that has only
+# ever been sampled once - the 5 % MPSS window of 2026-08-31 was taken cable-in
+# with Wi-Fi up, and it is the single reading that disagrees with every night.
+#
+# ☠️☠️ `in` sets the PMIC's USBIN suspend bit, which SURVIVES A WARM REBOOT and
+# has wedged the bootloader into a fastboot that answers nothing. restore() above
+# clears it on every exit path; do not add an exit that bypasses it, and never
+# reboot the phone while a run is being force-killed.
+if [ "$CABLE" = out ]; then
+	# ☠️ Wait for the HUMAN to unplug rather than assuming it happened. A run
+	# that starts with the cable in measures a charging phone and looks
+	# identical to one that does not.
+	say "# waiting for the cable to come out (up to 30 min) - UNPLUG NOW"
+	w=0
+	while [ "$(cat $CHG/online 2>/dev/null || echo 1)" != 0 ] && [ $w -lt 1800 ]; do
+		sleep 10; w=$((w + 10))
+	done
+	[ "$(cat $CHG/online 2>/dev/null || echo 1)" = 0 ] || gate_fail "cable still in after 30 min - nothing was measured"
+	say "# cable out at $(date '+%T') after ${w}s"
+else
+	[ "$(cat $CHG/online 2>/dev/null || echo 0)" = 1 ] || gate_fail "CABLE=in but no cable is present - plug it in first"
+	echo Unknown > $CHG/status
+	sleep 5
+	st=$(cat $BAT/status)
+	say "# cable IN, USBIN suspended: battery status=$st"
+	# The gate is the point: if the input is not really cut, the pack is being
+	# topped up and the OCV slope measures the charger, not the phone.
+	[ "$st" = Discharging ] || gate_fail "battery is '$st' after the cut, not Discharging - the input is still live"
+fi
 
 # ☠️ Let the surface charge decay before the first round. Measured on this
 # device: fitting from 0/150/300/600 s after a wake gives -142/+141/+156/+25
