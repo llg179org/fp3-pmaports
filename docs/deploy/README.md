@@ -24,6 +24,31 @@ cp fp3-pmaports/linux-fp3/{APKBUILD,config-fp3.aarch64} \
 ./pmb build --arch aarch64 --force --lax linux-fp3
 ```
 
+☠️ **If you skip that `cp`, everything still says DONE and nothing is built.**
+`pmbootstrap` builds `pmaports/device/testing/linux-fp3/`, not the copy in this
+repository — `pmbootstrap config aports` names the tree it uses. Bump `_commit`
+and `pkgrel` only in the mirror and both `checksum` and `build` exit **0**, the
+build prints *"Package 'linux-fp3' is up to date"*, and no package appears.
+Measured 2026-09-01. Two ways to catch it, and prefer the second:
+
+* a `checksum` that finishes in ~2 s did not fetch the tarball; a real one takes
+  ~40 s;
+* **look for the artefact, not for DONE:**
+  `ls work/packages/edge/aarch64/linux-fp3-<pkgver>-r<pkgrel>.apk`
+
+☠️ **Know what the flash carries before you flash it.** `pkgrel` is not the
+distance: a package can be built and never deployed, so the phone may be several
+pins behind. Ask git, using the `_commit` the *running* kernel was built from:
+
+```sh
+git -C linux-fp3 log --oneline <running _commit>..<new _commit>
+```
+
+On 2026-09-01 the phone ran r78 while the tree was at r80, and that innocent-
+looking two-step carried **four** commits including an unrelated fuel-gauge
+change. A measurement taken after a flash has to name every commit the flash
+brought, or it is a two-variable experiment wearing one variable's label.
+
 `--force` and `--lax` are **`build` flags, not global ones** — `./pmb --lax build`
 is rejected with `unrecognized arguments`. Without `--force`, a rebuild at the
 same `pkgver` is skipped with *"Package is up to date"* even though `_commit`
