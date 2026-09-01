@@ -52,6 +52,22 @@ same stack gave 34.8% on 08-28 and 4.9% three days later. **The duty is a state,
 not a property** (`leads/sleep-length-is-a-state.md`), and nothing yet names
 which state.
 
+> ☠️ **Updated 2026-09-01 — the low readings above are n=1 or n=2, and 55 sleep
+> windows since disagree with them.** Three whole-night censuses with
+> ModemManager stopped now give **33.4 – 42.9 %, mean 36.3 %, none below 30 %**,
+> across Wi-Fi up and Wi-Fi down and two days
+> ([`captures/2026-09-01_modem-night-control/`](captures/2026-09-01_modem-night-control/README.md),
+> [`captures/2026-09-01_wifi-up-arm/`](captures/2026-09-01_wifi-up-arm/README.md)).
+> The 4.9–5.1 % rows stand as readings of the windows they were taken in; they no
+> longer stand as *the* MM-stopped duty, and no arithmetic should use them as one.
+>
+> The rows also differ in a way this table does not record: the 08-31 low windows
+> were taken with the cable in and the pack `Full` — a **charging** phone. Whether
+> that is the state the lead is looking for is being measured now, and the
+> decomposition that makes it legible is wake **length**, not wake rate: 148 ms
+> awake per XO cycle cable-out against 16 ms in the 5 % window, at a nearly
+> unchanged ~2.4–3.1 cycles per second.
+
 **The LPASS differential is dead.** pmOS LPASS reads *asleep the whole window*
 in all four of its captures; the oracle's 2.8–3.0% is a real, small duty. Both
 systems' audio DSP sleeps. What looked for three days like our worst master was

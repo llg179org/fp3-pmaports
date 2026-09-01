@@ -9409,3 +9409,82 @@ carried the LPASS 100% as a ★★★★★ finding, and the number that would h
 disproved it — the oracle's own 2.9% from the same tool — sat in the same
 output. A saturated reading needs an explicit finding-or-artefact decision; that
 rule now exists twice over.
+
+
+## ☠️☠️☠️ 2026-08-31 evening → 2026-09-01 — three whole-night censuses, and the arithmetic they were run to confirm collapsed
+
+Three runs of `tools/modem-night.sh`, 145 rounds in total, each alternating two
+suspend paths inside one run so no drift between days can produce the difference.
+Captures: [`captures/2026-08-31_modem-night/`](captures/2026-08-31_modem-night/README.md),
+[`captures/2026-09-01_modem-night-control/`](captures/2026-09-01_modem-night-control/README.md),
+[`captures/2026-09-01_wifi-up-arm/`](captures/2026-09-01_wifi-up-arm/README.md).
+
+| run | daemon | Wi-Fi | cable | rounds | MPSS awake | draw |
+|---|---|---|---|---:|---:|---:|
+| census | running | down | out | 86 | 33.6 % | 86 ± 4 mA |
+| control | **stopped** | down | out | 47 | 35.7 % | **100 ± 4 mA** |
+| Wi-Fi arm | stopped | **up** | out | 12 | 36.2 % | *not fitted — noise-dominated* |
+
+### What was gained
+
+★★★★★ **The modem's AP wakes are entirely ModemManager's own subscriptions**,
+now measured from three sides. Terse applied → sleeps out the alarm, 43/43.
+Daemon running where terse never applies (the `rtcwake` path, which bypasses
+logind) → woken within ~28 s, 43/43. **No daemon at all → sleeps out the alarm,
+24/24 and 12/12.** Nothing in the network wakes this phone; the daemon's
+unsolicited indications do, and terse is the repair. That closes the R track's
+blocker.
+
+★★★★★ **Stopping the daemon costs 14 mA and buys no duty.** 86 → 100 mA at
+33.6 % → 35.7 %. The daemon is neither what keeps the modem awake nor a consumer
+worth removing.
+
+★★★★★ **A signature for the D track, from decomposing the duty into rate and
+depth** (`xo_shutdowns` beside `xo_total`, both already in every snapshot): the
+modem leaves XO shutdown **~2.4 times a second, all night, in every
+configuration**, and stays up **148 ms** per wake cable-out against **16 ms** in
+the one window that read 5 %. The difference is wake *length*, not wake *rate* —
+which rules out "the network pages us more often" and gives the D track something
+specific to chase. And 2.4 wakes a second is not LTE paging DRX; nobody had
+looked at that number.
+
+### ☠️ What was lost — and it is more than was gained
+
+**The `41.4 + 133 × duty` line is retracted**, and with it "the modem track is
+worth ~37 mA" and "the oracle's 6.1 % duty puts us at 49.5 mA, i.e. the goal from
+the modem track alone". The control was meant to supply a third point at ~5 %
+duty and landed at 35.7 %, on top of the second. A line through the only two
+points that share a configuration predicts **−97 mA** at the oracle's duty; that
+is what degenerate means here.
+
+☠️☠️ **And the low end of that line was never a measured point.** The 48 mA comes
+from the 58-round night of 2026-08-30 whose duty was never measured; the 5.0 %
+duty comes from a single window the next day that measured no current — taken with
+the cable in and the pack `Full`, i.e. a **charging** phone, while the floor night
+was discharging. Two runs, two days, three mismatches, glued together by one
+shared gate ("ModemManager stopped") that made them look like one configuration.
+
+☠️ Fifty-five sleep windows in that daemon state now exist, across both Wi-Fi
+states and two days: **33.4 – 42.9 %, mean 36.3 %, none below 30 %.** The 5.0 %
+has no companion. The 2026-08-31 entry above says "the D-track's 34.8 % / 5–8 % /
+4.9 % all stand"; the low readings in that list do not.
+
+### ☠️ The method errors, stated plainly
+
+- **A hypothesis was raised and killed from source before it cost a night.** The
+  48-vs-100 mA gap looked like the cable feeding the system rail past a
+  charge cut. Two minutes of reading: `sleep-night.sh` restores an
+  `input_suspend` attribute that **does not exist on this device** (the glob never
+  expands — that loop has always been a no-op), and the cut that does happen sets
+  `USBIN_SUSPEND_BIT` in `USBIN_CMD_IL` (`qcom_smbx.c`, `smb_set_property`), so
+  the system runs off the pack. The probe written for it is kept and demoted
+  (`tools/usbin-load-probe.sh`), because source is not a measurement.
+- **A prediction's weights are part of the claim.** The 49.5 mA headline was
+  0.9615 × the 5 % point + 0.0385 × the census point — 96 % a restatement of the
+  number it was supposed to test. The fit is now a command over a data file
+  (`tools/duty-ma-line.py`, `duty-ma-points.txt`) rather than arithmetic inside a
+  commit message, so the next point can move it in public.
+- **An instrument that refuses is worth more than one that answers.** The Wi-Fi
+  arm's mA fit is not quoted anywhere: two hours moved the pack 15.4 mV and
+  `sleep-night-fit.py` called its own output noise-dominated. The number it would
+  have printed was left out rather than carried with a caveat.

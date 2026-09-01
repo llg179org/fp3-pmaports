@@ -282,6 +282,30 @@ than a clean page.**
 The measurement below is good: **`floor_mA` = 48 ± 5 mA** over 10.02 h with the
 phone asleep 96.8 % of it. Everything after the fit is wrong.
 
+> ☠️☠️ **RETRACTED FURTHER, 2026-09-01 — the 5.1 % is now the outlier, not the
+> anchor.** This section replaced a 34.8 % duty with 5.1 % and rebuilt the
+> arithmetic on it. That 5.1 % was **one window**. Fifty-five sleep windows since,
+> with the daemon stopped, across Wi-Fi up and Wi-Fi down and two days, read
+> **33.4 – 42.9 %, mean 36.3 %, none below 30 %**
+> ([`captures/2026-09-01_modem-night-control/`](captures/2026-09-01_modem-night-control/README.md),
+> [`captures/2026-09-01_wifi-up-arm/`](captures/2026-09-01_wifi-up-arm/README.md)).
+> So "the modem term is 6.9 mA and 41 mA is unexplained" does not stand either.
+>
+> Worse for the pairing: the 48 mA and the duty beside it have **never been one
+> run**. 48 mA is the 58-round night of 2026-08-30, whose duty was not measured;
+> the duty came from a single window the next day, taken with the cable in and
+> the pack `Full` — a **charging** phone, while the floor night was discharging.
+>
+> And the floor does not reproduce: an eight-hour run in the same daemon state
+> with the cable **out** measures **100 ± 4 mA**. The 48 mA is not withdrawn — it
+> is a real fit of a real night — but it is a number about a regime this page does
+> not identify, which is the same failure this section was written to record.
+>
+> ☠️ Read the whole section below as **twice** superseded. It is kept, again, for
+> the shape of the error: the correction of 2026-08-31 was made confidently from
+> n=1, in a section whose own thesis is that a thorough-looking correction can be
+> the thing that misleads.
+
 **The hidden assumption**, never stated and never checked: that the modem's duty
 during that night was **34.8 %**. It was not measured — it was carried in from a
 different regime. The night ran with **ModemManager stopped** (a hard gate, §4),
