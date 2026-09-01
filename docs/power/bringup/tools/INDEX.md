@@ -100,6 +100,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `lpass-trace.service` | [Unit] |
 | `lpass-trace.sh` | lpass-trace — sample the LPASS master stats from before the freeze |
 | `lpass-usb-ab.sh` | Does the USB PHY stop the audio DSP from power-collapsing? |
+| `modem-decay-fit.py` | Read a modem-decay-watch night and apply its four PRE-REGISTERED readings mechanically; refuses to invent a fifth |
 | `modem-decay-watch.sh` | Does the expensive modem state decay on its own, and on what schedule? A whole night, touching nothing, four masters dumped VERBATIM |
 | `modem-fw-swap.sh` | Swap the modem firmware pmOS loads from its rootfs for the one the device's own |
 | `modem-night-fit.py` | Per-round MPSS/LPASS/PRONTO duty beside the QMI census, split by suspend path |
