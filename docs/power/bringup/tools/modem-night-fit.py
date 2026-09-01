@@ -52,6 +52,18 @@ def masters(path):
         m = re.match(r"#\s*wakeup_irq=(\S+)", line)
         if m:
             meta["irq"] = m.group(1)
+        # ☠️ The band is network-assigned, so it survives every arm this census
+        # can pull, and it moves the duty by ~13 points on its own. Captures
+        # written before 2026-09-01 carry no `# radio:` line at all; the column
+        # then reads `-`, which is the honest answer for them. Two lines are
+        # emitted per round (before and after the sleep) and the LAST one wins,
+        # because a band that changed under the sleep is the one that priced it.
+        m = re.match(r"#\s*radio: band=(\S*) chan=(\S*) ", line)
+        if m:
+            meta["band"] = m.group(1) or "?"
+            meta["chan"] = m.group(2) or "?"
+            if meta.get("band_first") is None:
+                meta["band_first"] = meta["band"]
         m = re.match(r"(\w+)\s+xo_total=(\d+)\s+xo_shutdowns=(\d+)", line)
         if m and phase:
             out[phase][m.group(1)] = (int(m.group(2)), int(m.group(3)))
@@ -86,6 +98,19 @@ def census(path):
     return slept, kinds, svc, nowindow, irq
 
 
+def band_cell(meta):
+    """`-` for a capture that predates the column, `band/chan` otherwise, and a
+    `\u2620\ufe0f` marker when the band changed across the sleep - that round priced two
+    radio configurations and belongs in neither average."""
+    b = meta.get("band")
+    if not b:
+        return "-"
+    cell = f"{b}/{meta.get('chan','?')}"
+    if meta.get("band_first") and meta["band_first"] != b:
+        cell = "\u2620\ufe0f" + cell
+    return cell
+
+
 def main(root):
     rounds = sorted(d for d in os.listdir(root) if d.startswith("round-"))
     if not rounds:
@@ -99,7 +124,8 @@ def main(root):
         if mt.get("t"):
             t0 = datetime.strptime(mt["t"], "%Y-%m-%d %H:%M:%S"); break
     print(f"{'rnd':>4} {'t_h':>6} {'path':<8} {'slept':>6} {'waking irq':>18} "
-          f"{'MPSS':>7} {'LPASS':>7} {'PRONTO':>7} {'REQ':>5} {'RSP':>5} {'IND':>5}  {'v_uV':>8}")
+          f"{'MPSS':>7} {'LPASS':>7} {'PRONTO':>7} {'REQ':>5} {'RSP':>5} {'IND':>5}  {'v_uV':>8}"
+          f"  {'band':>9}")
     agg = {}
     for d in rounds:
         ms, meta = masters(os.path.join(root, d, "masters.txt"))
@@ -131,6 +157,7 @@ def main(root):
               f"{(irq or meta.get('irq','?')):>18} {cells['MPSS']:>7} {cells['LPASS']:>7} "
               f"{cells['PRONTO']:>7} {qmi}"
               f"  {meta.get('v_after', meta.get('v','?')):>8}"
+              f"  {band_cell(meta):>9}"
               + ("   \u2620\ufe0f no sleep window" if nowin else ""))
         a = agg.setdefault(p, {"n": 0, "slept": 0.0, "REQ": 0, "RSP": 0, "IND": 0,
                                "duty": [], "nowin": 0})

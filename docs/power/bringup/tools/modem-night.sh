@@ -237,6 +237,27 @@ sleep 300
 snap(){ /usr/local/bin/rpm-xo-snapshot.sh; }
 END=$(( $(date +%s) + HOURS * 3600 ))
 r=1
+# ☠️ THE BAND IS A FREE COLUMN AND IT WAS MISSING FROM 67 WINDOWS. This repo's
+# own band A/B measured eutran-1 at 50.0 % against eutran-3 at 36.4 % - 13.6
+# points, the same order as the effects being chased here - and not one census
+# round recorded which band it was camped on. The band is assigned by the
+# network, so it survives a daemon restart, a modem power cycle and a reboot:
+# exactly the profile of the state every arm so far has failed to move. Read it
+# AFTER the sleep, while the phone is awake anyway for the counters, so this
+# costs the measurement nothing.
+#
+# ☠️ The band comes from qmicli over qrtr, NOT from mmcli, so it is still
+# readable on the `mm=stopped` arms where there is no daemon to answer. The
+# tech/state fields go blank there, and that is the correct answer for them.
+radio_ctx() {
+	rf=$(qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null)
+	printf '# radio: band=%s chan=%s tech=%s state=%s\n' \
+		"$(echo "$rf" | sed -n "s/.*Active Band Class: *'\([^']*\)'.*/\1/p" | head -1)" \
+		"$(echo "$rf" | sed -n "s/.*Active Channel: *'\([^']*\)'.*/\1/p" | head -1)" \
+		"$(mmcli -m any 2>/dev/null | sed -n 's/.*access tech: *//p' | head -1)" \
+		"$(mmcli -m any 2>/dev/null | sed -n 's/.*  state: *//p' | head -1)"
+}
+
 while [ "$(date +%s)" -lt $END ]; do
 	cap=$(cat $BAT/capacity)
 	if [ "$cap" -le "$FLOOR" ]; then
@@ -249,6 +270,7 @@ while [ "$(date +%s)" -lt $END ]; do
 	mkdir -p "$D"
 	{
 		echo "# round=$r path=$P t=$(date '+%F %T') cap=${cap}% v=$(cat $BAT/voltage_now)uV"
+		radio_ctx
 		echo "=== BEFORE"; snap
 	} > "$D/masters.txt" 2>&1
 
@@ -259,6 +281,7 @@ while [ "$(date +%s)" -lt $END ]; do
 		echo "# after: cap=$(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV"
 		echo "# suspend_stats: ok=$(cat /sys/power/suspend_stats/success) fail=$(cat /sys/power/suspend_stats/fail)"
 		echo "# wakeup_irq=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)"
+		radio_ctx
 	} >> "$D/masters.txt" 2>&1
 
 	say "# round $r ($P) done $(date '+%T') cap=$(cat $BAT/capacity)%"
