@@ -19,6 +19,16 @@
 #      be a measurement of what IMS costs. Hence the firmware restart first: it
 #      is the only thing that clears the masks without a reboot.
 #
+# ☠️ RUN IT UNDER systemd-run --unit=, NEVER `nohup ... &` OVER ssh. Measured
+# 2026-09-02: launched with nohup from an ssh command, this script died the moment
+# the ssh session closed - after it had stopped the modem firmware and before it
+# started it again. The modem stayed OFF for an hour, unreachable for calls, and
+# the watchdog missed it because its liveness check (`pgrep -f ims-ab.sh` over
+# ssh) matched its own command line and always found "a process".
+#
+#   systemd-run --unit=fp3-ims-ab --collect sh /tmp/ims-ab.sh 600
+#   systemctl is-active fp3-ims-ab      # the liveness check that cannot self-match
+#
 #   2. THE BAND MOVED INSIDE THE WINDOW (eutran-20/cell 1470722 before,
 #      eutran-1/1470762 after). The band is worth ~17 pp of MPSS duty in this
 #      repo's own ladder — more than most effects we chase — so an unpinned band
@@ -43,6 +53,13 @@ s "# --- modem firmware restart (clears DIAG log masks) ---"
 echo stop > /sys/class/remoteproc/remoteproc0/state 2>>"$L"
 sleep 5
 echo start > /sys/class/remoteproc/remoteproc0/state 2>>"$L"
+sleep 5
+# ☠️ THE RESTART IS NOT COMPLETE WITHOUT THIS. remoteproc comes back up ("remote
+# processor is now up" in dmesg) but ModemManager does not re-enumerate the modem
+# on its own: measured 2026-09-02, `mmcli -L` said "No modems were found" for an
+# hour after a successful start, and the modem only reappeared once MM had been
+# restarted by hand. A wait loop polling `mmcli -m any` therefore waits forever.
+systemctl restart ModemManager
 i=0
 while [ $i -lt 60 ]; do
 	i=$((i+1)); sleep 5
@@ -50,6 +67,13 @@ while [ $i -lt 60 ]; do
 	s "#   wait $i: ${st:-<no modem>}"
 	case "$st" in *registered*) break;; esac
 done
+case "${st:-}" in
+	*registered*) ;;
+	*) s "# ☠️ THE MODEM DID NOT COME BACK ($i tries, last: ${st:-<none>}). Aborting"
+	   s "#    rather than measuring a legless ladder - and leaving the modem for"
+	   s "#    hand recovery, because this script cannot tell a slow attach from a"
+	   s "#    wedged one."; exit 1;;
+esac
 
 # --- 2. persistence: did the IMS write survive the restart? -----------------
 s "# --- IMS state AFTER the firmware restart (persistence answer) ---"
