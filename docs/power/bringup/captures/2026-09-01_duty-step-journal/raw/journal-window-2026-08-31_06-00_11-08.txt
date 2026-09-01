@@ -1,0 +1,186 @@
+Aug 31 06:00:21 fp3 gnome-calls[2995]: ModemManager vanished from D-Bus
+Aug 31 06:00:21 fp3 gsd-wwan[1952]: file ../plugins/wwan/gsd-wwan-manager.c: line 563 (object_removed_cb): should not be reached
+Aug 31 06:00:43 fp3 sshd-session.pam[25971]: Received disconnect from 172.16.42.2 port 54572:11: disconnected by user
+Aug 31 06:00:43 fp3 sshd-session.pam[25971]: Disconnected from user fp3 172.16.42.2 port 54572
+Aug 31 06:01:44 fp3 sshd-session.pam[26046]: Received disconnect from 172.16.42.2 port 40084:11: disconnected by user
+Aug 31 06:01:44 fp3 sshd-session.pam[26046]: Disconnected from user fp3 172.16.42.2 port 40084
+Aug 31 06:02:44 fp3 sshd-session.pam[26153]: Received disconnect from 172.16.42.2 port 36960:11: disconnected by user
+Aug 31 06:02:44 fp3 sshd-session.pam[26153]: Disconnected from user fp3 172.16.42.2 port 36960
+Aug 31 06:03:45 fp3 sshd-session.pam[26232]: Received disconnect from 172.16.42.2 port 42252:11: disconnected by user
+Aug 31 06:03:45 fp3 sshd-session.pam[26232]: Disconnected from user fp3 172.16.42.2 port 42252
+Aug 31 06:04:45 fp3 sshd-session.pam[26308]: Received disconnect from 172.16.42.2 port 48392:11: disconnected by user
+Aug 31 06:04:45 fp3 sshd-session.pam[26308]: Disconnected from user fp3 172.16.42.2 port 48392
+Aug 31 06:05:45 fp3 sshd-session.pam[26379]: Received disconnect from 172.16.42.2 port 33176:11: disconnected by user
+Aug 31 06:05:45 fp3 sshd-session.pam[26379]: Disconnected from user fp3 172.16.42.2 port 33176
+Aug 31 06:06:46 fp3 sshd-session.pam[26457]: Received disconnect from 172.16.42.2 port 59574:11: disconnected by user
+Aug 31 06:06:46 fp3 sshd-session.pam[26457]: Disconnected from user fp3 172.16.42.2 port 59574
+Aug 31 06:07:46 fp3 sshd-session.pam[26533]: Received disconnect from 172.16.42.2 port 38898:11: disconnected by user
+Aug 31 06:07:46 fp3 sshd-session.pam[26533]: Disconnected from user fp3 172.16.42.2 port 38898
+Aug 31 06:08:47 fp3 sshd-session.pam[26614]: Received disconnect from 172.16.42.2 port 45716:11: disconnected by user
+Aug 31 06:08:47 fp3 sshd-session.pam[26614]: Disconnected from user fp3 172.16.42.2 port 45716
+Aug 31 06:09:47 fp3 sshd-session.pam[26690]: Received disconnect from 172.16.42.2 port 41544:11: disconnected by user
+Aug 31 06:09:47 fp3 sshd-session.pam[26690]: Disconnected from user fp3 172.16.42.2 port 41544
+Aug 31 06:10:48 fp3 sshd-session.pam[26769]: Received disconnect from 172.16.42.2 port 51526:11: disconnected by user
+Aug 31 06:10:48 fp3 sshd-session.pam[26769]: Disconnected from user fp3 172.16.42.2 port 51526
+Aug 31 06:11:48 fp3 sshd-session.pam[26844]: Received disconnect from 172.16.42.2 port 46120:11: disconnected by user
+Aug 31 06:11:48 fp3 sshd-session.pam[26844]: Disconnected from user fp3 172.16.42.2 port 46120
+Aug 31 06:12:49 fp3 sshd-session.pam[26949]: Received disconnect from 172.16.42.2 port 54150:11: disconnected by user
+Aug 31 06:12:49 fp3 sshd-session.pam[26949]: Disconnected from user fp3 172.16.42.2 port 54150
+Aug 31 06:12:49 fp3 [26959]: gkr-pam: unlocked login keyring
+Aug 31 06:12:49 fp3 [26959]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 06:12:49 fp3 [26959]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c d=$(ls -dt /var/log/fp3/mm-duty-ab-* | head -1); echo $d; cat $d/log; for f in $d/*.txt; do echo \"===FILE $f\"; cat $f; done
+Aug 31 06:12:49 fp3 [26959]: pam_unix(sudo:session): session closed for user root
+Aug 31 06:12:49 fp3 sshd-session.pam[26956]: Received disconnect from 172.16.42.2 port 54164:11: disconnected by user
+Aug 31 06:12:49 fp3 sshd-session.pam[26956]: Disconnected from user fp3 172.16.42.2 port 54164
+Aug 31 07:34:52 fp3 sshd-session.pam[32686]: Received disconnect from 172.16.42.2 port 59744:11: disconnected by user
+Aug 31 07:34:52 fp3 sshd-session.pam[32686]: Disconnected from user fp3 172.16.42.2 port 59744
+Aug 31 07:35:05 fp3 sshd-session.pam[32713]: Received disconnect from 172.16.42.2 port 45140:11: disconnected by user
+Aug 31 07:35:05 fp3 sshd-session.pam[32713]: Disconnected from user fp3 172.16.42.2 port 45140
+Aug 31 07:38:50 fp3 [32986]: pam_unix(sudo:auth): conversation failed
+Aug 31 07:38:50 fp3 [32986]: pam_unix(sudo:auth): auth could not identify password for [fp3]
+Aug 31 07:38:50 fp3 [32986]: gkr-pam: no password is available for user
+Aug 31 07:38:50 fp3 sshd-session.pam[32985]: Received disconnect from 172.16.42.2 port 52278:11: disconnected by user
+Aug 31 07:38:50 fp3 sshd-session.pam[32985]: Disconnected from user fp3 172.16.42.2 port 52278
+Aug 31 07:38:50 fp3 sshd-session.pam[32993]: Received disconnect from 172.16.42.2 port 52286:11: disconnected by user
+Aug 31 07:38:50 fp3 sshd-session.pam[32993]: Disconnected from user fp3 172.16.42.2 port 52286
+Aug 31 07:39:00 fp3 sshd-session.pam[33011]: Received disconnect from 172.16.42.2 port 49374:11: disconnected by user
+Aug 31 07:39:00 fp3 sshd-session.pam[33011]: Disconnected from user fp3 172.16.42.2 port 49374
+Aug 31 07:39:07 fp3 [33027]: gkr-pam: unlocked login keyring
+Aug 31 07:39:07 fp3 [33027]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 07:39:07 fp3 [33027]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh /tmp/xo-sem.sh
+Aug 31 07:41:07 fp3 [33027]: pam_unix(sudo:session): session closed for user root
+Aug 31 07:41:07 fp3 sshd-session.pam[33024]: Received disconnect from 172.16.42.2 port 44396:11: disconnected by user
+Aug 31 07:41:07 fp3 sshd-session.pam[33024]: Disconnected from user fp3 172.16.42.2 port 44396
+Aug 31 07:41:07 fp3 sshd-session.pam[33197]: Received disconnect from 172.16.42.2 port 46032:11: disconnected by user
+Aug 31 07:41:07 fp3 sshd-session.pam[33197]: Disconnected from user fp3 172.16.42.2 port 46032
+Aug 31 07:47:40 fp3 sshd-session.pam[33663]: Received disconnect from 172.16.42.2 port 39034:11: disconnected by user
+Aug 31 07:47:40 fp3 sshd-session.pam[33663]: Disconnected from user fp3 172.16.42.2 port 39034
+Aug 31 07:52:29 fp3 sshd-session.pam[34022]: Received disconnect from 172.16.42.2 port 48172:11: disconnected by user
+Aug 31 07:52:29 fp3 sshd-session.pam[34022]: Disconnected from user fp3 172.16.42.2 port 48172
+Aug 31 07:52:30 fp3 sshd-session.pam[34029]: Received disconnect from 172.16.42.2 port 48182:11: disconnected by user
+Aug 31 07:52:30 fp3 sshd-session.pam[34029]: Disconnected from user fp3 172.16.42.2 port 48182
+Aug 31 07:52:30 fp3 [34039]: gkr-pam: unlocked login keyring
+Aug 31 07:52:30 fp3 [34039]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 07:52:30 fp3 [34039]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/systemd-run --unit=mpsssusp --collect sh /tmp/mpss-susp-leg.sh
+Aug 31 07:52:31 fp3 [34039]: pam_unix(sudo:session): session closed for user root
+Aug 31 08:02:34 fp3 sshd-session.pam[34036]: Read error from remote host 172.16.42.2 port 48190: Connection reset by peer
+Aug 31 08:05:54 fp3 sshd-session.pam[34435]: Received disconnect from 172.16.42.2 port 46872:11: disconnected by user
+Aug 31 08:05:54 fp3 sshd-session.pam[34435]: Disconnected from user fp3 172.16.42.2 port 46872
+Aug 31 09:09:51 fp3 sshd-session.pam[38909]: Received disconnect from 172.16.42.2 port 48122:11: disconnected by user
+Aug 31 09:09:51 fp3 sshd-session.pam[38909]: Disconnected from user fp3 172.16.42.2 port 48122
+Aug 31 09:09:51 fp3 sshd-session.pam[38916]: Received disconnect from 172.16.42.2 port 48134:11: disconnected by user
+Aug 31 09:09:51 fp3 sshd-session.pam[38916]: Disconnected from user fp3 172.16.42.2 port 48134
+Aug 31 09:09:52 fp3 sshd-session.pam[38923]: Received disconnect from 172.16.42.2 port 48146:11: disconnected by user
+Aug 31 09:09:52 fp3 sshd-session.pam[38923]: Disconnected from user fp3 172.16.42.2 port 48146
+Aug 31 09:09:52 fp3 sshd-session.pam[38930]: Received disconnect from 172.16.42.2 port 48160:11: disconnected by user
+Aug 31 09:09:52 fp3 sshd-session.pam[38930]: Disconnected from user fp3 172.16.42.2 port 48160
+Aug 31 09:09:53 fp3 sshd-session.pam[38937]: Received disconnect from 172.16.42.2 port 48166:11: disconnected by user
+Aug 31 09:09:53 fp3 sshd-session.pam[38937]: Disconnected from user fp3 172.16.42.2 port 48166
+Aug 31 09:10:10 fp3 sshd-session.pam[38971]: Received disconnect from 172.16.42.2 port 60506:11: disconnected by user
+Aug 31 09:10:10 fp3 sshd-session.pam[38971]: Disconnected from user fp3 172.16.42.2 port 60506
+Aug 31 09:10:11 fp3 sshd-session.pam[38978]: Received disconnect from 172.16.42.2 port 60510:11: disconnected by user
+Aug 31 09:10:11 fp3 sshd-session.pam[38978]: Disconnected from user fp3 172.16.42.2 port 60510
+Aug 31 09:10:11 fp3 sshd-session.pam[38985]: Received disconnect from 172.16.42.2 port 60522:11: disconnected by user
+Aug 31 09:10:11 fp3 sshd-session.pam[38985]: Disconnected from user fp3 172.16.42.2 port 60522
+Aug 31 09:10:11 fp3 sshd-session.pam[38992]: Received disconnect from 172.16.42.2 port 60530:11: disconnected by user
+Aug 31 09:10:11 fp3 sshd-session.pam[38992]: Disconnected from user fp3 172.16.42.2 port 60530
+Aug 31 09:10:12 fp3 sshd-session.pam[38999]: Received disconnect from 172.16.42.2 port 60538:11: disconnected by user
+Aug 31 09:10:12 fp3 sshd-session.pam[38999]: Disconnected from user fp3 172.16.42.2 port 60538
+Aug 31 09:10:12 fp3 sshd-session.pam[39006]: Received disconnect from 172.16.42.2 port 60544:11: disconnected by user
+Aug 31 09:10:12 fp3 sshd-session.pam[39006]: Disconnected from user fp3 172.16.42.2 port 60544
+Aug 31 09:10:13 fp3 [39016]: gkr-pam: unlocked login keyring
+Aug 31 09:10:13 fp3 [39016]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 09:10:13 fp3 [39016]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c install -m755 /tmp/modem-night.sh /usr/local/bin/modem-night.sh; install -m755 /tmp/wake-qmi.sh /usr/local/bin/wake-qmi.sh; install -m755 /tmp/rpm-xo-snapshot.sh /usr/local/bin/rpm-xo-snapshot.sh; install -m644 /tmp/qmi-msgids.txt /usr/local/bin/qmi-msgids.txt; install -m644 /tmp/qmi-service-ids.txt /usr/local/bin/qmi-service-ids.txt; mkdir -p /usr/lib/systemd/system-sleep /var/log/fp3; install -m755 /tmp/zz-hook /usr/lib/systemd/system-sleep/zz-fp3-trace-marker
+Aug 31 09:10:13 fp3 [39016]: pam_unix(sudo:session): session closed for user root
+Aug 31 09:10:13 fp3 sshd-session.pam[39013]: Received disconnect from 172.16.42.2 port 60546:11: disconnected by user
+Aug 31 09:10:13 fp3 sshd-session.pam[39013]: Disconnected from user fp3 172.16.42.2 port 60546
+Aug 31 09:10:13 fp3 sshd-session.pam[39032]: Received disconnect from 172.16.42.2 port 39994:11: disconnected by user
+Aug 31 09:10:13 fp3 sshd-session.pam[39032]: Disconnected from user fp3 172.16.42.2 port 39994
+Aug 31 10:49:40 fp3 sshd-session.pam[45952]: Received disconnect from 172.16.42.2 port 44668:11: disconnected by user
+Aug 31 10:49:40 fp3 sshd-session.pam[45952]: Disconnected from user fp3 172.16.42.2 port 44668
+Aug 31 10:50:07 fp3 sshd-session.pam[46002]: Received disconnect from 172.16.42.2 port 50116:11: disconnected by user
+Aug 31 10:50:07 fp3 sshd-session.pam[46002]: Disconnected from user fp3 172.16.42.2 port 50116
+Aug 31 11:07:48 fp3 sshd-session.pam[47243]: Received disconnect from 172.16.42.2 port 52846:11: disconnected by user
+Aug 31 11:07:48 fp3 sshd-session.pam[47243]: Disconnected from user fp3 172.16.42.2 port 52846
+Aug 31 11:07:57 fp3 sshd-session.pam[47264]: Received disconnect from 172.16.42.2 port 58902:11: disconnected by user
+Aug 31 11:07:57 fp3 sshd-session.pam[47264]: Disconnected from user fp3 172.16.42.2 port 58902
+Aug 31 11:08:16 fp3 [47307]: gkr-pam: unlocked login keyring
+Aug 31 11:08:17 fp3 [47307]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:08:17 fp3 [47307]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c \nset -e\nMM=/usr/sbin/ModemManager\n[ -e $MM ] || MM=/usr/bin/ModemManager\necho \"eredeti: $MM\"\n[ -e $MM.pkg.bak ] || cp -a $MM $MM.pkg.bak\ncp /tmp/ModemManager.new $MM\nchmod 755 $MM\necho \"lecserelve; backup: $MM.pkg.bak\"\nls -l $MM $MM.pkg.bak\ndf -h / | tail -1\n
+Aug 31 11:08:17 fp3 [47307]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:08:17 fp3 sshd-session.pam[47304]: Received disconnect from 172.16.42.2 port 53226:11: disconnected by user
+Aug 31 11:08:17 fp3 sshd-session.pam[47304]: Disconnected from user fp3 172.16.42.2 port 53226
+Aug 31 11:08:26 fp3 [47337]: gkr-pam: unlocked login keyring
+Aug 31 11:08:26 fp3 [47337]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:08:26 fp3 [47337]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c systemctl start ModemManager; sleep 12; systemctl is-active ModemManager
+Aug 31 11:08:28 fp3 gnome-calls[2995]: ModemManager appeared on D-Bus
+Aug 31 11:08:40 fp3 [47337]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:08:40 fp3 [47410]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:08:40 fp3 [47410]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/journalctl -u ModemManager --since -1min --no-pager
+Aug 31 11:08:40 fp3 [47410]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:08:40 fp3 sshd-session.pam[47334]: Received disconnect from 172.16.42.2 port 53082:11: disconnected by user
+Aug 31 11:08:40 fp3 sshd-session.pam[47334]: Disconnected from user fp3 172.16.42.2 port 53082
+Aug 31 11:08:49 fp3 mmsdtng[1056]: New Object with Messaging feature found, Adding...
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager object `/org/freedesktop/ModemManager1/Modem/0' added
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Voice' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Adding new voice-capable modem `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Modem '/org/freedesktop/ModemManager1/Modem/0' has location capabilities
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Modem '/org/freedesktop/ModemManager1/Modem/0' has 3gpp location disabled
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Adding origin 0 (0xffff9dcd68d0)
+Aug 31 11:08:49 fp3 cellbroadcastd[1053]: Failed to set channel list in '/org/freedesktop/ModemManager1/Modem/0': GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable
+Aug 31 11:08:49 fp3 cellbroadcastd[1053]: Failed to set channel list in '/org/freedesktop/ModemManager1/Modem/0': GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name is not activatable
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Modem3gpp' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Simple' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Sar' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Modem3gpp.ProfileManager' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Time' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Firmware' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Messaging' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.CellBroadcast' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Signal' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: ModemManager interface `org.freedesktop.ModemManager1.Modem.Location' found on object `/org/freedesktop/ModemManager1/Modem/0'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Setting the country code to `HU'
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Setting country code to HU
+Aug 31 11:08:49 fp3 gnome-calls[2995]: Call waiting is disabled
+Aug 31 11:09:08 fp3 sshd-session.pam[47466]: Received disconnect from 172.16.42.2 port 42014:11: disconnected by user
+Aug 31 11:09:08 fp3 sshd-session.pam[47466]: Disconnected from user fp3 172.16.42.2 port 42014
+Aug 31 11:09:32 fp3 [47528]: gkr-pam: unlocked login keyring
+Aug 31 11:09:32 fp3 [47528]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:09:32 fp3 [47528]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c \ncat > /tmp/terse-test.sh <<EOS\n#!/bin/sh\n{\necho \"# terse-test $(date -u +%F_%T)\"\necho \"# MM=$(systemctl is-active ModemManager) modem=$(mmcli -m any 2>/dev/null | sed -n s/.*state: *//p | head -1)\"\necho \"# suspend_stats before: $(cat /sys/power/suspend_stats/success)\"\nT0=\\$(date +%s)\nrtcwake -m no -s 90\nsystemctl suspend\nsleep 130\necho \"# suspend_stats after: $(cat /sys/power/suspend_stats/success)\"\necho \"=== JOURNAL (MM, a teszt ablakaban)\"\njournalctl -u ModemManager --since \"@\\$T0\" --no-pager\n} > /tmp/terse-test.txt 2>&1\nEOS\nchmod +x /tmp/terse-test.sh\nsystemd-run --unit=tersetest --collect /tmp/terse-test.sh\nsleep 2; systemctl is-active tersetest
+Aug 31 11:09:58 fp3 phoc[1072]: [backend/drm/drm.c:980] connector DSI-1: Modesetting with 1080x2160 @ 60.000 Hz
+Aug 31 11:09:58 fp3 [47528]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:09:58 fp3 sshd-session.pam[47525]: Received disconnect from 172.16.42.2 port 47416:11: disconnected by user
+Aug 31 11:09:58 fp3 sshd-session.pam[47525]: Disconnected from user fp3 172.16.42.2 port 47416
+Aug 31 11:10:14 fp3 phoc[1072]: [backend/drm/drm.c:984] connector DSI-1: Turning off
+Aug 31 11:13:15 fp3 sshd-session.pam[47948]: Received disconnect from 172.16.42.2 port 58556:11: disconnected by user
+Aug 31 11:13:15 fp3 sshd-session.pam[47948]: Disconnected from user fp3 172.16.42.2 port 58556
+Aug 31 11:14:20 fp3 [48043]: gkr-pam: unlocked login keyring
+Aug 31 11:14:20 fp3 [48043]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:14:20 fp3 [48043]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c \ncat > /tmp/terse2.sh <<EOS\n#!/bin/sh\n{\necho \"# terse2 $(date -u +%F_%T)  -- 45 s varakozas, hogy az ssh lezaruljon\"\nsleep 45\necho \"# inhibitorok a suspend elott:\"; systemd-inhibit --list --mode=block 2>/dev/null | tail -3\nT0=\\$(date +%s)\necho \"# suspend_stats before: $(cat /sys/power/suspend_stats/success)\"\nrtcwake -m no -s 120\nsystemctl suspend\nsleep 170\necho \"# suspend_stats after: $(cat /sys/power/suspend_stats/success)\"\necho \"# wakeup_irq=$(cat /sys/power/pm_wakeup_irq 2>/dev/null)\"\necho \"=== JOURNAL\"\njournalctl -u ModemManager --since \"@\\$T0\" --no-pager\necho \"=== KERNEL suspend sorok\"\njournalctl -k --since \"@\\$T0\" --no-pager | grep -E \"PM: suspend (entry|exit)\"\n} > /tmp/terse2.txt 2>&1\nEOS\nchmod +x /tmp/terse2.sh\nsystemd-run --unit=terse2 --collect /tmp/terse2.sh; sleep 1; systemctl is-active terse2
+Aug 31 11:14:21 fp3 [48043]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:14:21 fp3 sshd-session.pam[48040]: Received disconnect from 172.16.42.2 port 54240:11: disconnected by user
+Aug 31 11:14:21 fp3 sshd-session.pam[48040]: Disconnected from user fp3 172.16.42.2 port 54240
+Aug 31 11:17:07 fp3 phoc[1072]: [backend/drm/drm.c:980] connector DSI-1: Modesetting with 1080x2160 @ 60.000 Hz
+Aug 31 11:17:22 fp3 phoc[1072]: [backend/drm/drm.c:984] connector DSI-1: Turning off
+Aug 31 11:19:28 fp3 sshd-session.pam[48457]: Received disconnect from 172.16.42.2 port 51300:11: disconnected by user
+Aug 31 11:19:28 fp3 sshd-session.pam[48457]: Disconnected from user fp3 172.16.42.2 port 51300
+Aug 31 11:22:18 fp3 sshd-session.pam[48679]: Received disconnect from 172.16.42.2 port 36964:11: disconnected by user
+Aug 31 11:22:18 fp3 sshd-session.pam[48679]: Disconnected from user fp3 172.16.42.2 port 36964
+Aug 31 11:22:54 fp3 [48735]: gkr-pam: unlocked login keyring
+Aug 31 11:22:54 fp3 [48735]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:22:54 fp3 [48735]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/journalctl -k --since -40min --no-pager
+Aug 31 11:22:54 fp3 [48735]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:22:54 fp3 sshd-session.pam[48727]: Received disconnect from 172.16.42.2 port 40082:11: disconnected by user
+Aug 31 11:22:54 fp3 sshd-session.pam[48727]: Disconnected from user fp3 172.16.42.2 port 40082
+Aug 31 11:41:54 fp3 sshd-session.pam[50173]: Received disconnect from 172.16.42.2 port 42012:11: disconnected by user
+Aug 31 11:41:54 fp3 sshd-session.pam[50173]: Disconnected from user fp3 172.16.42.2 port 42012
+Aug 31 11:42:00 fp3 [50207]: gkr-pam: unlocked login keyring
+Aug 31 11:42:00 fp3 [50207]: pam_unix(sudo:session): session opened for user root(uid=0) by fp3(uid=10000)
+Aug 31 11:42:00 fp3 [50207]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/systemd-run --unit=fp3-modemnight --collect /usr/local/bin/modem-night.sh 8 600 35
+Aug 31 11:42:01 fp3 [50207]: pam_unix(sudo:session): session closed for user root
+Aug 31 11:42:09 fp3 sshd-session.pam[50204]: Received disconnect from 172.16.42.2 port 42026:11: disconnected by user
+Aug 31 11:42:09 fp3 sshd-session.pam[50204]: Disconnected from user fp3 172.16.42.2 port 42026
+Aug 31 11:43:47 fp3 phoc[1072]: [backend/drm/drm.c:980] connector DSI-1: Modesetting with 1080x2160 @ 60.000 Hz
+Aug 31 11:44:02 fp3 phoc[1072]: [backend/drm/drm.c:984] connector DSI-1: Turning off

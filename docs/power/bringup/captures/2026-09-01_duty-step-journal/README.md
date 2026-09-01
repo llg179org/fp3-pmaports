@@ -73,5 +73,5 @@ The 186-line window was extracted on the device as `/tmp/win.txt` with
 journalctl -b -1 --since "2026-08-31 06:00" --until "2026-08-31 12:00" --no-pager
 ```
 
-and is **not** copied here yet — the device was mid-measurement when this page was
-written. The four lines above are quoted verbatim from that output.
+and is in [`raw/journal-window-2026-08-31_06-00_11-08.txt`](raw/journal-window-2026-08-31_06-00_11-08.txt).
+The four lines quoted above are verbatim from it.
