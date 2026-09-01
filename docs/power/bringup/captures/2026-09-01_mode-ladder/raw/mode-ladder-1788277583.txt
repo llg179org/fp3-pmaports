@@ -1,0 +1,20 @@
+# mode-ladder 2026-09-01 17:46:23 window=600s modes: lte gsm|umts|lte (then lte again)
+# kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# original mode preference: cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma
+# --- leg L1-lte: requesting mode preference 'lte'
+#   L1-lte before state=registered mode=lte band=eutran-3 chan=1300 cell=1470732 rsrp=-91.6
+#   L1-lte after state=registered mode=lte band=eutran-3 chan=1300 cell=1470732 rsrp=-89.1
+RESULT L1-lte mpss_up=38.4% edge_per_s=36.1 cur_mA=125 n=305
+# --- leg L1-gsm|umts|lte: requesting mode preference 'gsm|umts|lte'
+#   L1-gsm|umts|lte before state=registered mode=gsm, umts, lte band=eutran-1 chan=500 cell=1470762 rsrp=-94.5
+#   L1-gsm|umts|lte after state=registered mode=gsm, umts, lte band=eutran-1 chan=500 cell=1470762 rsrp=-95.8
+RESULT L1-gsm|umts|lte mpss_up=49.8% edge_per_s=35.7 cur_mA=142 n=303
+# --- leg L1-lte-repeat: requesting mode preference 'lte'
+#   L1-lte-repeat before state=registered mode=lte band=eutran-1 chan=500 cell=1470762 rsrp=-97.6
+#   L1-lte-repeat after state=registered mode=lte band=eutran-1 chan=500 cell=1470762 rsrp=-97.4
+RESULT L1-lte-repeat mpss_up=49.5% edge_per_s=36.5 cur_mA=145 n=301
+# restoring mode preference: cdma-1x|cdma-1xevdo|gsm|umts|lte|td-scdma   (printed as: cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma)
+#   restored state=searching mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 rsrp=-97.7
+# restore VERIFIED: mode preference is back to 'cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma'
+# done 2026-09-01 18:18:38
+/var/log/fp3/mode-ladder-1788277583
