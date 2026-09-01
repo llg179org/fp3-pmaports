@@ -34,9 +34,10 @@ GOAL: pmOS fogyasztás felezése (≤50 mA) UT reagálási paraméterei mellett 
         · A 12. tetel meresenek le kell futnia eloszor (~11:52) - egy most kiadott reboot megsemmisitene. A jovahagyas MEGVAN, a sorrend a fek: 11:52-kor kiertekelem a 12-t, es csak akkor rebootolok, ha az nem hozza vissza az 5%-ot
   […] 12. ★★★★★ MODEM-MAG CIKLUS (reboot nelkul): disable -> power-state-low -> on -> enable, a modem visszaall registered/LTE/attached-re (a B-leg allapota). Ugyanaz a kar mint a kabel-be (kabel be + bemenet elvagva, WiFi fent, MM leallitva), 1 ora. ☠️ ELORE ROGZITVE: ~5% ⇒ az allapot MODEM-BELSO es reboot NELKUL reszetelheto (van kerulout!); ~36% ⇒ nem a modem-mag allapota, es a reboot-teszt tovabbra is kell
         · Az 1 oras ablaknak le kell futnia: inditva 10:36:33, utolso kor ~11:52, dead-man 12:06. ☠️ WiFi fent, pingelni TILOS; tiszta idozito 11:56-ra
-  [~] 13. ★★★★★ AZ ATMENET ELKAPASA (a 'mitol' kerdes): egyik mai kar sem mondja meg, mi emeli a dutyt 5%->36%-ra - csak azt, hol lakik az allapot. DUTY-LETRA az uptime menten: reboot utan 10-15 percenkent egy 600 s-os ablak, amig a lepcso be nem kovetkezik. Ez adja a MIKOR-t, es a lepcso alakja (ugras vs lassu emelkedes) a MIT-et. A tools/duty-vs-uptime.sh pont ezt kerdezi es hasznalatlanul all a repoban
-        · ☠️ A MEGLEVO duty-vs-uptime.sh ROSSZ MUSZER ehhez: a dutyt burst-master.sh-bol veszi, azaz EBREN mintavetelezett ablakbol, mikozben a mai osszes szam valodi ALVAS koruli RPM-szamlalokbol jon - es ez a projekt mar tobbszor rafizetett arra, hogy a ket regime nem ugyanaz. A helyes letra MAGA a modem-night.sh (10 percenkent egy 600 s-os alvas, ugyanaz a muszer): 'modem-night.sh 6 600 15 stopped up in' rogton boot utan. A fitter most mar t_h (eltelt ora) oszlopot is ir, hogy a lepcso helye kozvetlenul leolvashato legyen
-  [ ] 14. ☠️ NAPLO-BISZEKCIO: 2026-08-31 06:12 (meg 5%) es 11:48 (mar 33,6%) kozott 5,6 ora telt el, amiben merések, MM-ujrainditasok es a patchelt MM telepitese tortent. A journal az eszkozon van; vegignezni, mi tortent a lepcso elott. Az elso dolog a futas utan, mert ssh kell hozza
+  […] 13. ★★★★★ AZ ATMENET ELKAPASA (a 'mitol' kerdes): egyik mai kar sem mondja meg, mi emeli a dutyt 5%->36%-ra - csak azt, hol lakik az allapot. DUTY-LETRA az uptime menten: reboot utan 10-15 percenkent egy 600 s-os ablak, amig a lepcso be nem kovetkezik. Ez adja a MIKOR-t, es a lepcso alakja (ugras vs lassu emelkedes) a MIT-et. A tools/duty-vs-uptime.sh pont ezt kerdezi es hasznalatlanul all a repoban
+        · Elokeszitve host-oldalon (a fitter mar ir t_h oszlopot, es eldolt hogy a modem-night.sh a helyes muszer). A futtatashoz a telefon kell: eloszor a 12. tetel merese fusson le (~11:52), aztan a reboot, es a letra rogton boot utan indul
+  […] 14. ☠️ NAPLO-BISZEKCIO: 2026-08-31 06:12 (meg 5%) es 11:48 (mar 33,6%) kozott 5,6 ora telt el, amiben merések, MM-ujrainditasok es a patchelt MM telepitese tortent. A journal az eszkozon van; vegignezni, mi tortent a lepcso elott. Az elso dolog a futas utan, mert ssh kell hozza
+        · ssh kell hozza, az pedig most tilos (mérés fut ~11:52-ig)
 ```
 
 ```
@@ -71,11 +72,6 @@ MEASURED and standing:
   · Az 5,0%-os MPSS leletnek nincs tarsa 55 mintaban, tehat kiugro ertek
       fell because: NEGY meres 34 perc alatt (mm-duty-ab A/B/A' 5,1/4,9/4,9% + a 05:52-es alvas-ablak 5,0%), es a B-leg FUTO ModemManagerrel, registered, LTE, attached vodafone HU-n ⇒ nem lekapcsolt modem, hanem egy ~34 perces REGIME ugyanabban a bootban
 ```
-
-**☠️ Results have landed that the plan does not mention yet:**
-
-  - uncommitted changes under /mnt/1TB/pmos/fp3-pmaports/docs:
-     M docs/power/bringup/tools/modem-night-fit.py
 
 Last pre-compaction transcript snapshot: `/home/fp3/.claude/.state/precompact-status/_mnt_1TB_Fp3-Sailfish/latest.md`
 
