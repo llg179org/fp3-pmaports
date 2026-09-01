@@ -39,9 +39,19 @@ subscription masks over the APPS entry
 ```
 
 **The modem's mask over the APPS entry is bit 23 alone.** It never asked to hear
-about bit 12, so setting the bit cannot wake it and cannot change what it does
-per wakeup. As a modem-duty candidate this lead is **dead**, and it died for the
-price of one ssh login instead of a flash, a reboot and two 600 s windows.
+about bit 12, so setting the bit **cannot wake it**. As a modem-duty candidate
+this lead is **dead**, and it died for the price of one ssh login instead of a
+flash, a reboot and two 600 s windows.
+
+☠️ **Stated precisely, because the mask does not prove as much as it first
+seems.** The subscription governs **interrupts**. A remote can still *poll*
+another processor's SMSM state out of shared memory whenever it happens to be
+awake — nothing in the mask forbids reading. So the correct claim is *"bit 12
+cannot wake the modem, and no read-path mechanism survives the zero-IPC
+census"*, not *"the modem cannot see it"*. What closes the read path is the
+separate measurement that the modem wakes ~770 times per 300 s with at most 14
+AP messages in flight: a polled flag has nothing to connect it to 150 ms of
+over-the-air work.
 
 Bit 12 of the APPS entry is also confirmed **clear** in the live state vector
 (`0x00000600`), exactly as the source reading predicted — so that half of the
