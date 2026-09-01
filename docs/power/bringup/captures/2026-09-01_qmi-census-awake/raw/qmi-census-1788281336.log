@@ -1,0 +1,17 @@
+# qmi-census-awake 2026-09-01 18:48:57 window=300s
+#   modem: registered
+#   band/cell: census t=4887 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-1 chan=500 cell=1470762 tac=5300 rsrp=-96.3 rsrq=-8 snr=18.0
+# tracefs clean
+# probes armed: rx tx(count-only)
+# ports mapped: 74
+
+-- MPSS over the window: 50.9% awake
+-- rmtfs (pid 779) CPU over the window: 0.00 s (0.000% of one core)
+
+-- RX (modem -> AP), by port/service, message id and kind
+    14  NAS                          msg=81     ind   DMS:Message Get Software Version | DSD:Message Set APN Type | NAS:Indication Signal Info | WDS:Message Set Autoconnect Settings
+
+-- totals: RX 14 (0.05/s), TX 4 (0.01/s)
+☠️ TX is a raw probe-hit count: qrtr_node_enqueue's argument layout was not
+   verified against source, so no field of it is decoded and none is quoted.
+# done 2026-09-01 18:53:58; probes disarmed
