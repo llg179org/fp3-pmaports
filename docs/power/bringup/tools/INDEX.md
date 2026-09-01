@@ -100,6 +100,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `lpass-trace.service` | [Unit] |
 | `lpass-trace.sh` | lpass-trace — sample the LPASS master stats from before the freeze |
 | `lpass-usb-ab.sh` | Does the USB PHY stop the audio DSP from power-collapsing? |
+| `modem-decay-watch.sh` | Does the expensive modem state decay on its own, and on what schedule? A whole night, touching nothing, four masters dumped VERBATIM |
 | `modem-fw-swap.sh` | Swap the modem firmware pmOS loads from its rootfs for the one the device's own |
 | `modem-night-fit.py` | Per-round MPSS/LPASS/PRONTO duty beside the QMI census, split by suspend path |
 | `modem-night-to-rounds.py` | Adapter: a modem-night.sh run into the rows sleep-night-fit.py prices |
@@ -124,11 +125,14 @@ as "this exists and this is what it was for", never as "this is current".
 | `rail-census.sh` | Name the rails that vote active and never vote sleep |
 | `restwake.sh` | How long does the phone sleep as a function of HOW LONG IT WAS LEFT ALONE? |
 | `ring-source.sh` | ring-source.sh — is the modem edge's ~one-per-2-s signal ring produced by an |
+| `rpm-reader-allowlist.txt` | The 29 tools that parse the RPM XO counter directly, frozen so the list cannot grow (see selftest-rpm-readers.sh) |
 | `rpm-write-ab.sh` | A-B-A' on the eMMC host's runtime-PM autosuspend delay, counting the RPM |
 | `rpm-xo-snapshot.sh` | One line per RPM master: how long it has let the XO go, cumulatively, since |
+| `rpm_master_stats.py` | ★ The ONE reader for the RPM per-master XO statistics - both formats, and it never reports a zero delta as a duty |
 | `rpmsg-ept.py` | Open an rpmsg channel by name and get a /dev/rpmsgN for it |
 | `rpmstats_raw.py` | Raw reader for the RPM sleep-stats records in message RAM (msm8953) |
 | `run-wake-qmi.sh` | HOST side: deploy tools/wake-qmi.sh to the phone and run the census |
+| `selftest-rpm-readers.sh` | Golden-file check on the canonical RPM reader plus a no-second-reader guard; both guards are shown firing |
 | `sleep-knob-ab.sh` | A-B-A' on one knob, measured in SUSPEND RESIDENCY rather than in duty or mA |
 | `sleep-night-fit.py` | Price suspend residency in mA from a sleep-night.sh log |
 | `sleep-night.sh` | What is suspend residency worth, in mA? |
