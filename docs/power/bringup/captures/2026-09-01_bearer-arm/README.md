@@ -1,4 +1,4 @@
-# A live data context makes the modem duty WORSE, and stops the LPASS sleeping
+# A live data context makes the modem duty WORSE — and it is ModemManager, not the context, that keeps the ADSP awake
 
 > ⚠️ **AI-generated.** Written by Claude (Opus 5) under the direction of
 > Lajosházi, László Gergely, who reviewed the measurement it rests on.
@@ -27,25 +27,46 @@ not it either, and the 2026-08-31 morning episode stays unexplained.
 
 | arm (same cable/Wi-Fi/panel state) | MPSS awake | LPASS awake |
 |---|---:|---:|
-| **bearer up** (n=6 `logind`) | **48.8 %** | **~97 %** |
-| no bearer, after the reboot (n=3, `mm=stopped`) | 33.4 % | ~0 % |
-| no bearer, before the reboot (n=3, `mm=stopped`) | 36.8 % | ~0 % |
-| the 2026-08-31 census, no bearer, `mm=running` (n=43) | 33.6 % | ~0 % |
+| **bearer up** (n=6 `logind`, `mm=running`) | **48.8 %** | ~97 % awake |
+| no bearer, after the reboot (n=3, `mm=stopped`) | 33.4 % | asleep |
+| no bearer, before the reboot (n=3, `mm=stopped`) | 36.8 % | asleep |
+| the 2026-08-31 census, no bearer, `mm=running` (n=43) | 33.6 % | ☠️ **~96 % awake** |
 
-Three independent signals move together, and all three move the wrong way:
+☠️ The last row's LPASS column is the one that broke the first version of this
+page: read point 2 below before using the column at all.
+
+Three signals move; **only the first two are the bearer's**, and the third is
+corrected below:
 
 1. **MPSS 34 % → 48.8 %.** Every one of the six rounds reads 48.3–49.1 %; the
    whole bearer-free population of 67 windows — daemon on and off, Wi-Fi up and
    down, cable in and out, before and after a reboot — spans 33.4–42.9 %. This
    run sits outside it.
 
-2. ★ **The LPASS stops sleeping altogether.** Read the raw counter, not the
-   percentage: in every bearer-free run the LPASS XO-off delta is 617–626 s
-   across a 601 s window (a full-sleep reading that slightly overruns its own
-   bracket, which is why the fitter prints `☠️IMPOS`). With the bearer up the
-   same delta is **17–20 s**. The ADSP was awake for essentially the entire
-   hour. Why a PDP context should hold the LPASS up is not explained here; the
-   fact is what this capture records.
+2. ☠️☠️ **RETRACTED WITHIN THE HOUR, and the retraction is the better finding.**
+   What stood here said the bearer stops the LPASS sleeping: 17–20 s of XO-off
+   per 601 s window against 617–626 s "in every bearer-free run". The second
+   half was never checked. It is false — and checking it named the real
+   variable, which is **ModemManager**, not the bearer:
+
+   | run | `mm` | bearer | n | LPASS XO-off, median | MPSS awake |
+   |---|---|---|---:|---:|---:|
+   | 2026-08-31 census | **running** | no | 43 | **27 s** (awake) | 33.7 % |
+   | 2026-09-01 night control | stopped | no | 43 | 617 s (asleep) | 36.0 % |
+   | 2026-09-01 Wi-Fi arm | stopped | no | 12 | 618 s | 36.7 % |
+   | 2026-09-01 cable arm | stopped | no | 11 | 618 s | 35.7 % |
+   | 2026-09-01 core cycle | stopped | no | 6 | 618 s | 37.2 % |
+   | **this run** | **running** | **yes** | 6 | **19 s** (awake) | 48.8 % |
+
+   The split is perfect on `mm` and has nothing to do with the bearer. ★ **With
+   ModemManager running, the ADSP does not shut its crystal down across a 600 s
+   suspend; with it stopped, it does so for the whole window.** That separates
+   *within one boot* — the 08-31 census and the night control are the same boot
+   — so it is not the reboot, and it is 49 rounds against 72.
+
+   ☠️ The error was a bounded search: five runs were in front of me and I read
+   the four that agreed. The A′ control below decides it directly, because it is
+   `mm=running` with no bearer — the cell this table is missing.
 
 3. **The un-handshaked suspend path stops working.** The `rtcwake` rounds — the
    ones that bypass logind, so ModemManager's sleep handshake never runs — died
@@ -55,7 +76,9 @@ Three independent signals move together, and all three move the wrong way:
    This is the first arm in which the internal A/B separates at all: with real
    network attachment present, the handshake is what keeps the AP asleep.
 
-⇒ **The data context is not the lever, it is a cost.** And with it, the reading
+⇒ **The data context is not the lever, it is a cost** — of about 15 points of
+modem duty, which is the one claim on this page that survives its own
+correction, both of its rows being `mm=running`. And with it, the reading
 that a live data path is what makes the oracle cheap — "the three-times-cheaper
 system is the one that does MORE" — does not survive as stated: merely holding a
 PDP context up on pmOS is worth +15 pp of modem duty and an ADSP that never

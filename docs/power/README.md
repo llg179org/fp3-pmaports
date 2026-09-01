@@ -195,9 +195,11 @@ on pmOS nothing performs because there is no `netmgrd` and no `ipacm`. See
 now closed.
 
 And with the context up, the modem duty **rose** from 33.4–36.8 % to **48.8 %**
-(n=6 full 600 s sleeps) while the LPASS stopped sleeping altogether — XO-off
-17–20 s per 601 s window, against 617–626 s in every bearer-free run
+(n=6 full 600 s sleeps)
 ([`bringup/captures/2026-09-01_bearer-arm/`](bringup/captures/2026-09-01_bearer-arm/README.md)).
+☠️ A companion claim — that the context also stops the LPASS sleeping — was
+published with it and **retracted the same hour**: the separator is
+ModemManager, not the bearer. See the capture.
 So *having a context* is not what makes the oracle cheap; whatever the difference
 is, this is not it. ☠️ The A′ control that decides whether the +15 points belong
 to the bearer or to yet another regime change — same arm, context torn down — is

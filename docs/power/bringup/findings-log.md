@@ -9529,11 +9529,22 @@ interesting direction.
 
 Full capture: [`captures/2026-09-01_bearer-arm/`](captures/2026-09-01_bearer-arm/README.md).
 With a PDP context up (`internet.vodafone.net`, `qmapmux0.0` 10.112.79.62/30,
-3/3 ping to 8.8.8.8) the modem duty rose from 33.4–36.8 % to **48.8 %**, the
-LPASS XO-off delta collapsed from 617–626 s per 601 s window to **17–20 s** —
-the ADSP simply stopped sleeping — and every `rtcwake` round, the path that
-bypasses ModemManager's sleep handshake, died within 1–216 s on `wakeup_irq=141`,
-the modem's SMD edge.
+3/3 ping to 8.8.8.8) the modem duty rose from 33.4–36.8 % to **48.8 %**, and
+every `rtcwake` round — the path that bypasses ModemManager's sleep handshake —
+died within 1–216 s on `wakeup_irq=141`, the modem's SMD edge.
+
+☠️☠️ **A third signal was published with it and retracted the same hour.** The
+first version of that capture said the bearer stops the LPASS sleeping: 17–20 s
+of XO-off per 601 s window against 617–626 s "in every bearer-free run". The
+second half was asserted from four runs that agreed and never checked against
+the fifth. Checked, it names a different variable entirely: **the 2026-08-31
+census, no bearer at all, reads 27 s — the ADSP was awake there too.** The split
+is perfect on `mm`: 49 rounds with ModemManager running have the ADSP awake
+across suspend, 72 rounds with it stopped have the crystal off for the whole
+window, and the two halves include the same boot, so it is not the reboot.
+★ **Running ModemManager is what keeps the ADSP from sleeping across a suspend**
+— a new finding, arrived at only because the retraction was checked rather than
+the claim.
 
 **What that costs us.** The reading that has organised the search since 2026-08-28
 — *the three-times-cheaper system is the one that does MORE, because the vendor
