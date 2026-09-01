@@ -121,3 +121,49 @@ Both are read-only questions and
 ☠️ Note the ordering this establishes: **do not go looking for missing code or a
 protocol mismatch.** Both are now eliminated from the source, and the remaining
 fault is operational — loaded or not, interrupt or not.
+
+## ★★★ 2026-09-01 — CLOSED, from the other end: the data path works
+
+This lead asked whether our IPA driver ever completes its handshake with the
+modem, because `qrtr-lookup` showed service 49 unattended and no channel ever
+came up. **A channel came up.**
+
+```
+mmcli -m any --simple-connect='apn=internet.vodafone.net'
+  -> Bearer/1  connected: yes  multiplexed: yes  interface: qmapmux0.0
+     10.112.79.62/30  gw 10.112.79.61
+ip link set qmapmux0.0 up ; ip addr add 10.112.79.62/30 dev qmapmux0.0
+  -> 3/3 ping to 8.8.8.8, and 252 bytes each way over a 73-minute run
+```
+
+`qmapmux0.0` is a QMAP multiplexer channel on **`rmnet_ipa0`**, and packets went
+through it in both directions. A driver that never completed its `INIT_DRIVER`
+handshake does not carry traffic, so the two silent paths this page narrowed the
+fault to — *the work never runs* and *the uC interrupt never arrives* — are both
+eliminated by the data flowing.
+
+☠️ **The missing piece was never the modem or the kernel: it was host-side IP
+configuration.** pmOS has no `netmgrd` and no `ipacm`, so nothing brings
+`qmapmux0.0` up or puts the network-assigned address on it. Two `ip` commands
+after the connect are the whole difference. That also explains the original
+observation honestly: the service looked unattended because nobody had ever asked
+for a bearer, not because the handshake was broken.
+
+☠️ **What this is inferred from, and the read that would make it direct.** The
+conclusion rests on the interface name and on traffic passing, not on the QMI
+handshake being observed. The phone was mid-measurement when this was written, so
+the confirming read is still owed and is the same one this page always specified:
+
+```sh
+lsmod | grep ipa ; qrtr-lookup | grep -i ' 49 '   # service 49 with a client now?
+dmesg | grep -iE 'ipa|init_driver'                # and no 60 s timeout logged
+```
+
+☠️ **And the power conclusion goes the other way from what this page assumed.**
+The premise here was that a modem which never got the handshake responds by
+staying awake. With the context up the duty went **from ~35 % to 48.8 %** and the
+LPASS stopped sleeping entirely
+([`../captures/2026-09-01_bearer-arm/`](../captures/2026-09-01_bearer-arm/README.md)).
+So the handshake is not the withheld thing that would let the modem sleep — and
+the note above, that killing `ipacm` and `netmgrd` on the oracle did not make its
+modem expensive, now reads as the earlier warning it was.

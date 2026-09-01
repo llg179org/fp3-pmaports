@@ -9519,3 +9519,44 @@ states and two days: **33.4 – 42.9 %, mean 36.3 %, none below 30 %.**
   arm's mA fit is not quoted anywhere: two hours moved the pack 15.4 mV and
   `sleep-night-fit.py` called its own output noise-dominated. The number it would
   have printed was left out rather than carried with a caveat.
+
+## 2026-09-01 — the data context is a cost, and the IPA path works
+
+Six arms were run this day to find what holds the modem duty at ~35 %: the
+daemon, Wi-Fi, the cable, a modem-core power cycle, a reboot, and finally a live
+data context. **All six are negative**, and the last one is negative in the
+interesting direction.
+
+Full capture: [`captures/2026-09-01_bearer-arm/`](captures/2026-09-01_bearer-arm/README.md).
+With a PDP context up (`internet.vodafone.net`, `qmapmux0.0` 10.112.79.62/30,
+3/3 ping to 8.8.8.8) the modem duty rose from 33.4–36.8 % to **48.8 %**, the
+LPASS XO-off delta collapsed from 617–626 s per 601 s window to **17–20 s** —
+the ADSP simply stopped sleeping — and every `rtcwake` round, the path that
+bypasses ModemManager's sleep handshake, died within 1–216 s on `wakeup_irq=141`,
+the modem's SMD edge.
+
+**What that costs us.** The reading that has organised the search since 2026-08-28
+— *the three-times-cheaper system is the one that does MORE, because the vendor
+stack brings up the IPA data path* — does not survive as stated. Bringing that
+path up here makes things worse. Whatever the oracle does differently, it is not
+*having a context*.
+
+**What it buys us.** ★ Two things, both new:
+
+1. **The IPA data path works on pmOS.** The repository said "no channel is ever
+   brought up"; a multiplexed bearer over `rmnet_ipa0` carrying real packets says
+   otherwise. See [`leads/ipa-modem-handshake.md`](leads/ipa-modem-handshake.md),
+   whose central hypothesis this retires.
+2. **The sleep handshake is worth something, and this is the first arm that shows
+   it.** In every previous run both suspend paths slept the full 600 s, so the
+   internal A/B had nothing to separate. Under real network attachment the
+   handshake is the difference between a 600 s sleep and a 1 s one.
+
+### ☠️ The method note
+
+The mA fit was **not** quoted for this arm, for the same reason as the Wi-Fi arm
+above: six rounds over one hour at 3.6 V price the three runs at 251 / 335 /
+261 mA — an ordering that contradicts the measured duty ordering — on a 42 mAh
+rms residual, with the pack voltage moving ±26 mV *between* rounds. The numbers
+are recorded inside the capture so that nobody re-derives them and believes them.
+An hour resolves duty; current still needs a night.
