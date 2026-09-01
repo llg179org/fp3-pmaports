@@ -1,0 +1,1034 @@
+== cov t=10601.18 wall=1788287052
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-61 dBm'
+   	RSRQ: '-9 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '23.4 dB'
+== cov t=11203.39 wall=1788287654
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-60 dBm'
+   	RSRQ: '-12 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '24.6 dB'
+== cov t=11805.53 wall=1788288256
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-59 dBm'
+   	RSRQ: '-11 dB'
+   	RSRP: '-90 dBm'
+   	SNR: '22.4 dB'
+== cov t=12407.73 wall=1788288858
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-62 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-91 dBm'
+   	SNR: '19.6 dB'
+== cov t=13009.93 wall=1788289460
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-61 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '22.4 dB'
+== cov t=13601.98 wall=1788290052
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-56 dBm'
+   	RSRQ: '-13 dB'
+   	RSRP: '-90 dBm'
+   	SNR: '20.8 dB'
+== cov t=14204.15 wall=1788290654
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-62 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '23.6 dB'
+== cov t=14806.31 wall=1788291257
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-59 dBm'
+   	RSRQ: '-11 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '23.2 dB'
+== cov t=15408.49 wall=1788291859
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-65 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-94 dBm'
+   	SNR: '23.6 dB'
+== cov t=16010.65 wall=1788292461
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-58 dBm'
+   	RSRQ: '-11 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '22.4 dB'
+== cov t=16602.74 wall=1788293053
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-61 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '23.4 dB'
+== cov t=17204.89 wall=1788293655
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-63 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-91 dBm'
+   	SNR: '21.4 dB'
+== cov t=17807.11 wall=1788294257
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-62 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-89 dBm'
+   	SNR: '24.4 dB'
+== cov t=18409.27 wall=1788294860
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-58 dBm'
+   	RSRQ: '-11 dB'
+   	RSRP: '-90 dBm'
+   	SNR: '20.8 dB'
+== cov t=19001.43 wall=1788295452
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-63 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-90 dBm'
+   	SNR: '23.2 dB'
+== cov t=19603.55 wall=1788296054
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470732'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-3'
+   	Active Channel:    '1300'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-62 dBm'
+   	RSRQ: '-10 dB'
+   	RSRP: '-90 dBm'
+   	SNR: '22.6 dB'
+== cov t=20205.66 wall=1788296656
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-72 dBm'
+   	RSRQ: '-7 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '19.2 dB'
+== cov t=20807.91 wall=1788297258
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-72 dBm'
+   	RSRQ: '-7 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '13.8 dB'
+== cov t=21410.19 wall=1788297861
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-73 dBm'
+   	RSRQ: '-6 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '21.0 dB'
+== cov t=22002.21 wall=1788298453
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-72 dBm'
+   	RSRQ: '-7 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '19.0 dB'
+== cov t=22604.39 wall=1788299055
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-72 dBm'
+   	RSRQ: '-8 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '18.8 dB'
+== cov t=23206.51 wall=1788299657
+   [qrtr://0] Successfully got serving system:
+   	Registration state: 'registered'
+   	CS: 'attached'
+   	PS: 'attached'
+   	Selected network: '3gpp'
+   	Radio interfaces: '1'
+   		[0]: 'lte'
+   	Roaming status: 'off'
+   	Data service capabilities: '1'
+   		[0]: 'lte'
+   	Current PLMN:
+   		MCC: '216'
+   		MNC: '70'
+   		Description: 'One HU'
+   	Roaming indicators: '1'
+   		[0]: 'off' (lte)
+   	3GPP time zone offset: '120' minutes
+   	3GPP daylight saving time adjustment: '1' hours
+   	3GPP location area code: '65534'
+   	3GPP cell ID: '1470722'
+   	Detailed status:
+   		Status: 'available'
+   		Capability: 'cs-ps'
+   		HDR Status: 'none'
+   		HDR Hybrid: 'no'
+   		Forbidden: 'no'
+   	LTE tracking area code: '5300'
+   	Full operator code info:
+   		MCC: '216'
+   		MNC: '70'
+   		MNC with PCS digit: 'no'
+   [qrtr://0] Successfully got RF band info
+   Band Information:
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   Band Information (Extended):
+   	Radio Interface:   'lte'
+   	Active Band Class: 'eutran-20'
+   	Active Channel:    '6200'
+   [qrtr://0] Successfully got signal info
+   LTE:
+   	RSSI: '-72 dBm'
+   	RSRQ: '-8 dB'
+   	RSRP: '-97 dBm'
+   	SNR: '21.0 dB'

@@ -68,6 +68,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `de-switch.sh` | Switch which session greetd starts at boot, for the phosh-vs-Sxmo power |
 | `decay.sh` | How long does a DISTURBANCE keep the modem from letting the phone sleep? |
 | `diag-handshake.py` | Walk the modem's DIAG control handshake to the point where the data channel is |
+| `diag-log-capture.py` | ★ Turn on the modem's LTE log stream via the CONTROL channel and record it - the instrument that named the duty gap |
 | `diag-probe.py` | Send a DIAG request to the modem and print what comes back |
 | `discharge-fit.py` | Reduce a discharge-run.sh capture to the three numbers it was run for: |
 | `discharge-gate.sh` | Wait for the charger to TERMINATE (status=Full), then hand the unit to the |
