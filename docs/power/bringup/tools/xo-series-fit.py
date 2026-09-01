@@ -177,6 +177,14 @@ def report(path):
     else:
         print(f"  => UNDECIDED ({CV_SMOOTH} < CV {cv:.2f} < {CV_BURSTY}). Say so; do not "
               "pick the reading that suits the hypothesis.")
+    # ☠️ SAY THE RESOLUTION LIMIT OUT LOUD. A 1 Hz series cannot see structure
+    # below a second, so "SMOOTH" means "no bursts of about a second or more" and
+    # NOT "the wakes are uniform" - a sentence that will otherwise be quoted back
+    # as if this instrument had measured it.
+    print(f"  resolution: 1 Hz. This can only exclude bursts of ~1-2 s and longer; it says "
+          f"nothing about structure inside a second. Longest saturated run here: {best} s, "
+          f"share of awake time in runs of >={RUN_MIN} s: {rm:.2f}, quiet seconds: "
+          f"{100.0*sum(1 for x in aw if x < QUIET_MS)/n:.1f}%.")
 
 
 if __name__ == "__main__":
