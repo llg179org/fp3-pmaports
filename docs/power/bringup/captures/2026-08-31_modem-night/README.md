@@ -166,3 +166,59 @@ ModemManager stopped** — same eight hours, same WiFi-down, same cable-out, sam
 alternation. That yields a third point at ~5 % duty with *only* the daemon
 differing, and turns a two-point line drawn through two configurations into a
 controlled one.
+
+---
+
+## ☠️ The 49.5 mA headline is 96 % the low-duty point, not a result of the line
+
+Written 2026-09-01, before the control arm's data was read, from the fit's own
+weights. The oracle's 6.1 % duty lies **3.8 % of the way** from the 5.0 % point to
+the 33.6 % one, so the two-point prediction is
+
+```
+prediction(6.1 %) = 0.9615 x (the 5 % point) + 0.0385 x (the 33.6 % point)
+```
+
+⇒ "the modem track reaches the goal" is **not a conclusion of the fit**. It is a
+restatement of the low-duty night's 48 ± 5 mA, plus 1.5 mA of extrapolation. The
+census night contributes 4 % of that number.
+
+Two consequences, and the first one costs the headline:
+
+- **The absolute claim is not resolvable at this precision.** The break-even —
+  the control value that puts the prediction at exactly 50.0 mA — is **48.6 mA**,
+  and the propagated σ of the prediction is **3.9–4.8 mA**. The published 49.5 mA
+  sits *inside* its own error bar of the ≤50 mA target. It cannot be called
+  either way tonight, and it should not have been stated as flatly as it was.
+- **The differential claim survives intact, and it is the useful one.** What the
+  census establishes robustly is the *slope*: 133 mA per unit duty, independently
+  reproducing the awake-window fit's 135. Taking the modem from 33.6 % to the
+  oracle's 6.1 % is therefore worth **≈ 37 mA**, and that number does not depend
+  on where the floor sits.
+
+So the right form of the result is **"the modem track is worth about 37 mA"**, and
+whether 37 mA is enough is a question about the *floor* — which is item 5's USB
+measurement, not this one. Reported as an absolute, the modem number silently
+inherits all of the floor's uncertainty; reported as a saving, it does not.
+
+☠️ And the difference `86 − 48` that the slope rests on is exactly the quantity
+the Wi-Fi/cable confound sits in. That is what the control arm removes: with
+Wi-Fi down and no cable on both sides, `86 − control` is the daemon's cost with
+only the daemon differing.
+
+Fitted by [`../../tools/duty-ma-line.py`](../../tools/duty-ma-line.py) over
+[`../../duty-ma-points.txt`](../../duty-ma-points.txt), which reproduces the
+41.4 + 133 × duty stated above; the hand arithmetic it replaces is no longer the
+only record of the line.
+
+### Pre-registered: what each control outcome means
+
+| control (≈5 % duty) | refitted line | at 6.1 % | reading |
+|---:|---|---:|---|
+| 36 mA | 27.3 + 175 × d | 37.9 mA | the floor is far lower than believed; Wi-Fi was expensive |
+| 40 mA | 32.0 + 161 × d | 41.8 mA | goal reached with margin; Wi-Fi ≈ 8 mA |
+| 44 mA | 36.7 + 147 × d | 45.6 mA | goal reached; Wi-Fi ≈ 4 mA |
+| **48 mA** | **41.4 + 133 × d** | **49.5 mA** | the published line confirmed, Wi-Fi ≈ free — **and still inside σ of the target** |
+| 52 mA | 46.1 + 119 × d | 53.3 mA | goal **not** reached from the modem alone; the floor must also give |
+| 56 mA | 50.8 + 105 × d | 57.2 mA | the intercept is back near the awake-window 54.9 and the modem track is a partial fix |
+| 60 mA | 55.5 + 91 × d | 61.0 mA | the two-point line was an artefact of the two configurations |
