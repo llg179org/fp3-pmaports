@@ -185,6 +185,24 @@ The question is no longer what we hold that they release, but what they set up t
 we never do: the vendor stack runs `netmgrd` and `ipacm` to build the IPA data
 path, and on pmOS the IPA is probed and no channel is ever brought up.
 
+☠️☠️ **RETRACTED 2026-09-01 — a channel was brought up, and it made things
+worse.** `mmcli --simple-connect` gives a multiplexed bearer on `rmnet_ipa0`
+(`qmapmux0.0`, a network-assigned address, 3/3 ping to 8.8.8.8), so **"no channel
+is ever brought up" is a statement about what nobody had asked for, not about a
+broken IPA handshake** — the missing piece was host-side IP configuration, which
+on pmOS nothing performs because there is no `netmgrd` and no `ipacm`. See
+[`bringup/leads/ipa-modem-handshake.md`](bringup/leads/ipa-modem-handshake.md),
+now closed.
+
+And with the context up, the modem duty **rose** from 33.4–36.8 % to **48.8 %**
+(n=6 full 600 s sleeps) while the LPASS stopped sleeping altogether — XO-off
+17–20 s per 601 s window, against 617–626 s in every bearer-free run
+([`bringup/captures/2026-09-01_bearer-arm/`](bringup/captures/2026-09-01_bearer-arm/README.md)).
+So *having a context* is not what makes the oracle cheap; whatever the difference
+is, this is not it. ☠️ The A′ control that decides whether the +15 points belong
+to the bearer or to yet another regime change — same arm, context torn down — is
+named in [`../STATUS.md`](../STATUS.md) and is not folded in here until it lands.
+
 ☠️ Signal does not explain it and points the wrong way — ofono `Strength = 12–15`
 against ModemManager's `78 %`.
 
