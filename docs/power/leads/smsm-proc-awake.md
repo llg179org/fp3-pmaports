@@ -106,6 +106,42 @@ consumer, not new plumbing.
 Then one A/B: 600 s windows, band pinned, covariates sampled, bit off vs bit on,
 same boot if the implementation allows toggling.
 
+### Written, built, and not yet deployed (2026-09-01 21:42)
+
+Two commits, driver and DT split the way the submission will want them, on
+`wip/<base>/power` with cherry-pick twins on `integration/<base>` and
+`debug-int/<base>`:
+
+* `soc: qcom: smsm: tell the remotes whether this processor is awake` — a PM
+  notifier driving the bit, set at probe. The bit number comes from a new
+  `qcom,proc-awake-bit` property rather than being assumed, so every platform
+  that does not name it behaves exactly as before.
+* `arm64: dts: qcom: msm8953: name the SMSM processor-awake bit` — the property,
+  set to 12.
+
+`checkpatch --strict`: **0 errors** (its four warnings are all the
+`Co-authored-by:` trailer, which is the fork convention and is replaced by
+`Assisted-by:` when the submit series is regenerated). Both build clean —
+`CC drivers/soc/qcom/smsm.o` with no warnings, and `DTC
+sdm632-fairphone-fp3.dtb` — and the property is verified *in the built blob*,
+not merely in the source: `qcom,proc-awake-bit = <0x0c>`.
+
+**Nothing is deployed.** The package `_commit` is untouched and the phone is
+still running the previous kernel; the commits are not pushed. The A/B waits for
+the overnight decay window to close.
+
+☠️ Two bugs were found by reading the diff, both in the error path and both
+introduced by me:
+
+1. the block was first placed in the middle of `probe()`, where any later
+   failure would leave a **registered PM notifier pointing at a freed object**;
+2. moving it to the end fixed that and created a second one — its `goto out_put`
+   then **skipped `unwind_interfaces`**, leaking the IRQ domains and the
+   registered smem state on failure.
+
+Neither would have been caught by the compiler, by checkpatch, or by a boot that
+works.
+
 **Pre-registered:** MPSS duty falls materially toward the oracle's ~6 % with the
 bit set ⇒ the mechanism is found and it is a shippable fix. Duty unchanged
 within the ~3-point repeatability ⇒ this firmware does not read the bit, and the
