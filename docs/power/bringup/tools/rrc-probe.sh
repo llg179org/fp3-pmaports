@@ -29,9 +29,17 @@
 # That has been done on this device before without harm and it is not a reboot,
 # but it does drop any call. Do not run it while the phone is in use.
 #
-#   rrc-probe.sh [samples] [interval_s]      default 60 2
+# ☠️ AND LOCK THE BAND, BECAUSE THE CYCLE MOVES IT. On the first run the radio
+# came back on eutran-3 instead of eutran-1, and eutran-3's own ladder value
+# (31.8 %) accounts for leg B's duty on its own. That was the third time in one
+# day that a difference turned out to be the band. A and B are only comparable
+# if the band is pinned across both, so this pins it and restores `any` at the
+# end - through a trap, so an interrupted run does not leave the phone locked to
+# one band.
+#
+#   rrc-probe.sh [samples] [interval_s] [band]   default 60 2 <current band>
 set -u
-N=${1:-60}; I=${2:-2}
+N=${1:-60}; I=${2:-2}; BAND=${3:-}
 O=${RRC_PROBE_LOG:-/var/log/fp3/rrc-probe.log}
 D=qrtr://0
 mkdir -p /var/log/fp3
@@ -73,6 +81,26 @@ wait_reg(){
 	done
 	return 1
 }
+
+BAND=${BAND:-$(qmicli -d $D --nas-get-rf-band-info 2>/dev/null |
+	sed -n "s/.*Active Band Class: *'\([a-z0-9-]*\)'.*/\1/p" | head -1)}
+restore_band(){
+	qmicli -d $D --nas-set-system-selection-preference=any >/dev/null 2>&1
+	b=$(qmicli -d $D --nas-get-rf-band-info 2>/dev/null |
+	    sed -n "s/.*Active Band Class: *'\([a-z0-9-]*\)'.*/\1/p" | head -1)
+	say "# band preference restored to 'any' (now on ${b:-?})"
+}
+if [ -n "$BAND" ]; then
+	# ☠️ trap FIRST, then lock: a lock with no restore path is how a phone ends
+	# up pinned to one band after an interrupted measurement.
+	trap 'restore_band' EXIT INT TERM
+	qmicli -d $D --nas-set-system-selection-preference="$BAND" >/dev/null 2>&1 \
+		&& say "# band pinned to $BAND for both arms" \
+		|| say "☠️ could not pin the band - A and B may not be comparable"
+	sleep 15
+else
+	say "☠️ could not read the current band - A and B may not be comparable"
+fi
 
 say "-- A: as found"
 sample A-as-found
