@@ -117,9 +117,23 @@ def ctrl_log_mask(codes, num_items=NUM_ITEMS):
     return hdr + bytes(m)
 
 
+# Whole equipment ranges, for when the question is "what is this subsystem
+# saying" rather than "is this one message present". equip_id = code >> 12.
+#   0x0B  LTE (RRC, NAS) - the default codes above live here
+#   0x14, 0x15  the IMS / QIPCALL families: SIP messages and IMS state machine
+# ☠️ A whole equip is noisier than a code list; 0x0B in particular carries
+# high-rate PHY logs. Use ranges deliberately, and say in the capture which was
+# used - two captures with different masks are not comparable by byte count.
+EQUIP_RANGES = {0x0B: 0x100, 0x14: 0x400, 0x15: 0x400}
+
+
 def main():
     secs = int(sys.argv[1]) if len(sys.argv) > 1 else 600
     out = sys.argv[2] if len(sys.argv) > 2 else "/var/log/fp3/diag-%d" % time.time()
+    # third argument: comma-separated equip ids to enable WHOLE, e.g. "0x14,0x15"
+    equips = []
+    if len(sys.argv) > 3 and sys.argv[3].strip():
+        equips = [int(x, 0) for x in sys.argv[3].split(",")]
     os.makedirs(out, exist_ok=True)
 
     ctrl = modem_ctrl()
@@ -166,9 +180,14 @@ def main():
               "handshake. The result below is NOT a clean negative; reboot and "
               "re-run." % a)
 
-    for label, pkt in (("FEATURE", ctrl_feature()),
-                       ("DIAGMODE", ctrl_diagmode()),
-                       ("LOG_MASK", ctrl_log_mask(LOG_CODES))):
+    masks = [("LOG_MASK(0x0B codes)", ctrl_log_mask(LOG_CODES))]
+    for e in equips:
+        n = EQUIP_RANGES.get(e, 0x400)
+        codes = [(e << 12) | i for i in range(n)]
+        masks.append(("LOG_MASK(equip 0x%02X, %d items)" % (e, n),
+                      ctrl_log_mask(codes, n)))
+    for label, pkt in ([("FEATURE", ctrl_feature()),
+                        ("DIAGMODE", ctrl_diagmode())] + masks):
         try:
             os.write(cfd, pkt)
             print("sent %s (%d bytes)" % (label, len(pkt)))
