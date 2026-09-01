@@ -52,18 +52,19 @@ def masters(path):
         m = re.match(r"#\s*wakeup_irq=(\S+)", line)
         if m:
             meta["irq"] = m.group(1)
-        # ☠️ The band is network-assigned, so it survives every arm this census
-        # can pull, and it moves the duty by ~13 points on its own. Captures
-        # written before 2026-09-01 carry no `# radio:` line at all; the column
-        # then reads `-`, which is the honest answer for them. Two lines are
-        # emitted per round (before and after the sleep) and the LAST one wins,
-        # because a band that changed under the sleep is the one that priced it.
-        m = re.match(r"#\s*radio: band=(\S*) chan=(\S*) ", line)
+        # ☠️ The network is a named covariate, not a constant: band, cell and
+        # RSRP are all assigned by it and all survive every device-side arm.
+        # Captures written before 2026-09-01 carry no `# radio:` line at all;
+        # the columns then read `-`, which is the honest answer for them. Two
+        # lines are emitted per round and the LAST one wins, because the radio
+        # state a round ENDED in is the one that priced it.
+        m = re.match(r"#\s*radio: (.*)", line)
         if m:
-            meta["band"] = m.group(1) or "?"
-            meta["chan"] = m.group(2) or "?"
-            if meta.get("band_first") is None:
-                meta["band_first"] = meta["band"]
+            kv = dict(p.split("=", 1) for p in m.group(1).split() if "=" in p)
+            first = meta.get("radio_first")
+            meta["radio"] = kv
+            if first is None:
+                meta["radio_first"] = dict(kv)
         m = re.match(r"(\w+)\s+xo_total=(\d+)\s+xo_shutdowns=(\d+)", line)
         if m and phase:
             out[phase][m.group(1)] = (int(m.group(2)), int(m.group(3)))
@@ -98,17 +99,21 @@ def census(path):
     return slept, kinds, svc, nowindow, irq
 
 
-def band_cell(meta):
-    """`-` for a capture that predates the column, `band/chan` otherwise, and a
-    `\u2620\ufe0f` marker when the band changed across the sleep - that round priced two
-    radio configurations and belongs in neither average."""
-    b = meta.get("band")
-    if not b:
-        return "-"
-    cell = f"{b}/{meta.get('chan','?')}"
-    if meta.get("band_first") and meta["band_first"] != b:
-        cell = "\u2620\ufe0f" + cell
-    return cell
+def radio_cells(meta):
+    """(band/chan, cell, rsrp) for the table. `-` for a capture that predates the
+    columns. A `\u2620\ufe0f` prefix means that field CHANGED across the sleep: the round
+    priced two radio configurations and belongs in neither average."""
+    r = meta.get("radio")
+    if not r:
+        return "-", "-", "-"
+    f = meta.get("radio_first") or {}
+
+    def cell(key, shown):
+        mark = "\u2620\ufe0f" if f.get(key) and f[key] != r.get(key) else ""
+        return mark + shown
+
+    band = cell("band", f"{r.get('band','?')}/{r.get('chan','?')}")
+    return band, cell("cell", r.get("cell") or "?"), r.get("rsrp") or "?"
 
 
 def main(root):
@@ -125,7 +130,7 @@ def main(root):
             t0 = datetime.strptime(mt["t"], "%Y-%m-%d %H:%M:%S"); break
     print(f"{'rnd':>4} {'t_h':>6} {'path':<8} {'slept':>6} {'waking irq':>18} "
           f"{'MPSS':>7} {'LPASS':>7} {'PRONTO':>7} {'REQ':>5} {'RSP':>5} {'IND':>5}  {'v_uV':>8}"
-          f"  {'band':>9}")
+          f"  {'band':>11} {'cell':>10} {'rsrp':>6}")
     agg = {}
     for d in rounds:
         ms, meta = masters(os.path.join(root, d, "masters.txt"))
@@ -157,7 +162,7 @@ def main(root):
               f"{(irq or meta.get('irq','?')):>18} {cells['MPSS']:>7} {cells['LPASS']:>7} "
               f"{cells['PRONTO']:>7} {qmi}"
               f"  {meta.get('v_after', meta.get('v','?')):>8}"
-              f"  {band_cell(meta):>9}"
+              f"  %11s %10s %6s" % radio_cells(meta)
               + ("   \u2620\ufe0f no sleep window" if nowin else ""))
         a = agg.setdefault(p, {"n": 0, "slept": 0.0, "REQ": 0, "RSP": 0, "IND": 0,
                                "duty": [], "nowin": 0})

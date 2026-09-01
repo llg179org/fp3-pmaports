@@ -237,23 +237,32 @@ sleep 300
 snap(){ /usr/local/bin/rpm-xo-snapshot.sh; }
 END=$(( $(date +%s) + HOURS * 3600 ))
 r=1
-# ☠️ THE BAND IS A FREE COLUMN AND IT WAS MISSING FROM 67 WINDOWS. This repo's
-# own band A/B measured eutran-1 at 50.0 % against eutran-3 at 36.4 % - 13.6
-# points, the same order as the effects being chased here - and not one census
-# round recorded which band it was camped on. The band is assigned by the
-# network, so it survives a daemon restart, a modem power cycle and a reboot:
-# exactly the profile of the state every arm so far has failed to move. Read it
-# AFTER the sleep, while the phone is awake anyway for the counters, so this
-# costs the measurement nothing.
+# ☠️ THE NETWORK IS A NAMED COVARIATE FROM 2026-09-01, NOT A CONSTANT. This
+# repo's own band A/B measured eutran-1 at 50.0 % against eutran-3 at 36.4 % -
+# 13.6 points - and not one of the 67 census windows before this date recorded
+# which band, cell or signal level it was camped on. All of those are assigned
+# by the network, so they survive a daemon restart, a modem power cycle and a
+# reboot: exactly the profile of the state every device-side arm has failed to
+# move. An hour of sleep without these columns is an anecdote, not a datum.
 #
-# ☠️ The band comes from qmicli over qrtr, NOT from mmcli, so it is still
-# readable on the `mm=stopped` arms where there is no daemon to answer. The
-# tech/state fields go blank there, and that is the correct answer for them.
+# ☠️ Read AFTER the sleep as well as before, while the phone is awake anyway for
+# the counters, so it costs the measurement nothing - and a round whose cell or
+# band CHANGED under the sleep priced two radio configurations and belongs in
+# neither average. The fitter flags exactly that.
+#
+# ☠️ Both reads go over qrtr with qmicli, NOT through mmcli, so they still work
+# on the `mm=stopped` arms where no daemon answers. The tech/state fields come
+# from mmcli and go blank there; that is the correct answer for them.
 radio_ctx() {
 	rf=$(qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null)
-	printf '# radio: band=%s chan=%s tech=%s state=%s\n' \
+	cl=$(qmicli -d qrtr://0 --nas-get-cell-location-info 2>/dev/null)
+	printf '# radio: band=%s chan=%s cell=%s tac=%s rsrp=%s rsrq=%s tech=%s state=%s\n' \
 		"$(echo "$rf" | sed -n "s/.*Active Band Class: *'\([^']*\)'.*/\1/p" | head -1)" \
 		"$(echo "$rf" | sed -n "s/.*Active Channel: *'\([^']*\)'.*/\1/p" | head -1)" \
+		"$(echo "$cl" | sed -n "s/.*Global Cell ID: *'\?\([^'\n]*\)'\?.*/\1/p" | head -1)" \
+		"$(echo "$cl" | sed -n "s/.*Tracking Area Code: *'\?\([^'\n]*\)'\?.*/\1/p" | head -1)" \
+		"$(echo "$cl" | sed -n "s/.*RSRP: *'\?\([-0-9.]*\).*/\1/p" | head -1)" \
+		"$(echo "$cl" | sed -n "s/.*RSRQ: *'\?\([-0-9.]*\).*/\1/p" | head -1)" \
 		"$(mmcli -m any 2>/dev/null | sed -n 's/.*access tech: *//p' | head -1)" \
 		"$(mmcli -m any 2>/dev/null | sed -n 's/.*  state: *//p' | head -1)"
 }
