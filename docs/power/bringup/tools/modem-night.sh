@@ -63,6 +63,8 @@ ALARM=${2:-600}
 FLOOR=${3:-35}
 MM=${4:-running}
 case "$MM" in running|stopped) ;; *) echo "mm must be running or stopped"; exit 2;; esac
+WIFI=${5:-down}
+case "$WIFI" in down|up) ;; *) echo "wifi must be down or up"; exit 2;; esac
 
 BAT=/sys/class/power_supply/pmi632-battery
 CHG=/sys/class/power_supply/pmi632-charger
@@ -110,7 +112,7 @@ systemd-run --unit=fp3-modemnight-deadman --collect \
 	&& say "# dead-man armed: WiFi returns unconditionally in $((DEADMAN/60)) min" \
 	|| { say "☠️ COULD NOT ARM THE DEAD-MAN TIMER - refusing to cut the only remaining link"; exit 1; }
 
-say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}% mm=$MM"
+say "# modem-night $(date '+%F %T') hours=$HOURS alarm=${ALARM}s floor=${FLOOR}% mm=$MM wifi=$WIFI"
 say "# kernel=$(uname -v)"
 
 # ---------------------------------------------------------------- gates
@@ -161,11 +163,33 @@ say "# battery at start: $cap%  v=$(cat $BAT/voltage_now)uV"
 for b in /sys/class/backlight/*/bl_power; do [ -w "$b" ] && echo 4 > "$b"; done
 say "# panel: bl_power=$(cat /sys/class/backlight/*/bl_power 2>/dev/null | head -1)"
 
-# ---------------------------------------------------------------- WiFi down
-say "# taking WiFi down (it is a dev link - the dead-man above is why this is safe)"
-nmcli radio wifi off 2>/dev/null
-ip link set wlan0 down 2>/dev/null
-sleep 3
+# ---------------------------------------------------------------- WiFi
+# Two arms. `down` is the default and the one every census so far has used. `up`
+# exists to separate the Wi-Fi link from the USB link: with the cable out either
+# way, an up/down pair at the same duty prices Wi-Fi on its own, and the two have
+# only ever moved together.
+#
+# ☠️ With WIFI=up the phone is REACHABLE for the whole run. Do not use that
+# to look at it. Every ssh login wakes the AP, and the rounds are the
+# measurement; a single poll costs the round it lands in and is invisible
+# afterwards in the numbers it corrupted.
+if [ "$WIFI" = down ]; then
+	say "# taking WiFi down (it is a dev link - the dead-man above is why this is safe)"
+	nmcli radio wifi off 2>/dev/null
+	ip link set wlan0 down 2>/dev/null
+	sleep 3
+else
+	say "# leaving WiFi UP - this arm prices the Wi-Fi link itself"
+	nmcli radio wifi on 2>/dev/null
+	ip link set wlan0 up 2>/dev/null
+	sleep 5
+	# An arm that claims to measure an associated link has to show it is
+	# associated. A wlan0 that is up but unassociated draws a different
+	# current and would be reported as "Wi-Fi up".
+	ip -br addr show wlan0 2>/dev/null | grep -q 'UP.*[0-9]\+\.[0-9]\+\.[0-9]\+\.[0-9]\+' ||
+		gate_fail "WIFI=up but wlan0 has no address - an unassociated link is not the arm asked for"
+	say "# wlan0: $(ip -br addr show wlan0 2>/dev/null)"
+fi
 say "# wifi radio now: $(nmcli radio wifi 2>/dev/null)  wlan0: $(ip -br link show wlan0 2>/dev/null | awk '{print $2}')"
 
 # ---------------------------------------------------------------- cable out

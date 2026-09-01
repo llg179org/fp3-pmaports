@@ -72,6 +72,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `discharge-fit.py` | Reduce a discharge-run.sh capture to the three numbers it was run for: |
 | `discharge-gate.sh` | Wait for the charger to TERMINATE (status=Full), then hand the unit to the |
 | `discharge-run.sh` | One continuous discharge from a full pack to the phone switching itself off, |
+| `duty-ma-line.py` | Fit the sleeping phone's draw against MPSS duty, from whole-night points |
 | `duty-vs-uptime.sh` | Is the modem's awake duty a per-BOOT constant, or does it DECAY after a boot? |
 | `emmc-watch.sh` | Did the eMMC fall off the bus, and was the application processor collapsed |
 | `episode-watch.sh` | Catch the episode |
@@ -100,6 +101,9 @@ as "this exists and this is what it was for", never as "this is current".
 | `lpass-trace.sh` | lpass-trace — sample the LPASS master stats from before the freeze |
 | `lpass-usb-ab.sh` | Does the USB PHY stop the audio DSP from power-collapsing? |
 | `modem-fw-swap.sh` | Swap the modem firmware pmOS loads from its rootfs for the one the device's own |
+| `modem-night-fit.py` | Per-round MPSS/LPASS/PRONTO duty beside the QMI census, split by suspend path |
+| `modem-night-to-rounds.py` | Adapter: a modem-night.sh run into the rows sleep-night-fit.py prices |
+| `modem-night.sh` | Eight cable-free, WiFi-free hours alternating two suspend paths: what wakes the |
 | `modem-window-fit.py` | Read one or more modem-window.sh captures and print the per-master awake duty |
 | `modem-window.sh` | ONE instrument, BOTH systems: an RPM master-stats window with the modem's full |
 | `mpss-leg.sh` | mpss-leg.sh — two things at once |
