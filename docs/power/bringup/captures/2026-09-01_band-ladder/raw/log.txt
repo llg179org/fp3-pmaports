@@ -1,0 +1,22 @@
+# band-ladder 2026-09-01 16:09:50 window=600s bands: eutran-1 eutran-3 eutran-20 (then eutran-1 again)
+# kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# --- leg L1-eutran-1: requesting eutran-1
+#   L1-eutran-1 before state=registered band=eutran-1 chan=500 cell=1470762 rsrp=-94.4
+#   L1-eutran-1 after state=registered band=eutran-1 chan=500 cell=1470762 rsrp=-95.1
+RESULT L1-eutran-1 mpss_up=48.8% edge_per_s=35.5 n=303
+# --- leg L2-eutran-3: requesting eutran-3
+#   L2-eutran-3 before state=registered band=eutran-3 chan=1300 cell=1470732 rsrp=-90.4
+#   L2-eutran-3 after state=registered band=eutran-3 chan=1300 cell=1470732 rsrp=-90.6
+RESULT L2-eutran-3 mpss_up=31.8% edge_per_s=35.5 n=302
+# --- leg L2-eutran-20: requesting eutran-20
+#   L2-eutran-20 before state=registered band=eutran-20 chan=6200 cell=1470722 rsrp=-85.8
+#   L2-eutran-20 after state=registered band=eutran-20 chan=6200 cell=1470722 rsrp=-84.2
+RESULT L2-eutran-20 mpss_up=34.1% edge_per_s=36.6 n=302
+# --- leg L1-eutran-1-repeat: requesting eutran-1
+#   L1-eutran-1-repeat before state=registered band=eutran-1 chan=500 cell=1470762 rsrp=-95.3
+#   L1-eutran-1-repeat after state=registered band=eutran-1 chan=500 cell=1470762 rsrp=-94.7
+RESULT L1-eutran-1-repeat mpss_up=51.6% edge_per_s=35.9 n=304
+# restoring: any
+#   restored state=registered band=eutran-20 chan=6200 cell=1470722 rsrp=-85.2
+# done 2026-09-01 16:53:12
+/var/log/fp3/band-ladder-1788271790

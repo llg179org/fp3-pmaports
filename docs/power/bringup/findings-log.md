@@ -9625,3 +9625,44 @@ different regimes, compared as if they came from one population*. From
 2026-09-01 the network is a named covariate: a window without band, cell and
 RSRP is an anecdote, not a datum, and every "X has no effect" is written with
 the number of regimes it was measured across.
+
+### ★★★★★ 2026-09-01, late afternoon — the band, and the third retraction of the day
+
+The instrument added that morning found the phone camped on **eutran-1**
+(2100 MHz, RSRP −94.0 dBm) with an eutran-20 neighbour 7 dB stronger. A ladder
+of four 600 s windows inside one boot, first band repeated last
+([`captures/2026-09-01_band-ladder/`](captures/2026-09-01_band-ladder/README.md)):
+
+| band | MPSS awake | median current |
+|---|---:|---:|
+| **eutran-1** | 48.8 % / 51.6 % | 139 / 155 mA |
+| eutran-3 | 31.8 % | 108 mA |
+| eutran-20 | 34.1 % | 93 mA |
+
+**17 points of duty and ~54 mA sit on which band the network parks us on**, and
+the A–A′ bracket says it is the band rather than drift. The wake *rate* is flat
+across all four legs (35.5–36.6 /s); as everywhere else here, the band changes
+how long the modem stays up, not how often it wakes.
+
+☠️☠️ **And it retracts this morning's bearer finding.** That arm read 48.8 % —
+which is exactly the eutran-1 number, against 31.8–34.1 % for every alternative
+— and its band was never recorded, because the column did not exist yet. The
+data context is not shown to cost anything; the arm has to be redone with the
+band locked on both legs.
+
+**That is three retractions in one day, all the same shape**: a claim drawn
+across configurations measured at different times, with a covariate recorded on
+neither side. The first two were caught by re-reading data already on disk; this
+one by finally measuring the covariate. The lesson has now been paid for three
+times, so it is worth stating flatly: **on this phone, in this investigation, a
+duty number without its band, cell and RSRP is not evidence for anything
+cross-configuration.**
+
+☠️ **What the band does not explain**: the 2026-08-31 episode at 4.9–5.1 %. The
+cheapest band available reads 31.8 %. Nothing here gets near 5 %, so that
+34-minute regime is still unaccounted for.
+
+★ **And what it opens**: a UE-side band preference is a forceable knob worth ~17
+points against a ≤50 mA target. It trades coverage for power, so the honest form
+is a preference and not a lock — and it must be re-measured across a *suspend*,
+since these were awake windows.

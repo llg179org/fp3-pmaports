@@ -1,3 +1,20 @@
+# ☠️☠️ RETRACTED — the 48.8 % was the BAND, not the data context
+
+> **Superseded 2026-09-01 16:53, four hours after it was written.** The
+> [band ladder](../2026-09-01_band-ladder/README.md) run the same afternoon reads
+> **48.8 % and 51.6 % on eutran-1** and 31.8 / 34.1 % on eutran-3 and eutran-20.
+> This page's headline number is 48.8 %, its band was never recorded — the column
+> did not exist yet — and no other arm measured today lands anywhere near it. The
+> data context is therefore **not shown to cost anything**; the arm has to be
+> repeated with the band locked on both legs.
+>
+> What survives: the bearer came up at all (the IPA finding below, since confirmed
+> directly), it stayed up for the whole run, and the `rtcwake` rounds died on the
+> modem's SMD edge while the handshaked rounds slept — that last one is about the
+> suspend path, not about duty, and is not touched by the band.
+>
+> The rest of the page is kept unedited as the record of what was claimed.
+
 # A live data context makes the modem duty WORSE — and it is ModemManager, not the context, that keeps the ADSP awake
 
 > ⚠️ **AI-generated.** Written by Claude (Opus 5) under the direction of
