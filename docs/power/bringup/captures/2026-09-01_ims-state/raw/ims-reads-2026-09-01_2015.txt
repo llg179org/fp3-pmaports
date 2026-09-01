@@ -1,0 +1,42 @@
+=== imsa: IMS registration status
+error: couldn't get IMS registration status: QMI protocol error (70): 'InvalidOperation'
+
+=== imsa: IMS services status
+error: couldn't get IMS services status: QMI protocol error (70): 'InvalidOperation'
+
+=== ims (imsp/ims) szolgaltatasok a qrtr-en:
+       10       2        0    0    43 Card Application Toolkit service (v2)
+       77       1        0    0    59 IMS QMI Priv service
+       33       1        0    0    62 IMS application service
+       18       1        0    0    64 IMS settings service
+
+=== van-e IMS-hez tartozo APN/profil:
+Profile list retrieved:
+	[1] 3gpp - profile1
+		APN: ''
+		PDP type: 'ipv4-or-ipv6'
+		PDP context number: '1'
+		Username: ''
+		Password: ''
+		Auth: 'none'
+		No roaming: 'no'
+		APN disabled: 'no'
+	[10] 3gpp - qdp_profile
+		APN: 'mms.vodafone.net'
+		PDP type: 'ipv4'
+		PDP context number: '10'
+		Username: ''
+		Password: ''
+		Auth: 'none'
+		No roaming: 'no'
+		APN disabled: 'no'
+	[11] 3gpp - qdp_profile
+=== imsp: enabler state
+error: couldn't create client for the 'imsp' service: QMI protocol error (3): 'Internal'
+
+=== ims: services enabled setting
+error: couldn't get IMS services enabled setting: QMI protocol error (70): 'InvalidOperation'
+
+=== imsa noop (el-e a service egyaltalan)
+
+=== ims noop

@@ -165,4 +165,16 @@ modem_state
 radio_ctx AFTER
 batt | sed 's/^/# /' >> "$O"
 s "# done"
-echo "$O"
+
+# ☠️ THE DATA GOES TO STDOUT, and the PATH goes to stderr.
+#
+# This script used to print only "$O" on stdout and leave the measurement in a
+# file. Every caller that did the natural thing - `modem-window.sh 600 > out.txt`
+# - captured ONE LINE, and a complete, successful 600 s window looked like a run
+# that had measured nothing. That happened on 2026-09-01 and cost a re-run of
+# the window it was meant to save.
+#
+# A measurement tool whose stdout is not its measurement is a trap. The file is
+# kept (it is useful on the device), but the redirect now gets the data.
+cat "$O"
+echo "$O" >&2

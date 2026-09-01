@@ -75,3 +75,56 @@ journalctl -b -1 --since "2026-08-31 06:00" --until "2026-08-31 12:00" --no-page
 
 and is in [`raw/journal-window-2026-08-31_06-00_11-08.txt`](raw/journal-window-2026-08-31_06-00_11-08.txt).
 The four lines quoted above are verbatim from it.
+
+## Addendum, 2026-09-01 20:40 — the run-up to the cheap window, and why it can no longer be read
+
+The outside review asked one more thing of this journal: **how long had the radio
+been left undisturbed before 05:38**, since a backoff that grows would predict a
+long quiet stretch ahead of a cheap window.
+
+**Partly answerable, from what was already captured:**
+
+- the cheap legs ran on **one boot, at uptime 16 h**
+  ([`../2026-08-31_mm-duty-ab/`](../2026-08-31_mm-duty-ab/README.md)), so the
+  modem had been up since roughly 2026-08-30 13:40 without a firmware reload;
+- **ModemManager was running for leg B** at ~05:55 and the duty was **4.9 %** —
+  so the cheap state is not "the daemon was off", and the 06:00:21 D-Bus
+  disappearance is the A′ leg's own `systemctl stop`, not an unexplained event.
+
+**Not answerable, and it never will be:** what the radio did before 05:38. The
+extract in `raw/` starts at 06:00 because that is where the question stood when
+it was taken.
+
+### ☠️ The journal is not an evidence store on this device, and this capture's own header is now wrong
+
+The header above says the journal is persistent (`/var/log/journal`) and that
+boot `-1` covered 2026-08-30 14:00:30 → 2026-09-01 11:56:45. The directory is
+still there and journald still writes to it. But measured tonight:
+
+```
+$ journalctl --list-boots
+IDX BOOT ID                          FIRST ENTRY                  LAST ENTRY
+  0 ab239ffe...                      Tue 2026-09-01 17:10:52 CEST Tue 2026-09-01 20:27:09 CEST
+$ journalctl --disk-usage
+Archived and active journals take up 21.5M in the file system.
+```
+
+**One boot. Nothing before 17:10 today.** Every earlier boot — including the one
+this capture reads — has been discarded, and 21.5 MB is all journald is keeping.
+
+The mechanism is not a mystery and it is not a mistake anyone made: `/` is a
+2.4 G filesystem at **85 %**, with ~330 MB free. journald's default
+`SystemKeepFree` is **15 % of the filesystem** (~360 MB), so the free space is
+*below* the floor journald is trying to preserve — and it responds by rotating
+history away continuously, whatever `SystemMaxUse` would otherwise allow.
+
+Two consequences, both operational:
+
+1. **A journal line is evidence only until the next rotation.** The standing note
+   "do not vacuum the journal, it is evidence" was written to protect exactly
+   this window, and the window evaporated anyway, without anyone vacuuming
+   anything. Anything wanted from the journal must be **extracted to the repo the
+   same day**, and the extract must be wider than the question that prompted it —
+   this one was cut at 06:00 and the run-up is gone with it.
+2. **Free space on `/` is a measurement resource**, not just a build concern.
+   Below ~15 % the device silently stops keeping its own history.
