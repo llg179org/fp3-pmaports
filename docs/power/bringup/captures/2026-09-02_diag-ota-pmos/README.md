@@ -192,3 +192,42 @@ and let the state machine narrate itself.
 measured. duty → current still rests on the fitted slope with its known ≥15 mA
 structural residual, so "the mechanism is the whole duty gap" must not quietly
 become "the power problem is solved".
+
+## The channel decode: with IMS off, the UE never opens a connection at all
+
+The three captures were re-read with [`../../tools/diag-ota-decode.py`](../../tools/diag-ota-decode.py),
+which pulls the `pdu_num` (logical channel) out of every `0xB0C0` record instead
+of only counting them. 120 s each, same cell (PCI 109, EARFCN 6200) throughout:
+
+| `pdu_num` | channel | IMS on | AP holds bearer | **IMS off** |
+|---:|---|---:|---:|---:|
+| 4 | PCCH — paging | 152 | 122 | **176** |
+| 6 | DL_DCCH | 72 | 56 | **0** |
+| 8 | UL_DCCH | 154 | 123 | **0** |
+| 5 / 7 | DL/UL_CCCH — connection setup | 1 / 1 | 0 / 0 | **0 / 0** |
+| 2 | BCCH_DL_SCH — SIB | 0 | 4 | 0 |
+| — | ESM (`0xB0E1/E2/E3`) | 88/44/88 | 74/36/74 | **0** |
+
+**This is what closes the channel enum.** `pdu_num` is a firmware-version
+dependent field and this repo does not take such enums on faith — but the
+behaviour names them: the two codes that vanish completely when IMS is switched
+off are exactly the two that carried the ESM loop, and the one that survives is
+the one a camped idle UE must keep hearing. No external table was needed.
+
+Three things follow, and one of them is a warning:
+
+1. **With IMS off the UE holds no RRC connection whatsoever.** Not "fewer
+   connections" — zero dedicated-channel messages and zero CCCH setups in 120 s.
+   The IMS loop was the *only* thing keeping the connection up.
+2. **Paging goes up, not down** (152 → 176). Consistent with a UE that now hears
+   every paging occasion instead of missing those it spent connected. It is also
+   the reassuring direction for reachability: the phone is listening more.
+3. ☠️ **So the ladder can now falsify itself cleanly.** If the band-pinned
+   `ims-ab.sh` still measures a high duty in the IMS-off leg, the cause cannot be
+   radio work — an idle camped UE with no connection has none to do — and the
+   remaining suspects are the DIAG residue and whatever else keeps the modem
+   awake. That is a much sharper question than "why is the duty high".
+
+☠️ ~1 % of records (4–8 per file) parse with an absurd PCI/EARFCN and header
+version 1 rather than 22 — a second log format in the same stream. They are
+reported, not silently dropped, and they change none of the counts above.
