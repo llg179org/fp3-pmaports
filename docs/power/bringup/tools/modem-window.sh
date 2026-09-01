@@ -81,6 +81,63 @@ modem_state(){
 	rfkill list 2>/dev/null | sed 's/^/#     /' >> "$O"
 }
 
+# ☠️ THE NETWORK IS THE UNCONTROLLED COVARIATE IN EVERY CROSS-STACK NUMBER THIS
+# REPO HAS. The 6.1 % oracle reading and the 34 % pmOS reading were taken days
+# apart with band, cell and RSRP recorded on NEITHER side, and the band alone is
+# a 13.6-point effect by this repo's own A/B. A two-sided comparison without
+# these fields cannot tell a stack difference from network weather.
+#
+# Read the same six things on both stacks, and say plainly which ones a stack
+# could not answer: on this device an absent section next to present ones has
+# been read as "nothing to report" before.
+#
+# ☠️ The oracle has no qrtr. Try the QMI transports it might have in order and
+# record which one answered; if none does, fall back to ofono and SAY that the
+# config fields are unread rather than leaving the reader to assume they are
+# empty.
+qmi_dev(){
+	for d in qrtr://0 /dev/cdc-wdm0 /dev/cdc-wdm1 /dev/smdcntl0; do
+		case "$d" in qrtr://*) [ -d /sys/class/qrtr ] || [ "$STACK" = pmos ] || continue ;;
+			*) [ -c "$d" ] || continue ;;
+		esac
+		if qmicli -d "$d" --nas-get-serving-system >/dev/null 2>&1; then
+			echo "$d"; return 0
+		fi
+	done
+	return 1
+}
+
+radio_ctx(){
+	s "#   --- radio context [$1]"
+	if D=$(qmi_dev); then
+		s "#     qmi transport: $D"
+		for q in --nas-get-rf-band-info --nas-get-cell-location-info \
+		         --nas-get-signal-info --nas-get-system-selection-preference; do
+			s "#     $q"
+			qmicli -d "$D" $q 2>&1 | sed 's/^/#       /' | head -30 >> "$O"
+		done
+		# ☠️ These two are the review's named instruments for "what was written
+		# into the modem once": the active carrier profile, and whether the UE
+		# is stuck retrying an IMS PDN. Both are carrier-config driven, which is
+		# the survives-a-reboot profile every device-side arm has failed to move.
+		for q in --pdc-list-configs --pdc-get-selected-config; do
+			s "#     $q"
+			qmicli -d "$D" $q 2>&1 | sed 's/^/#       /' | head -20 >> "$O"
+		done
+	else
+		s "#     ☠️ NO QMI TRANSPORT ANSWERED - band, cell, RSRP and the config"
+		s "#        fields below are UNREAD on this stack, not empty."
+	fi
+	if [ "$STACK" = ut ]; then
+		s "#     ofono cell/strength (the only radio context UT gives without QMI)"
+		for m in /ril_0 /ril_1; do
+			/usr/share/ofono/scripts/list-modems 2>/dev/null | tr -d '\000' \
+				| grep -aE "^\[ $m|Technology|Status|Strength|CellId|LocationAreaCode|MobileNetworkCode|Name =" \
+				| sed "s|^|#       $m |" >> "$O"
+		done
+	fi
+}
+
 batt(){
 	for f in /sys/class/power_supply/*/voltage_now; do
 		[ -r "$f" ] || continue; echo "v=$(cat "$f") ($f)"; break
@@ -94,6 +151,7 @@ s "# kernel=$(uname -r) $(uname -v)"
 s "# uptime=$(cut -d. -f1 /proc/uptime)"
 s "# BEFORE ------------------------------------------------------------"
 modem_state
+radio_ctx BEFORE
 batt | sed 's/^/# /' >> "$O"
 s "# t0=$(cut -d. -f1 /proc/uptime)"
 dump_rpm BEFORE
@@ -104,6 +162,7 @@ s "# t1=$(cut -d. -f1 /proc/uptime)"
 dump_rpm AFTER
 s "# AFTER -------------------------------------------------------------"
 modem_state
+radio_ctx AFTER
 batt | sed 's/^/# /' >> "$O"
 s "# done"
 echo "$O"
