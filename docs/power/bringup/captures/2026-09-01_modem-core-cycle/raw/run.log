@@ -1,0 +1,20 @@
+# dead-man armed: WiFi returns unconditionally in 90 min
+# modem-night 2026-09-01 10:36:33 hours=1 alarm=600s floor=15% mm=stopped wifi=up cable=in
+# kernel=#80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026
+# modem before the run: registered  (daemon will be: stopped)
+# ModemManager STOPPED for this run; restore() starts it again on every exit path
+# battery at start: 50%  v=3956776uV
+# panel: bl_power=4
+# leaving WiFi UP - this arm prices the Wi-Fi link itself
+# wlan0: wlan0            UP             192.168.100.17/24 2a01:36d:1400:c11:d42f:4147:e0df:f6b0/64 2a01:36d:1400:c11:65ac:e85:d0a:40d3/64 fe80::f0a:293f:c26:d30f/64 
+# wifi radio now: enabled  wlan0: UP
+# cable IN, USBIN suspended: battery status=Discharging
+# settling 300 s before the first round
+# round 1 (rtcwake) done 10:52:07 cap=49%
+# round 2 (logind) done 11:02:33 cap=49%
+# round 3 (rtcwake) done 11:12:51 cap=49%
+# round 4 (logind) done 11:23:17 cap=49%
+# round 5 (rtcwake) done 11:33:35 cap=49%
+# round 6 (logind) done 11:44:01 cap=49%
+# loop ended after 6 rounds, 2026-09-01 11:44:01, battery 49%
+# RESTORED 2026-09-01 11:44:03 wifi=enabled charger=Charging
