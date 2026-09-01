@@ -1,0 +1,13 @@
+# rrc-probe 2026-09-01 19:54:48 samples=60 interval=2s
+☠️ could not pin the band - A and B may not be comparable
+-- A: as found
+RESULT A-as-found   TX-in-traffic  5/60 ( 8.3%)  MPSS 35.1% awake over 120s
+#   A-as-found t=8984 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-3 chan=1300 cell=1470732 tac=5300 rsrp=-87.5 rsrq=-10 snr=23.8
+-- forcing the radio down and back up so the UE must re-attach
+   re-registered after 19:57:30
+-- B: after a fresh attach
+RESULT B-fresh-attach TX-in-traffic 13/60 (21.7%)  MPSS 29.4% awake over 120s
+#   B-fresh-attach t=9159 state=registered cs=attached ps=attached mode=cdma-1x, cdma-1xevdo, gsm, umts, lte, td-scdma band=eutran-3 chan=1300 cell=1470732 tac=5300 rsrp=-87.3 rsrq=-11 snr=23.8
+# final: ModemManager=registered, NAS=registered - the phone can take a call
+# done 2026-09-01 20:00:10
+# band preference restored to 'any' (now on eutran-3)
