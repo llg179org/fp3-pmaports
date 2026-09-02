@@ -177,6 +177,39 @@ repeat.
 40.1 ± 1.0 mA within-leg, calibration unbounded".** Three boots across two days
 plus one OCV-bounded block turns that into a number; the plan is item 85.
 
+## ☠️ Dependencies — what this result rests on that we do not control
+
+The cheap state is not a property of this phone alone. It is a property of this
+phone **on this network, with this SIM, against this modem firmware, driven by
+this ModemManager** — and three of those are somebody else's to change, without
+notice and without telling us. A dependency that is only a footnote gets
+rediscovered as an unexplained regression six weeks later, so each one below
+carries the **observable that would show it moved**. Where the observable is
+already recorded, it says so; where it had to be added, the commit adding it is
+named.
+
+| what we depend on | the claim resting on it | the observable that says it changed |
+|---|---|---|
+| **The network's CS domain (CSFB + a live SGs association)** | "with IMS off, incoming calls still arrive" — the whole reachability half of the goal | the ring log's `band` column, which since `76887b8` carries the **radio interface** with the band (`<iface>/<band>`) precisely so this dependency has a witness. Every delivered call so far reads `gsm/gsm-900-extended` *at call time* while the phone camps on LTE. If that column starts reading `lte/...` while calls still arrive, VoLTE came up; if calls stop arriving, the CS domain went away. ☠️ **This is the load-bearing one**: 3G is already retired here, and if 2G follows, on this configuration an incoming call is not slower, it is *absent*. See [`../../leads/csfb-is-a-dependency.md`](../../leads/csfb-is-a-dependency.md) |
+| **IMS provisioning for this subscription** | "the `imsd` contingency has somewhere to register" — i.e. the fallback if CS goes away is buildable at all | P-CSCF containers in the PCO of `ACTIVATE DEFAULT EPS BEARER CONTEXT ACCEPT`, read out of any existing capture by [`../../tools/pcscf-scan.py`](../../tools/pcscf-scan.py). Measured: `10.149.10.129` ×22 and `10.150.10.129` ×21 against 22 bearer accepts, with the IMS-off control at zero accepts and zero addresses. Zero addresses across a capture that *does* contain accepts would mean the network stopped provisioning. See [`../../leads/volte-is-provisioned.md`](../../leads/volte-is-provisioned.md) |
+| **Device policy for VoLTE (the second gate)** | *nothing yet* — this row exists because the claim is **not** made. The network provisioning above is the first gate; whether the operator admits *this device* is untested | the cheapest witness costs no measurement: a factory-Android FP3 on the same network, during a call it was going to make anyway — does its status bar stay on LTE, or drop to 2G? If a certified handset also falls back, the policy excludes this model here and the `imsd` path is pointless on this network |
+| **The paging DRX cycle (a network parameter)** | the behavioural check's PASS band — "≈3.13 wakes/s **is** the paging fingerprint, and 2.4/s is connection housekeeping" | the wake rate in every leg header and in the census fit. ☠️ **1/320 ms is what *this* network broadcasts, not a property of the phone.** If the operator lengthens the cycle, a perfectly camped phone reads slower than the band and the check fails as a regression it is not. The fix is to compare against the *contemporaneous* idle rate, never against the constant typed here |
+| **ModemManager / libqmi behaviour** | "the reconciler writes the IMS vector and `want=off` means off" — every cheap leg | the versions, now logged in the leg header alongside band and cell (this commit), plus the reconciler's own drift journal, which has been dating every correction for free since `563c935`. A version bump with a behaviour change shows up as drift the reconciler cannot correct |
+| **The modem firmware identity** | the oracle comparison — the two slots are only comparable because they run the same modem firmware | `--dms-get-software-version` in the leg header (this commit), against the metabuild number in `ver_info.txt`. ☠️ A slot switch does **not** change it — the modem firmware lives outside both rootfs — which is exactly why it can change under us without either system noticing |
+| **The SIM / subscription** | all three network rows above are per-subscription, not per-device: CS reachability, IMS provisioning, and the band set the phone is offered | MCC+MNC in the leg header (this commit; the subscriber digits are not recorded). A different SIM invalidates the CSFB claim, the P-CSCF claim and the band comparison at once, and none of them would announce it |
+
+**One dependency is measured at N=1 and is listed for honesty, not for
+confidence:** SMS rides the same SGs leg as CSFB, and exactly one message has been
+observed arriving with IMS off. Whether it is as reliable as the call path is
+untested, and it is a separate item, not an inference from the call census.
+
+☠️ **What this table is not.** It does not say the 40.3 mA is fragile — that
+number is a measurement of this phone and stands. It says the *usefulness* of the
+cheap state, "cheap **and** still reachable", is a joint claim about the phone and
+the network, and only the phone half is ours. The honest form of the headline is
+therefore: **on this network, today, the IMS loop costs ~50 mA and switching it
+off keeps calls arriving over CSFB.** Every word of that qualifier is doing work.
+
 ## Raw
 
 `raw/log.txt` (per-leg IMS read-backs), `raw/samples-{A,B,A2}.txt` (one line per

@@ -51,6 +51,20 @@ band_cell() {
 }
 START_BC=$(band_cell)
 s "# band/cell: $START_BC"
+
+# ☠️ THE LEG HAS TO NAME THE SERVICES IT RIDES ON, NOT JUST THE NUMBER IT
+# PRODUCES. Three of this report's claims rest on parties outside the phone or
+# outside our code, and a silent change in any of them turns a future leg into an
+# unexplained regression: the modem FIRMWARE (the oracle comparison is only a
+# comparison because both slots run the same one), MODEMMANAGER/libqmi (the IMS
+# vector is written through them, so "want=off" means off only while their
+# behaviour holds), and the SUBSCRIPTION (CS-domain reachability and IMS
+# provisioning are per-SIM, not per-device). None costs a measurement - they are
+# three reads at the top of a 75-minute leg - and without them the dependency
+# table in the report is a footnote instead of an instrumented claim.
+s "# mm=$(mmcli --version 2>/dev/null | head -1 | awk '{print $NF}') qmicli=$(qmicli --version 2>/dev/null | head -1 | awk '{print $NF}')"
+s "# modem fw: $(qmicli -d qrtr://0 --dms-get-software-version 2>/dev/null | sed -n "s/.*version: *'\([^']*\)'.*/\1/p" | head -1)"
+s "# subscription: $(qmicli -d qrtr://0 --dms-uim-get-imsi 2>/dev/null | sed -n "s/.*IMSI: *'\([0-9]\{6\}\)[0-9]*'.*/\1xxxxxxxxx/p" | head -1)"
 sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 
 # ☠️ THE INTERFERENCE DETECTOR HAS TO NAME WHAT HAPPENED, NOT JUST THAT IT DID.
