@@ -1,0 +1,2 @@
+settle t=2026-09-02 04:09:47 v=4258463 cur=-149841 cap=100 band=eutran-1 cell=1470762 rsrp='-94 dBm' state=registered
+settle t=2026-09-02 04:19:48 v=4198125 cur=-127258 cap=100 band=eutran-1 cell=1470762 rsrp='-94 dBm' state=registered

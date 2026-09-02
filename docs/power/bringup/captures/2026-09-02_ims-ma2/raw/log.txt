@@ -1,0 +1,69 @@
+# dead-man armed and RUNNING until 2026-09-02 06:04:19
+# ims-ma2 2026-09-02 04:09:19 30 min/leg alarm=600s band=eutran-1
+# battery at start: 100% v=4402884uV status=Charging
+# USB input suspended: charger status now 'Discharging'
+
+########## LEG settle  (IMS=on)  2026-09-02 04:09:26 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   2 samples
+
+########## LEG A  (IMS=on)  2026-09-02 04:29:50 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   3 samples
+
+########## LEG B  (IMS=off)  2026-09-02 05:00:17 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            False
+#     VoWiFi           False
+#     video telephony  False
+#     SMS              False
+#     UT               False
+#     USSD             False
+#   3 samples
+
+########## LEG A2  (IMS=on)  2026-09-02 05:30:44 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   3 samples
+
+# done 2026-09-02 06:01:11 battery 100% v=4133311uV
+bound to IMS
+write accepted — reading it back (a write that is not read back is a hope, not a change)
+IMS services enabled setting:
+  registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+  voice            True
+  VoWiFi           True
+  video telephony  True
+  SMS              True
+  UT               True
+  USSD             False
+# restored: charger=Charging, bands any, IMS on

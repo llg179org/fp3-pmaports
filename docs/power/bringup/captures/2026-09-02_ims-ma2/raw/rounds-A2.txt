@@ -1,0 +1,3 @@
+A2 t=2026-09-02 05:31:05 v=4168151 cur=-53863 cap=100 band=eutran-1 cell=1470762 rsrp='-94 dBm' state=registered
+A2 t=2026-09-02 05:41:07 v=4115794 cur=-202942 cap=100 band=eutran-1 cell=1470762 rsrp='-94 dBm' state=registered
+A2 t=2026-09-02 05:51:09 v=4110733 cur=-232696 cap=100 band=eutran-1 cell=1470762 rsrp='-95 dBm' state=registered
