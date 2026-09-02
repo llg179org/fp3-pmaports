@@ -134,7 +134,17 @@ that is what it is for), or lower the ETA if the run really is that short."
 	fi
 fi
 
-UNIT="fp3-$(basename "$1" | sed 's/\.[^.]*$//')-$(date +%s)"
+# ☠️ NAME THE UNIT AFTER THE SCRIPT, NOT AFTER $1. With systemd-run options in
+# front ("-p RuntimeMaxSec=..."), $1 is an option and the unit came out as
+# "fp3--<timestamp>" - anonymous in `systemctl`, in the journal and in the busy
+# check's own output, which is precisely where a name is worth having. Take the
+# first argument that looks like a path instead.
+for a in "$@"; do
+	case "$a" in
+		/*|./*) prog="$a"; break ;;
+	esac
+done
+UNIT="fp3-$(basename "${prog:-$1}" | sed 's/\.[^.]*$//')-$(date +%s)"
 echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m"))"
 [ -n "$cap" ] || echo "note: no RuntimeMaxSec in this launch - nothing stops it if it hangs"
 ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
