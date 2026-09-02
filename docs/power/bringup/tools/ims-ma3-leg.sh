@@ -1,0 +1,56 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# ONE cheap-state leg, in the format ma3-fit.py reads.
+#
+#   ims-ma3-leg.sh <minutes> <alarm-s> <outdir>
+#
+# This is the A/B/A' ladder's leg body on its own, because the overnight run needs
+# ONE leg per boot: the boot-to-boot spread comes from comparing the LEG MEANS
+# across boots, and a ladder inside each boot would measure something else.
+#
+# ☠️ Everything the ladder learned the hard way is kept:
+#   * ONE grep pass for all four accumulator registers - it can wrap between two
+#     reads, and then the sum and the count describe different windows
+#   * the read is the FIRST thing after the wake, before anything else runs
+#   * the alarm is 90 s, not 60 - shorter than the accumulator's ~76 s wrap and a
+#     fifth of the samples carry the previous wake's awake current
+#   * the IMS vector is read back at the leg's start AND end: a revert halfway is
+#     not a noisy measurement, it is a measurement of something else
+# It does NOT touch the charger or the bands - the caller owns those, because the
+# caller is the one that has to put them back after a reboot.
+set -u
+MIN=${1:-75}
+ALARM=${2:-90}
+O=${3:-/var/log/fp3/leg-$(date +%s)}
+mkdir -p "$O"
+L=$O/log.txt
+BAT=/sys/class/power_supply/pmi632-battery
+REG=/sys/kernel/debug/regmap/0-02/registers
+s() { echo "$*" | tee -a "$L"; }
+
+ims_line() { python3 /usr/local/bin/ims-toggle.py read 2>/dev/null \
+	| awk '/voice|VoWiFi|video|SMS|UT|USSD/{printf "%s=%s ", $1, $2} END{print ""}'; }
+
+s "# leg $(date '+%F %T')  ${MIN} min  alarm=${ALARM}s"
+s "# battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV status=$(cat $BAT/status)"
+s "# IMS at start: $(ims_line)"
+s "# band/cell: $(qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null | sed -n "s/.*Active Band Class: *//p" | head -1) $(qmicli -d qrtr://0 --nas-get-cell-location-info 2>/dev/null | sed -n "s/.*Global Cell ID: *//p" | head -1)"
+sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
+
+end=$(( $(cut -d. -f1 /proc/uptime) + MIN * 60 ))
+while [ "$(cut -d. -f1 /proc/uptime)" -lt "$end" ]; do
+	rtcwake -m mem -s "$ALARM" >/dev/null 2>&1
+	R=$(grep -E '^488[b-e]:' "$REG")
+	acc=$(echo "$R" | awk -F': ' '/^488b/{a=$2} /^488c/{b=$2} /^488d/{c=$2} END{print c b a}')
+	cnt=$(echo "$R" | awk -F': ' '/^488e/{print $2}')
+	printf 'B t=%s acc=0x%s cnt=0x%s cur=%s v=%s cap=%s\n' \
+		"$(date '+%F %T')" "$acc" "$cnt" \
+		"$(cat $BAT/current_now)" "$(cat $BAT/voltage_now)" "$(cat $BAT/capacity)" \
+		>> "$O/samples-B.txt"
+done
+sed 's/^/AFTER /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
+s "# IMS at end:   $(ims_line)"
+s "# $(grep -c . "$O/samples-B.txt") samples, battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV"

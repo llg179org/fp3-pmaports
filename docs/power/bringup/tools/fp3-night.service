@@ -1,0 +1,13 @@
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+[Unit]
+Description=Overnight current replication across three boots
+After=multi-user.target ModemManager.service
+# ☠️ The run is a state machine that reboots itself, so this unit must come up on
+# EVERY boot until it disables itself. It must NOT be Restart=always: a crash
+# loop here is a boot loop on a phone that has to keep ringing.
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/night-run.sh
+TimeoutStartSec=infinity
+[Install]
+WantedBy=multi-user.target
