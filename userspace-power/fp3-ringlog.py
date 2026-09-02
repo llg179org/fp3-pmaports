@@ -54,7 +54,9 @@ def field(cmd, pat):
         out = subprocess.run(cmd, shell=True, capture_output=True, text=True,
                              timeout=20).stdout
         m = re.search(pat, out)
-        return m.group(1) if m else "?"
+        if not m:
+            return "?"
+        return "/".join(g for g in m.groups() if g)
     except Exception:
         return "?"
 
@@ -63,8 +65,15 @@ def context():
     # ☠️ Read this AFTER the ring, never on a schedule: every one of these calls
     # wakes the AP, and a poller would make the phone unreachable-to-sleep, i.e.
     # would destroy the very state being measured.
+    # ☠️ RECORD THE RADIO INTERFACE WITH THE BAND, because this reading happens
+    # AFTER the call and a CS call on this network falls back to GSM. The first
+    # sighting of "gsm-900-extended" here was read three ways in five minutes -
+    # "the phone dropped to 2G" (wrong, it camps on LTE), "my head -1 grabs the
+    # wrong section" (also wrong, the sections vary) - before the true one: the
+    # band is right, and it is EVIDENCE THAT THE CALL USED CSFB. A field whose
+    # meaning depends on when it was sampled has to say what it sampled.
     band = field("qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null",
-                 r"Active Band Class: *'([^']*)'")
+                 r"Radio Interface: *'([^']*)'\s*\n\s*Active Band Class: *'([^']*)'")
     cell = field("qmicli -d qrtr://0 --nas-get-cell-location-info 2>/dev/null",
                  r"Global Cell ID: *'([^']*)'")
     with open("/proc/uptime") as f:
