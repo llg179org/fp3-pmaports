@@ -1,0 +1,106 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# THE ONE DOOR EVERY DEVICE MEASUREMENT GOES THROUGH.
+#
+#   fp3-measure <eta-minutes> <script-on-device> [args...]
+#   fp3-measure --status          what is running on the phone right now
+#
+# ☠️ WHY A WRAPPER AND NOT A HOOK. The session hook only runs inside the session
+# that has it: a second terminal, or a hand-typed ssh, is invisible to it. This
+# script is a file - whoever calls it, from wherever, runs its checks. That turns
+# session-level etiquette into machine-level enforcement, and it closes the two
+# holes the hook admits to: the second terminal and the manual launch.
+#
+# It refuses in three cases, each paid for by a real incident:
+#
+#  1. A REVIEW IS IN FLIGHT. Measured 2026-09-02: a review was asked for and a
+#     75-minute census launched before the answer came. The answer's first point
+#     was that the census's alarm length was wrong; by then the phone was inside
+#     its own sleep cycles and could not be reached to stop it, and a fifth of its
+#     samples are systematically contaminated. Asking and then acting is the same
+#     as not asking.
+#
+#  2. SOMETHING IS ALREADY MEASURING. Two runs on one phone produce one ruined
+#     pair of results and no way to tell which reading belongs to which.
+#
+#  3. NO ETA WAS GIVEN. A measurement without a stated finish time is one nobody
+#     can watch, and this project's rule is that the measurement and its watcher
+#     are one object - so the ETA is required here rather than remembered later.
+set -u
+
+STATE=${FP3_AUTONOMY_STATE:-$HOME/.claude/.state/fp3-autonomy.json}
+DEV=${FP3_SSH_HOST:-fp3}
+
+die() { echo "☠️ $*" >&2; exit 1; }
+
+running_units() {
+	ssh -o ConnectTimeout=15 "$DEV" \
+		"systemctl list-units --no-legend --state=running 'fp3-*' 2>/dev/null" 2>/dev/null
+}
+
+if [ "${1:-}" = "--status" ]; then
+	u=$(running_units)
+	if [ -z "$u" ]; then
+		echo "nothing is measuring on $DEV (or it is asleep and unreachable - not the same thing)"
+	else
+		echo "$u"
+	fi
+	exit 0
+fi
+
+[ $# -ge 2 ] || die "usage: fp3-measure <eta-minutes> <script-on-device> [args...]
+An ETA is not decoration: a measurement nobody can watch is one nobody notices
+failing. State how long it runs."
+
+ETA=$1; shift
+case "$ETA" in
+	''|*[!0-9]*) die "the first argument must be the ETA in whole minutes, got '$ETA'" ;;
+esac
+
+# --- 1. is a review out? ------------------------------------------------------
+if [ -r "$STATE" ]; then
+	pending=$(python3 - "$STATE" <<'PY' 2>/dev/null
+import json, sys, time
+try:
+    d = json.load(open(sys.argv[1]))
+except Exception:
+    raise SystemExit
+c = (d.get('consult') or {})
+if d.get('active') and c.get('pendingAt'):
+    print('%s %d' % (c.get('agent', '?'), (time.time() * 1000 - c['pendingAt']) / 6e4))
+PY
+)
+	if [ -n "$pending" ]; then
+		die "a review has been out with ${pending% *} for ${pending#* } min.
+Do not start something that outlives the answer you are waiting for - asking and
+then acting is the same as not asking, and it has already cost a run today.
+Wait, or close the loop honestly first:
+  autonomy.cjs consulted <agent> -- \"<findings>\"
+  autonomy.cjs consulted none -- \"<why it cannot help here>\""
+	fi
+fi
+
+# --- 2. is the device already busy? ------------------------------------------
+busy=$(running_units)
+if [ -n "$busy" ]; then
+	die "the phone is already running a measurement:
+$busy
+Two runs on one phone ruin both. Stop it deliberately, or wait for it."
+fi
+
+# ☠️ AN UNREACHABLE PHONE IS NOT AN IDLE PHONE. If ssh timed out because the
+# device is asleep inside an existing measurement's cycle, the check above saw
+# nothing and would wave this launch through. So prove reachability separately.
+ssh -o ConnectTimeout=15 "$DEV" true 2>/dev/null \
+	|| die "cannot reach $DEV, so 'nothing is running' is unproven - it may simply be
+asleep inside another measurement's cycle. Establish contact before launching."
+
+UNIT="fp3-$(basename "$1" | sed 's/\.[^.]*$//')-$(date +%s)"
+echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m"))"
+ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
+echo
+echo "☠️ Now arm a watcher in the same reply - the measurement and its watcher are one object:"
+echo "  until ! ssh $DEV 'systemctl is-active $UNIT' >/dev/null 2>&1; do sleep 120; done"
