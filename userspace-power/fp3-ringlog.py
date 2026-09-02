@@ -73,16 +73,35 @@ def context():
 
 
 def main():
+    # ☠️ THE WALL CLOCK ON THIS DEVICE CANNOT BE TRUSTED ALONE. Its RTC starts at
+    # 1970 and stays wrong until NTP lands, so a call logged in the first minutes
+    # after a boot carries a timestamp from another decade. That matters here more
+    # than anywhere else, because a MISSED call leaves no line at all: delivery is
+    # measured as the difference between the SCHEDULE and this log, and matching a
+    # fixed hh:mm slot against a wrong clock loses real calls and invents missed
+    # ones. So every row also carries monotonic uptime and the boot id - those two
+    # are correct from the first second, and a run can be re-aligned afterwards.
+    boot = "?"
+    try:
+        with open("/proc/sys/kernel/random/boot_id") as f:
+            boot = f.read().strip()[:8]
+    except OSError:
+        pass
     line_out = open(OUT, "a", buffering=1)
     try:
         empty = line_out.tell() == 0
     except OSError:                # /dev/stdout under --stdin is not seekable
         empty = True
     if empty:
-        line_out.write("# wall\tdev_ms\tband\tcell\tuptime_s\toutcome\n")
+        line_out.write("# wall\tdev_ms\tband\tcell\tuptime_s\toutcome\tboot\tmono\n")
     # ☠️ A LOGGER NOBODY HAS SEEN FIRE IS DECORATION. `--stdin` replays a saved
     # journal through exactly the same parser, so the extraction can be checked
     # against calls that really happened instead of being trusted.
+    # ☠️ IN REPLAY THE band/cell COLUMNS ARE MEANINGLESS. They are read from the
+    # modem when the row is written, so a replayed journal stamps TODAY's band on
+    # calls from this morning - measured: the four 08:41-08:54 calls came back
+    # labelled eutran-20/1470722, while they really happened on eutran-1/1470762.
+    # Replay validates the TIMING extraction, nothing else.
     if "--stdin" in sys.argv:
         stream = sys.stdin
         p = None
@@ -104,9 +123,9 @@ def main():
             # ☠️ The wall time is the CALL's, not the moment this line is written -
             # otherwise a replayed or delayed log times every call at the instant
             # it was processed, which is what the first version did.
-            line_out.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (
+            line_out.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%.1f\n" % (
                 time.strftime("%F %T", time.localtime(ring_in)), dev, band, cell, up,
-                RE_END.search(line).group(1)))
+                RE_END.search(line).group(1), boot, time.monotonic()))
             ring_in = ring_at = None
     return 1                      # journalctl ended: let systemd restart us
 

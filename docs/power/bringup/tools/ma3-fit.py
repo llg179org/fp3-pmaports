@@ -20,6 +20,7 @@ import sys, re, statistics as st, random, datetime as dt, pathlib
 
 I_RAW_TO_UA = 152588 / 1000          # per the QG datasheet units, /1000 -> uA
 SAMPLES_PER_S = 3.35                 # measured: 140 samples over 41 s of sleep
+MIN_CNT = 20                         # ~6 s; below that the resume transient dominates
 
 def load(d, leg):
     out = []
@@ -37,41 +38,67 @@ def load(d, leg):
 def ma(kept):
     return sum(v for v, c in kept) * I_RAW_TO_UA / sum(c for v, c in kept) / 1000
 
-# ☠️ NO BOOTSTRAP AT SMALL n. Resampling 7 values estimates its own tail: the
-# extremes are under-represented and the interval's coverage is known to be poor,
-# so it reports a precision it does not have (the first version printed +-8.4 mA
-# off 7 samples and looked as authoritative as the +-1.0 off 22). Below MIN_BOOT
-# use a t interval, and say n out loud so the reader discounts it.
-MIN_BOOT = 15
-T975 = {2: 12.706, 3: 4.303, 4: 3.182, 5: 2.776, 6: 2.571, 7: 2.447, 8: 2.365,
-        9: 2.306, 10: 2.262, 11: 2.228, 12: 2.201, 13: 2.179, 14: 2.160}
+# ☠️ TWO WRONG ANSWERS BEFORE THIS ONE, AND THE SECOND WAS A REVIEWER'S.
+#
+# First a bootstrap at every n. Resampling 7 values estimates its own tail, so it
+# printed +-8.4 mA off 7 samples and looked exactly as authoritative as the +-1.1
+# off 22.
+#
+# Then, on review, a t interval below n=15. That was worse, and the same reviewer
+# retracted it a round later: the POINT estimate is the cnt-weighted sum/sum, in
+# which a short noisy window carries little weight, while a t interval runs on the
+# UNWEIGHTED per-window means, where those same windows dominate the spread. The
+# two do not describe the same quantity - which is how leg A' went from +-8.4 to
+# +-43.3 without any new data.
+#
+# The estimator that matches the point estimate is the weighted variance of the
+# weighted mean: Var(mu) = sum(w_i^2 (x_i - mu)^2) / (sum w_i)^2, with w = cnt.
+# It neither flatters short windows nor lets them dominate, and it needs no
+# resampling at any n.
+T975 = {1: 12.706, 2: 4.303, 3: 3.182, 4: 2.776, 5: 2.571, 6: 2.447, 7: 2.365,
+        8: 2.306, 9: 2.262, 10: 2.228, 11: 2.201, 12: 2.179, 13: 2.160,
+        14: 2.145, 15: 2.131, 20: 2.086, 21: 2.080, 30: 2.042}
 
-def leg_stats(rows, boots=4000):
+def t975(df):
+    if df in T975:
+        return T975[df]
+    return next(v for k, v in sorted(T975.items()) if k >= df) if df < 30 else 1.96
+
+def leg_stats(rows, boots=0):
     gaps = [(rows[i + 1][0] - rows[i][0]).total_seconds() for i in range(len(rows) - 1)]
     med = st.median(gaps)
     thr = SAMPLES_PER_S * med
-    kept = [(v, c) for _, v, c in rows if c < thr]
+    # ☠️ THE GATE NEEDS A FLOOR AS WELL AS A CEILING, and it took an outlier
+    # detector to notice. Leg A' held a window with cnt = 1 - a single accumulator
+    # tick, i.e. an instantaneous reading with no averaging at all - which came out
+    # as 303.7 mA and, by itself, produced most of that leg's spread. Below roughly
+    # six seconds the window is shorter than the resume transient sitting inside
+    # it, so it measures the wake rather than the sleep. Dropping those is not
+    # trimming inconvenient data: cnt is how many samples the hardware averaged,
+    # and a one-sample average is not the quantity this script claims to report.
+    kept = [(v, c) for _, v, c in rows if MIN_CNT <= c < thr]
     if not kept:
         return None
     point = ma(kept)
     n = len(kept)
-    if n >= MIN_BOOT:
-        bs = sorted(ma([random.choice(kept) for _ in kept]) for _ in range(boots))
-        lo, hi = bs[int(0.025 * boots)], bs[int(0.975 * boots) - 1]
-        how = 'bootstrap'
-    elif n >= 3:
-        # ☠️ The point estimate stays sum/sum (each window covers a different
-        # number of ticks); the t interval is on the per-sample values, so the two
-        # are not the same statistic. That is deliberate: the alternative is a
-        # bootstrap that under-reports at this n. Read the interval as the spread,
-        # not as a confidence band around exactly this point.
-        per = [v * I_RAW_TO_UA / c / 1000 for v, c in kept]
-        half = T975.get(n - 1, 2.145) * st.stdev(per) / n ** 0.5
-        lo, hi, how = point - half, point + half, f't, df={n - 1}'
-    else:
-        per = [v * I_RAW_TO_UA / c / 1000 for v, c in kept]
-        lo, hi, how = min(per), max(per), 'range only'
-    return dict(med=med, thr=thr, kept=n, n=len(rows), ma=point, lo=lo, hi=hi, how=how)
+    per = [v * I_RAW_TO_UA / c / 1000 for v, c in kept]
+    if n < 2:
+        return dict(med=med, thr=thr, kept=n, n=len(rows), ma=point,
+                    lo=point, hi=point, how='n=1, no spread', out=[])
+    w = [c for _, c in kept]
+    sw = sum(w)
+    var = sum((wi ** 2) * ((xi - point) ** 2) for wi, xi in zip(w, per)) / (sw ** 2)
+    half = t975(n - 1) * var ** 0.5
+    # ☠️ NAME THE OUTLIERS INSTEAD OF LETTING THEM BE A NUMBER. A leg whose spread
+    # comes from one or two windows is not a noisy leg, it is a leg with something
+    # in it that needs looking at - a window that caught the screen, a boot
+    # remnant, a wake that never slept. The band alone hides that.
+    med_x = st.median(per)
+    out = [(round(x, 1), c) for x, (_, c) in zip(per, kept) if abs(x - med_x) > 3 * (st.median(
+        [abs(y - med_x) for y in per]) or 1)]
+    return dict(med=med, thr=thr, kept=n, n=len(rows), ma=point,
+                lo=point - half, hi=point + half,
+                how=f'weighted, df={n - 1}', out=out)
 
 # ☠️ THE TABLE IN THE REPORT IS GENERATED BY THIS, NOT RETYPED. Copying numbers
 # by hand is how a published table drifts from the data it claims to summarise -
@@ -86,7 +113,8 @@ if MD:
     print('| leg | slept | kept | **current** | 95 % CI (within-leg only) |')
     print('|---|---:|---:|---:|---|')
 else:
-    print(f"{'leg':<4} {'sleep':>7} {'gate':>7} {'kept':>8} {'current':>10}   95% CI (within-leg only)")
+    print(f"{'leg':<4} {'sleep':>7} {'gate':>7} {'kept':>8} {'current':>10}   95% CI (within-leg only)"
+          f"   [gate: {MIN_CNT} <= cnt < 3.35 x the leg's own median sleep]")
 for leg in legs:
     r = leg_stats(load(d, leg))
     if not r:
@@ -94,10 +122,14 @@ for leg in legs:
         continue
     if MD:
         print(f"| {leg} | {r['med']:.0f} s | {r['kept']}/{r['n']} | {r['ma']:.1f} mA | "
-              f"±{(r['hi']-r['lo'])/2:.1f} ({r['how']}) |")
+              f"±{(r['hi']-r['lo'])/2:.1f} ({r['how']}) |"
+              + (f"  <!-- outliers: {r['out']} -->" if r['out'] else ''))
         continue
     print(f"{leg:<4} {r['med']:>6.0f}s {r['thr']:>7.0f} {r['kept']:>4}/{r['n']:<3} "
           f"{r['ma']:>8.1f} mA   [{r['lo']:.1f}, {r['hi']:.1f}]  +-{(r['hi']-r['lo'])/2:.1f}  ({r['how']})")
+    if r['out']:
+        print(f"       ☠️ look at these windows before calling this statistics: "
+              f"{', '.join(f'{x} mA (cnt {c})' for x, c in r['out'])}")
 if MD:
     sys.exit(0)
 print()

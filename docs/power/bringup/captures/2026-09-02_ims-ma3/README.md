@@ -53,22 +53,33 @@ cost a whole review round:
 
 | leg | slept | kept | **current** | 95 % CI (within-leg only) |
 |---|---:|---:|---:|---|
-| A | 16 s | 7/54 | 91.0 mA | ±12.2 (t, df=6) |
-| A2 | 17 s | 11/57 | 98.8 mA | ±43.3 (t, df=10) |
-| B | 62 s | 22/30 | 40.1 mA | ±1.1 (bootstrap) |
+| A | 16 s | 5/54 | 90.3 mA | ±12.2 (weighted, df=4) |  <!-- outliers: [(75.8, 39)] -->
+| A2 | 17 s | 8/57 | 97.6 mA | ±10.2 (weighted, df=7) |
+| B | 62 s | 21/30 | 40.1 mA | ±1.1 (weighted, df=20) |  <!-- outliers: [(44.6, 104), (44.6, 102), (47.6, 117), (41.1, 67), (41.2, 27), (43.0, 48)] -->
 
-**The B number is the one that stands**: 22 of 30 samples survive the gate, on
+**The B number is the one that stands**: 21 of 30 samples survive the gate, on
 the only leg that genuinely slept a full minute at a time. **40.1 ± 1.1 mA
 (within-leg; boot-to-boot unknown)** — under the 50 mA goal by more than that
 band, but see immediately below for why that band is the small error.
 
-☠️ **NO BOOTSTRAP AT n=7.** An earlier version of this table printed ±8.4 mA for
-both A legs from a bootstrap over 7 and 11 samples. Resampling that few values
-estimates its own tail — the extremes are under-represented and the coverage is
-poor — so it reported a precision it did not have, and it looked exactly as
-authoritative as the ±1.1 that came off 22 samples. With a t interval those legs
-are ±12.2 and ±43.3: the A′ leg is barely constrained at all, which is the honest
-reading of eleven windows with one outlier among them.
+☠️ **THREE ESTIMATORS BEFORE ONE THAT MATCHES THE POINT ESTIMATE.** First a
+bootstrap at every n: ±8.4 mA off seven samples, looking exactly as authoritative
+as the ±1.1 off twenty-two. Then, on review, a t interval below n=15 — worse, and
+retracted by the same reviewer a round later, because the point estimate is the
+cnt-weighted Σ/Σ (where a short noisy window carries little weight) while a t
+interval runs on the unweighted per-window means (where those same windows
+dominate). That is how leg A′ moved from ±8.4 to ±43.3 with no new data. The
+estimator that describes the quantity actually being reported is the weighted
+variance of the weighted mean, `Var(µ) = Σwᵢ²(xᵢ−µ)²/(Σwᵢ)²` with `w = cnt`.
+
+☠️ **AND THE OUTLIER IT EXPOSED WAS A HOLE IN THE GATE.** Leg A′ held a window
+with **cnt = 1** — a single accumulator tick, an instantaneous reading with no
+averaging — reading 303.7 mA, and it alone produced most of that leg's spread.
+The gate had a ceiling and no floor. Below about six seconds the window is
+shorter than the resume transient inside it, so it measures the wake rather than
+the sleep; the gate is now `20 ≤ cnt < 3.35 × the leg's own median sleep`. The B
+leg's headline is unchanged by this (40.1, 21/30 instead of 22/30), which is the
+reassuring part: the number that carries the conclusion did not depend on it.
 
 ☠️ **AND EVERY BAND HERE IS WITHIN-LEG, WHICH IS THE SMALLER OF THE TWO ERRORS.**
 The dominant unknown is boot-to-boot variation, and no single leg can see it,
@@ -93,7 +104,13 @@ gate. Read them as the system's cost in that state, not as a floor.
 
 ## ☠️ How to say the gap — and how not to
 
-The ~51–59 mA between the legs is a **system** difference: modem duty **plus the
+**The gap is 50–58 mA, and its uncertainty is almost entirely the expensive
+leg's**: A−B = 90.3−40.1 = 50.2 (±12.3 combined), A′−B = 97.6−40.1 = 57.5
+(±10.3). Quoting a tighter range than that — as an earlier headline did with
+"51–59" — carries a precision the expensive legs cannot support, because they
+barely slept and hold five and eight usable windows.
+
+That gap is a **system** difference: modem duty **plus the
 AP sleep the loop destroys**. It must not be quoted as "what the modem duty
 costs". That would be a different quantity — IMS on, but the AP sleeping through
 it — and nobody has measured it.
