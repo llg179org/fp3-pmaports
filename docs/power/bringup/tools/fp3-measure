@@ -148,6 +148,18 @@ UNIT="fp3-$(basename "${prog:-$1}" | sed 's/\.[^.]*$//')-$(date +%s)"
 echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m"))"
 [ -n "$cap" ] || echo "note: no RuntimeMaxSec in this launch - nothing stops it if it hangs"
 ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
+
+# ☠️ TELL THE SESSION THE PHONE IS BUSY, so a later "let me just check" ssh is
+# refused rather than remembered against. Two measurements were spoiled this way
+# in one day - a rehearsal leg woken every 9 s against a 90 s alarm by one probe,
+# and the owner's call test woken between calls by polling. The rule existed both
+# times, in prose.
+STATE_DIR=${CLAUDE_STATE_DIR:-$HOME/.claude/.state}
+mkdir -p "$STATE_DIR"
+printf '{"unit":"%s","until":%s,"eta_min":%s}\n' \
+	"$UNIT" "$(( ($(date +%s) + ETA * 60) * 1000 ))" "$ETA" \
+	> "$STATE_DIR/fp3-measuring.json"
+echo "the session will refuse to touch the phone until $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m")"
 echo
 echo "☠️ Now arm a watcher in the same reply - the measurement and its watcher are one object:"
 echo "  until ! ssh $DEV 'systemctl is-active $UNIT' >/dev/null 2>&1; do sleep 120; done"
