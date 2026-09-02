@@ -56,6 +56,17 @@ restored to `True` at the end of this run, read back.
 ☠️ `USSD` reads `False` even in the legs that wrote `True` — a third switch whose
 setter and getter do not correspond. It is recorded, not explained.
 
+## ☠️ 2026-09-02, later: the model that prices this in milliamps is contradicted
+
+This ladder is pinned to **eutran-1**, and that is the band where this repo's own
+band ladder shows the duty model failing worst: it predicts 106.3 mA at 48.8 %
+duty and 147 mA was measured, against a 6 mA residual on eutran-20. So **duty is
+not a sufficient statistic for current**, and any "worth N mA" derived from this
+capture is a model evaluation on the least trustworthy band rather than a
+measurement. Full arithmetic and the contamination caveat:
+[`../../leads/duty-is-not-sufficient.md`](../../leads/duty-is-not-sufficient.md).
+The duty numbers below are unaffected.
+
 ## What this does NOT establish
 
 - **The milliamps.** The whole ladder ran on the cable with the AP awake
