@@ -17,7 +17,9 @@
 #   * the outer OCV pair integrates the whole night, and comparing that mAh with
 #     the QG's own integral bounds the calibration offset without a shunt:
 #     the QG carries eps directly, the OCV route only through a capacity axis
-#     itself integrated at ~110 mA, so agreement to delta gives |eps| <= 1.6 delta
+#     itself integrated at the discharge's MEAN 121.8 mA (2185 mAh / 17.94 h - NOT
+#     the median 108, which an earlier version of this line quoted), so agreement
+#     to delta gives |eps| <= 1.49 delta
 #
 # ☠️ ONE OCV PAIR AROUND THE NIGHT, NOT ONE PER LEG. A rest draws less than the
 # leg it brackets, so per-leg pairs measure a mixture: 90 min at 40 mA plus two

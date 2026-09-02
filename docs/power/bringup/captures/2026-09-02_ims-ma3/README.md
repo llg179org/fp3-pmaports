@@ -165,13 +165,24 @@ than a census.
 **But the offset can be bounded without one**, because it does not enter the two
 routes with the same weight. The accumulator carries it directly (measured =
 I + ε). The voltage-and-reference-curve route carries it only through the
-capacity axis, since the 2185 mAh was itself integrated at ~110 mA — so its error
-is about I × (ε/110), i.e. 0.36 ε at 40 mA. If the two agree to within δ, then
-|ε − 0.36 ε| = 0.64 |ε| ≤ δ, hence **|ε| ≤ 1.6 δ**: an agreement to 2–3 mA would
-bound the offset to ±3–5 mA with no shunt at all. That needs a long rested
-block with radio-off OCV endpoints — a valid second route, unlike the retracted
-short-window slope — and it is what the replication plan below buys alongside the
-repeat.
+capacity axis, since the 2185 mAh was itself integrated over a whole discharge —
+so its error is about I × (ε/Ī), i.e. 0.33 ε at 40 mA. If the two agree to within
+δ, then |ε − 0.33 ε| = 0.67 |ε| ≤ δ, hence **|ε| ≤ 1.49 δ**: an agreement to
+2–3 mA would bound the offset to ±3–4.5 mA with no shunt at all.
+
+☠️ **Ī is the discharge's MEAN, 2185 mAh / 17.94 h = 121.8 mA, and this line used
+to say ~110.** 110 is that discharge's *median* (108); the mAh axis is an
+**integral**, so the mean is the scale. Both numbers stood one sentence apart in
+`../2026-08-28_discharge-to-shutdown/analysis.md` — *"p10 56, median 108, p90 217
+mA (mean 122, and the mean is not the number)"*. That sentence is right about the
+question it was answering, and the wrong half got carried here. The bound moves
+from 1.57 δ to 1.49 δ, so **the published figure was conservative, not wrong** —
+and the pack curve's own slope error `g` enters as a gain term, making the honest
+form `|ε| ≤ 1.49 (δ + I·|g|)`, a loosening of 1–2 mA for a few-percent `g`.
+
+The bound needs a long rested block with radio-off OCV endpoints — a valid second
+route, unlike the retracted short-window slope — and it is what the replication
+plan below buys alongside the repeat.
 
 **Until it is replicated, the honest label is "measured on one leg of one boot,
 40.1 ± 1.0 mA within-leg, calibration unbounded".** Three boots across two days
