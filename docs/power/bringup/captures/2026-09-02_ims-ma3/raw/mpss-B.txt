@@ -1,0 +1,28 @@
+BEFORE MPSS:
+BEFORE 	Last shutdown @ 55996213435
+BEFORE 	Last bringup req @ 55996154573
+BEFORE 	Last bringup ack @ 55996184798
+BEFORE 	Last wakeup idx: 55991011948
+BEFORE 	Last XO shutdown enter @ 55996226447
+BEFORE 	Last XO shutdown exit @ 55996169602
+BEFORE 	XO total duration: 34841929484
+BEFORE 	Last sleep transition duration: 18819
+BEFORE 	Last wake transition duration: 19760
+BEFORE 	XO shutdown count: 7725
+BEFORE 	Wakeup reason: 0x0
+BEFORE 	Shutdown count: 7774
+BEFORE 	Active cores bitmask: 0x0
+AFTER MPSS:
+AFTER 	Last shutdown @ 84886429318
+AFTER 	Last bringup req @ 84886179025
+AFTER 	Last bringup ack @ 84886179137
+AFTER 	Last wakeup idx: 84886178741
+AFTER 	Last XO shutdown enter @ 84886444276
+AFTER 	Last XO shutdown exit @ 84886164990
+AFTER 	XO total duration: 62350682729
+AFTER 	Last sleep transition duration: 20198
+AFTER 	Last wake transition duration: 21749
+AFTER 	XO shutdown count: 12440
+AFTER 	Wakeup reason: 0x0
+AFTER 	Shutdown count: 12489
+AFTER 	Active cores bitmask: 0x0

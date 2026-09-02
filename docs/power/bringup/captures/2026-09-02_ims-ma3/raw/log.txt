@@ -1,0 +1,35 @@
+# dead-man armed until 2026-09-02 08:28:37
+# ims-ma3 2026-09-02 06:53:37 25 min/leg alarm=60s band=eutran-1
+# battery: 100% v=4413199uV status=Charging
+# USB input suspended: charger status 'Discharging'
+
+########## LEG A  (IMS=on)  2026-09-02 06:53:43 ##########
+#   IMS at leg start: voice=True VoWiFi=True video=telephony SMS=True UT=True USSD=False 
+#   IMS at leg end:   voice=True VoWiFi=True video=telephony SMS=True UT=True USSD=False 
+#   band/cell:  'eutran-1' registered
+#   54 samples
+
+########## LEG B  (IMS=off)  2026-09-02 07:19:41 ##########
+#   IMS at leg start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+#   IMS at leg end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+#   band/cell:  'eutran-1' registered
+#   30 samples
+
+########## LEG A2  (IMS=on)  2026-09-02 07:45:03 ##########
+#   IMS at leg start: voice=True VoWiFi=True video=telephony SMS=True UT=True USSD=False 
+#   IMS at leg end:   voice=True VoWiFi=True video=telephony SMS=True UT=True USSD=False 
+#   band/cell:  'eutran-1' registered
+#   57 samples
+
+# done 2026-09-02 08:11:02 battery 87% v=4160561uV
+bound to IMS
+write accepted — reading it back (a write that is not read back is a hope, not a change)
+IMS services enabled setting:
+  registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+  voice            True
+  VoWiFi           True
+  video telephony  True
+  SMS              True
+  UT               True
+  USSD             False
+# restored: charger=Charging, bands any, IMS on
