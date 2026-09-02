@@ -1,0 +1,45 @@
+# dead-man armed and RUNNING: charging restored at 2026-09-02 04:06:03
+# ims-ma 2026-09-02 02:21:03 45 min/leg alarm=600s
+# battery at start: 100%  v=4319384uV  status=Full
+# USB input suspended: charger status now 'Discharging'
+
+########## LEG expensive  (IMS=on)  2026-09-02 02:21:08 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   5 rounds; 5 wakes recorded
+#   band/cell: 'eutran-1' registered
+
+########## LEG cheap  (IMS=off)  2026-09-02 03:11:39 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            False
+#     VoWiFi           False
+#     video telephony  False
+#     SMS              False
+#     UT               False
+#     USSD             False
+#   5 rounds; 5 wakes recorded
+#   band/cell: 'eutran-1' registered
+
+# done 2026-09-02 04:02:09  battery 100%  v=4198709uV
+bound to IMS
+write accepted — reading it back (a write that is not read back is a hope, not a change)
+IMS services enabled setting:
+  registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+  voice            True
+  VoWiFi           True
+  video telephony  True
+  SMS              True
+  UT               True
+  USSD             False
+# restored: charger=Charging, IMS on
