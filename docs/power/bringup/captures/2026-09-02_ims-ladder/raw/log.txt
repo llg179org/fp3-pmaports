@@ -1,0 +1,95 @@
+# ims-ab 2026-09-02 01:38:42 window=600s
+# kernel=7.1.3-postmarketos-qcom-msm8953 uptime=29471
+# --- modem firmware restart (clears DIAG log masks) ---
+#   wait 1: <no modem>
+#   wait 2: <no modem>
+#   wait 3: searching
+#   wait 4: searching
+#   wait 5: <no modem>
+#   wait 6: <no modem>
+#   wait 7: <no modem>
+#   wait 8: <no modem>
+#   wait 9: searching
+#   wait 10: registered
+# --- IMS state AFTER the firmware restart (persistence answer) ---
+#   bound to IMS
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            False
+#     VoWiFi           False
+#     video telephony  False
+#     SMS              False
+#     UT               False
+#     USSD             False
+# --- pinning eutran-1 ---
+
+########## LEG A  (IMS=on)  2026-09-02 01:40:17 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   window saved: /var/log/fp3/ims-ab-1788305922/window-A.txt
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+
+########## LEG B  (IMS=off)  2026-09-02 01:50:39 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            False
+#     VoWiFi           False
+#     video telephony  False
+#     SMS              False
+#     UT               False
+#     USSD             False
+#   window saved: /var/log/fp3/ims-ab-1788305922/window-B.txt
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+
+########## LEG A2  (IMS=on)  2026-09-02 02:01:00 ##########
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+#   window saved: /var/log/fp3/ims-ab-1788305922/window-A2.txt
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Active Band Class: 'eutran-1'
+#   #       	Global Cell ID: '1470762'
+
+# --- restore ---
+#   bands restored to any
+#   bound to IMS
+#   write accepted — reading it back (a write that is not read back is a hope, not a change)
+#   IMS services enabled setting:
+#     registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+#     voice            True
+#     VoWiFi           True
+#     video telephony  True
+#     SMS              True
+#     UT               True
+#     USSD             False
+# done 2026-09-02 02:11:24
