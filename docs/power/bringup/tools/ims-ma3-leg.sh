@@ -88,10 +88,26 @@ s "# band/cell at end: $END_BC"
 # --- the interference audit -------------------------------------------------
 logins=$(journalctl --since "$LEG_START_WALL" 2>/dev/null \
 	| grep -c "Accepted publickey\|Accepted password" || true)
+# ☠️ THE AUDIT NEEDS AN ALLOWLIST OR IT CONVICTS EVERY LEG. fp3-ims-reconcile
+# starts a unit every five minutes - about fifteen times inside a 75 minute leg -
+# and fp3-ringlog and the usbnet watchdog come and go too. Without this the
+# morning would be an all-red night sitting on valid data, which is exactly the
+# shape of the wrapper bug that matched the phone's permanent services.
+EXPECTED='fp3-ims-reconcile|fp3-ringlog|fp3-usbnet-watchdog|systemd-tmpfiles|logrotate|apk-'
 units=$(journalctl --since "$LEG_START_WALL" -o cat 2>/dev/null \
-	| sed -n 's/^Started \(.*\)\.$/\1/p' | sort -u | head -8 | tr '\n' ';')
+	| sed -n 's/^Started \(.*\)\.$/\1/p' | grep -Ev "$EXPECTED" | sort -u | head -8 | tr '\n' ';')
+
+# ☠️ AND AN INCOMING CALL LEAVES NO SSH AND NO UNIT, yet it wakes the AP and tears
+# a leg apart for minutes. The ring logger is already running for the reachability
+# census - so the leg reads its own window out of it rather than pretending calls
+# do not happen at 3 am.
+calls=$(awk -v s="$LEG_START_WALL" '$0 !~ /^#/ && $1" "$2 >= s' /var/log/fp3/ringlog.tsv 2>/dev/null | grep -c . || true)
+
 s "# audit: ssh logins during the leg = ${logins:-0}"
-s "# audit: units started during the leg = ${units:-none}"
+s "# audit: unexpected units started = ${units:-none}"
+s "# audit: incoming calls during the leg = ${calls:-0}"
+[ "${calls:-0}" -eq 0 ] || s "# ☠️☠️ DISTURBED (call): ${calls} incoming call(s) landed during this leg - an incoming call is an AP wake and breaks the sleep pattern for minutes"
+[ -z "$units" ] || s "# ☠️ DISTURBED (unit): something unexpected started during this leg: $units"
 if [ "${logins:-0}" -gt 0 ]; then
 	s "# ☠️☠️ THIS LEG WAS INTERFERED WITH: ${logins} ssh login(s) landed while it ran."
 	s "#     An ssh login is an AP wake. Treat this leg's current as invalid, not noisy."

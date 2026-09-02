@@ -55,10 +55,10 @@ cost a whole review round:
 |---|---:|---:|---:|---|
 | A | 16 s | 5/54 | 90.3 mA | ±12.2 (weighted, df=4) |  <!-- outliers: [(75.8, 39)] -->
 | A2 | 17 s | 8/57 | 97.6 mA | ±10.2 (weighted, df=7) |
-| B | 62 s | 21/30 | 40.1 mA | ±1.1 (weighted, df=20) |  <!-- outliers: [(44.6, 104), (44.6, 102), (47.6, 117), (41.1, 67), (41.2, 27), (43.0, 48)] -->
+| B | 62 s | 19/30 | 40.3 mA | ±1.3 (weighted, df=18) |  <!-- outliers: [(44.6, 104), (44.6, 102), (47.6, 117), (43.0, 48)] -->
 
-**The B number is the one that stands**: 21 of 30 samples survive the gate, on
-the only leg that genuinely slept a full minute at a time. **40.1 ± 1.1 mA
+**The B number is the one that stands**: 19 of 30 samples survive the gate, on
+the only leg that genuinely slept a full minute at a time. **40.3 ± 1.3 mA
 (within-leg; boot-to-boot unknown)** — under the 50 mA goal by more than that
 band, but see immediately below for why that band is the small error.
 
@@ -108,8 +108,8 @@ gate. Read them as the system's cost in that state, not as a floor.
 leg's** — and it is computed by `ma3-fit.py`, not typed here:
 
 ```
-gap A - cheapest: 50.3 mA  +-12.2  (quadrature of the two within-leg bands)
-gap A2 - cheapest: 57.5 mA  +-10.2  (quadrature of the two within-leg bands)
+gap A - cheapest: 50.1 mA  +-12.2  (quadrature of the two within-leg bands)
+gap A2 - cheapest: 57.3 mA  +-10.2  (quadrature of the two within-leg bands)
 ```
 
 Quoting a tighter range than that — as an earlier headline did with "51–59" —

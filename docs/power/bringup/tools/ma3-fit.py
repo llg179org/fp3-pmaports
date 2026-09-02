@@ -22,6 +22,35 @@ I_RAW_TO_UA = 152588 / 1000          # per the QG datasheet units, /1000 -> uA
 SAMPLES_PER_S = 3.35                 # measured: 140 samples over 41 s of sleep
 MIN_CNT = 20                         # ~6 s; below that the resume transient dominates
 
+# ☠️ THE STATE COMES FROM WHAT THE LEG RECORDED, not from a flag typed later and
+# not from the sleep distribution. The leg writes "IMS at start:" into its own
+# log; that line IS the declaration, made by the run that set it. A flag can go
+# stale against the capture it describes - which is the same failure as retyping a
+# number - so the flag is only the fallback when the log says nothing.
+def leg_state(d, leg):
+    # ☠️ TWO FORMATS AND A SHARED FILE, and getting either wrong is silent. The
+    # ladder writes one log for all three legs, headed "########## LEG A (IMS=on)";
+    # the night writes one log per leg saying "IMS at start: voice=False ...". The
+    # first version looked for "IMS at start" in a shared file and matched leg A's
+    # line for every leg - and, missing the ladder's own wording, fell back to the
+    # default and marked both expensive legs DISTURBED. A state read from the wrong
+    # section is worse than no state, because it looks like an answer.
+    try:
+        txt = open(d / 'log.txt').read()
+    except OSError:
+        return None
+    m = re.search(rf'^#* *#*#* *LEG {re.escape(leg)}\b.*\(IMS=(\w+)\)', txt, re.M)
+    if m:                                    # the ladder's own declaration
+        return 'cheap' if m.group(1) == 'off' else 'expensive'
+    for line in txt.splitlines():            # a per-leg log from the night
+        if 'IMS at start' not in line and 'IMS at leg start' not in line:
+            continue
+        vals = re.findall(r'=(\w+)', line)
+        if vals:
+            return 'cheap' if all(v in ('False', 'telephony') for v in vals) else 'expensive'
+    return None
+
+
 def load(d, leg):
     out = []
     for line in open(d / f'samples-{leg}.txt'):
@@ -64,10 +93,17 @@ def t975(df):
         return T975[df]
     return next(v for k, v in sorted(T975.items()) if k >= df) if df < 30 else 1.96
 
-def leg_stats(rows, boots=0):
+def leg_stats(rows, state='cheap', boots=0):
     gaps = [(rows[i + 1][0] - rows[i][0]).total_seconds() for i in range(len(rows) - 1)]
     med = st.median(gaps)
-    thr = SAMPLES_PER_S * med
+    # ☠️ THE GATE'S SCALE MUST BE DECLARED, NOT MEASURED - the same self-reference
+    # that was taken out of the disturbance test. On a leg that was woken, the
+    # median shrinks, the gate slides down with it, and it becomes LENIENT exactly
+    # on the disturbed windows: that is how the rehearsal's 45.1 mA was produced
+    # from a leg woken every 9 s. A cheap leg is SUPPOSED to sleep its alarm, so
+    # the alarm is the scale. An expensive leg has no such expectation, so there
+    # the measured median is all there is - and nothing is being protected.
+    thr = SAMPLES_PER_S * (ALARM if (ALARM and state == 'cheap') else med)
     # ☠️ THE GATE NEEDS A FLOOR AS WELL AS A CEILING, and it took an outlier
     # detector to notice. Leg A' held a window with cnt = 1 - a single accumulator
     # tick, i.e. an instantaneous reading with no averaging at all - which came out
@@ -145,9 +181,10 @@ if MD:
     print('|---|---:|---:|---:|---|')
 else:
     print(f"{'leg':<4} {'sleep':>7} {'gate':>7} {'kept':>8} {'current':>10}   95% CI (within-leg only)"
-          f"   [gate: {MIN_CNT} <= cnt < 3.35 x the leg's own median sleep]")
+          f"   [gate: {MIN_CNT} <= cnt < 3.35 x "
+          f"{'the ALARM on a cheap leg, the measured median on an expensive one' if ALARM else 'the measured median'}]")
 for leg in legs:
-    r = leg_stats(load(d, leg))
+    r = leg_stats(load(d, leg), leg_state(d, leg) or STATE)
     if not r:
         print(f'{leg:<4} no sample survives the gate')
         continue
@@ -165,7 +202,8 @@ for leg in legs:
     # excused as normal. Measured on this repo's own disturbed leg, immediately.
     # The state is declared with --state, and defaults to cheap: the failure mode
     # of the default must be a false alarm, never a missed one.
-    expensive = STATE == 'expensive'
+    st_leg = leg_state(d, leg) or STATE
+    expensive = st_leg == 'expensive'
     if ALARM and disturbed(r['med'], ALARM, expensive):
         print(f"       ☠️☠️ THIS LEG WAS DISTURBED: median sleep {r['med']:.0f} s against a "
               f"{ALARM:.0f} s alarm. Something woke the AP - an ssh login, a ping, a poller. "
@@ -183,7 +221,7 @@ if MD:
 # it went stale the moment the estimator changed: the report said +-12.3 for weeks
 # after the band it was built from had become +-10.4. A number a human retypes is
 # a number that drifts from its own fit.
-res = {leg: leg_stats(load(d, leg)) for leg in legs}
+res = {leg: leg_stats(load(d, leg), leg_state(d, leg) or STATE) for leg in legs}
 cheap = min((r for r in res.values() if r), key=lambda r: r['ma'], default=None)
 if cheap:
     for leg, r in res.items():
