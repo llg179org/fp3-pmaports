@@ -75,6 +75,13 @@ case "$step" in ''|*[!0-9]*) give_up "unreadable state '$step'" ;; esac
 # repeated REBOOT is a brick-shaped afternoon.
 echo $((step + 1)) > "$S"
 
+# ☠️ RE-ASSERT THE DEVICE-SIDE LOCK AT EVERY STEP, because /run is tmpfs and this
+# script's whole point is that it reboots. A lock written once at 19:08 is gone by
+# the first reboot, and the two legs after it would take logins unstamped - which
+# is precisely the failure mode this lock exists for. Cheap enough to redo.
+printf 'night-run step %s, pid %s, started %s\n' "$step" "$$" "$(date '+%F %T')" \
+	> /run/fp3-measuring 2>/dev/null || true
+
 ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# ☠️ AN OCV TAKEN ON THE CHARGER IS THE CHARGER'S VOLTAGE, NOT THE PACK'S. The
 	# rehearsal read 4.413 V at the start with status "Charging" - that is the

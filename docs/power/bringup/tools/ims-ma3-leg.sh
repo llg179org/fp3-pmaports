@@ -126,6 +126,15 @@ calls=$(awk -v s="$LEG_START_WALL" '$0 !~ /^#/ && $1" "$2 >= s' /var/log/fp3/rin
 # HOST (night-watch/polls.tsv) so the morning can attribute the logins it finds.
 # The lesson is not "poll less": a watcher that reaches into the thing it watches
 # is part of the experiment, and has to be budgeted like any other load.
+# ☠️ A COUNT CAN ONLY CONVICT; A LEDGER CAN ATTRIBUTE. Where the login ledger is
+# installed (userspace-power/fp3-login-ledger.sh via root's ~/.ssh/rc), print WHO
+# came in and WHAT they ran, so the morning can tell the watchdog's 1800 s poll
+# apart from a human at 03:14. Absent the ledger this degrades to the bare count,
+# which is what every leg before 2026-09-02 had.
+if [ -r /var/log/fp3/logins.tsv ]; then
+	awk -v s="$LEG_START_WALL" -F'\t' '$1" "$2 >= s || $1 >= s {printf "#   %s  from %s  %s\n", $1, $3, $6}' \
+		/var/log/fp3/logins.tsv 2>/dev/null | head -20 | tee -a "$L"
+fi
 s "# audit: ssh logins during the leg = ${logins:-0}"
 s "# audit: unexpected units started = ${units:-none}"
 s "# audit: incoming calls during the leg = ${calls:-0}"

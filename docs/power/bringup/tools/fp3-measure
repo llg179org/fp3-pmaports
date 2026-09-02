@@ -149,6 +149,16 @@ echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:
 [ -n "$cap" ] || echo "note: no RuntimeMaxSec in this launch - nothing stops it if it hangs"
 ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
 
+# ☠️ AND TELL THE PHONE ITSELF, because the session gate cannot see another
+# machine. /run/fp3-measuring is read by the login ledger (~/.ssh/rc), which
+# stamps every ssh login that lands while it is held and shouts on stderr. It is
+# ADVISORY - it must never refuse a login on a phone that has to stay recoverable
+# - but it turns the leg's bare "N logins" audit into an attributable list.
+# ☠️ /run is tmpfs: a run that reboots must re-assert this at every boot, which is
+# why night-run.sh writes it per step rather than once at the start.
+ssh "$DEV" "echo <pw> | sudo -S -p '' sh -c 'printf \"unit=%s eta=%s min, started %s\\n\" \"$UNIT\" \"$ETA\" \"\$(date \"+%F %T\")\" > /run/fp3-measuring'" \
+	|| echo "☠️ could not set the device-side lock - logins will not be stamped"
+
 # ☠️ TELL THE SESSION THE PHONE IS BUSY, so a later "let me just check" ssh is
 # refused rather than remembered against. Two measurements were spoiled this way
 # in one day - a rehearsal leg woken every 9 s against a 90 s alarm by one probe,

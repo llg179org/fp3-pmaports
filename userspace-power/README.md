@@ -56,3 +56,34 @@ Install:
 Read the history it leaves behind — every drift is timestamped:
 
     journalctl -u fp3-ims-reconcile --no-pager | grep -i drift
+
+## `fp3-login-ledger.sh` — the device-side half of the measurement lock
+
+Every ssh login into the phone writes one tab-separated line into
+`/var/log/fp3/logins.tsv`: wall clock, monotonic seconds, client address, whether
+a measurement lock was held, pid, and the command. While `/run/fp3-measuring`
+exists it also shouts on **stderr** that a measurement is running and that this
+login just woke the phone.
+
+☠️ **It is advisory and must stay advisory.** A phone that has to remain
+recoverable cannot have a lock that refuses logins — a spoiled measurement costs a
+night, a stranded device costs a day and a physical button press. Everything in
+the script is wrapped so a failure inside it cannot fail the login.
+
+**Why a ledger and not a counter.** The measurement legs already grep the journal
+for `Accepted publickey` and mark a leg disturbed on `logins > 0`. That number has
+no owner, so it can only convict: on 2026-09-02 a host-side watchdog polling every
+300 s would have made every leg of an overnight run read as disturbed, on data
+only the watcher had spoiled. With the ledger the morning can attribute — this
+login was the watchdog at 19:52, that one was a person at 03:14 — and mark the leg
+on the second, not the first.
+
+Install:
+
+```sh
+install -m755 fp3-login-ledger.sh /usr/local/bin/
+mkdir -p /root/.ssh && echo '/usr/local/bin/fp3-login-ledger.sh' >> /root/.ssh/rc
+```
+
+☠️ `/run` is tmpfs, so a measurement that reboots must re-assert the lock on every
+boot; `night-run.sh` writes it at every step for exactly that reason.
