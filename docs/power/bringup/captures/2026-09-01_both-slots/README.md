@@ -104,6 +104,11 @@ Two honest limits on the restore:
   device), so "restored" means "written and read back through the same QMI
   getter", not independently verified.
 
-Whether the write is persistent at all is answered by the firmware-restart leg of
-[`../../tools/ims-ab.sh`](../../tools/ims-ab.sh); if it is **not** persistent,
-this whole warning is void and should be struck rather than left standing.
+**2026-09-02, answered: the write IS persistent.** The firmware-restart leg of
+[`../../tools/ims-ab.sh`](../../tools/ims-ab.sh) read the switch vector after a
+`remoteproc0` stop/start and before any write in that run, and every switch was
+still `False` — the state set the previous evening survived a modem reboot. So
+this warning **stands**: treat the oracle's modem as having been reconfigured on
+2026-09-02 and restored the same night, and check it with vendor tooling on the
+next slot switch. The full read-back is in
+[`../2026-09-02_ims-ladder/raw/log.txt`](../2026-09-02_ims-ladder/raw/log.txt).
