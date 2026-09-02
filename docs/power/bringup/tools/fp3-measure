@@ -36,9 +36,17 @@ DEV=${FP3_SSH_HOST:-fp3}
 
 die() { echo "☠️ $*" >&2; exit 1; }
 
+# ☠️ 'fp3-*' IS NOT 'A MEASUREMENT'. The first version matched every unit with the
+# project prefix, which includes the phone's PERMANENT services - fp3-voiced,
+# fp3-ims-reconcile, fp3-usbnet-watchdog. They are always running, so the busy
+# check refused every launch, and the gate that guards the phone would have been
+# the first thing anyone disabled. Found the first time this gate was exercised
+# with a real device, not by reading it. A transient measurement started by this
+# wrapper carries a unix timestamp in its name; the permanent ones do not.
 running_units() {
 	ssh -o ConnectTimeout=15 "$DEV" \
-		"systemctl list-units --no-legend --state=running 'fp3-*' 2>/dev/null" 2>/dev/null
+		"systemctl list-units --no-legend --state=running 'fp3-*' 2>/dev/null" 2>/dev/null \
+		| grep -E '^ *fp3-.*-[0-9]{10}\.service' || true
 }
 
 if [ "${1:-}" = "--status" ]; then
@@ -98,8 +106,37 @@ ssh -o ConnectTimeout=15 "$DEV" true 2>/dev/null \
 	|| die "cannot reach $DEV, so 'nothing is running' is unproven - it may simply be
 asleep inside another measurement's cycle. Establish contact before launching."
 
+# --- 3. is the INSTRUMENT going to outlive the MEASUREMENT? -------------------
+#
+# ☠️ THIS FAILURE CLASS HAS NOW HAPPENED TWICE IN ONE DAY, so it stops being a
+# matter of attention. A call-reachability recorder was launched with
+# RuntimeMaxSec=1800 to watch a window that ran for nine hours: it died at 08:57,
+# and every call placed after 09:00 was simply never recorded - the loss was
+# discovered only because the owner asked why they were missing. Earlier the same
+# day, the fuel gauge's 76 s accumulator window was read across a 60 s sleep, so a
+# fifth of the samples carried the previous wake's current. Same shape both times:
+# the instrument's lifetime was shorter than the measurement's, and nothing in the
+# launch path compared the two.
+#
+# A cap is fine when it is longer than the ETA - it is a dead-man switch, which is
+# the point. A cap SHORTER than the ETA is always a bug: it guarantees the tail of
+# the measurement is missing, and missing quietly.
+cap=$(printf '%s\n' "$@" | sed -n 's/.*RuntimeMaxSec=\([0-9]*\).*/\1/p' | head -1)
+if [ -n "$cap" ]; then
+	need=$((ETA * 60))
+	if [ "$cap" -lt "$need" ]; then
+		die "REFUSED: RuntimeMaxSec=${cap}s is shorter than the ${ETA} min (${need}s) you
+just declared. The instrument would stop before the measurement does, and the tail
+would be missing WITHOUT AN ERROR - which is how a nine-hour call window lost
+everything after its first thirty minutes.
+Raise the cap above the ETA (a cap longer than the run is a dead-man switch, and
+that is what it is for), or lower the ETA if the run really is that short."
+	fi
+fi
+
 UNIT="fp3-$(basename "$1" | sed 's/\.[^.]*$//')-$(date +%s)"
 echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m"))"
+[ -n "$cap" ] || echo "note: no RuntimeMaxSec in this launch - nothing stops it if it hangs"
 ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
 echo
 echo "☠️ Now arm a watcher in the same reply - the measurement and its watcher are one object:"
