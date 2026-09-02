@@ -69,6 +69,27 @@ Two directions follow, and they are opposites:
 | **turn IMS off** | measured to stop the loop dead (220 ESM messages → 0) | no VoLTE, no IMS-routed SMS; on this device calls are CSFB anyway, so the loss may be nil — **untested, see the ring and SMS boxes** |
 | **supply the missing half** | `imsd`'s route: hold the IMS bearer *and* answer the firmware | gains VoLTE; unfinished upstream — the doc's own msgs 2, 4–8 are still `Service: ???` |
 
+## ☠️ 2026-09-02: the second direction is not an alternative, it is the fallback
+
+The table above reads as a choice between two options. It is not, because the two
+sit on different foundations. **Turning IMS off works only while the network
+offers a CS domain to fall back to** — measured that day: three calls in a row
+came back on `gsm-900-extended` while the phone camped on LTE, and the modem
+reports `Domain: 'cs-ps'`, so the SGs association is live. See
+[`csfb-is-a-dependency.md`](csfb-is-a-dependency.md).
+
+3G is already retired on this network. When 2G follows, the row "turn IMS off"
+does not get slower — it stops delivering calls at all, and the only remaining row
+is the other one. So `imsd` is not the ambitious alternative to the cheap fix; it
+is **the contingency plan for the cheap fix**, and its blocking question is no
+longer "how do we stop the loop" but **"why does the modem tear the bearer down
+30 ms after it is granted"** — the question the currently silent DIAG stream is in
+the way of.
+
+Nothing here says when that happens; operator schedules are not this repo's
+business. What it changes today is the PRICE of the unanswered question, not its
+urgency.
+
 ☠️ **What is still not measured** is whether stopping the loop moves the duty.
 The one window taken with IMS off is unusable (DIAG log masks still armed
 modem-side, and the band moved inside the window); the band-pinned A/B/A' ladder
