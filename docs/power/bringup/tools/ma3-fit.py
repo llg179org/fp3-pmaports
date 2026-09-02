@@ -51,6 +51,41 @@ def leg_state(d, leg):
     return None
 
 
+# ☠️ THE CONFIG CHECK AND THE RECONCILER READ THE SAME QMI GETTERS - and this
+# project has already been bitten once by a setter and getter that did not
+# correspond. If a getter reads the wrong switch, the configuration check lies
+# green for ever and nothing notices. The independent layer is BEHAVIOUR: the
+# modem's XO-shutdown duty is measured by the RPM, not reported by the modem, and
+# the two states are far apart (cheap 4-7 %, expensive 31-52 %). Every leg records
+# its MPSS window anyway, so the cross-check is free.
+CHEAP_DUTY = (0.0, 12.0)
+EXPENSIVE_DUTY = (25.0, 60.0)
+TICK = 19200000.0
+
+def leg_duty(d, leg, rows):
+    # ☠️ USE THE ACCUMULATOR THE REST OF THIS REPO USES: `XO total duration` is the
+    # summed sleep in RPM ticks, so awake duty = 1 - dSleep/dWall. The first
+    # version of this function invented a formula out of the "Last XO shutdown
+    # enter/exit" pair - two edge timestamps that say nothing about accumulated
+    # time - and produced 100 % for a leg that was demonstrably asleep half the
+    # window. A derived quantity nobody checked against a known case is a guess
+    # with a percent sign on it.
+    try:
+        txt = open(d / f'mpss-{leg}.txt').read()
+    except OSError:
+        return None
+    def acc(tag):
+        m = re.search(rf'^{tag}\s+XO total duration: (\d+)', txt, re.M)
+        return int(m.group(1)) if m else None
+    b, a = acc('BEFORE'), acc('AFTER')
+    if b is None or a is None or len(rows) < 2:
+        return None
+    wall = (rows[-1][0] - rows[0][0]).total_seconds()
+    if wall <= 0:
+        return None
+    return max(0.0, min(100.0, 100.0 * (1 - (a - b) / TICK / wall)))
+
+
 def load(d, leg):
     out = []
     for line in open(d / f'samples-{leg}.txt'):
@@ -212,6 +247,14 @@ for leg in legs:
         print(f"       (median sleep {r['med']:.0f} s against a {ALARM:.0f} s alarm - expected for "
               f"a leg that holds a connection; the sleep test cannot see interference here, "
               f"read the leg's own login/unit audit instead)")
+    duty = leg_duty(d, leg, load(d, leg))
+    if duty is not None:
+        band = EXPENSIVE_DUTY if (leg_state(d, leg) or STATE) == 'expensive' else CHEAP_DUTY
+        if not band[0] <= duty <= band[1]:
+            print(f"       ☠️☠️ THE BEHAVIOUR DISAGREES WITH THE DECLARED STATE: modem duty "
+                  f"{duty:.1f} % against the {band[0]:.0f}-{band[1]:.0f} % expected for a "
+                  f"'{(leg_state(d, leg) or STATE)}' leg. The configuration check and the "
+                  f"reconciler share the QMI getters; this does not. Believe this one.")
     if r['out']:
         print(f"       ☠️ look at these windows before calling this statistics: "
               f"{', '.join(f'{x} mA (cnt {c})' for x, c in r['out'])}")

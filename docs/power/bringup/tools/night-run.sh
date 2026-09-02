@@ -75,7 +75,7 @@ case "$step" in ''|*[!0-9]*) give_up "unreadable state '$step'" ;; esac
 # repeated REBOOT is a brick-shaped afternoon.
 echo $((step + 1)) > "$S"
 
-ocv() {   # ocv <tag> - radio off, USB input off, rest, read, both back
+ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# ☠️ AN OCV TAKEN ON THE CHARGER IS THE CHARGER'S VOLTAGE, NOT THE PACK'S. The
 	# rehearsal read 4.413 V at the start with status "Charging" - that is the
 	# float voltage of the charger, and the entire offset-bounding argument needs a
@@ -87,7 +87,22 @@ ocv() {   # ocv <tag> - radio off, USB input off, rest, read, both back
 	sleep 5
 	st=$(cat /sys/class/power_supply/pmi632-charger/status)
 	[ "$st" = Discharging ] || s "  ☠️ charger status is '$st', not Discharging - this OCV is suspect"
-	sleep $((RESTMIN * 60))
+	# ☠️ THE ACCEPTANCE CRITERION IS ALSO THE CONTROLLER. A fixed rest is either
+	# too long or too short and cannot know which: relaxation after CHARGING is
+	# slower and of the opposite sign to relaxation after discharge, so the opening
+	# rest has to be told by the pack, not by us. Rest until the slope passes, with
+	# a hard ceiling so a pack that never settles cannot eat the night.
+	CAP=${2:-$RESTMIN}
+	waited=0
+	while [ "$waited" -lt "$((CAP * 60))" ]; do
+		sleep 300; waited=$((waited + 300))
+		v1=$(cat /sys/class/power_supply/*battery*/voltage_now); sleep 120
+		v2=$(cat /sys/class/power_supply/*battery*/voltage_now)
+		mv=$(( (v2 - v1) / 1000 )); waited=$((waited + 120))
+		s "  rest $1: ${waited}s, ${mv} mV over the last 2 min"
+		[ "$mv" -lt 1 ] && [ "$mv" -gt -1 ] && { s "  rest $1: settled after ${waited}s"; break; }
+	done
+	[ "$waited" -lt "$((CAP * 60))" ] || s "  ☠️ rest $1 hit its ${CAP} min ceiling without settling - this endpoint is suspect"
 	# ☠️ SETTLING IS AN ACCEPTANCE CRITERION, NOT AN AFTERTHOUGHT. The rehearsal's
 	# closing read was still climbing and only said so in hindsight. Take a ten
 	# minute series and judge the LAST FIVE MINUTES: under 0.2 mV/min the pack is
@@ -166,7 +181,7 @@ s "=== step $step  (boots=$BOOTS leg=${LEGMIN}min rest=${RESTMIN}min alarm=${ALA
 s "battery $(cat /sys/class/power_supply/*battery*/capacity)% $(cat /sys/class/power_supply/*battery*/voltage_now)uV $(cat /sys/class/power_supply/pmi632-charger/status)"
 
 if [ "$step" -eq 0 ]; then
-	ocv start
+	ocv start 90        # opening rest is adaptive: the pack is coming off the charger
 	reboot_now
 fi
 
