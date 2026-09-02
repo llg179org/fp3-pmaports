@@ -1,0 +1,52 @@
+2026-09-02 11:19:54 === step 0  (boots=1 leg=6min rest=3min alarm=90s) ===
+2026-09-02 11:19:54 battery 100% 4413005uV Charging
+2026-09-02 11:19:54 OCV start: radio off, resting 3 min
+2026-09-02 11:24:34 OCV start done: start 1788341054 4413394 100
+2026-09-02 11:25:05 rebooting (next step 1)
+2026-09-02 11:25:48 === step 1  (boots=1 leg=6min rest=3min alarm=90s) ===
+2026-09-02 11:25:48 battery 100% 4359674uV Not charging
+2026-09-02 11:25:48 --- leg 1 of 1, after boot 24s ago ---
+2026-09-02 11:25:48 reconciler spoke: Finished Hold the modem's IMS service switches off (stops the 8.4 s IMS-PDN loop).
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            True
+    VoWiFi           False
+    video telephony  True
+    SMS              True
+    UT               True
+    USSD             False
+# leg 2026-09-02 11:25:49  6 min  alarm=90s
+# battery 100% v=4351305uV status=Discharging
+# IMS at start: voice=True VoWiFi=False video=telephony SMS=True UT=True USSD=False 
+# band/cell:  
+# IMS at end:   voice=True VoWiFi=False video=telephony SMS=True UT=True USSD=False 
+# 5 samples, battery 100% v=4189951uV
+2026-09-02 11:31:51 --- leg 1 done ---
+2026-09-02 11:31:51 OCV end: radio off, resting 3 min
+2026-09-02 11:36:31 OCV end done: end 1788341771 4348969 100
+2026-09-02 11:37:01 === NIGHT COMPLETE ===
+--- ocv.txt
+start 1788340974 4412421 100
+start 1788340994 4412421 100
+start 1788341014 4412810 100
+start 1788341034 4413005 100
+start 1788341054 4413394 100
+end 1788341691 4347801 100
+end 1788341711 4348580 100
+end 1788341731 4347801 100
+end 1788341751 4348191 100
+end 1788341771 4348969 100
+--- leg1/log.txt
+# leg 2026-09-02 11:25:49  6 min  alarm=90s
+# battery 100% v=4351305uV status=Discharging
+# IMS at start: voice=True VoWiFi=False video=telephony SMS=True UT=True USSD=False 
+# band/cell:  
+# IMS at end:   voice=True VoWiFi=False video=telephony SMS=True UT=True USSD=False 
+# 5 samples, battery 100% v=4189951uV
+--- leg1/samples-B.txt
+B t=2026-09-02 11:25:51 acc=0x009fa9 cnt=0x87 cur=-522919 v=4238026 cap=100
+B t=2026-09-02 11:27:13 acc=0x00d1e7 cnt=0x98 cur=-261688 v=4283766 cap=100
+B t=2026-09-02 11:28:46 acc=0x0126d6 cnt=0xcf cur=-494842 v=4215254 cap=100
+B t=2026-09-02 11:30:18 acc=0x001278 cnt=0x02 cur=-824585 v=4173796 cap=100
+B t=2026-09-02 11:31:50 acc=0x004c81 cnt=0x35 cur=-147247 v=4297974 cap=100

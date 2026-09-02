@@ -69,9 +69,18 @@ case "$step" in ''|*[!0-9]*) give_up "unreadable state '$step'" ;; esac
 # repeated REBOOT is a brick-shaped afternoon.
 echo $((step + 1)) > "$S"
 
-ocv() {   # ocv <tag> - radio off, rest, read, radio back
-	s "OCV $1: radio off, resting ${RESTMIN} min"
+ocv() {   # ocv <tag> - radio off, USB input off, rest, read, both back
+	# ☠️ AN OCV TAKEN ON THE CHARGER IS THE CHARGER'S VOLTAGE, NOT THE PACK'S. The
+	# rehearsal read 4.413 V at the start with status "Charging" - that is the
+	# float voltage of the charger, and the entire offset-bounding argument needs a
+	# RESTED PACK. The radio was switched off and the charger was not; both have to
+	# go, and the state has to be verified rather than assumed.
+	s "OCV $1: radio off, USB input suspended, resting ${RESTMIN} min"
 	mmcli -m any --disable >/dev/null 2>&1 || s "  (mmcli --disable failed, continuing)"
+	echo Unknown > /sys/class/power_supply/pmi632-charger/status
+	sleep 5
+	st=$(cat /sys/class/power_supply/pmi632-charger/status)
+	[ "$st" = Discharging ] || s "  ☠️ charger status is '$st', not Discharging - this OCV is suspect"
 	sleep $((RESTMIN * 60))
 	# several reads: a single one cannot show whether the pack has settled
 	for i in 1 2 3 4 5; do
@@ -80,25 +89,46 @@ ocv() {   # ocv <tag> - radio off, rest, read, radio back
 			"$(cat /sys/class/power_supply/*battery*/capacity)" >> "$D/ocv.txt"
 		sleep 20
 	done
-	s "OCV $1 done: $(tail -1 "$D/ocv.txt")"
+	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
+	# means the pack is relaxing and the number is not an OCV yet; the rehearsal's
+	# closing read rose 1.2 mV across its five samples on a 3 min rest. Print the
+	# drift so a reader can discount it instead of trusting a single last value.
+	first=$(grep "^$1 " "$D/ocv.txt" | head -1 | awk '{print $3}')
+	last=$(grep "^$1 " "$D/ocv.txt" | tail -1 | awk '{print $3}')
+	s "OCV $1 done: ${last}uV, drift over the last 80 s: $(( (last - first) / 1000 )) mV"
+	echo Charging > /sys/class/power_supply/pmi632-charger/status
 	mmcli -m any --enable >/dev/null 2>&1
 	sleep 30
 }
 
-converged() {   # wait for the reconciler to prove the vector, from its own log
+# ☠️ A LOG LINE IS NOT A STATE. The first version waited for the string
+# "fp3-ims-reconcile:" in the journal and treated it as proof - and it matched the
+# unit's own DESCRIPTION ("Finished Hold the modem's IMS service switches off"),
+# which systemd prints whether or not the reconciler achieved anything. Measured
+# in the rehearsal: the line appeared, the run continued, and the leg then ran
+# with voice/video/SMS/UT all TRUE - i.e. it measured the EXPENSIVE state for six
+# minutes while believing it was the cheap one. A whole night would have been lost
+# to a grep matching a description.
+#
+# So: read the VECTOR, not the log. Retry, force, and abort the leg rather than
+# measure the wrong state - a missing leg is a gap, a mislabelled leg is a lie.
+ims_off() {
+	python3 /usr/local/bin/ims-toggle.py read 2>/dev/null \
+		| awk '/voice|VoWiFi|video|SMS|UT/{if ($2 != "False" && $2 != "telephony") bad=1}
+		       END{exit bad}'
+}
+converged() {
 	i=0
-	while [ $i -lt 30 ]; do
-		if journalctl -u fp3-ims-reconcile --since "-10 min" 2>/dev/null \
-			| grep -q "fp3-ims-reconcile:"; then
-			s "reconciler spoke: $(journalctl -u fp3-ims-reconcile --since '-10 min' -o cat | tail -1)"
+	while [ $i -lt 12 ]; do
+		if ims_off; then
+			s "vector verified off: $(python3 /usr/local/bin/ims-toggle.py read 2>/dev/null | awk '/voice|VoWiFi|video|SMS|UT/{printf "%s=%s ", $1, $2}')"
 			return 0
 		fi
+		s "vector NOT off yet (attempt $i) - starting the reconciler"
+		systemctl start fp3-ims-reconcile.service 2>/dev/null
 		i=$((i + 1)); sleep 20
 	done
-	s "reconciler said nothing in 10 min - forcing one run"
-	systemctl start fp3-ims-reconcile.service 2>/dev/null
-	sleep 10
-	return 0
+	give_up "the IMS vector would not go off after 4 minutes - refusing to measure a leg whose state is not the one it claims"
 }
 
 reboot_now() {

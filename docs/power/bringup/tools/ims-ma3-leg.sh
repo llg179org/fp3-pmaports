@@ -37,7 +37,19 @@ ims_line() { python3 /usr/local/bin/ims-toggle.py read 2>/dev/null \
 s "# leg $(date '+%F %T')  ${MIN} min  alarm=${ALARM}s"
 s "# battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV status=$(cat $BAT/status)"
 s "# IMS at start: $(ims_line)"
-s "# band/cell: $(qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null | sed -n "s/.*Active Band Class: *//p" | head -1) $(qmicli -d qrtr://0 --nas-get-cell-location-info 2>/dev/null | sed -n "s/.*Global Cell ID: *//p" | head -1)"
+# ☠️ THIS PATTERN HAS TO KEEP THE QUOTES IN THE MATCH, NOT IN THE OUTPUT. The
+# first version dropped the closing quote from the expression and printed an
+# EMPTY band/cell - which the rehearsal showed as "# band/cell:" with nothing
+# after it. The band is worth ~17 pp of duty and ~54 mA on this device, so a leg
+# with no band recorded cannot be compared with any other leg.
+band_cell() {
+	b=$(qmicli -d qrtr://0 --nas-get-rf-band-info 2>/dev/null \
+		| sed -n "s/.*Active Band Class: *'\([^']*\)'.*/\1/p" | head -1)
+	c=$(qmicli -d qrtr://0 --nas-get-cell-location-info 2>/dev/null \
+		| sed -n "s/.*Global Cell ID: *'\([^']*\)'.*/\1/p" | head -1)
+	echo "${b:-UNKNOWN} / ${c:-UNKNOWN}"
+}
+s "# band/cell: $(band_cell)"
 sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 
 end=$(( $(cut -d. -f1 /proc/uptime) + MIN * 60 ))
@@ -53,4 +65,5 @@ while [ "$(cut -d. -f1 /proc/uptime)" -lt "$end" ]; do
 done
 sed 's/^/AFTER /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 s "# IMS at end:   $(ims_line)"
+s "# band/cell at end: $(band_cell)"
 s "# $(grep -c . "$O/samples-B.txt") samples, battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV"
