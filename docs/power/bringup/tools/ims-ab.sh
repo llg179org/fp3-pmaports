@@ -85,15 +85,27 @@ mmcli -m any --set-current-bands=eutran-1 >/dev/null 2>&1 \
 	|| s "#   ☠️ set-current-bands=eutran-1 FAILED - the ladder is NOT band-pinned"
 sleep 30
 
+# ☠️ READ THE IMS VECTOR BACK AT THE START *AND* THE END OF EVERY LEG. Setting it
+# is not the same as it being set: the setter and getter names do not correspond,
+# so a write can land somewhere other than where it was aimed (measured: two
+# switches), and the vector does not survive a reboot and has been seen to revert
+# mid-run. A leg whose state changed halfway through is not a noisy measurement,
+# it is a measurement of something else - and that is exactly the silent state
+# change that stayed invisible for sixteen days in the speaker-amp saga. Reading
+# only at the start would have caught neither.
 leg() {   # leg NAME IMSSTATE
 	s ""
 	s "########## LEG $1  (IMS=$2)  $(date '+%F %T') ##########"
 	python3 /tmp/ims-toggle.py "$2" 2>&1 | sed 's/^/#   /' | tee -a "$L"
+	s "#   IMS at leg start:"
+	python3 /tmp/ims-toggle.py read 2>&1 | sed 's/^/#     /' | tee -a "$L"
 	sleep 20
 	sh /tmp/modem-window.sh "$W" >/dev/null 2>&1
 	cp /tmp/modem-window.txt "$O/window-$1.txt"
 	s "#   window saved: $O/window-$1.txt"
 	grep -E "Active Band Class|Global Cell ID" "$O/window-$1.txt" | sed 's/^/#   /' | tee -a "$L"
+	s "#   IMS at leg end:"
+	python3 /tmp/ims-toggle.py read 2>&1 | sed 's/^/#     /' | tee -a "$L"
 }
 
 leg A  on

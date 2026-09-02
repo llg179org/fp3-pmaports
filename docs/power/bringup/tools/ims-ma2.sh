@@ -67,6 +67,15 @@ leg() {   # leg NAME IMSSTATE MINUTES
 	s ""
 	s "########## LEG $1  (IMS=$2)  $(date '+%F %T') ##########"
 	python3 /tmp/ims-toggle.py "$2" 2>&1 | sed 's/^/#   /' | tee -a "$L"
+	# ☠️ READ THE VECTOR BACK AT THE START *AND* THE END OF EVERY LEG. Setting it
+	# is not the same as it being set: setter and getter names do not correspond,
+	# so a write can land somewhere other than where it was aimed (measured on two
+	# switches), and the vector does not survive a reboot and has been seen to
+	# revert mid-run. A leg whose state changed halfway is not a noisy measurement,
+	# it is a measurement of something else. Reading only at the start catches none
+	# of that - the speaker-amp saga hid exactly this way for sixteen days.
+	s "#   IMS at leg start:"
+	python3 /tmp/ims-toggle.py read 2>&1 | sed 's/^/#     /' | tee -a "$L"
 	sleep 20
 	sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-$1.txt"
 	end=$(( $(cut -d. -f1 /proc/uptime) + $3 * 60 ))
@@ -83,6 +92,8 @@ leg() {   # leg NAME IMSSTATE MINUTES
 		rtcwake -m mem -s "$ALARM" >/dev/null 2>&1
 	done
 	sed 's/^/AFTER /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-$1.txt"
+	s "#   IMS at leg end:"
+	python3 /tmp/ims-toggle.py read 2>&1 | sed 's/^/#     /' | tee -a "$L"
 	s "#   $(grep -c . "$O/rounds-$1.txt") samples"
 }
 

@@ -31,8 +31,15 @@
 #
 # ☠️ ANALYSE cnt-WEIGHTED, and gate on it. Aggregate as sum(accum)/sum(cnt), not
 # the mean of per-sample means. And with a sleep shorter than the wrap period,
-# discard any sample whose cnt implies a window longer than the sleep
-# (cnt >= 3.35 * alarm) - that sample's window began before the sleep did.
+# discard any sample whose cnt implies a window longer than the sleep - that
+# sample's window began before the sleep did.
+#
+# ☠️ THE GATE'S SCALE IS THE LEG'S OWN MEDIAN SLEEP, NOT THE ALARM. On a leg that
+# sleeps the full alarm they coincide, so the distinction is invisible where it
+# does not matter and decisive where it does: the expensive state does NOT sleep
+# the alarm (median 16-18 s against a 60 s alarm), and using the alarm there
+# keeps 39 contaminated samples instead of 7 and moves that leg by 7 mA. Use
+# `ma3-fit.py`, which computes the median from the sample timestamps.
 #
 # ☠️ WHAT IS MEASURED IS THE SLEEPING FLOOR, not the average a user would see:
 # the resume path's own ~0.5-1 s of awake current sits inside the window (~1-3 mA
@@ -45,7 +52,7 @@
 # state change that stayed invisible for sixteen days in the speaker-amp saga.
 set -u
 MIN=${1:-25}
-ALARM=${2:-60}
+ALARM=${2:-90}   # 90, not 60 - see the wrap argument above; the first run used 60 and was wrong
 BAND=${3:-eutran-1}
 O=/var/log/fp3/ims-ma3-$(date +%s)
 mkdir -p "$O"
