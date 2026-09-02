@@ -42,7 +42,11 @@ LOG=$D/run.log
 MAXSTEP=40
 
 mkdir -p "$D"
-s() { echo "$(date '+%F %T') $*" >> "$LOG"; }
+# ☠️ THE WALL CLOCK IS WRONG AFTER EVERY BOOT UNTIL NTP LANDS - this device's RTC
+# starts at 1970. Three boots' legs cannot be lined up against each other on a
+# clock that jumps, so every line carries monotonic uptime and the boot id too.
+BOOT_ID=$(cut -c1-8 /proc/sys/kernel/random/boot_id 2>/dev/null || echo ????????)
+s() { echo "$(date '+%F %T') [+$(cut -d. -f1 /proc/uptime)s $BOOT_ID] $*" >> "$LOG"; }
 
 # --- configuration, written once by `arm` ------------------------------------
 [ -f "$D/conf" ] && . "$D/conf"
@@ -84,13 +88,19 @@ ocv() {   # ocv <tag> - radio off, USB input off, rest, read, both back
 	st=$(cat /sys/class/power_supply/pmi632-charger/status)
 	[ "$st" = Discharging ] || s "  ☠️ charger status is '$st', not Discharging - this OCV is suspect"
 	sleep $((RESTMIN * 60))
-	# several reads: a single one cannot show whether the pack has settled
-	for i in 1 2 3 4 5; do
+	# ☠️ SETTLING IS AN ACCEPTANCE CRITERION, NOT AN AFTERTHOUGHT. The rehearsal's
+	# closing read was still climbing and only said so in hindsight. Take a ten
+	# minute series and judge the LAST FIVE MINUTES: under 0.2 mV/min the pack is
+	# rested, above it the number is a relaxation curve wearing an OCV's clothes.
+	for i in $(seq 1 20); do
 		printf '%s %s %s %s\n' "$1" "$(date +%s)" \
 			"$(cat /sys/class/power_supply/*battery*/voltage_now)" \
 			"$(cat /sys/class/power_supply/*battery*/capacity)" >> "$D/ocv.txt"
-		sleep 20
+		sleep 30
 	done
+	slope=$(grep "^$1 " "$D/ocv.txt" | tail -10 | awk '
+		NR==1{t0=$2; v0=$3} END{if (NR>1 && $2>t0) printf "%.2f", ($3-v0)/1000/(($2-t0)/60); else print "0"}')
+	s "OCV $1 slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
 	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
 	# means the pack is relaxing and the number is not an OCV yet; the rehearsal's
 	# closing read rose 1.2 mV across its five samples on a 3 min rest. Print the
@@ -130,7 +140,13 @@ converged() {
 		systemctl start fp3-ims-reconcile.service 2>/dev/null
 		i=$((i + 1)); sleep 20
 	done
-	give_up "the IMS vector would not go off after 4 minutes - refusing to measure a leg whose state is not the one it claims"
+	# ☠️ ERROR POLICY, BECAUSE THIS RUNS UNSUPERVISED AT 3 AM. A failed vector gate
+	# drops THIS LEG and moves on to the next boot; it does not kill the night. Two
+	# legs are worth more than none, and the boot-to-boot spread - the whole point
+	# of the night - survives losing one. `give_up` is reserved for what endangers
+	# the phone: a corrupt state file, or a step count that would loop reboots.
+	s "☠️ the IMS vector would not go off in 4 minutes - DROPPING THIS LEG and moving on"
+	return 1
 }
 
 reboot_now() {
@@ -157,7 +173,15 @@ fi
 leg=$(( (step + 1) / 2 ))
 if [ "$leg" -le "$BOOTS" ] && [ $((step % 2)) -eq 1 ]; then
 	s "--- leg $leg of $BOOTS, after boot $(cut -d. -f1 /proc/uptime)s ago ---"
-	converged
+	if ! converged; then
+		echo "leg $leg dropped: vector would not go off" >> "$D/dropped.txt"
+		if [ "$leg" -lt "$BOOTS" ]; then reboot_now; fi
+		echo $((step + 2)) > "$S"
+		ocv end
+		s "=== NIGHT COMPLETE (last leg dropped) ==="
+		systemctl disable fp3-night.service 2>/dev/null
+		exit 0
+	fi
 	python3 /usr/local/bin/ims-toggle.py read 2>&1 | sed 's/^/  /' >> "$LOG"
 	# ☠️ PIN THE BAND, OR THE LEGS ARE NOT COMPARABLE. The band is worth ~17 pp of
 	# duty and ~54 mA on this device, and the second rehearsal's six-minute leg

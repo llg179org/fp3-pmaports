@@ -105,10 +105,24 @@ gate. Read them as the system's cost in that state, not as a floor.
 ## ☠️ How to say the gap — and how not to
 
 **The gap is 50–58 mA, and its uncertainty is almost entirely the expensive
-leg's**: A−B = 90.3−40.1 = 50.2 (±12.3 combined), A′−B = 97.6−40.1 = 57.5
-(±10.3). Quoting a tighter range than that — as an earlier headline did with
-"51–59" — carries a precision the expensive legs cannot support, because they
-barely slept and hold five and eight usable windows.
+leg's** — and it is computed by `ma3-fit.py`, not typed here:
+
+```
+gap A - cheapest: 50.3 mA  +-12.2  (quadrature of the two within-leg bands)
+gap A2 - cheapest: 57.5 mA  +-10.2  (quadrature of the two within-leg bands)
+```
+
+Quoting a tighter range than that — as an earlier headline did with "51–59" —
+carries a precision the expensive legs cannot support, because they barely slept
+and hold five and eight usable windows between them.
+
+☠️ **This line is generated for a reason.** When it was prose, an outside review
+challenged it as stale — and the challenge was itself computed from a figure that
+had gone stale one step earlier, in the message asking for the review: the band
+quoted there (±10.4) predated the `cnt ≥ 20` floor that moved leg A to ±12.2. The
+report was right and the request was wrong, which is the least useful way to be
+right. A number that is retyped anywhere — a report, a review request, a commit
+message — is a number that can disagree with its own fit.
 
 That gap is a **system** difference: modem duty **plus the
 AP sleep the loop destroys**. It must not be quoted as "what the modem duty

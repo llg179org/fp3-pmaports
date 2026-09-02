@@ -53,6 +53,19 @@ START_BC=$(band_cell)
 s "# band/cell: $START_BC"
 sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 
+# ☠️ THE INTERFERENCE DETECTOR HAS TO NAME WHAT HAPPENED, NOT JUST THAT IT DID.
+# The median-sleep test in ma3-fit is statistical AND state-dependent: it works on
+# a cheap leg, but an expensive leg's median sleep is 16-18 s against a 90 s alarm
+# by its own nature, so the test would fire on every A leg and says nothing about
+# an A leg that WAS disturbed. And it reports the symptom, never the cause.
+#
+# So the leg keeps its own witness: every ssh login accepted during it, and every
+# unit that started while it ran. Either one non-empty means this leg was
+# interfered with, with the reason attached. Written because an ssh sent to answer
+# one question turned a 90 s alarm into a 9 s median and nothing on the phone
+# recorded who did it.
+LEG_START_WALL=$(date '+%Y-%m-%d %H:%M:%S')
+
 end=$(( $(cut -d. -f1 /proc/uptime) + MIN * 60 ))
 while [ "$(cut -d. -f1 /proc/uptime)" -lt "$end" ]; do
 	rtcwake -m mem -s "$ALARM" >/dev/null 2>&1
@@ -72,4 +85,15 @@ s "# band/cell at end: $END_BC"
 # mid-leg is the largest confounder measured on this device (~17 pp duty, ~54 mA),
 # and it happened in a six-minute rehearsal leg.
 [ "$END_BC" = "$START_BC" ] || s "# ☠️☠️ THE BAND MOVED MID-LEG: $START_BC -> $END_BC — this leg is NOT comparable with a leg on another band"
+# --- the interference audit -------------------------------------------------
+logins=$(journalctl --since "$LEG_START_WALL" 2>/dev/null \
+	| grep -c "Accepted publickey\|Accepted password" || true)
+units=$(journalctl --since "$LEG_START_WALL" -o cat 2>/dev/null \
+	| sed -n 's/^Started \(.*\)\.$/\1/p' | sort -u | head -8 | tr '\n' ';')
+s "# audit: ssh logins during the leg = ${logins:-0}"
+s "# audit: units started during the leg = ${units:-none}"
+if [ "${logins:-0}" -gt 0 ]; then
+	s "# ☠️☠️ THIS LEG WAS INTERFERED WITH: ${logins} ssh login(s) landed while it ran."
+	s "#     An ssh login is an AP wake. Treat this leg's current as invalid, not noisy."
+fi
 s "# $(grep -c . "$O/samples-B.txt") samples, battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV"

@@ -154,6 +154,19 @@ for leg in legs:
               f"{', '.join(f'{x} mA (cnt {c})' for x, c in r['out'])}")
 if MD:
     sys.exit(0)
+# ☠️ THE GAP IS COMPUTED HERE TOO, because the last time it was typed into prose
+# it went stale the moment the estimator changed: the report said +-12.3 for weeks
+# after the band it was built from had become +-10.4. A number a human retypes is
+# a number that drifts from its own fit.
+res = {leg: leg_stats(load(d, leg)) for leg in legs}
+cheap = min((r for r in res.values() if r), key=lambda r: r['ma'], default=None)
+if cheap:
+    for leg, r in res.items():
+        if not r or r is cheap:
+            continue
+        gap = r['ma'] - cheap['ma']
+        half = ((r['hi'] - r['lo']) ** 2 / 4 + (cheap['hi'] - cheap['lo']) ** 2 / 4) ** 0.5
+        print(f"gap {leg} - cheapest: {gap:.1f} mA  +-{half:.1f}  (quadrature of the two within-leg bands)")
 print()
 print('☠️ THE CI IS WITHIN-LEG ONLY - the sampling noise of one leg of one boot.')
 print('   It says nothing about the PMI632 offset the whole project shares, and')
