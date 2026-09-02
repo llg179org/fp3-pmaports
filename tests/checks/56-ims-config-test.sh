@@ -51,10 +51,18 @@ fi
 
 # The reconciler is the reason the above stays true across reboots, so its
 # absence is a finding even while the vector happens to be right.
-if systemctl is-enabled fp3-ims-reconcile.timer >/dev/null 2>&1; then
-	echo "PASS: fp3-ims-reconcile.timer is enabled (the setting is re-asserted, not just set)"
+# ☠️ ENABLED AND ACTIVE ARE DIFFERENT QUESTIONS, and asking only the first was a
+# real gap found while demonstrating this check: a timer stopped by hand still
+# reports "enabled", so the check passed while nothing would re-assert the vector
+# until the next reboot. Ask both.
+en=$(systemctl is-enabled fp3-ims-reconcile.timer 2>/dev/null)
+ac=$(systemctl is-active fp3-ims-reconcile.timer 2>/dev/null)
+if [ "$en" = enabled ] && [ "$ac" = active ]; then
+	echo "PASS: fp3-ims-reconcile.timer is enabled and running (the setting is re-asserted, not just set)"
 else
-	echo "FAIL: fp3-ims-reconcile.timer is NOT enabled - the vector will revert at the next reboot"
+	echo "FAIL: fp3-ims-reconcile.timer is enabled=$en active=$ac"
+	[ "$ac" = active ] || echo "      it is not running now, so nothing re-asserts the vector until it is started"
+	[ "$en" = enabled ] || echo "      it is not enabled, so nothing re-asserts the vector after a reboot"
 	echo "      cmd: systemctl enable --now fp3-ims-reconcile.timer"
 	fail=1
 fi

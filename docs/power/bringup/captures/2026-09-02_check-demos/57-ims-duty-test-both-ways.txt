@@ -1,0 +1,20 @@
+=== 57 IMS=ON allapotban (120 s ablak) - BUKNIA KELL ===
+      window 120s  band='eutran-3'  cell='1470732'
+      MPSS     37.1 % awake    2.41 wakes/s  154.1 ms/wake
+FAIL: modem duty 37 % - the UE is holding an RRC connection
+      if 56-ims-config-test.sh passed, the configuration is right and the
+      behaviour is not: check the band above before blaming IMS
+FAIL: wake rate 2.4/s - below the paging cycle, so the
+      wakes are connection housekeeping rather than paging occasions
+  rc=1
+
+=== IMS vissza OFF-ra a reconcilerrel ===
+fp3-ims-reconcile: ☠️ HAD DRIFTED, corrected on attempt 2  {'voice': False, 'vowifi': False, 'video': False, 'sms': False, 'ut': False}
+=== 57 IMS=OFF allapotban - ATMENNIE KELL ===
+      window 120s  band='eutran-3'  cell='1470732'
+      MPSS      5.0 % awake    3.13 wakes/s  16.0 ms/wake
+PASS: modem duty 5 % - camped, not holding a connection
+PASS: wake rate 3.1/s - the paging DRX cycle
+  rc=0
+
+[exited with code 0]
