@@ -9704,3 +9704,47 @@ the thing that watches the measurement are one object.** It was written down aft
 the second time as "always start a background watcher in the same response as the
 measurement" — a rule about not *forgetting* the watcher. The part that was
 missing is that the watcher then has to be paid for.
+
+## ☠️ 2026-09-02 evening — the VoLTE finding survived a strict re-parse, and the tool that produced it did not
+
+Fable's review of the P-CSCF result asked the right question: the negative control
+(IMS off ⇒ no bearers ⇒ no addresses) excludes a byte pattern matching *anywhere in
+the capture*, but not one matching **inside another container's payload in the very
+messages that carry the structure** — which is exactly where a correlated false
+positive would live. Three offline disproofs were named, all runnable without
+touching the phone. All three were run.
+
+**The tool failed two of them, and the finding passed all three anyway.**
+
+The parser was replaced with a proper walk: start at the PCO IE header, step by
+each container's own length field, and require the lengths to **close on the IE
+boundary**. Run against the accepts the original claim named, it reports **0 of 22**
+— no PCO IE at all. The reason is a spec error, not a parsing one: the network
+returns P-CSCF in the **downlink** `ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST`
+(0xC1); the ACCEPT (0xC2) is the UE's uplink confirmation and carries no PCO. The
+first scanner never noticed because it byte-scanned **every** ESM message and only
+counted accepts separately, so its "22 addresses against 22 accepts" was two
+unrelated numbers landing near each other.
+
+Walked over the requests instead:
+
+| capture | ESM 0xC1 | walks closing | P-CSCF | companions |
+|---|---:|---:|---|---|
+| `diag.bin` | 21 | **21/21** | `10.149.10.129`, `10.150.10.129`, one each per request | DNS `80.244.99.36`, **IM CN Subsystem Signalling Flag** |
+| `diag-ims-held.bin` | 18 | **18/18** | the same two | the same |
+| `diag-ims-off.bin` | 0 | — | none | — |
+
+So the conclusion stands and is now better than it was. The walk closes on every
+message; the same walk decodes a plausible public DNS server, which is the control
+that proves the structure is understood rather than pattern-matched; and the
+strongest row is not an address at all but the **IM CN Subsystem Signalling Flag**
+— the network stating per bearer that this PDN is for IMS signalling. An address
+could be stale provisioning; the flag is the network answering in the same breath.
+
+☠️ **The unexplained number was the tip, and it was published anyway.** The
+original table reported one address ×22 and the other ×21 against 22 accepts, and
+that asymmetry had no account. A real structure gives an explainable exception; a
+loose matcher gives an arbitrary one. It is now explained — there are 21 requests
+and both addresses appear 21 times — but by re-parsing, not by the number having
+been chased when it was first seen. **A count in a published table that nobody can
+account for is a defect report, not a curiosity.**
