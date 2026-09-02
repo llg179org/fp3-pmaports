@@ -49,7 +49,8 @@ band_cell() {
 		| sed -n "s/.*Global Cell ID: *'\([^']*\)'.*/\1/p" | head -1)
 	echo "${b:-UNKNOWN} / ${c:-UNKNOWN}"
 }
-s "# band/cell: $(band_cell)"
+START_BC=$(band_cell)
+s "# band/cell: $START_BC"
 sed 's/^/BEFORE /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 
 end=$(( $(cut -d. -f1 /proc/uptime) + MIN * 60 ))
@@ -65,5 +66,10 @@ while [ "$(cut -d. -f1 /proc/uptime)" -lt "$end" ]; do
 done
 sed 's/^/AFTER /' /sys/kernel/debug/qcom_rpm_master_stats/MPSS >> "$O/mpss-B.txt"
 s "# IMS at end:   $(ims_line)"
-s "# band/cell at end: $(band_cell)"
+END_BC=$(band_cell)
+s "# band/cell at end: $END_BC"
+# ☠️ SAY IT, do not leave it to whoever reads two lines twenty apart. A band change
+# mid-leg is the largest confounder measured on this device (~17 pp duty, ~54 mA),
+# and it happened in a six-minute rehearsal leg.
+[ "$END_BC" = "$START_BC" ] || s "# ☠️☠️ THE BAND MOVED MID-LEG: $START_BC -> $END_BC — this leg is NOT comparable with a leg on another band"
 s "# $(grep -c . "$O/samples-B.txt") samples, battery $(cat $BAT/capacity)% v=$(cat $BAT/voltage_now)uV"

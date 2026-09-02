@@ -50,11 +50,13 @@ BOOTS=${BOOTS:-3}
 LEGMIN=${LEGMIN:-75}
 RESTMIN=${RESTMIN:-30}
 ALARM=${ALARM:-90}
+BAND=${BAND:-eutran-1}
 
 give_up() {
 	s "GIVE UP: $*"
 	systemctl disable fp3-night.service 2>/dev/null
 	echo Charging > /sys/class/power_supply/pmi632-charger/status 2>/dev/null
+	mmcli -m any --set-current-bands=any >/dev/null 2>&1
 	mmcli -m any --enable >/dev/null 2>&1
 	systemctl start fp3-ims-reconcile.timer 2>/dev/null
 	exit 1
@@ -157,10 +159,20 @@ if [ "$leg" -le "$BOOTS" ] && [ $((step % 2)) -eq 1 ]; then
 	s "--- leg $leg of $BOOTS, after boot $(cut -d. -f1 /proc/uptime)s ago ---"
 	converged
 	python3 /usr/local/bin/ims-toggle.py read 2>&1 | sed 's/^/  /' >> "$LOG"
+	# ☠️ PIN THE BAND, OR THE LEGS ARE NOT COMPARABLE. The band is worth ~17 pp of
+	# duty and ~54 mA on this device, and the second rehearsal's six-minute leg
+	# MOVED - eutran-3 at the start, eutran-1 at the end. Three legs on three boots
+	# are meant to differ only by the boot; a leg that changes band mid-way differs
+	# by the largest confounder this project has measured. Found because the leg
+	# reads the band at BOTH ends, which the first rehearsal had shown was missing.
+	mmcli -m any --set-current-bands="$BAND" >/dev/null 2>&1 \
+		|| s "☠️ set-current-bands=$BAND FAILED - this leg is NOT band-pinned"
+	sleep 10
 	# USB input off so the leg measures the phone, not the charger
 	echo Unknown > /sys/class/power_supply/pmi632-charger/status
 	sh /usr/local/bin/ims-ma3-leg.sh "$LEGMIN" "$ALARM" "$D/leg$leg" >> "$LOG" 2>&1
 	echo Charging > /sys/class/power_supply/pmi632-charger/status
+	mmcli -m any --set-current-bands=any >/dev/null 2>&1
 	s "--- leg $leg done ---"
 	if [ "$leg" -lt "$BOOTS" ]; then reboot_now; fi
 	# last leg: fall through to the closing OCV in this same run

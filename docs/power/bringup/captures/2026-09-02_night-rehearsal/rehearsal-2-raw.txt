@@ -1,0 +1,49 @@
+2026-09-02 11:41:28 === step 0  (boots=1 leg=6min rest=3min alarm=90s) ===
+2026-09-02 11:41:28 battery 97% 4347996uV Not charging
+2026-09-02 11:41:28 OCV start: radio off, USB input suspended, resting 3 min
+2026-09-02 11:46:14 OCV start done: 4311793uV, drift over the last 80 s: 5 mV
+2026-09-02 11:46:44 rebooting (next step 1)
+2026-09-02 11:47:26 === step 1  (boots=1 leg=6min rest=3min alarm=90s) ===
+2026-09-02 11:47:26 battery 97% 4342935uV Charging
+2026-09-02 11:47:26 --- leg 1 of 1, after boot 24s ago ---
+2026-09-02 11:47:27 vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-02 11:47:52 vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-02 11:47:53  6 min  alarm=90s
+# battery 97% v=4384004uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-3 / 1470732
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# 28 samples, battery 95% v=4267222uV
+2026-09-02 11:54:19 --- leg 1 done ---
+2026-09-02 11:54:19 OCV end: radio off, USB input suspended, resting 3 min
+2026-09-02 11:59:05 OCV end done: 4282793uV, drift over the last 80 s: 6 mV
+2026-09-02 11:59:35 === NIGHT COMPLETE ===
+--- ocv
+start 1788342273 4306344 97
+start 1788342293 4304981 97
+start 1788342314 4311793 97
+start 1788342334 4288632 97
+start 1788342354 4311793 97
+end 1788343044 4276759 95
+end 1788343065 4276953 95
+end 1788343085 4275980 95
+end 1788343105 4275202 95
+end 1788343125 4282793 95
+--- leg1
+# leg 2026-09-02 11:47:53  6 min  alarm=90s
+# battery 97% v=4384004uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-3 / 1470732
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# 28 samples, battery 95% v=4267222uV
