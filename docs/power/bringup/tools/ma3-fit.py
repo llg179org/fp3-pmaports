@@ -51,6 +51,73 @@ def leg_state(d, leg):
     return None
 
 
+# ☠️☠️ ATTRIBUTION CHANGES THE LABEL, NEVER THE FATE. The login ledger tells the
+# morning WHO woke the phone - the watchdog's poll at 19:52, a person at 03:14 -
+# and that is worth having, because a source you can name is a source you can
+# remove. It is NOT a licence to keep the leg. A disturbance that is understood
+# perturbs the measurement exactly as much as one that is not, and the pull to
+# keep a leg once its wake has a friendly explanation is the strongest one there
+# is: the explanation feels like a correction. It is not one - nothing here
+# subtracts the wake's cost from the samples. So the rule is mechanical: any
+# non-allowlisted AP wake inside the leg window drops the leg from the aggregate.
+# What attribution buys is the difference between dropping one leg and dropping
+# the night, plus a named source to fix before the next run.
+#
+# ☠️ AND THE MIRROR FAILURE: "no ledger row, therefore clean". The ledger sees ssh
+# and nothing else. An incoming call leaves no login and no unit; a unit start
+# leaves no login; and a wake nobody has a name for leaves neither. So the four
+# witnesses stay OR-ed - ledger, ring log, unit audit, and the statistical
+# median-sleep detector - and a leg is clean only when ALL of them are silent.
+# ☠️ Do not retire the statistical detector now that attribution exists: it is
+# the only one of the four that is sensitive to a disturbance whose cause is not
+# known in advance, which is the only kind that has ever surprised this project.
+DROPPED = {}   # leg -> the witnesses that spoke; filled while printing, honoured below
+
+
+def leg_audit(d, leg):
+    """The leg's own audit lines. Returns the list of witnesses that spoke.
+
+    ☠️ SCOPE THE READ TO THIS LEG'S SECTION - the SAME trap leg_state() was fixed
+    for on this file, hours earlier, and the first version of this function walked
+    straight into it: it read the shared ladder log and applied leg A's audit lines
+    to every leg, convicting all three on one login. Demonstrated on this repo's own
+    census before it could reach a night. The night writes leg{X}/log.txt, which is
+    already scoped; the ladder writes one file with "LEG A (IMS=on)" headings, and
+    those headings are the boundaries.
+    """
+    reasons = []
+    txt = None
+    try:
+        txt = open(d / f'leg{leg}' / 'log.txt').read()   # per-leg file: already scoped
+    except OSError:
+        try:
+            shared = open(d / 'log.txt').read()
+        except OSError:
+            return reasons
+        heads = list(re.finditer(r'^#*\s*#*\s*LEG (\w+)\b', shared, re.M))
+        if heads:
+            for k, h in enumerate(heads):
+                if h.group(1) == leg:
+                    end = heads[k + 1].start() if k + 1 < len(heads) else len(shared)
+                    txt = shared[h.start():end]
+                    break
+            if txt is None:
+                return reasons          # this leg has no section: no audit, not a clean bill
+        else:
+            # ☠️ ONE UNHEADED FILE AND SEVERAL LEGS: there is no way to attribute an
+            # audit line to a leg, so attributing it to ALL of them is the safe
+            # direction. A false drop costs a leg; a missed one costs the answer.
+            txt = shared
+    for line in txt.splitlines():
+        m = re.match(r'#\s*audit:\s*(ssh logins|incoming calls)[^=]*=\s*(\d+)', line)
+        if m and int(m.group(2)) > 0:
+            reasons.append(f'{m.group(1)} = {m.group(2)}')
+        m = re.match(r'#\s*audit:\s*unexpected units started\s*=\s*(.+)', line)
+        if m and m.group(1).strip() not in ('none', ''):
+            reasons.append(f'unexpected units: {m.group(1).strip()}')
+    return reasons
+
+
 # ☠️ THE CONFIG CHECK AND THE RECONCILER READ THE SAME QMI GETTERS - and this
 # project has already been bitten once by a setter and getter that did not
 # correspond. If a getter reads the wrong switch, the configuration check lies
@@ -239,10 +306,15 @@ for leg in legs:
     # of the default must be a false alarm, never a missed one.
     st_leg = leg_state(d, leg) or STATE
     expensive = st_leg == 'expensive'
+    witnesses = leg_audit(d, leg)
     if ALARM and disturbed(r['med'], ALARM, expensive):
-        print(f"       ☠️☠️ THIS LEG WAS DISTURBED: median sleep {r['med']:.0f} s against a "
-              f"{ALARM:.0f} s alarm. Something woke the AP - an ssh login, a ping, a poller. "
-              f"The number above is not the sleeping floor of anything.")
+        witnesses.append(f"median sleep {r['med']:.0f} s against a {ALARM:.0f} s alarm")
+    if witnesses:
+        DROPPED[leg] = witnesses
+        print(f"       ☠️☠️ THIS LEG IS DROPPED FROM THE AGGREGATE: {'; '.join(witnesses)}.")
+        print(f"       Something woke the AP. The number above is not the sleeping floor of")
+        print(f"       anything, and no attribution of the wake changes that - naming the")
+        print(f"       source buys the next run, not this leg.")
     elif ALARM and expensive:
         print(f"       (median sleep {r['med']:.0f} s against a {ALARM:.0f} s alarm - expected for "
               f"a leg that holds a connection; the sleep test cannot see interference here, "
@@ -265,6 +337,11 @@ if MD:
 # after the band it was built from had become +-10.4. A number a human retypes is
 # a number that drifts from its own fit.
 res = {leg: leg_stats(load(d, leg), leg_state(d, leg) or STATE) for leg in legs}
+# ☠️ THE DROP HAS TO BITE HERE, not only in the printout above. A warning beside a
+# number that is then used anyway is how the rehearsal's 45.1 mA got published.
+for leg in list(res):
+    if leg in DROPPED:
+        res[leg] = None
 cheap = min((r for r in res.values() if r), key=lambda r: r['ma'], default=None)
 if cheap:
     for leg, r in res.items():
@@ -273,6 +350,15 @@ if cheap:
         gap = r['ma'] - cheap['ma']
         half = ((r['hi'] - r['lo']) ** 2 / 4 + (cheap['hi'] - cheap['lo']) ** 2 / 4) ** 0.5
         print(f"gap {leg} - cheapest: {gap:.1f} mA  +-{half:.1f}  (quadrature of the two within-leg bands)")
+if DROPPED:
+    print()
+    print('☠️ LEGS DROPPED FROM THE AGGREGATE (attribution does not restore them):')
+    for leg, why in DROPPED.items():
+        print(f'   {leg}: {"; ".join(why)}')
+    print('   A dropped leg is not a failed night. If a comparison still has one clean')
+    print('   leg per state, it stands on fewer legs and says so; if it does not, the')
+    print('   night answered nothing and the honest report is that, not the mean of')
+    print('   whatever survived.')
 print()
 print('☠️ THE CI IS WITHIN-LEG ONLY - the sampling noise of one leg of one boot.')
 print('   It says nothing about the PMI632 offset the whole project shares, and')
