@@ -1,0 +1,17 @@
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# Five minutes, for two reasons. It bounds how long a boot can sit in the
+# expensive configuration if the first pass ran before the modem was ready; and
+# it turns the journal into a time series of when the vector drifts back, which
+# is the open question of who rewrites it (ModemManager, the modem's NV default,
+# or its own carrier-profile mechanism on SIM detection).
+[Unit]
+Description=Re-assert the modem's IMS service switches periodically
+
+[Timer]
+OnBootSec=90s
+OnUnitActiveSec=5min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target

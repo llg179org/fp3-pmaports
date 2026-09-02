@@ -1,0 +1,21 @@
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# ☠️ THE ORDERING HERE IS A HINT, NOT THE MECHANISM. `After=ModemManager.service`
+# only says the unit started; ModemManager probes asynchronously and the modem
+# object appears tens of seconds later, and whatever restores the IMS defaults
+# may run later still. The script converges instead of racing - it reads back and
+# retries - and the paired timer runs it again every few minutes.
+[Unit]
+Description=Hold the modem's IMS service switches off (stops the 8.4 s IMS-PDN loop)
+After=ModemManager.service
+Wants=ModemManager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/fp3-ims-reconcile.py off
+# a failed pass is information, not a reason to disable the unit: the timer
+# will try again, and the journal keeps every disagreement with its timestamp
+SuccessExitStatus=0 1
+
+[Install]
+WantedBy=multi-user.target
