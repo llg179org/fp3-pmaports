@@ -1,0 +1,19 @@
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+[Unit]
+Description=Log every incoming call the modem sees (reachability census)
+After=ModemManager.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/mkdir -p /var/log/fp3
+ExecStart=/usr/local/bin/fp3-ringlog.py
+# ☠️ No RuntimeMaxSec. The measurement is open-ended - it runs for as many days as
+# it takes to accumulate calls - and an instrument that stops before its
+# measurement does loses the tail without an error. That has already happened
+# twice in this investigation.
+Restart=always
+RestartSec=10
+Nice=10
+
+[Install]
+WantedBy=multi-user.target
