@@ -1,18 +1,23 @@
 Sep 02 06:20:24.033693 fp3 [94629]: <msg> [modem1/call0] call state changed: unknown -> ringing-in (incoming-new)
-Sep 02 06:20:24.055300 fp3 gnome-calls[3008]: MM call '/org/freedesktop/ModemManager1/Call/0' changed state to `RINGING_IN': New incoming call
-Sep 02 06:20:24.055359 fp3 gnome-calls[3008]: New incoming call (/org/freedesktop/ModemManager1/Call/0) from +36XXXXXXXXX
-Sep 02 06:20:24.062097 fp3 gnome-calls[3008]: Call `/org/freedesktop/ModemManager1/Call/0' added
-Sep 02 06:20:24.096607 fp3 fp3-voiced[1045]: calls: /org/freedesktop/ModemManager1/Call/0
 Sep 02 06:20:24.138902 fp3 fp3-voiced[1045]:   call 0 state=ringing-in (was -)
 Sep 02 06:20:24.537467 fp3 gnome-calls[3008]: Feedback 'phone-incoming-call' triggered successfully
 Sep 02 06:20:24.537513 fp3 gnome-calls[3008]: Setting ring state to 'ringing'
 Sep 02 06:20:28.171069 fp3 [94629]: <msg> [modem1/call0] call state changed: ringing-in -> terminated (unknown)
-Sep 02 06:20:28.178277 fp3 gnome-calls[3008]: MM call '/org/freedesktop/ModemManager1/Call/0' changed state to `TERMINATED': Unknown reason
 Sep 02 06:20:28.180281 fp3 gnome-calls[3008]: Call state changed from Incoming call (5) to Call ended (7)
 Sep 02 06:20:28.190552 fp3 gnome-calls[3008]: Ended feedback 'phone-incoming-call' successfully
 Sep 02 06:20:28.193235 fp3 gnome-calls[3008]: Feedback ended
 Sep 02 06:20:28.193894 fp3 gnome-calls[3008]: Setting ring state to 'inactive'
-Sep 02 06:20:28.225849 fp3 fp3-voiced[1045]: calls: /org/freedesktop/ModemManager1/Call/0
-Sep 02 06:20:28.251089 fp3 gnome-calls[3008]: Removing call `/org/freedesktop/ModemManager1/Call/0'
-Sep 02 06:20:28.251324 fp3 gnome-calls[3008]: Removed call `/org/freedesktop/ModemManager1/Call/0'
 Sep 02 06:20:28.262367 fp3 fp3-voiced[1045]:   call 0 state=? (was ringing-in)
+Sep 02 06:24:00.032105 fp3 [94629]: <wrn> [modem1] failed deleting SMS message '/org/freedesktop/ModemManager1/SMS/0': No SMS found with path '/org/freedesktop/ModemManager1/SMS/0'
+Sep 02 06:25:22.777297 fp3 [94629]: <msg> [modem1/call1] call state changed: unknown -> ringing-in (incoming-new)
+Sep 02 06:25:22.861592 fp3 fp3-voiced[1045]:   call 1 state=ringing-in (was -)
+Sep 02 06:25:23.105934 fp3 gnome-calls[3008]: Feedback 'phone-incoming-call' triggered successfully
+Sep 02 06:25:23.105984 fp3 gnome-calls[3008]: Setting ring state to 'ringing'
+Sep 02 06:25:27.465412 fp3 [94629]: <msg> [modem1/call1] call state changed: ringing-in -> active (accepted)
+Sep 02 06:25:27.474649 fp3 gnome-calls[3008]: Call state changed from Incoming call (5) to Call active (1)
+Sep 02 06:25:27.558095 fp3 fp3-voiced[1045]:   call 1 state=active (was ringing-in)
+Sep 02 06:25:27.576708 fp3 gnome-calls[3008]: Ended feedback 'phone-incoming-call' successfully
+Sep 02 06:25:27.576972 fp3 gnome-calls[3008]: Feedback ended
+Sep 02 06:25:27.577001 fp3 gnome-calls[3008]: Setting ring state to 'inactive'
+Sep 02 06:26:24.417237 fp3 [94629]: <msg> [modem1/call1] call state changed: active -> terminated (unknown)
+Sep 02 06:26:24.423861 fp3 gnome-calls[3008]: Call state changed from Call active (1) to Call ended (7)
