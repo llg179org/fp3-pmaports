@@ -19,6 +19,23 @@
 # dV/dt. Running the expensive state first walks the pack off the plateau before
 # the leg whose number matters most.
 #
+# ☠️ WHAT THIS FIRST VERSION GETS WRONG, named by outside review while it ran and
+# left here because the run could not be stopped to fix it - the phone sleeps in
+# 600 s rtcwake cycles and the USB link disappears with it, so ssh timed out:
+#
+#   - NO BAND PIN. The band is logged at each leg's END only. This repo prices the
+#     band at ~17 pp of duty and, worse, at an RF term the duty model does not
+#     carry (eutran-20 measured HIGHER duty and ~50 mA LOWER current). One
+#     overnight reselection can therefore inject an error the size of the effect.
+#     A rerun must pin the band and sample it mid-leg.
+#   - dV/dt IS THE WRONG INSTRUMENT AT 100 % / 4.32 V. The top of the curve is
+#     flat; 600 s at 50-90 mA moves a few mV. If the PMI632 QG `charge_counter`
+#     is live, coulometry is the primary number and the voltage slope is only a
+#     cross-check - and then a third (A') leg is cheap enough to add.
+#   - THE LABEL. With the AP asleep the delta is the loop's SYSTEM cost, not "the
+#     modem duty's price": it carries the difference in suspend residency too.
+#     Log suspend entries per leg so the two can be written apart.
+#
 # ☠️ NO CABLE IS PULLED - the USB input is suspended in the PMIC
 # (`echo Unknown > .../pmi632-charger/status`), so ssh over USB keeps working
 # while the system runs from the battery. THAT BIT SURVIVES A WARM REBOOT. It is
