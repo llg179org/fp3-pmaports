@@ -9666,3 +9666,41 @@ cheapest band available reads 31.8 %. Nothing here gets near 5 %, so that
 points against a ≤50 mA target. It trades coverage for power, so the honest form
 is a preference and not a lock — and it must be re-measured across a *suspend*,
 since these were awake windows.
+
+## ☠️☠️ 2026-09-02 19:22 — the watchdog was the disturbance, in the one leg built to detect it
+
+The overnight replication (item 85: three boots, one OCV pair around the night)
+started at 19:08 and was left under a host-side watcher that ssh'd into the phone
+every **300 s** — read the run log, read the state file, disconnect. Fifteen
+logins inside a 75-minute leg.
+
+That morning, the same day, three separate defenses had been built against exactly
+that disturbance, because my own interactive ssh had twice made a leg's median
+sleep 9 s against a 90 s alarm: the fit's median-sleep detector, the leg's own
+`Accepted publickey` audit, and a PreToolUse gate refusing ssh while a measurement
+runs. **All three would have fired on the watchdog, and all three would have been
+right.** The audit convicts a leg on `logins > 0`; the night would have come back
+all-red on data that only the watcher had spoiled.
+
+Two things worth keeping out of it, and neither is "poll less".
+
+**A watcher that reaches into the thing it watches is part of the experiment.** It
+has a duty cycle, it draws current, it wakes an AP that is being measured for how
+long it stays asleep — and it is invisible in the design because it lives on the
+other machine, outside every guard that was written for the phone. The PreToolUse
+gate does not see it (the gate covers *my* tool calls, and the loop was already
+running); the device-side lock does not see it (there is none yet, item 81). It
+was budgeted as monitoring and behaved as load.
+
+**An audit that only counts cannot be told the difference between the disturbance
+and the instrument watching for it.** The fix is attribution, not tolerance: the
+watcher now polls every **1800 s** and stamps every poll, with a wall clock, into
+a host-side log (`night-watch/polls.tsv`). The morning triage can then subtract
+its own footprint from the logins the leg counted instead of either ignoring them
+(which is how the first disturbed leg got published) or condemning the night.
+
+☠️ The general shape has now cost this project three times: **the measurement and
+the thing that watches the measurement are one object.** It was written down after
+the second time as "always start a background watcher in the same response as the
+measurement" — a rule about not *forgetting* the watcher. The part that was
+missing is that the watcher then has to be paid for.

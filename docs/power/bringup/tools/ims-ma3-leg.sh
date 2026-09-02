@@ -117,6 +117,15 @@ units=$(journalctl --since "$LEG_START_WALL" -o cat 2>/dev/null \
 # do not happen at 3 am.
 calls=$(awk -v s="$LEG_START_WALL" '$0 !~ /^#/ && $1" "$2 >= s' /var/log/fp3/ringlog.tsv 2>/dev/null | grep -c . || true)
 
+# ☠️☠️ AND THE WATCHDOG IS ONE OF THEM. 2026-09-02 19:22: the overnight run was
+# being watched by a host-side loop that ssh'd in every 300 s - about fifteen
+# logins inside a 75 minute leg, each one an AP wake, in a leg whose whole point
+# is how long the AP stays asleep. The instrument built that morning to catch my
+# ssh disturbance would have condemned every leg of the night, and it would have
+# been RIGHT. The watchdog now polls every 1800 s and stamps each poll on the
+# HOST (night-watch/polls.tsv) so the morning can attribute the logins it finds.
+# The lesson is not "poll less": a watcher that reaches into the thing it watches
+# is part of the experiment, and has to be budgeted like any other load.
 s "# audit: ssh logins during the leg = ${logins:-0}"
 s "# audit: unexpected units started = ${units:-none}"
 s "# audit: incoming calls during the leg = ${calls:-0}"
