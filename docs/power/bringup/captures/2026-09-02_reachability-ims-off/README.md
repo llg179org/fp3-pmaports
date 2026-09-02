@@ -43,6 +43,81 @@ path over SGs, and it does. The journal's `failed deleting SMS message ... No SM
 found` at 06:24:00 is a post-read cleanup race in ModemManager, not a delivery
 failure — the message was received.
 
+---
+
+# 2026-09-02 08:41–08:54 — four more calls, and the number that has to go beside them
+
+Four incoming calls with the phone asleep on battery, IMS=off, 3–5 minutes apart
+so it went back to sleep between them. All four rang.
+
+| call | modem `ringing-in` | ringtone | device-side |
+|---|---|---|---:|
+| 1 | 08:41:34.238 | 08:41:34.758 | 520 ms |
+| 2 | 08:47:07.139 | 08:47:07.479 | 339 ms |
+| 3 | 08:51:02.252 | 08:51:02.607 | 355 ms |
+| 4 | 08:54:37.618 | 08:54:37.944 | 326 ms |
+
+**385 ms mean, 92 ms spread**, and the 329 ms measured at 06:25 falls inside it.
+
+## ☠️ FOUR OUT OF FOUR IS COMPATIBLE WITH LOSING EVERY SECOND CALL
+
+There are two claims here and only one of them is closed.
+
+**Closed: the call path works with IMS off.** Four calls rang, one was answered
+and carried 57 s of speech both ways, an SMS arrived over SGs. That is a
+functional proof, and functional proofs do not need large N.
+
+**Not closed, and not close: that the delivery *rate* is unharmed.** From four
+successes out of four, the one-sided 95 % lower bound on the delivery probability
+is
+
+    p ≥ 0.05^(1/4) = 0.473
+
+so this evidence is equally consistent with a phone that misses **half** its
+calls. For the record, what the same rule demands:
+
+| to claim | consecutive successes needed |
+|---|---:|
+| p ≥ 0.86 | 20 |
+| p ≥ 0.95 | 59 |
+| p ≥ 0.99 | 299 |
+
+And the four samples do not even reach into the dangerous corner: they were 13
+minutes apart in total, on one boot, after **minutes** of idleness. A paging miss
+after **hours** of idle and deep sleep — the case a user would actually hit
+overnight — is unsampled.
+
+☠️ This is the same error as quoting 40.1 mA from one leg of one boot, moved to
+the success-rate side, and it is the more expensive half: a few mA of runtime is
+an inconvenience, a missed call is a silent, user-facing failure and the reason a
+phone is a phone. It is also the exact shape of the speaker-amp saga, where a
+battery of checks reported 27 ok / 0 failed against a silent speaker.
+
+**So no report may say "reachability is fine" on this evidence.** It may say the
+call path works, and it must print 0.473 next to the 4/4.
+
+☠️ **And "the ~6 s the caller waits is the network" is an attribution, not a
+measurement.** It is plausible (alerting plus CSFB redirection), but nothing here
+measured it. Either label it a hypothesis or measure the same call on the oracle
+slot, which does not use CSFB.
+
+## The machine-only way to actually close it
+
+A second human is not required. Scheduled calls from a SIP/VoIP account —
+N=30, spread across a night with **hours** between them — sample the corner that
+matters and need only a cron and a few forints of balance. That is what the open
+item asks for.
+
+## ☠️ The instrument outlived by its own measurement, again
+
+The recorder for this window was started with `RuntimeMaxSec=1800` and stopped at
+08:57, so calls placed after 09:00 were never recorded and are simply lost. The
+same failure class had already appeared in this investigation once — the fuel
+gauge's 76 s window against a 60 s sleep. **The lifetime of the instrument has to
+be checked against the length of the measurement**, and since it has now happened
+twice in one day it belongs in the measurement wrapper, not in anybody's
+attention.
+
 ## ☠️ What this does NOT yet establish
 
 - **The corona test.** This ran with the AP awake, on the cable. The one that
