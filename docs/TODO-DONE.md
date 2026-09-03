@@ -2514,3 +2514,24 @@ so that `after:` and `continues:` references still resolve.
       why: review B7 — a maintainer reads the file, not the tree
       these lines survived the 'remove the commented-out code' patch and one of them contradicts any claim of measured values. The vdig hardcode and the FP3-named delays stay in 140 because moving them changes what the sensor does at power-up
       lane: upstreaming
+
+- [x] **147.** Cut the four host-only power driver series from the 2026-09-03 plan (STATUS 'Planned series'): qcom-mpm-wakeup-timer (3 wip commits → 1, on tip/irq/core), pinctrl-msm8953-mpm (pinctrl/for-next), qcom-smd-wake (fold d0e738c107e3 into 8c9b25687119, rpmsg), smsm-proc-awake (write qcom,smsm.yaml binding first, qcom for-next); b4 prep each, checkpatch --strict, section in STATUS  — closed 2026-09-03 20:56
+      lane: upstreaming
+      why: review §4 — each patches a torvalds file with a measurement behind it and no D- dependency
+
+- [x] **148.** Cut the ASoC/slimbus/media/LEDs series from the 2026-09-03 plan: wcd-digital-mclk (sound/for-next), ngd-disable-stream (squash c44534943e82), camss-rdi-stride (media/next, name the libcamera half), qcom-flash-pmi632 (binding then driver+Kconfig folded), ak7375-pm (AK7374 id alone; PM rework to final shape; Fixes: only where blame on master supports it); b4 prep each, checkpatch --strict, section in STATUS  — closed 2026-09-03 21:03
+      lane: upstreaming
+      why: same re-triage, second half; all host-only
+
+- [x] **150.** Implement the #144 decision on wip/7.1.3/camera: move the rear-camera nodes out of sdm632-fairphone-fp3.dts into sdm632-fairphone-fp3-rear-camera-ak7374.dtso, add -rear-camera-lc898217.dtso from Bert's node set (IMX363@0x10, LC898217@0x72 with vaf+vio), compose both in arch/arm64/boot/dts/qcom/Makefile like sm8550-hdk-rear-camera-card; dtbs_check both composed dtbs on the host; then the phone lane must switch the flashed dtb to the -ak7374 composite (add a phone task when done)  — closed 2026-09-03 21:07
+      lane: upstreaming
+      keeps the in-tree dtb name valid
+      why: #150 landed the overlay split on all three branches; a build that keeps the old dtb name silently loses the camera
+
+- [x] **153.** qcom-smd-wake cover letter: Link: Caleb Connolly's 2023 glink thread (20230117142414.983946-1-caleb.connolly@linaro.org) and MM work item 694, CC Caleb + Bert; state it is the SMD counterpart, answer Bjorn's EPOLLWAKEUP question the way Caleb did (arming is policy, sysfs per edge), and say why no port filter in the kernel (port 52 = WMS on Bert's firmware, DSD on ours - per-firmware numbers); generated-content.rst disclosure  — closed 2026-09-03 21:31
+      lane: upstreaming
+      why: D-4 prior art found 2026-09-03; a maintainer who saw Caleb's patch will ask how this relates
+
+- [x] **155.** Assisted-by model correction on the eight series cut 2026-09-03 (all but qcom-smd-wake): for each patch take the model from its wip commit's Co-authored-by (git log on wip/7.1.3/{power,camera}) and set Assisted-by: Claude:<that model id>, adding claude-fable-5-1 as a second trailer where 5.1 reshaped the patch; force-with-lease after tagging; STATUS Done line per series  — closed 2026-09-03 21:33
+      lane: upstreaming
+      why: skill rule: name the model that did the work; #147/#148 wrote fable-5-1 on all, but the code was written 2026-08 by Fable 5 (and earlier models on camera)
