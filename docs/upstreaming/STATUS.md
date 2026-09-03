@@ -25,10 +25,10 @@ with a link.
 | qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | `Fixes:` from blame on torvalds/master | 2026-09-03 |
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
-| qcom-mpm-wakeup-timer | power | irqchip (tglx) | 1 (from 3) | planned | – | us | cut on `tip/irq/core`; squash the three `wip` steps into the one shape upstream never had | 2026-09-03 |
-| pinctrl-msm8953-mpm | power | pinctrl (Linus W. / Bjorn) | 1 | planned | – | us | cut on `pinctrl/for-next` | 2026-09-03 |
-| qcom-smd-wake | power | rpmsg (Bjorn, Mathieu) | 1 (from 2) | planned | – | us | fold the double-teardown fix into the wake-IRQ patch (bisect rule) | 2026-09-03 |
-| smsm-proc-awake | power | qcom `for-next` + DT binding | 2 | planned | – | us | write the binding first; ask whether the bit belongs in DT or in per-SoC match data | 2026-09-03 |
+| qcom-mpm-wakeup-timer | power | irqchip `tip/irq/core` | 1 | rebased | – | us | cover letter; a trial build on the base (no cross toolchain here) | 2026-09-03 |
+| pinctrl-msm8953-mpm | power | pinctrl `for-next` | 1 | rebased | – | us | cover letter; send with or right after the dtsi series is visible | 2026-09-03 |
+| qcom-smd-wake | power | rpmsg `rpmsg-next` | 1 | rebased | – | us | cover letter | 2026-09-03 |
+| smsm-proc-awake | power | qcom `for-next` | 2 | rebased | – | us | `dt_binding_check` (no dtschema here); the DT-vs-match-data question on the cover | 2026-09-03 |
 | msm8953-dtsi-idle | power | qcom SoC (`arm64: dts: qcom`) | ≤ 9 | planned, one patch held | – | us | after the three driver series above; **`system-pc` affinity patch held** on Bert's touch regression (#142) | 2026-09-03 |
 | wcd-digital-mclk | power | ASoC (Srini, Mark) | 1 | planned | – | us | cut on `sound/for-next` | 2026-09-03 |
 | ngd-disable-stream | power | slimbus (Srini) | 1 (from 2) | planned | – | us | squash the alignment fixup | 2026-09-03 |
@@ -575,6 +575,118 @@ Done: –
 
 ---
 
+## qcom-mpm-wakeup-timer
+
+```
+Category:    power
+Tree:        irqchip — Thomas Gleixner, Radu Rendec; CC linux-kernel
+Source:      upstreaming/qcom-mpm-wakeup-timer — b4 prep branch, cut 2026-09-03 (#147)
+             change-id 20260903-upstreaming-qcom-mpm-wakeup-timer-669405f46920
+             base-commit 1ad6d4a722f5 (tip/irq/core, 2026-07-21)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+One patch from three `wip` commits (`97951baf7a85`, `a8cb2c420b3d`, `ff064e2b608c`):
+the later two edit lines the first one added (the one-second cap, the `ktime_get()`
+read), and upstream never had a wakeup timer in this driver, so the logical change is
+the final shape. Distillation check: the patch is the combined `wip` diff of
+`irq-qcom-mpm.c` applied verbatim (`git apply -3`, clean). The message keeps the
+measured facts only — zero words before; with the development-time cap, 91 APSS
+shutdowns across a 91 s suspend, which is what proved the tick domain.
+
+Test: measured on the FP3 through `wip/7.1.3/power`; not yet built from this base. Checkers: checkpatch --strict clean.
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter (the `generated-content.rst` disclosure); a build on the base
+
+Done:
+- 2026-09-03  cut on `tip/irq/core`, pushed
+
+## pinctrl-msm8953-mpm
+
+```
+Category:    power
+Tree:        pinctrl — Linus Walleij, Bjorn Andersson, Bartosz Golaszewski; CC linux-gpio, linux-arm-msm
+Source:      upstreaming/pinctrl-msm8953-mpm — b4 prep branch, cut 2026-09-03 (#147)
+             change-id 20260903-upstreaming-pinctrl-msm8953-mpm-bc49d38d8701
+             base-commit d067f0f4c96c (pinctrl/for-next, 2026-08-16)
+             sent rounds: – (none yet)
+Depends:     the dtsi `wakeup-parent` (msm8953-dtsi-idle) makes it do something; inert without it
+```
+
+One 14-line patch (`aa3fc7ec6a42`), message reworded so it no longer says the SoC DT
+"now describes" the MPM — that is a separate series. The table is the downstream
+`mpm_msm8953_gpio_chip_data[]` transposed, cited as a finding.
+
+Test: measured on the FP3 through `wip/7.1.3/power`. Checkers: checkpatch --strict clean.
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter
+
+Done:
+- 2026-09-03  cut on `pinctrl/for-next`, pushed
+
+## qcom-smd-wake
+
+```
+Category:    power
+Tree:        rpmsg — Bjorn Andersson, Mathieu Poirier; CC linux-remoteproc, linux-arm-msm
+Source:      upstreaming/qcom-smd-wake — b4 prep branch, cut 2026-09-03 (#147)
+             change-id 20260903-upstreaming-qcom-smd-wake-badfecb4381d
+             base-commit 6c4fbf1ce493 (rpmsg/rpmsg-next, 2026-07-29)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+One patch from two `wip` commits (`8c9b25687119` + `d0e738c107e3`): the double
+teardown is only reachable once an edge is wakeup-capable, so a series with only the
+first applied crashes on remoteproc stop — folded (bisect rule), the oops kept in the
+message without timestamps. checkpatch's one warning is the 84-char oops line.
+
+Test: measured on the FP3 (incoming call wakes s2idle; the crash reproduced and gone). Checkers: checkpatch --strict, 1 warning (the oops line).
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter
+
+Done:
+- 2026-09-03  cut on `rpmsg/rpmsg-next`, pushed
+
+## smsm-proc-awake
+
+```
+Category:    power
+Tree:        qcom — Bjorn Andersson, Konrad Dybcio; binding also to Rob Herring, Krzysztof Kozlowski, Conor Dooley; CC linux-arm-msm, devicetree
+Source:      upstreaming/smsm-proc-awake — b4 prep branch, cut 2026-09-03 (#147)
+             change-id 20260903-upstreaming-smsm-proc-awake-1deb994adf4a
+             base-commit ba20122d4c31 (qcom/for-next, 2026-09-03)
+             sent rounds: – (none yet)
+Depends:     –; the dtsi consumer (`qcom,proc-awake-bit = <12>`) travels in msm8953-dtsi-idle
+```
+
+Two patches: the binding (`qcom,proc-awake-bit`, uint32 ≤ 31, written 2026-09-03 —
+none existed) first, then the driver (`407669069a90`). ☠️ The binding has only been
+YAML-parsed here; `make dt_binding_check` needs dtschema, which this host lacks — run
+it before v1. Cover-letter question: DT property or per-SoC match data — downstream
+drives bit 12 on msm8953, and whether other SoCs share it decides the answer.
+
+Test: measured on the FP3 through `wip/7.1.3/power`. Checkers: checkpatch --strict clean on both.
+
+Rounds: none yet.
+
+To do:
+- [ ] `dt_binding_check` on a host with dtschema
+- [ ] cover letter with the DT-vs-match-data question
+
+Done:
+- 2026-09-03  cut on `qcom/for-next`, pushed
+
 ## Planned series — the power re-triage (2026-09-03)
 
 Queue task #141, review §4. Every item below patches a file that exists in
@@ -584,16 +696,11 @@ there — no MPM node, `rpm-stats` or `domain-idle-states` in `msm8953.dtsi`, no
 `disable_stream` in `qcom-ngd-ctrl.c`, no PMI632 in `leds-qcom-flash.c`, no
 `proc-awake` in `qcom,smsm.yaml`), has a measurement on the FP3 behind it, and
 depends on none of D-1/D-2/D-3. Maintainers from `get_maintainer.pl -f` on a
-v7.3-rc1 tree, 2026-09-03. **Nothing is cut yet** — each row is a `b4 prep`
-still to be made; when it is, it gets a section of its own above and this table
-shrinks.
+v7.3-rc1 tree, 2026-09-03. Each row is a `b4 prep` still to be made; when it is, it gets a section of its own
+above and leaves this table (four did on 2026-09-03, #147).
 
 | series | tree, maintainers | `wip` commits → patches | shape decisions |
 |---|---|---|---|
-| **qcom-mpm-wakeup-timer** | irqchip — Thomas Gleixner, Radu Rendec; linux-kernel | `97951baf7a85` + `a8cb2c420b3d` + `ff064e2b608c` → **1** | ☠️ the third `wip` step deletes lines the first one added (`MPM_MAX_SLEEP_NS`, the `ktime_get_mono_fast_ns()` read); upstream never had a wakeup timer in this driver, so the logical change is one patch in its final shape. Not a `Fixes:` — an enablement (the RPM was never told when to wake the AP) |
-| **pinctrl-msm8953-mpm** | pinctrl — Linus Walleij, Bjorn Andersson, Bartosz Golaszewski; linux-gpio, linux-arm-msm | `aa3fc7ec6a42` → 1 | 14-line `wakeirq_map`, same shape as the msm8909/msm8996 maps already in tree; cite the downstream pin→MPM table as the *finding*, not as copied code |
-| **qcom-smd-wake** | rpmsg — Bjorn Andersson, Mathieu Poirier; linux-remoteproc, linux-arm-msm | `8c9b25687119` + `d0e738c107e3` → **1** | the double-teardown crash is only reachable once the edge is wakeup-capable, so a series with only the first patch applied crashes on remoteproc stop — fold it in (bisect rule). Keep the oops in the message, timestamps trimmed. Measurement: incoming call on QRTR port 39 wakes s2idle (2026-08-30) |
-| **smsm-proc-awake** | qcom SoC — Bjorn Andersson, Konrad Dybcio; + DT maintainers for the binding | `407669069a90` → **2** (binding first, `Documentation/devicetree/bindings/soc/qcom/qcom,smsm.yaml`, then the driver) | ☠️ no binding exists — write it. Maintainer question to put in the cover, not to guess: is the bit a DT property (`qcom,proc-awake-bit`, current shape) or per-SoC match data? Downstream drives bit 12 on msm8953; whether other SoCs share it decides the answer. The dtsi consumer travels in **msm8953-dtsi-idle** |
 | **msm8953-dtsi-idle** | qcom SoC DT — Bjorn Andersson, Konrad Dybcio; devicetree, linux-arm-msm | `3e9b16386eb5`, `a58956fb30c1`, `6052a236ba6b`, `85d0b48961f6`, `14210263b650`, `c2e90281cdfe`, `c12afd4ee241`, `bca898cde190`; **`0314fee3ce35` held** → ≤ 9 | sent **after** the three driver series (the MPM node and `wakeup-parent` are inert without the pinctrl map; the SMSM bit needs its binding). ☠️ **`0314fee3ce35` (system-pc affinity, psci-suspend-param 0x42000353) is held**: Bert Karwatzki reports it breaks hx83112b touch after resume on his FP3 (mail 2026-09-03, queue #142); until reproduced or disproved it does not go out. `rpm-master-stats` (`qcom,rpm-master-stats.yaml`) and `rpm-stats` (`qcom-stats.yaml`) bindings exist upstream — check the compatible strings at cut time, do not assume |
 | **wcd-digital-mclk** | ASoC — Srinivas Kandagatla, Mark Brown; linux-sound | `4b09b2158dd8` → 1 | 29 lines; the measurement is the mclk held for the life of the boot on a codec with no stream. Cut on `sound/for-next` like `wcd9335-audio`, but **separate series** — different driver, standalone |
 | **ngd-disable-stream** | slimbus — Srinivas Kandagatla; linux-arm-msm, linux-sound | `dbb414e0be28` + `c44534943e82` → **1** | squash the alignment fixup. The ADSP keeps the channel allocated without it — say what was observed (the failure on the second stream), name the capture |
