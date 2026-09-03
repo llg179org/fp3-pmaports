@@ -532,6 +532,33 @@ Test: not yet. Checkers: dtbs_check as a differential (the base fails it by itse
 
 Rounds: none yet.
 
+**Two rear-camera modules — decided 2026-09-03 (#144), to be confirmed on the cover
+letter.** Fairphone shipped the FP3 with two rear modules that the firmware cannot
+tell apart: IMX363 @0x1a + AK7374 @0x0c (ours, measured) and IMX363 @0x10 +
+LC898217 @0x72 (Bert Karwatzki's, tested by him). The board DTS as written
+describes ours and leaves his without a camera. Bert proposed a common dtsi and one
+dts per module; the tree already has a pattern made for exactly this case, and it
+is the one we take: **a build-time overlay per module**, like
+`sm8550-hdk-rear-camera-card.dtso` / `sm8650-hdk-rear-camera-card.dtso` and
+`apq8016-sbc-d3-camera-mezzanine.dtso` (checked in torvalds/master 940de590b839;
+composed in `arch/arm64/boot/dts/qcom/Makefile` as
+`<board>-<card>-dtbs := <board>.dtb <board>-<card>.dtbo`).
+
+- `sdm632-fairphone-fp3.dts` keeps its name and its dtb, with no rear camera —
+  nothing that boots it today changes.
+- `sdm632-fairphone-fp3-rear-camera-ak7374.dtso` and
+  `sdm632-fairphone-fp3-rear-camera-lc898217.dtso` carry the `&cci_i2c0` sensor +
+  actuator + EEPROM nodes, the `&camss`/`&csiphy0` endpoint and the flash LED
+  (whatever is module-specific — measure the diff between the two node sets, do not
+  assume); the Makefile composes `sdm632-fairphone-fp3-rear-camera-{ak7374,lc898217}.dtb`.
+- Over Bert's dtsi + two dts: no rename of an in-tree dts, the composed dtbs are
+  built and `dtbs_check`-ed like any other, and the split is the maintainers' own.
+- Cover-letter question, now narrow: *"the module is not detectable from
+  firmware; is the rear-camera-card overlay pattern acceptable for a phone, and is
+  naming by actuator the right key?"*
+- Open: which module is the earlier one (Bert writes "older(?)"); the EEPROM at
+  0x50 may say — asked him for its contents.
+
 To do:
 - [ ] cut after the driver series are `applied`; one commit per logical step in the `arm64: dts: qcom: sdm632-fairphone-fp3: <verb> <thing>` form
 - [ ] every enabled node measured working on the device (unbound-node check from the skill)
