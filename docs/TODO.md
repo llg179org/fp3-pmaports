@@ -227,13 +227,21 @@ repeated.
       lane: upstreaming
       after: 142
       why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
-- [ ] 150. Implement the #144 decision on wip/7.1.3/camera: move the rear-camera nodes out of sdm632-fairphone-fp3.dts into sdm632-fairphone-fp3-rear-camera-ak7374.dtso, add -rear-camera-lc898217.dtso from Bert's node set (IMX363@0x10, LC898217@0x72 with vaf+vio), compose both in arch/arm64/boot/dts/qcom/Makefile like sm8550-hdk-rear-camera-card; dtbs_check both composed dtbs on the host; then the phone lane must switch the flashed dtb to the -ak7374 composite (add a phone task when done)
-      lane: upstreaming
-      keeps the in-tree dtb name valid
-      why: #150 landed the overlay split on all three branches; a build that keeps the old dtb name silently loses the camera
+
 - [ ] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
       lane: phone
-      why: #150 landed the overlay split on all three branches (wip c6996a7c79c3, debug-int 7f18166c7b7c); a build that keeps the old dtb name silently loses the camera<!-- FP3-QUEUE:END -->
+      why: #150 landed the overlay split on all three branches (wip c6996a7c79c3, debug-int 7f18166c7b7c); a build that keeps the old dtb name silently loses the camera
+- [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
+      lane: upstreaming
+      until: when/he-replies
+      why: asked in the 2026-09-03 mail; nothing to do until he answers
+- [ ] 153. qcom-smd-wake cover letter: Link: Caleb Connolly's 2023 glink thread (20230117142414.983946-1-caleb.connolly@linaro.org) and MM work item 694, CC Caleb + Bert; state it is the SMD counterpart, answer Bjorn's EPOLLWAKEUP question the way Caleb did (arming is policy, sysfs per edge), and say why no port filter in the kernel (port 52 = WMS on Bert's firmware, DSD on ours - per-firmware numbers); generated-content.rst disclosure
+      lane: upstreaming
+      why: D-4 prior art found 2026-09-03; a maintainer who saw Caleb's patch will ask how this relates
+- [~] 154. Next mail to Bert (person sends): tell him port 52 is DSD on our firmware (measured 2026-08-30), i.e. the qrtr-lookup numbers are per-firmware, which confirms his own caveat; say our qcom-smd-wake keeps the filter in user space and uses a wake IRQ instead of IRQF_NO_SUSPEND; ask whether he wants to be CC'd / co-credited (Reported-by or a Link: to his note) on the series
+      lane: upstreaming
+      until: when/he-replies
+      why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
