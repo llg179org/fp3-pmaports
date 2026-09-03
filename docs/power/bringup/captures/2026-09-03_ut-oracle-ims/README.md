@@ -67,3 +67,28 @@ ut-ssh 'python3 /usr/share/ofono/scripts/list-contexts'
 ut-ssh 'getprop | grep -i ims'
 # back: reboot to bootloader, fastboot set_active b, fastboot reboot
 ```
+
+## The attach-PDN list on both slots (queue 55)
+
+`pmos-attach-pdn.txt`, taken on slot b at 12:53, four minutes after the return,
+against `contexts-and-operators.txt` from the oracle.
+
+| | pmOS (slot b) | UT oracle (slot a) |
+|---|---|---|
+| attach APN | **`INTERNET`**, ipv4, connected | `internet.vodafone.net` (context1, active) |
+| MMS | profiles 10 and 13, `mms.vodafone.net` | context2, `mms.vodafone.net` |
+| IMS | **profiles 11 and 14, `ims`, ipv4v6** | context3, `ims`, `Protocol = dual` |
+
+Two things follow.
+
+**The IMS profile is present on both slots.** Profiles 10–14 are named
+`qdp_profile` — the vendor's Qualcomm Data Profile entries, persistent in the
+modem's own storage. They are not created by whichever OS is booted and they
+survive the slot switch, which is consistent with IMS registration coming up
+immediately on the oracle rather than being negotiated from scratch.
+
+☠️ **Our attach PDN is `INTERNET`, the vendor's is `internet.vodafone.net`.** We
+attach with a different APN string from the one the vendor stack uses. Nothing so
+far has depended on this knowingly, but the attach PDN is part of every bearer
+measurement taken on this device, so it belongs in the record rather than in
+someone's memory.

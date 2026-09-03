@@ -147,7 +147,7 @@ repeated.
 - [x] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
       why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
       lane: phone
-- [ ] 55. Attach-PDN list on both slots
+- [x] 55. Attach-PDN list on both slots
       after: 116
       why: the oracle half is DONE (2026-09-03 capture 2026-09-03_ut-oracle-ims/contexts-and-operators.txt: internet APN active with a real address, mms, and an ims-type context, APN 'ims', protocol dual). What remains is the pmOS half on slot b and the comparison
       lane: phone
