@@ -21,18 +21,19 @@ Worked across two real bases — `7.0.9` (retired, kept as history) and `7.1.3`
 | base (upstream fork) | `7.0.9/main` | `7.1.3/main` |
 | work + fixes | `wip/7.0.9/{audio,voice,camera,charger}` | `wip/7.1.3/{audio,voice,camera,charger,sensor}` |
 | device build | `integration/7.0.9` | `integration/7.1.3` |
-| LKML minimal series | — *(rolled straight into 7.1.3)* | `submit/7.1.3/{audio,voice,camera,charger,sensor}` |
+| LKML series | — *(rolled straight into 7.1.3)* | `upstreaming/<series>` — **not base-relative**; cut from `wip/7.1.3/*` onto each destination tree's `-next` (was `submit/7.1.3/{audio,…}` until 2026-09-03) |
 | package `pkgver` | `7.0.9` | `7.1.3` |
 
-`7.1.3` was brought up cleanly, so its `wip` and `submit` branches reach the same
+`7.1.3` was brought up cleanly, so its `wip` and series branches reach the same
 end state; on a messier bump they diverge — `wip` carries the fix history,
-`submit` the distilled series. `sensor` is the exception in the other direction:
-its `submit` branch is one patch out of twelve, because most of that category
-sits on an import that cannot carry a DCO
+`upstreaming/<series>` the distilled series. `sensor` is the exception in the
+other direction: its series is one patch out of twelve, because most of that
+category sits on an import that cannot carry a DCO
 ([why](sensors/README.md#why-the-submit-series-is-one-patch)).
 
 Same end state is not the same as same commits, and it is worth checking rather
-than assuming: `git diff wip/<base>/<cat> submit/<base>/<cat>` must be empty. It
+than assuming: `git diff wip/<base>/<cat> upstreaming/<series>` must be empty
+(line-set union where a category feeds several trees — see the skill). It
 was not, for two categories, until 2026-07-30 — see the trap under
 [the branch model](../README.md#the-branch-model).
 
@@ -163,25 +164,20 @@ cd linux-fp3
 #    (category rule), rebuild the package, redeploy, retest.
 #    Loop until fp3-selftest is green.
 
-# 6. everything works -> distil the minimal upstream series
-#    (only the upstream-bound categories; debug never gets one, and sensor gets
-#     one patch rather than a series - sensors/README.md says why)
-for cat in audio voice camera charger sensor; do
-	git checkout -b submit/7.2.0/$cat wip/7.2.0/$cat
-	#   squash/reorder to the minimal set, checkpatch each commit, keep the
-	#   Assisted-by: trailer and NO Signed-off-by from the AI (see the
-	#   msm8953-mainline-pr skill)
-	git push fork submit/7.2.0/$cat
-done
+# 6. everything works -> re-distil the upstreaming/<series> branches
+#    They are NOT rolled with the base: each sits on its destination tree's
+#    -next, so a base bump only means regenerating them from the new wip/*
+#    (b4 prep branch; one per destination tree; debug never gets one, and
+#    sensor gets one patch rather than a series - sensors/README.md says why).
+#    Every round already sent stays reachable as upstreaming/<series>/vN.
+#    Record the regeneration on docs/upstreaming/STATUS.md.
 
 # 7. the new base is validated -> prune the old one
 for cat in audio voice camera charger sensor debug; do
 	git push fork --delete wip/7.1.3/$cat
 done
-for cat in audio voice camera charger sensor; do
-	git push fork --delete submit/7.1.3/$cat   # once its LKML business is done
-done
 git push fork --delete integration/7.1.3
+#    upstreaming/* and their vN tags are untouched by a base roll.
 ```
 
 **Steady state:** one live base. During a transition two bases coexist for a
@@ -190,11 +186,12 @@ while — useful, because the `7.1.3` series can stay under LKML review while
 
 **Posting to the LKML** is independent of this base-rolling. The device
 integration rides `X.Y.Z/main`; a subsystem submission targets that subsystem's
-`-next` tree instead. At post time, cut a throwaway branch from
-`submit/<base>/<category>`, rebase it onto `sound/for-next` (audio/voice),
-`media` (camera), `power-supply` (charger) or the SoC tree (dts), run
-`checkpatch` / `get_maintainer` / `b4`, send, and drop the throwaway branch. The
-series version (v1, v2, …) lives in the cover letter, not in a branch name.
+`-next` tree instead. The `upstreaming/<series>` branch *is* that rebased
+series — a `b4 prep` branch on `sound/for-next` (audio), `media` (camera),
+`power-supply` (charger), the i2c tree, or the SoC tree (dts). `b4 prep --check`
+/ `--auto-to-cc` / `b4 send`, then tag `upstreaming/<series>/vN` and add the
+Rounds row on [`upstreaming/STATUS.md`](upstreaming/STATUS.md). The series
+version lives in the cover letter and in that tag, never in the branch name.
 
 That rebase is also worth doing **before** post time, as a throwaway trial, since
 it is the only thing that answers "does this apply?". Done on 2026-07-30 it turned

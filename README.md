@@ -32,9 +32,11 @@ Because the base keeps changing, the kernel version is deliberately confined to
 the **two places where it is genuinely the identity of something**:
 
 * the base segment of a base-relative branch — `wip/7.1.3/audio`,
-  `submit/7.1.3/audio`, `integration/7.1.3` — a patch series *is* "the series
-  against 7.1.3", so the version belongs in the name, and the old ones are
-  pruned once a base is retired; and
+  `integration/7.1.3` — the work *is* "the work against 7.1.3", so the version
+  belongs in the name, and the old ones are pruned once a base is retired. (The
+  `upstreaming/<series>` branches are **not** base-relative: they sit on the
+  destination subsystem's `-next` tree, and a sent round is a `vN` tag, so
+  neither the base nor the version is in their name); and
 * the package `pkgver`.
 
 Everything else — the package name `linux-fp3`, its flavor `fp3`, the config
@@ -51,7 +53,7 @@ For a base `X.Y.Z` there are four layers, each base-relative:
 | `wip/X.Y.Z/<category>` | work | the category's commits rebased onto the base, **plus the bump fixes** — messy, evolving history |
 | `integration/X.Y.Z` | build | the cherry-pick union of the **upstream-bound** `wip/X.Y.Z/*` branches — audio, voice, camera, charger, sensor, power. Versioned so the last working `integration/<prev>` survives while the new base is still being fixed |
 | `debug-int/X.Y.Z` | build | `integration/X.Y.Z` plus the `debug` layer; **this is what the package builds** |
-| `submit/X.Y.Z/<category>` | upstream | the **minimal** series distilled from `wip/X.Y.Z/<category>` — created only once everything works, ready to post to the LKML |
+| `upstreaming/<series>` | upstream | the **send-shaped** series distilled from `wip/X.Y.Z/*`, one per **destination tree** (not per category — a category can feed several trees, and one tree can take work from several categories), a `b4 prep` branch based on that tree's `-next`; every sent round is tagged `upstreaming/<series>/vN`. Its state — rounds, test evidence, dependencies — is on [`docs/upstreaming/STATUS.md`](docs/upstreaming/STATUS.md). Replaces the older `submit/X.Y.Z/<category>` layout (2026-09-03) |
 
 Replaying the debug layer onto any other branch — an experimental offshoot is
 exactly where an early hang is likely — is one command from the target branch:
@@ -94,8 +96,8 @@ from, where there is going to be one. There are six:
 
 Reading it: "what runs on the phone" is always `debug-int/<pkgver>`; "what the
 series will look like" is always `integration/<pkgver>`; "what goes to the
-kernel" is always `submit/<pkgver>/<category>`; the base version is the only
-thing that changes.
+kernel" is always an `upstreaming/<series>` branch, which carries no base
+version at all; the base version is the only thing that changes in the others.
 
 A `wip/<base>/<category>-debug` branch is something else again: an ephemeral
 offshoot for one investigation, not a category, and not cherry-picked anywhere.
@@ -141,17 +143,20 @@ integration is only ever the sum of the `wip` branches that feed it. `debug` is
 the exception in both halves: it has no `wip` branch, so a debug change is
 committed straight onto `debug-int/X.Y.Z`, and the stored payloads under
 [`docs/debug/files/`](docs/debug/files/) are refreshed in the same breath —
-those, not a branch, are what make the layer reproducible. `submit/X.Y.Z/<category>` is regenerated from `wip` when the base is
+those, not a branch, are what make the layer reproducible. `upstreaming/<series>` is regenerated from `wip` when the base is
 done; it is not edited by hand.
 
 ☠️ *"Not edited by hand"* is the part that slips. Both the charger and the audio
-series picked up `checkpatch --strict` fixes directly on their `submit` branch,
-which left `wip` behind — so regenerating, which is how a submit branch is
-*supposed* to be produced, would have silently dropped them. Both were carried
-back on 2026-07-30, and the check is one command: `git diff wip/<base>/<cat>
-submit/<base>/<cat>` must be empty.
+series picked up `checkpatch --strict` fixes directly on their series branch
+(then `submit/7.1.3/<cat>`), which left `wip` behind — so regenerating, which is
+how a series branch is *supposed* to be produced, would have silently dropped
+them. Both were carried back on 2026-07-30, and the check is one command:
+`git diff wip/<base>/<cat> upstreaming/<series>` must be empty — or, where one
+category feeds several trees, the line-set union of its series must reproduce
+it (the command is in the `msm8953-mainline-pr` skill, "Tracking the
+submissions").
 
-The two-base worked example, how `wip` and `submit` diverge on a messy bump, and
+The two-base worked example, how `wip` and the series branches diverge on a messy bump, and
 why `integration` is versioned at all are in
 [`docs/rolling-a-new-base.md`](docs/rolling-a-new-base.md#the-model-this-procedure-moves)
 — that page is this model in motion.
@@ -212,7 +217,7 @@ four fixes; on top of the camera import, four power-path changes (+68 / −21 on
 
 ☠️ This page and the kernel page both **described the camera driver as
 substantially ours until 2026-07-30**, and so did the commit message on
-`submit/7.1.3/camera`. All three are corrected: the import is now
+the camera series branch (then `submit/7.1.3/camera`). All three are corrected: the import is now
 [its own commit](https://github.com/llg179org/linux/commit/cda174905a83) authored by
 Joel Selvaraj, carrying the original `Signed-off-by` chain, with our change on top
 of it. It is worth knowing *why* it stood so long — the wrong claim was
@@ -243,7 +248,7 @@ Fairphone 3; they are deliberately kept out of the postmarketOS contribution
 channels for this reason. The LKML, whose
 [coding-assistants policy](https://www.kernel.org/doc/html/latest/process/coding-assistants.html)
 allows disclosed AI assistance, is the one open upstream — which is what the
-`submit/<base>/<category>` branches are for.
+`upstreaming/<series>` branches are for.
 
 ## How audio works on this device
 
@@ -256,8 +261,8 @@ arrangement obeys — playback, the microphones, headset detection and call audi
 
 * <https://github.com/llg179org/linux> — the kernel: `wip/<base>/<category>` (work
   plus bump fixes), `integration/<base>` (the upstream-bound sum),
-  `debug-int/<base>` (what the device runs), and `submit/<base>/<category>` (the
-  minimal series for the LKML). It carries kernel source only — the open-item
+  `debug-int/<base>` (what the device runs), and `upstreaming/<series>` (the
+  send-shaped series for the LKML, one per destination tree). It carries kernel source only — the open-item
   lists live here, in [`docs/`](docs/README.md#what-is-still-open)
 * <https://github.com/llg179org/Claude-skills-Fairphone3> — the method: bring-up
   notes, ground-truth techniques, the guard-railed test loop, and the
@@ -281,8 +286,8 @@ The board `.dtb` comes from five files; we touch **two**
 integrated DT commit
 [`ca289613`](https://github.com/llg179org/linux/commit/6749bae07da1)),
 and 17 of the 20 upstream commits in the board file are in Linus' tree — the
-SoC-level `msm8953.dtsi` much less so, which constrains what a
-`submit/<base>/*` series may assume.
+SoC-level `msm8953.dtsi` much less so, which constrains what an
+`upstreaming/*` series may assume.
 
 The trees themselves are checked in, with the full write-up — provenance,
 genealogy, what each added node was derived from, and a node-by-node comparison
