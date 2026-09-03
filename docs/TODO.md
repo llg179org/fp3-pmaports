@@ -24,6 +24,82 @@ repeated.
 > bootloader, and the lk2nd menu is unusable because the screen stays black —
 > do not plan around either.
 
+## A sor — mi a következő
+
+> Ez a **munkasor**: rövid, gépi és ez az egyetlen forrás. A hook
+> (`plugins/fp3/hooks/queue.cjs`) ezt olvassa, és mást nem tart nyilván. Alatta a
+> lap többi része **dosszié**, nem feladatlista — oda a mérés és az indoklás megy.
+>
+> Jelölések: `[ ]` mehet · `[~]` a sessionön kívül várakozik · `[@]` emberre vár ·
+> `[x]` kész (innen a [`TODO-DONE.md`](TODO-DONE.md)-be költözik).
+> Kulcsok: `after:` előfeltétel · `until:` mikor él újra · `when:`/`they-do:`
+> emberi tételnél · `why:` egy sor, hogy miért ez a feladat.
+>
+> ☠️ **Az ütemezés kulcs, nem próza.** „PARKOL, a 116. mögé" némán elavul és
+> senki nem olvassa újra; egy `after: 116` minden feldolgozáskor ellenőrződik.
+
+<!-- FP3-QUEUE:BEGIN -->
+- [ ] 50. SMSM PROC_AWAKE (12. bit) — az orákulum bootkor 1-re állítja, mi soha
+      why: az EGYETLEN nyitott tétel, ami LKML-patchet termel; kell mellé egy eszköz-oldali igazoló mérés a commit-üzenetbe, NAPPALI slotban (ne csússzon össze a 116. orákulum-sessionnel)
+- [ ] 82. Kapu-napló és felülvizsgálati dátum minden kemény kapuhoz
+      why: asztali munka, telefon nélkül; a kapu-rothadás ellen véd — minden kapu hordozzon incidens-linket és lejáratot
+- [@] 63. Elérhetőség-teszt: óránként egy hívás nappal
+      when: óránként nappal; a reggeli sarok-minta CSAK mérés nélküli éjszaka után
+      they-do: óránként egy hívás, kicsöngetve, felvétel nélkül — jelenteni nem kell semmit. ☠️ MA ESTE NE: 19:00-tól a telefon mér, a rádió-ki ablakokban jogosan nem csöng
+      why: a csöngés az EGYETLEN elfogadható kapu; a CS-attach/SGs csak prediktor
+- [@] 112. Ránézés a napi, gyári Androidos FP3 státuszsorára hívás közben
+      when: a következő nappali hívásnál
+      they-do: a HÍVÓ készüléken nézd meg, LTE/4G marad-e (VoLTE/HD ikon), vagy 2G/E/G-re vált a hívás idejére. Egy szó a válasz. ☠️ A napi telefonhoz egyébként nem nyúlunk
+      why: gyors elő-szűrő a második kapura — ha egy tanúsított készülék is CSFB-zik, az imsd-út ezen a hálózaton értelmetlen
+- [~] 85. Replikáció 3 booton + OCV-vs-QG
+      until: 19:00
+      why: ez adja a 40,3 mA boot-közti hibasávját és a kalibrációs offset-korlátot; eszközoldali timer indítja (fp3-night-start.timer), ellenőrizve
+- [~] 118. Az éjszakai mérleg kiértékelése az előregisztrált sávok ellen
+      after: 85
+      why: a reggeli triázs; a night-budget.py és a sávok készen állnak
+- [~] 79. Sönt-kalibráció — az egyetlen tanú, ami nem a PMI632-n megy át
+      until: 09-04 10:24
+      why: nem blokkol, hanem erősít: a lezárás kimondható a |ε| ≤ 1,49 (δ + I·|g|) korláttal is
+- [~] 72. Küszöb-idő módszer (kalibráció nélküli áram-arány)
+      after: 85
+      why: feltételes tartalék — csak akkor él, ha az esti OCV-párból számolt |ε| korlát nem elég szoros
+- [~] 75. Ki írja vissza: ModemManager --log-level=DEBUG drop-in
+      after: 85
+      why: egy reboot, nulla kockázat — de a következő úgyis-reboot UTÁN, mert a debug-naplózás a ma esti lábakat szennyezné
+- [~] 81. Mérés-indító wrapper (fp3-measure), gép-szintű zárral
+      after: 85
+      why: a mai PreToolUse-kapu csak a saját sessionömben fut; egyetlen belépési pont zárná a több-gép- és a kézi-ssh-lyukat is
+- [~] 124. A QG nyers számláló kitétele mainline-ra (CHARGE_COUNTER)
+      after: 85
+      why: docs/TODO.md kimondja kérdésként, de nincs mögötte tétel; a driver a mért rendszer része, ezért csak a replikáció után
+- [~] 116. A döntő tanú a készülék-policy kapujára: UT-orákulum slot, azonos IMEI
+      why: EZ A HORGONY — egy orákulum-session, egy csekklistával; hat tétel áll mögötte
+- [~] 55. Attach-PDN lista mindkét sloton
+      after: 116
+      why: a 116. orákulum-session 2. sora
+- [~] 54. DIAG OTA-capture az orákulum sloton (RRC cause + NAS/ESM típusok)
+      after: 116
+      why: a 116. orákulum-session 3. sora
+- [~] 41. A következő slot-váltás: sáv-illesztett orákulum-mérés, nem pref-olvasás
+      after: 116
+      why: a 116. orákulum-session 4. sora
+- [~] 64. A „miért bont" — egyetlen, határolt ~30 perces IMS/QIPCALL capture
+      after: 116
+      why: a P-CSCF-lelet óta ez nem dönt el semmit, amíg a 116. ki nem mondta, hogy az imsd-út egyáltalán él; ☠️ a DIAG-folyam némasága külön akadály
+- [~] 19. A′ kontroll a bearer-karra (bearer lebontva, minden más azonos)
+      after: 116
+      why: az imsd-jövő árazása
+- [~] 30. A bearer-kar újramérése sáv-lockkal
+      after: 116
+      why: az imsd-jövő árazása; a mai mérés sávja nem volt rögzítve
+- [~] 31. A sáv-preferencia mint szállítható kar
+      after: 30
+      why: lezárás utáni tétel — a cél a duplázás lezárása, nem a minimum megtalálása
+- [~] 53. A modem saját története (modem-story infrastruktúra)
+      after: 85
+      why: megértés-infrastruktúra; az újraírt célfüggvény nem fizet érte — lezárás után újranézni, vagy elejteni
+<!-- FP3-QUEUE:END -->
+
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
 ☠️ **The version of this section dated 2026-08-14 was still here on 2026-08-20 and
