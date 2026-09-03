@@ -84,6 +84,20 @@ echo $((step + 1)) > "$S"
 printf 'night-run step %s, pid %s, started %s\n' "$step" "$$" "$(date '+%F %T')" \
 	> /run/fp3-measuring 2>/dev/null || true
 
+# ☠️☠️ A REST THAT DOES NOT SLEEP IS NOT A REST, AND OURS DID NOT. Measured on
+# 2026-09-02: ZERO "PM: suspend entry" in the whole 101-minute opening rest and
+# the whole 40-minute closing rest. Both used plain `sleep`, which keeps the AP
+# awake - so the endpoints were an AWAKE phone relaxing, the slope never came
+# under 0.2 mV/min, and BOTH OCVs were marked suspect by the run's own criterion.
+# The criterion was right and unreachable: at an awake phone's draw the pack
+# simply cannot settle that far inside a ceiling.
+# ☠️ The fix is not a longer ceiling - that was the tempting reading and it would
+# have cost hours per night for nothing. It is to make the waiting itself a
+# suspend. `nap` replaces every `sleep` inside the OCV routine.
+nap() {   # nap <seconds> - suspend if we can, sleep if we cannot, never fail
+	rtcwake -m mem -s "$1" >/dev/null 2>&1 || sleep "$1"
+}
+
 ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# ☠️ AN OCV TAKEN ON THE CHARGER IS THE CHARGER'S VOLTAGE, NOT THE PACK'S. The
 	# rehearsal read 4.413 V at the start with status "Charging" - that is the
@@ -104,8 +118,8 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	CAP=${2:-$RESTMIN}
 	waited=0
 	while [ "$waited" -lt "$((CAP * 60))" ]; do
-		sleep 300; waited=$((waited + 300))
-		v1=$(cat /sys/class/power_supply/*battery*/voltage_now); sleep 120
+		nap 300; waited=$((waited + 300))
+		v1=$(cat /sys/class/power_supply/*battery*/voltage_now); nap 120
 		v2=$(cat /sys/class/power_supply/*battery*/voltage_now)
 		mv=$(( (v2 - v1) / 1000 )); waited=$((waited + 120))
 		s "  rest $1: ${waited}s, ${mv} mV over the last 2 min"
@@ -116,13 +130,15 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# closing read was still climbing and only said so in hindsight. Take a ten
 	# minute series and judge the LAST FIVE MINUTES: under 0.2 mV/min the pack is
 	# rested, above it the number is a relaxation curve wearing an OCV's clothes.
-	for i in $(seq 1 20); do
+	# ☠️ THE ACCEPTANCE SERIES HAS TO SLEEP TOO, and ten minutes of it used to be
+	# ten minutes of an awake phone. Sparse sleeping samples: 10 x 60 s.
+	for i in $(seq 1 10); do
 		printf '%s %s %s %s\n' "$1" "$(date +%s)" \
 			"$(cat /sys/class/power_supply/*battery*/voltage_now)" \
 			"$(cat /sys/class/power_supply/*battery*/capacity)" >> "$D/ocv.txt"
-		sleep 30
+		nap 60
 	done
-	slope=$(grep "^$1 " "$D/ocv.txt" | tail -10 | awk '
+	slope=$(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
 		NR==1{t0=$2; v0=$3} END{if (NR>1 && $2>t0) printf "%.2f", ($3-v0)/1000/(($2-t0)/60); else print "0"}')
 	s "OCV $1 slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
 	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
@@ -218,7 +234,20 @@ if [ "$leg" -le "$BOOTS" ] && [ $((step % 2)) -eq 1 ]; then
 	sleep 10
 	# USB input off so the leg measures the phone, not the charger
 	echo Unknown > /sys/class/power_supply/pmi632-charger/status
+	# ☠️☠️ AND TAKE wlan0 OUT OF NetworkManager'S HANDS FOR THE LEG. Measured on
+	# 2026-09-02: with no DHCP server answering, NM retried a lease on wlan0 197
+	# times inside a 77-minute leg - one every ~23 s - and the AP's median sleep
+	# was 11 s against a 90 s alarm. The morning census on the same configuration
+	# slept 62 s and shows ZERO such transactions, so this is the difference, not
+	# a boot transient and not the band pinning: both of those were my hypotheses
+	# and the journal named a third thing.
+	# ☠️ `managed no` does NOT persist across a reboot, which is exactly why it is
+	# safe here: a crash cannot leave this phone without its WiFi rescue path,
+	# because the next boot restores it. The USB link is up throughout regardless.
+	nmcli device set wlan0 managed no >/dev/null 2>&1 \
+		|| s "☠️ could not unmanage wlan0 - a DHCP retry loop may wake the AP"
 	sh /usr/local/bin/ims-ma3-leg.sh "$LEGMIN" "$ALARM" "$D/leg$leg" >> "$LOG" 2>&1
+	nmcli device set wlan0 managed yes >/dev/null 2>&1
 	echo Charging > /sys/class/power_supply/pmi632-charger/status
 	mmcli -m any --set-current-bands=any >/dev/null 2>&1
 	s "--- leg $leg done ---"
