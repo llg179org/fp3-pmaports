@@ -30,11 +30,11 @@ with a link.
 | qcom-smd-wake | power | rpmsg `rpmsg-next` | 1 | rebased | – | us | cover letter | 2026-09-03 |
 | smsm-proc-awake | power | qcom `for-next` | 2 | rebased | – | us | `dt_binding_check` (no dtschema here); the DT-vs-match-data question on the cover | 2026-09-03 |
 | msm8953-dtsi-idle | power | qcom SoC (`arm64: dts: qcom`) | ≤ 9 | planned, one patch held | – | us | after the three driver series above; **`system-pc` affinity patch held** on Bert's touch regression (#142) | 2026-09-03 |
-| wcd-digital-mclk | power | ASoC (Srini, Mark) | 1 | planned | – | us | cut on `sound/for-next` | 2026-09-03 |
-| ngd-disable-stream | power | slimbus (Srini) | 1 (from 2) | planned | – | us | squash the alignment fixup | 2026-09-03 |
-| camss-rdi-stride | camera | media (Bryan O'Donoghue) | 1 | planned | – | us | cut on `media/next`; name the libcamera half in the cover | 2026-09-03 |
-| qcom-flash-pmi632 | camera | LEDs (Lee Jones) + DT binding | 2 (from 3) | planned | – | us | binding, then driver with the Kconfig text folded in | 2026-09-03 |
-| ak7375-pm | camera | media (Sakari Ailus) | 3–4 (from 6) | planned | – | us | AK7374 id as its own patch; the PM rework squashed to its final shape; `Fixes:` only where blame on `master` supports it | 2026-09-03 |
+| wcd-digital-mclk | power | ASoC `sound/for-next` | 1 | rebased | – | us | cover letter | 2026-09-03 |
+| ngd-disable-stream | power | slimbus (via char-misc), cut on torvalds `master` | 1 | rebased | – | us | cover letter; confirm the tree Srini wants it on | 2026-09-03 |
+| camss-rdi-stride | camera | media `next` | 1 | rebased | – | us | cover letter naming the libcamera half; a build on the base (one hunk re-resolved on the new `vfe_bpl_align_{pix,rdi}` split) | 2026-09-03 |
+| qcom-flash-pmi632 | camera | LEDs `for-leds-next` | 2 | rebased | – | us | cover letter | 2026-09-03 |
+| ak7375-pm | camera | media `next` | 4 | rebased | – | us | cover letter; a build on the base | 2026-09-03 |
 | qcom-smd-regulator-suspend | power | regulator (Mark) | 1 | held | – | – | mechanism proven on one rail, **no power win measured** and the board opt-in was reverted — a sendable op with no user; revisit when a rail is measured off-in-suspend | 2026-09-03 |
 
 Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. All seven `submit/7.1.3/*` branches are tagged `archive/submit-7.1.3-<cat>-final` and superseded, but **none is deleted** — deleting them is a separate call.
@@ -687,6 +687,147 @@ To do:
 Done:
 - 2026-09-03  cut on `qcom/for-next`, pushed
 
+## wcd-digital-mclk
+
+```
+Category:    power
+Tree:        ASoC — Srinivas Kandagatla, Mark Brown; CC linux-sound, linux-arm-msm
+Source:      upstreaming/wcd-digital-mclk — b4 prep branch, cut 2026-09-03 (#148)
+             change-id 20260903-upstreaming-wcd-digital-mclk-6f0bec5686a2
+             base-commit d687afbc2b9b (broonie/for-next, 2026-09-03)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+One patch (`4b09b2158dd8`), the combined `wip` diff applied verbatim. Separate from
+`wcd9335-audio` on purpose: a different driver, standalone, with its own measurement
+(LPASS master frozen awake with 2 shutdowns per uptime vs 56 in two minutes).
+
+Test: measured on the FP3 through `wip/7.1.3/power`. Checkers: checkpatch --strict clean.
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter
+
+Done:
+- 2026-09-03  cut on `sound/for-next`, pushed
+
+## ngd-disable-stream
+
+```
+Category:    power
+Tree:        slimbus — Srinivas Kandagatla (goes to Greg's char-misc); CC linux-arm-msm, linux-sound
+Source:      upstreaming/ngd-disable-stream — b4 prep branch, cut 2026-09-03 (#148)
+             change-id 20260903-upstreaming-ngd-disable-stream-48c7080a9f09
+             base-commit 940de590b839 (torvalds/master, 2026-09-02)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+One patch from two `wip` commits (`dbb414e0be28` + the `c44534943e82` alignment
+fixup). Cut on torvalds `master` because slimbus has no `-next` of its own; if Srini
+asks for char-misc-next, rebase. The message layout is cited to the downstream
+`slim-msm-ngd.c` as a finding.
+
+Test: measured on the FP3 (capture session releases the ADSP to XO shutdown in ~15 s). Checkers: checkpatch --strict clean.
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter; ask which tree
+
+Done:
+- 2026-09-03  cut on torvalds `master`, pushed
+
+## camss-rdi-stride
+
+```
+Category:    camera
+Tree:        media — Bryan O'Donoghue, Vladimir Zapolskiy, Loic Poulain; CC linux-media, linux-arm-msm
+Source:      upstreaming/camss-rdi-stride — b4 prep branch, cut 2026-09-03 (#148)
+             change-id 20260903-upstreaming-camss-rdi-stride-7384fd1ea6a5
+             base-commit 274af88c8aca (medianext/next, 2026-06-19)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+One patch (`74ea615f447f`, 228 lines). ☠️ Not verbatim: `camss-vfe.c` conflicted —
+upstream has since split `vfe_bpl_align()` into `vfe_bpl_align_pix()` /
+`vfe_bpl_align_rdi()` with an if/else, so `can_pad_bpl` now lives in the RDI branch
+(0 in the PIX branch). Same meaning, different lines; **must be built on the base**.
+The message says the libcamera half (asking for the padded stride) is separate.
+
+Test: kernel half measured on the FP3 (ioctl-verified stride, 2026-08-08); the libcamera half never left libcamera. Checkers: checkpatch --strict clean.
+
+Rounds: none yet.
+
+To do:
+- [ ] build on the base (the re-resolved hunk)
+- [ ] cover letter naming the libcamera half and the Adreno 506 pitch measurement
+
+Done:
+- 2026-09-03  cut on `media/next`, pushed
+
+## qcom-flash-pmi632
+
+```
+Category:    camera
+Tree:        LEDs — Lee Jones, Pavel Machek; binding also to the DT maintainers; CC linux-leds, devicetree
+Source:      upstreaming/qcom-flash-pmi632 — b4 prep branch, cut 2026-09-03 (#148)
+             change-id 20260903-upstreaming-qcom-flash-pmi632-09bc1f0a8769
+             base-commit 4805e5ec50d0 (leds/for-leds-next, 2026-08-28)
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+Two patches: binding (`0dbb575d8ddc`) first, then the driver with the Kconfig text
+folded in (`a4509f593bdf` + `dc6f36f0a4fe`). The driver message says what is not
+carried: the charger-boost `FLASH_ACTIVE` handshake downstream does around a strobe.
+
+Test: register map read on the FP3 over SPMI; torch measured. Checkers: checkpatch --strict clean on both.
+
+Rounds: none yet.
+
+To do:
+- [ ] cover letter
+
+Done:
+- 2026-09-03  cut on `for-leds-next`, pushed
+
+## ak7375-pm
+
+```
+Category:    camera
+Tree:        media — Sakari Ailus; CC linux-media
+Source:      upstreaming/ak7375-pm — b4 prep branch, cut 2026-09-03 (#148)
+             change-id 20260903-upstreaming-ak7375-pm-d1aabe655fdb
+             base-commit 274af88c8aca (medianext/next, 2026-06-19)
+             sent rounds: – (none yet)
+Depends:     – (the AK7374 id patch travels in imx363-camera, not here; nothing here needs it)
+```
+
+Four patches, fixes first: *turn the supplies off when resume fails*
+(`Fixes: 90f7e76eac50`, the regulator management, 2022 — from blame on `media/next`),
+*do not power the motor up on a system resume* (`Fixes: 90ee26fb2f50`, the original
+driver sharing the runtime callbacks with the system sleep ops — measured
+`rail_use_count 0→1` across one s2idle with `active_time` unchanged), *retry the
+first transfer of a resume*, and the rework *power the motor for a position, not for
+an open* (`0b79b9bb25f0` + `de1b32d12750` folded — the last-consumer rule is part of
+the final shape; 0.30 W → 0.011 W measured). All four cherry-picked clean onto the
+base without the AK7374 patch.
+
+Test: measured on the FP3 (`98-camera-af-rail`, r53 FAIL / r56 PASS). Checkers: checkpatch --strict clean on all four.
+
+Rounds: none yet.
+
+To do:
+- [ ] build on the base
+- [ ] cover letter
+
+Done:
+- 2026-09-03  cut on `media/next`, pushed
+
 ## Planned series — the power re-triage (2026-09-03)
 
 Queue task #141, review §4. Every item below patches a file that exists in
@@ -697,16 +838,12 @@ there — no MPM node, `rpm-stats` or `domain-idle-states` in `msm8953.dtsi`, no
 `proc-awake` in `qcom,smsm.yaml`), has a measurement on the FP3 behind it, and
 depends on none of D-1/D-2/D-3. Maintainers from `get_maintainer.pl -f` on a
 v7.3-rc1 tree, 2026-09-03. Each row is a `b4 prep` still to be made; when it is, it gets a section of its own
-above and leaves this table (four did on 2026-09-03, #147).
+above and leaves this table (four did on 2026-09-03, #147; five more the same day, #148 — only
+**msm8953-dtsi-idle** and the held regulator series remain here).
 
 | series | tree, maintainers | `wip` commits → patches | shape decisions |
 |---|---|---|---|
 | **msm8953-dtsi-idle** | qcom SoC DT — Bjorn Andersson, Konrad Dybcio; devicetree, linux-arm-msm | `3e9b16386eb5`, `a58956fb30c1`, `6052a236ba6b`, `85d0b48961f6`, `14210263b650`, `c2e90281cdfe`, `c12afd4ee241`, `bca898cde190`; **`0314fee3ce35` held** → ≤ 9 | sent **after** the three driver series (the MPM node and `wakeup-parent` are inert without the pinctrl map; the SMSM bit needs its binding). ☠️ **`0314fee3ce35` (system-pc affinity, psci-suspend-param 0x42000353) is held**: Bert Karwatzki reports it breaks hx83112b touch after resume on his FP3 (mail 2026-09-03, queue #142); until reproduced or disproved it does not go out. `rpm-master-stats` (`qcom,rpm-master-stats.yaml`) and `rpm-stats` (`qcom-stats.yaml`) bindings exist upstream — check the compatible strings at cut time, do not assume |
-| **wcd-digital-mclk** | ASoC — Srinivas Kandagatla, Mark Brown; linux-sound | `4b09b2158dd8` → 1 | 29 lines; the measurement is the mclk held for the life of the boot on a codec with no stream. Cut on `sound/for-next` like `wcd9335-audio`, but **separate series** — different driver, standalone |
-| **ngd-disable-stream** | slimbus — Srinivas Kandagatla; linux-arm-msm, linux-sound | `dbb414e0be28` + `c44534943e82` → **1** | squash the alignment fixup. The ADSP keeps the channel allocated without it — say what was observed (the failure on the second stream), name the capture |
-| **camss-rdi-stride** | media — Bryan O'Donoghue, Vladimir Zapolskiy, Loic Poulain; linux-media, linux-arm-msm | `74ea615f447f` → 1 | 228 lines on gen1 VFE; the kernel half is done (ioctl-verified, 2026-08-08), the libcamera half never left libcamera (`planesCount`=0) — say so in the cover so the reviewer knows what exercises it |
-| **qcom-flash-pmi632** | LEDs — Lee Jones, Pavel Machek; linux-leds; + DT maintainers | `0dbb575d8ddc`, `a4509f593bdf`, `dc6f36f0a4fe` → **2** | binding first, then driver with the Kconfig wording folded in (the Kconfig line is not a logical change of its own) |
-| **ak7375-pm** | media — Sakari Ailus; linux-media | `f6e4c109fb32`, `0b79b9bb25f0`, `de1b32d12750`, `dfa5c7851d6c`, `6da2d3a1a2eb`, `4880a86550ff` → 3–4 | AK7374 id support stands alone. The PM rework (`power for a position`, `last consumer parks`, `no power-up on system resume`) is one logical change in its final shape — measured 0.30 W idle (`98-camera-af-rail`, r53 FAIL / r56 PASS). `retry the first transfer` and `supplies off when resume fails` are candidate standalone fixes: take `Fixes:` from blame on `master` (last upstream change 2023-12-01, df15385e6793) only if the fault predates the rework |
 | *(held)* **qcom-smd-regulator-suspend** | regulator — Mark Brown, Liam Girdwood; linux-arm-msm | `5fe5dba65260` (without `117d3d69d58b`) | the ops are upstream-shaped and the mechanism is proven (one-rail probe, `sleep smpa/3 swen=1`, 2026-08-24), but the all-rails board opt-in was reverted (`53e51066c600`) and *on-in-suspend* carries no power benefit — so today it is an op with no in-tree user and no measured win. Held until a rail is measured off-in-suspend; then the ops and that board change go together |
 
 Stays on `wip/7.1.3/power`, deliberately: `apcs-msm8953.c` (file not upstream),
