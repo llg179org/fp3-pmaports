@@ -184,10 +184,16 @@ repeated.
       why: STATUS.md D-1/D-2: decides the condition in the generic q6afe patch
       a device read, not an argument
 
-- [@] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
+- [x] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
       when: whenever convenient, one glance
       they-do: Settings -> Network -> SIM cards (or the SIM status screen per slot): the operator NAME for slot 1 and slot 2. Two words. ☠️ Read-only, we do not otherwise touch the daily phone
       why: decides what the 2026-09-03 paired VoLTE reading says about US — only if the SIM that stayed on 4G during the call is also vodafone HU (our dev FP3's operator, MCC/MNC 21670) does it prove VoLTE is provisionable on OUR network for OUR subscription
+      lane: phone
+- [@] 133. Which subscription is in the dev FP3 — the corporate or the private Vodafone plan
+      when: one word, whenever
+      they-do: say whether the SIM in the DEV FP3 (IMSI <imsi-old-card>, ICCID <iccid-old-card>) is the corporate or the private Vodafone plan — the same distinction that decided VoLTE on the daily handset. ☠️ No SIM needs to be moved to answer this
+      why: the 2026-09-03 pair showed vodafone HU carries VoLTE on the private plan and not on the corporate one. If the dev SIM is the corporate one, no amount of imsd work can produce VoLTE on it and the device-policy gate cannot even be tested with it
+      if it is a private one, the network side is fully open and what remains is device policy alone
       lane: phone
 <!-- FP3-QUEUE:END -->
 
