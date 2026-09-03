@@ -100,9 +100,11 @@ re-cut on the current `i2c-host` tip (or linux-next), and take the `Fixes:` from
   `msm8953-audio.dtsi`. The `msm8953-mainline-pr` skill uses this very patch as
   its worked example of an uncited import; it is still uncited. **Fix on `wip`,**
   then regenerate.
-- `62292a23d4fa` carries `Assisted-by: Claude:claude-fable-5`. No such model id
-  exists; the model is `claude-fable-5-1`. A fabricated identifier in the
-  disclosure trailer is precisely what a reviewer will poke at.
+- ~~`62292a23d4fa` carries `Assisted-by: Claude:claude-fable-5`. No such model id
+  exists~~ — **retracted 2026-09-03**: the wip commit of 2026-08-21 carries
+  `Co-authored-by: Claude Fable 5`, so the id names the model that did the work.
+  The claim was made from today's model list, which is not a record of every
+  model that has existed. Left here struck through rather than deleted.
 
 ### B7. Leftovers in the IMX363 driver that the "remove commented-out code" patch did not remove
 

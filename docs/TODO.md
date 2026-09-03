@@ -211,11 +211,7 @@ repeated.
       why: review B3 — same fix as a posted, still-new patch
       STATUS.md already says it must not go out unanswered
       lane: upstreaming
-- [ ] 139. B4+B5: adapt smb5-charger to devm_thermal_of_cooling_device_register(dev, u32 cdev_id, ...) on wip/7.1.3/charger and record the failed next-20260902 build in its Test block; re-cut i2c-qup-pinctrl on the current i2c-host tip (qup_i2c_enable_clocks now returns an error) with Fixes: from blame
-      why: review B4/B5 — the series does not build on the tree it targets and the record says rebased
-      the cooling patch is silently missing from upstreaming-int
-      the i2c series and the integration carry different resolutions
-      lane: upstreaming
+
 - [ ] 140. B7 + DTS hygiene before fp3-dts is cut: imx363 leftovers (// NOT SURE HOW TO FIND THIS VALUE, //0c40, C++ comments), vdig 1.175 V hardcode -> board l2 constraints, FP3-named delays; audio DTS: drop DMIC4/DMIC5/AMIC5 routes (measured silent 2026-08-02), move slimbam/slim_msm to msm8953.dtsi, interrupts-extended, no output-high in pinctrl; charger DTSI: 48 interrupt-names vs 4 in the binding; XCLR reset polarity ACTIVE_LOW
       why: review B7 and section 3 — board facts in a generic driver, DT describing hardware the project measured absent, and a dtbs_check failure the series binding does not cover
       lane: upstreaming

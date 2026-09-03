@@ -2484,3 +2484,9 @@ so that `after:` and `continues:` references still resolve.
 - [x] **136.** B1: rebuild the IMX363 import commit on wip/7.1.3/camera so it adds ONLY the IMX363 hunks — today it deletes VIDEO_OV2732 and VIDEO_T4KA3 from Kconfig+Makefile and strips select V4L2_CCI_I2C from OG01A1B/OV9282 (30 deletions in a commit that certifies byte-identical import); then regenerate upstreaming/imx363-camera  — closed 2026-09-03 19:41
       why: docs/upstreaming/review-2026-09-03-wip-and-series.md B1 — a maintainer applying patch 1 would see four unrelated drivers regress under a message that says nothing changed. wip cda174905a83, series 7b5eb48928cd. Nothing from this series moves before this
       lane: upstreaming
+
+- [x] **139.** B4+B5: adapt smb5-charger to devm_thermal_of_cooling_device_register(dev, u32 cdev_id, ...) on wip/7.1.3/charger and record the failed next-20260902 build in its Test block; re-cut i2c-qup-pinctrl on the current i2c-host tip (qup_i2c_enable_clocks now returns an error) with Fixes: from blame  — closed 2026-09-03 20:33
+      why: review B4/B5 — the series does not build on the tree it targets and the record says rebased
+      the cooling patch is silently missing from upstreaming-int
+      the i2c series and the integration carry different resolutions
+      lane: upstreaming

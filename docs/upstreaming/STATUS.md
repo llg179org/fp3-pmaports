@@ -127,10 +127,13 @@ Done:
 ```
 Category:    audio   (the speaker-amp fix; its wip home is wip/7.1.3/audio, there is no wip/7.1.3/i2c)
 Tree:        i2c — Andi Shyti; CC linux-i2c, linux-arm-msm
-Source:      upstreaming/i2c-qup-pinctrl — b4 prep branch, cut 2026-09-03
+Source:      upstreaming/i2c-qup-pinctrl — b4 prep branch, cut 2026-09-03, re-cut 2026-09-03
              change-id 20260903-upstreaming-i2c-qup-pinctrl-7d3ee5a31cab
-             base-commit 04e9bf1648f846976b543e91c1838a712433772a
-             (andi.shyti i2c/i2c-host-next, 2026-06-18 — the tree's tip has not moved since)
+             base-commit cee9395acd8043be0644b25c34bfa86623f2b935 (v7.3-rc1; branch upstream torvalds/master)
+             ☠️ NOT on andi.shyti's i2c/i2c-host-next: that tip (04e9bf1648f8, 2026-06-18) and
+             i2c-host-fixes (dc59e4fea9d8, 2026-06-28) both predate a47762633280 ("i2c: qup:
+             Propagate clock enable failures", 2026-07-28), which is in v7.3-rc1 and rewrites the
+             resume path this patch touches. A fix goes on the -rc; the destination tree is unchanged
              legacy: submit/7.1.3/i2c, tagged archive/submit-7.1.3-i2c-final
              sent rounds: – (none yet)
 Depends:     –
@@ -150,8 +153,26 @@ Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
+Done:
+- 2026-09-03  re-cut onto v7.3-rc1 (review B5, queue 139): the same 13 added lines as the
+              wip twin 490c046b339e, applied over the base's own rewrite of
+              qup_i2c_pm_resume_runtime(); `checkpatch --strict` clean; b4 reports the new
+              base-commit and the unchanged change-id. Old tip tagged
+              `archive/upstreaming-i2c-qup-pinctrl-pre-rebase-20260903`
+- 2026-09-03  `Fixes:` decided against: GitHub blame on torvalds/master puts the runtime-PM
+              functions in 10c5a8425968 ("i2c: qup: New bus driver for the Qualcomm QUP I2C
+              controller", 2014). The driver never selected pinctrl states; nothing regressed.
+              This is a missing behaviour exposed by a firmware that resets pads, so it is a
+              fix in effect but not of any commit — no `Fixes:`, and therefore no `Cc: stable`;
+              the cover letter says so in those words
+- 2026-09-03  ☠️ the review's B6 claim that `Assisted-by: Claude:claude-fable-5` names a
+              non-existent model is **retracted**: the wip commit's own trailer of 2026-08-21
+              reads `Co-authored-by: Claude Fable 5`, so the id follows the model that did the
+              work, as the convention requires. The claim rested on today's model list, which
+              is not a list of every model that has existed. Trailer kept
+
 To do:
-- [ ] `git blame` on torvalds/master for the `Fixes:` target; decide `Cc: stable`
+- [x] `git blame` on torvalds/master for the `Fixes:` target; decide `Cc: stable` — done, see Done: **no `Fixes:`, no `Cc: stable`**
 - [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
 
 Done:
@@ -227,8 +248,22 @@ Left out of this series (2026-09-03, measured against `wip/7.1.3/charger`):
 | `battery.yaml` (`id-resistor-ohms`) and the rest of the binding | 10 + 47 | belongs with the fuel-gauge work above |
 
 Test: not yet run from a submission base. Checkers: –.
+  build on the target tree: ✗ as cut (2026-09-03) — `devm_thermal_of_cooling_device_register()`
+  takes `u32 cdev_id` on power-supply for-next and linux-next (3570cb58e317, thermal/of,
+  2026-06-03); the series passed `dev_of_node()`. Adapted 2026-09-03 (cdev_id 0, the legacy
+  node identity); compile of the adapted object still owed
 
 Rounds: none yet.
+
+Done:
+- 2026-09-03  ☠️ the cooling-device registration adapted to the cdev_id API **in the series
+              only** (review B4, queue 139): the fork base 7.1.3/main still has the
+              `struct device_node *` form, so `wip/7.1.3/charger` keeps that and the phone
+              keeps building; the series carries the one-call difference, recorded here as the
+              deliberate divergence it is, until the base rolls past 7.4 and wip follows.
+              The linux-next integration had silently left this patch out — that is now a
+              known difference, not a hidden one. Old tip tagged
+              `archive/upstreaming-smb5-charger-pre-thermal-api-20260903`
 
 To do:
 - [ ] ☠️ decide what happens to the fuel-gauge half of `wip/7.1.3/charger`: a second
