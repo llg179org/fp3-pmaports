@@ -62,7 +62,19 @@ done | awk '
 	{n++; x[n]=$1; s+=$1}
 	END{
 		if (n < 2) { printf "  only %d usable leg - no boot-to-boot spread yet\n", n+0; exit }
-		m=s/n; for (i=1;i<=n;i++) v+=(x[i]-m)^2; sd=sqrt(v/(n-1))
+		# ☠️ Written as a product rather than a power. The reason recorded here on
+		# 2026-09-03 was WRONG: it claimed busybox awk on the phone lacks math
+		# support, measured on the HOST busybox, which is a different build. The
+		# phone has it - sqrt(4) = 2 and (3-1)^2 = 4, asked directly. The product
+		# form is kept because it is portable and costs nothing, not because the
+		# power operator was broken.
+		# ☠️☠️ AND NO APOSTROPHES IN HERE. This block lives inside a SINGLE-QUOTED
+		# awk program, so one apostrophe in a comment closes the program and the
+		# shell then reads the next awk line as its own - which is exactly what
+		# happened when the note above was first written with "phone-apostrophe-s"
+		# in it: busybox ash answered "bad for loop variable" on line 70, blaming a
+		# line that was never shell to begin with.
+		m=s/n; for (i=1;i<=n;i++) v+=(x[i]-m)*(x[i]-m); sd=sqrt(v/(n-1))
 		printf "  %d legs, means:", n; for (i=1;i<=n;i++) printf " %.1f", x[i]; print ""
 		printf "  mean of leg means = %.1f mA, boot-to-boot sd = %.1f mA, sem = %.1f mA\n", m, sd, sd/sqrt(n)
 		print "  ☠️ THIS sd is the number the night was run for. The within-leg band"

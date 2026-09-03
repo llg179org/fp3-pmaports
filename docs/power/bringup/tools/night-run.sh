@@ -150,29 +150,60 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# slope on what is left, and SAY how many were dropped. A rest that needs many
 	# drops is a rest that was disturbed, which is a different verdict from "still
 	# relaxing" and must not be allowed to masquerade as one.
-	read -r slope dropped <<-EOF
-	$(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
+	# ☠️ THIS PRODUCED AN EMPTY SLOPE ON THE DEVICE AND THE CAUSE IS NOT YET KNOWN.
+	# 2026-09-03, from the rehearsal's own log: "slope over the last 5 min:  mV/min
+	# ☠️ NOT RESTED" - a blank where a number belongs, and the endpoint condemned
+	# for the blank. My first diagnosis was the `read ... <<-EOF` here-doc, and a
+	# side-by-side test on the same real data DISPROVED it: both the here-doc and
+	# the positional form return 0.10 / 2 on the host. So the here-doc was not the
+	# fault, and the fix below is NOT sold as one.
+	# ☠️☠️ NOT A HERE-DOC, AND IT TOOK THREE DIAGNOSES TO EARN THAT SENTENCE.
+	# The deployed version read the awk output through `read -r slope dropped
+	# <<-EOF ... EOF` with the awk program written INSIDE the here-doc body. On the
+	# device that produces:
+	#     awk: cmd. line:15: Unexpected end of string
+	# and an EMPTY slope - so the run log printed "slope over the last 5 min:
+	# mV/min ☠️ NOT RESTED", a blank where a number belongs, and condemned a
+	# perfectly good endpoint for it. An unquoted here-doc expands its body, and an
+	# awk program is exactly the kind of text that does not survive being expanded.
+	#
+	# ☠️ THE TWO WRONG DIAGNOSES ARE THE LESSON, NOT THE BUG. First I blamed the
+	# here-doc and "disproved" it with a test that put the awk program in a
+	# VARIABLE - not inside the here-doc, so it tested a different construction and
+	# passed. Then I blamed `^` because the HOST's busybox says "Math support is
+	# not compiled in" - but the phone's busybox has math (sqrt(4) = 2, (3-1)^2 = 4),
+	# so the host binary was not the target's. Both times the stand-in passed where
+	# the real thing failed. The reproduction that finally settled it extracted the
+	# deployed block from /usr/local/bin UNCHANGED and ran it on the phone.
+	# ☠️ A repro that is easier to write than the original is usually a different
+	# program. Run what runs.
+	set -- $(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
 		{t[NR]=$2; v[NR]=$3}
 		END{
-			n=NR; if (n<3) {print "0 0"; exit}
-			for(i=1;i<=n;i++) w[i]=v[i]; 
+			n=NR; if (n<4) {print "0 0"; exit}
+			for(i=1;i<=n;i++) w[i]=v[i]
 			for(i=1;i<n;i++) for(j=i+1;j<=n;j++) if(w[j]<w[i]){x=w[i];w[i]=w[j];w[j]=x}
 			med = (n%2) ? w[(n+1)/2] : (w[n/2]+w[n/2+1])/2
 			for(i=1;i<=n;i++) d[i]=(v[i]>med)?v[i]-med:med-v[i]
 			for(i=1;i<=n;i++) e[i]=d[i]
 			for(i=1;i<n;i++) for(j=i+1;j<=n;j++) if(e[j]<e[i]){x=e[i];e[i]=e[j];e[j]=x}
 			mad = (n%2) ? e[(n+1)/2] : (e[n/2]+e[n/2+1])/2
-			if (mad < 1000) mad = 1000        # 1 mV floor: do not reject noise-free data
+			if (mad < 1000) mad = 1000        # 1 mV floor: do not reject clean data
 			k=0; st=0; sv=0; stt=0; stv=0
 			for(i=1;i<=n;i++) if (d[i] <= 3*mad) { k++; st+=t[i]; sv+=v[i] }
-			if (k<3) {printf "0 %d
-", n-k; exit}
+			if (k<4) {printf "0 %d\n", n-k; exit}
 			mt=st/k; mv=sv/k
-			for(i=1;i<=n;i++) if (d[i] <= 3*mad) { stt+=(t[i]-mt)^2; stv+=(t[i]-mt)*(v[i]-mv) }
-			printf "%.2f %d
-", (stt>0? stv/stt : 0)/1000*60, n-k
+			for(i=1;i<=n;i++) if (d[i] <= 3*mad) { stt+=(t[i]-mt)*(t[i]-mt); stv+=(t[i]-mt)*(v[i]-mv) }
+			printf "%.2f %d\n", (stt>0? stv/stt : 0)/1000*60, n-k
 		}')
-	EOF
+	slope=${1:-}; dropped=${2:-0}
+	if [ -z "$slope" ]; then
+		s "  ☠️☠️ OCV $1: THE SLOPE ESTIMATOR RETURNED NOTHING - this is a tool"
+		s "     failure, NOT a verdict about the pack. Do not read the endpoint as"
+		s "     'not rested': it has not been judged at all. Check that busybox awk"
+		s "     accepts the program (it uses ^ and a hand-written sort)."
+		slope=0
+	fi
 	[ "${dropped:-0}" -eq 0 ] || s "  ☠️ OCV $1: ${dropped} sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest"
 	s "OCV $1 slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
 	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
