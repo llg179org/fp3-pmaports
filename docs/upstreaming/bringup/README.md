@@ -272,6 +272,149 @@ own q6afe patch. Read it first — prior art is checked before writing, not afte
 
 ---
 
+## 8a. The whole path, drawn — one category, three trees
+
+Sections 3 to 8 explain the pieces separately. This one follows a single
+category all the way out, because the thing that confuses everyone is not any one
+piece: it is that **our categories and upstream's trees are different shapes**,
+and `audio` is where they disagree most.
+
+☠️ **A word on names first.** In this document **mainline means Linus' tree and
+nothing else**. The intermediate tree we build on is called **msm8953-pmOS** here,
+even though the GitHub organisation it lives in is literally named
+`msm8953-mainline` — the name is theirs, the confusion it causes is ours to avoid.
+
+### The three layers
+
+Measured 2026-09-03, `v7.1.3` against the tree we build on:
+
+```mermaid
+flowchart TB
+    T["<b>mainline</b> — torvalds/linux v7.1.3<br/>already has msm8953.dtsi, sdm632.dtsi<br/>and sdm632-fairphone-fp3.dts (446 lines)"]
+    M["<b>msm8953-pmOS</b> — 232 commits on top<br/>msm8953.dtsi 2483 → 3435 lines<br/>22 board DTS instead of 10<br/>adds: CPU OPPs, idle-states, mpss@0,<br/>the DAI links, video codecs"]
+    W["<b>our seven wip branches</b><br/>the FP3's own hardware:<br/>WCD9335 on SLIMbus, IMX363, PMI632,<br/>sensors, voice path, PLL/idle work"]
+    D["<b>debug-int/7.1.3</b><br/>what the package builds<br/>and the phone runs"]
+
+    T --> M --> W --> D
+```
+
+Read it as: mainline knows the *SoC* and knows *that the FP3 exists*;
+msm8953-pmOS makes the *platform* work; we make *this phone's hardware* work.
+
+### Where one category goes
+
+`audio` is one branch for us. Upstream it is **three destinations**, because
+upstream splits by subsystem and maintainer, never by our bring-up areas:
+
+```mermaid
+flowchart LR
+    WIP["wip/7.1.3/audio<br/><i>our bring-up branch</i>"]
+
+    WIP --> S1["upstreaming/wcd9335-audio<br/>15 patches"]
+    WIP --> S2["upstreaming/i2c-qup-pinctrl<br/>1 patch"]
+    WIP --> S3["the board DTS<br/><i>part of fp3-dts</i>"]
+
+    S1 --> T1["<b>ASoC</b><br/>Mark Brown<br/>sound/for-next"]
+    S2 --> T2["<b>i2c-host</b><br/>Andi Shyti<br/>i2c/i2c-host-next"]
+    S3 --> T3["<b>qcom SoC</b><br/>arm64: dts: qcom<br/><i>sent last</i>"]
+```
+
+The middle one is the surprise worth internalising: the **speaker-amplifier fix
+is an i2c patch**. Its bring-up home is `audio` because that is the bug it
+solves, but `get_maintainer.pl` on `i2c-qup.c` answers "I2C SUBSYSTEM HOST
+DRIVERS", so it is its own series to its own tree. There is no `wip/7.1.3/i2c`
+and there never will be — **look for a commit's wip twin by content, not by the
+series it ends up in.**
+
+☠️ Cutting the other categories on 2026-09-03 found two more of these hiding:
+`adc5-bat-therm` (IIO) came out of `charger`, and `gcc-msm8953-csiphy` (clk) came
+out of `camera`. Group commits by what `get_maintainer.pl` answers, not by which
+of our branches they sat on.
+
+### What a commit's journey actually looks like
+
+The single most common misconception is that there is a pull request somewhere.
+There is not — not to msm8953-pmOS (they will not merge AI-assisted work), and
+**not to Linus, who takes patches from nobody directly**:
+
+```mermaid
+flowchart TB
+    A["commit on wip/7.1.3/audio<br/>discovery order, DTS and driver mixed"]
+    B["reshaped onto upstreaming/wcd9335-audio<br/>b4 prep, based on sound/for-next<br/>logical order, DTS split out,<br/>Co-authored-by → Assisted-by"]
+    C["<b>e-mail</b> to alsa-devel + the maintainer<br/>git send-email / b4 send<br/>plain text, one patch per mail"]
+    D["review rounds on the list"]
+    E["the <b>maintainer</b> applies it<br/>to sound/for-next"]
+    F["linux-next<br/>integration testing"]
+    G["the maintainer sends a <b>pull request</b> to Linus<br/>during the merge window"]
+    H["mainline release vX.Y"]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+    D -.->|"changes asked for"| B
+
+    style C fill:#2d6a4f,color:#fff
+    style G fill:#2d6a4f,color:#fff
+```
+
+Two things the picture is meant to fix. **We** send e-mail, never a PR; the only
+pull request in the whole chain is the maintainer's, at the end, and it is not
+ours to make. And the loop back from review to the branch is the normal case,
+not the failure case — a series that never went round once is unusual.
+
+### What blocks what
+
+Order is not a preference here. The board DTS goes last because a `.dts` that
+describes hardware whose binding has not landed fails `dtbs_check` and gets
+reverted:
+
+```mermaid
+flowchart TB
+    D2["<b>D-2</b> Otto Pflüger<br/>q6afe: check ADSP version<br/>when setting clocks<br/>posted 2023-10-29, stalled"]
+    D1["<b>D-1</b> Adam Skladowski / Vladimir Lypak<br/>MSM8953/MSM8976 ASoC support v3<br/>posted 2024-07-31, patchwork 875540<br/>still state <i>new</i>"]
+    OURS["our machine-driver patch<br/>+ the audio board DTS"]
+    TEN["the other ten audio patches<br/><i>depend on nothing fork-specific</i>"]
+    DTS["fp3-dts<br/><i>sent last</i>"]
+
+    D2 -->|"review asked D-1<br/>to build on this"| D1
+    D1 --> OURS
+    OURS --> DTS
+    TEN --> DTS
+
+    style TEN fill:#2d6a4f,color:#fff
+    style D1 fill:#7f1d1d,color:#fff
+    style D2 fill:#7f1d1d,color:#fff
+```
+
+The green box is the finding that matters: measured 2026-08-29 by diffing every
+file the series touches against mainline `v7.1`, **ten of the thirteen patches
+touch byte-identical files** and depend on nothing fork-specific. Only
+`apq8016_sbc.c` differs, and that is what pulls in the stalled chain. A series is
+rarely blocked as a whole — measure which patches are, before deciding it is.
+
+### One review round, in time
+
+```mermaid
+sequenceDiagram
+    participant U as us
+    participant L as the list
+    participant M as the maintainer
+    participant B as the 0-day bot
+
+    U->>L: v1 (cover letter + n patches)
+    B-->>L: build reports on other arches
+    M-->>L: review comments
+    Note over U: wait for every reply,<br/>then at least one more day
+    U->>L: v2 — changelog under the "---",<br/>Reviewed-by tags carried forward
+    M->>M: applies to the subsystem -next
+    M-->>L: "Applied, thanks"
+    Note over U,M: no ping before two weeks —<br/>and then a resend, not a ping
+```
+
+☠️ The bot is a reviewer. Its report is a round like any other, and an unanswered
+comment — from a person or from a machine — is one of the ways a series is
+dropped with no technical objection at all.
+
+---
+
 ## 9. Why the FP3 audio work is worth sending at all
 
 The framing matters more than the patches. Measured against mainline `master`:
