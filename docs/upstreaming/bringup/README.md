@@ -415,6 +415,84 @@ dropped with no technical objection at all.
 
 ---
 
+## 8b. The dependency ledger — who owns what, and what has to happen before we can send
+
+Section 8 explains *why* the audio chain is blocked and 8a draws it. This section
+is the flat list: **every dependency, its owner, and the tasks between here and
+`b4 send`**, for every series. It is a snapshot — **as of 2026-09-03** — and the
+live record is the dependency list at the end of
+[`STATUS.md`](../STATUS.md#dependencies-foreign-series); when the two disagree,
+STATUS.md is right and this page is stale.
+
+Three kinds of dependency appear, and they need three different moves:
+
+| kind | what it means | the move |
+|---|---|---|
+| **foreign** | somebody else's posted series has to land, or be finished, before ours applies or makes sense | reply on *their* thread; offer what their review asked for; never a competing series |
+| **ours** | one of our own series must land first (a binding, a channel, a fix another patch relies on) | order the sends; say so in the cover letter; a DTS waits for all of them |
+| **unresolved** | a decision we have not made, or code that cannot go anywhere because its file is not upstream | decide, or drop with the reason written down |
+
+### Foreign dependencies — the owners
+
+| id | series | owner | reviewer who set the bar | state | what unblocks it | what we can offer |
+|---|---|---|---|---|---|---|
+| **D-1** | *MSM8953/MSM8976 ASoC support* v3 (8 patches; MSM8953 in `apq8016_sbc.c`, Quinary MI2S, binding) | **Adam Skladowski**, code by **Vladimir Lypak**; posted 2024-07-31 | **Stephan Gerhold**, 2024-08-01: the Q6AFE clock API must be detected at runtime, not hard-coded per SoC | `new`, stalled; the author wrote on 2024-08-09 that he could not carry it further | the generic `q6afe.c` change: serve `LPAIF_BIT_CLK` through the new clock-set API when the firmware is the newer kind — i.e. **finish D-2** | exactly that patch, posted into *his* thread; a `Tested-by` on the FP3; the AFE `api_version` this ADSP reports (queue **130**) |
+| **D-2** | *ASoC: qcom: check ADSP version when setting clocks* v2 (4 patches) | **Otto Pflüger**; v2 2023-10-29 | (not rejected; 1/4, 2/4 and the foundation of 3/4 are in mainline already) | `new`; only **3/4** — the dispatch by firmware version — is missing | someone finishing 3/4 against today's `q6afe.c` | the finished 3/4, as a reply on his thread; and ☠️ **his 4/4 is the same fix our `q6afe: treat ADSP_EALREADY as success` carries** — ours does not go out until his is answered |
+| **D-3** *(not yet on the STATUS list — adding it is a task)* | *QRTR bus and Qualcomm Sensor Manager IIO drivers* v2 | **Yassine Oudjana**; v2 2025-07-10 | **Jonathan Cameron** (IIO): `auxiliary_bus`, error-handling rework | `changes-requested` | his rework | the **ambient-light channel**, which his cover letter names as missing and we have working; a `Tested-by` on the FP3. ☠️ Not our gyro/mag drivers — they were written against his 2023 snapshot and may duplicate his |
+
+Two facts about D-1 that change what "help" means. The fork's own variant of the
+same machine-driver support is **further** from what Stephan asked for than the
+posted series (a plain `bool use_ibit_clk`, a mandatory `quin-iomux`, a
+`/* HACK */` block none of the posted patches have) — so we are not carrying a
+better version to hand over, and the honest offer is the missing q6afe piece,
+not our branch. And a dependency handed to somebody who did not agree to it is a
+hope, not a dependency: the offer is made **on the list, in their thread**, and
+their answer decides the plan.
+
+### Our own series — what each one waits for
+
+| series | tree | depends on | tasks before `b4 send` (2026-09-03) |
+|---|---|---|---|
+| **wcd9335-audio** (15) | ASoC, Mark Brown | nothing foreign for 13 of its patches; the `apq8016_sbc.c` SLIMbus-backend patches (140 lines) are **left out**, blocked on **D-1** | trial-rebase result recorded (`base-commit:`); checker gauntlet per patch; **functional run from the submission base** on the phone; cover letter with the `generated-content.rst` disclosure; cite the downstream `msm8953-audio.dtsi` in the mic-bias/DMIC patch; **answer D-2 4/4 before sending our `ADSP_EALREADY` patch** |
+| **i2c-qup-pinctrl** (1) | i2c-host, Andi Shyti | none | `Fixes:` from `git blame` on torvalds/master; decide `Cc: stable`; functional run (the speaker-amp check `24-speaker-amp`) |
+| **psci-cpuidle-fixes** (2) | linux-pm | none; the `apcs-msm8953.c` PLL work is **left out** (file not upstream) | checker gauntlet; cover letter; functional run (idle residency) |
+| **adc5-bat-therm** (1) | IIO, `togreg` | none — and it is a **prerequisite of smb5-charger** | decide whether it travels inside `smb5-charger` (one series, two trees is not allowed — so either it goes first, or the charger series carries it and asks the IIO maintainer for an Ack) |
+| **smb5-charger** (6) | power-supply, `for-next` | **adc5-bat-therm** (ours) | every board/battery fact out of the driver into DT; ☠️ **decide the fuel-gauge work** — ~1450 of the 2252 lines `wip/7.1.3/charger` adds have **no series at all** (charge counting, OCV correction, charge-end path); functional run (`50-charger`, `51-battery-temp`) |
+| **imx363-camera** (7) | media, `next` | none foreign; the driver is an **import** (Joel Selvaraj, sdm670-mainline) already in its own attributed commit | reorder: binding before driver; checkers; functional run; ☠️ front camera (`s5k4h7`, `lc898217`), CAMSS and flash-LED changes have **no series yet** — decide |
+| **gcc-msm8953-csiphy** (1) | clk, `clk-next` | none | `Fixes:` from blame; it is a fix, not an enablement — say so |
+| **qmi-encdec-fix** (1) | qcom SoC, `for-next` | none; everything else in `sensor` is **unsendable** (files not upstream) → see **D-3** | `Fixes:` from blame on torvalds/master; checkers |
+| **q6voice** (1) | – | **unsendable**: the driver it patches was never posted | nothing — revisit only if a q6voice driver appears on the list |
+| **fp3-dts** (–) | qcom SoC, `arm64: dts: qcom` | **every driver and binding series above having landed**, plus D-1 for the audio machine-driver node | cut the series; one DTS commit per logical step; `dtbs_check` differential; **sent last** |
+
+### What is common to all of them
+
+Every series is `rebased` and **none is `tested`**: the `Test:` block on
+STATUS.md is empty for all eight. That is the largest single gap, it is the one
+`generated-content.rst` invites a maintainer to demand of tool-assisted work, and
+it is **phone-lane work** — a kernel built from each submission base has to boot
+and pass the battery on the device. The checker gauntlet, the cover letters and
+the `Fixes:` targets are host-side and can be done in parallel.
+
+And one gate that is never written down because it changes weekly: the merge
+window. `releases.json` says `-rc` → sending is allowed; a bare `vX.Y` → wait.
+
+### The contact plan, in order
+
+1. **D-2 first** — it is the smaller ask, its foundation is already in mainline,
+   and finishing its 3/4 is what D-1's reviewer asked for. Reply on Otto's thread
+   with the finished patch and the FP3 measurement behind it.
+2. **D-1 second** — with D-2's piece in hand, reply on Adam's thread: here is the
+   runtime detection Stephan asked for, here is a Tested-by on an msm8953 board.
+   Whether they pick it up, or hand the series over, is theirs to say.
+3. **D-3** — reply on Yassine's thread offering the ambient-light channel, after
+   checking his v2 for what it already has.
+4. If an owner does not answer in weeks: **rewrite what we understand as our own
+   work**, cite theirs as prior art with `Link:`, and never forward their unsigned
+   commits — the DCO cannot be supplied on somebody's behalf, and code we cannot
+   defend line by line is the proxy problem, which is how D-1 itself stalled.
+
+---
+
 ## 9. Why the FP3 audio work is worth sending at all
 
 The framing matters more than the patches. Measured against mainline `master`:

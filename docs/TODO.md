@@ -195,6 +195,10 @@ repeated.
       why: THREE SIMs are in play, not two: the daily handset carries the corporate and the private card, and the dev phone carries a THIRD card whose plan is neither of those. The 2026-09-03 pair therefore says nothing about the dev subscription — it only proves vodafone HU carries VoLTE on some plans. Whether the imsd path can ever produce a VoLTE call on the dev phone depends on whether VoLTE is enabled on ITS subscription, and a certified handset is the only instrument we have that can answer it, since our own stack has no working IMS
       if it is a private one, the network side is fully open and what remains is device policy alone
       lane: phone
+- [ ] 134. Add D-3 (Yassine Oudjana's QRTR + Sensor Manager IIO series, v2 2025-07-10, changes-requested) to the dependency list on docs/upstreaming/STATUS.md
+      why: docs/upstreaming/bringup/README.md 8b names it as a dependency of qmi-encdec-fix and of everything sensor-shaped, but STATUS.md's D- list stops at D-2
+      the ledger says STATUS.md is the live record, so the record must carry it
+      lane: upstreaming
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
