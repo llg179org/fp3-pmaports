@@ -97,7 +97,7 @@ Rounds:
 | – | | | | | |
 
 To do:
-- [ ] **Tested-by from Bert Karwatzki** — asked 2026-09-03 (reply drafted, #145; the person sends it); he ran `integration/7.1.3` @ `5bc4d5ebb7c0` (2026-08-30) with Debian trixie, call audio works. Goes on the cover and on the patches he exercised once his tag arrives, never before
+- [ ] **Tested-by from Bert Karwatzki** — asked 2026-09-03 (reply sent by the person the same evening, #145); he ran `integration/7.1.3` @ `5bc4d5ebb7c0` (2026-08-30) with Debian trixie, call audio works. Goes on the cover and on the patches he exercised once his tag arrives, never before
 - [x] ~~the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 v2 4/4 is the same fix**~~ — dropped 2026-09-03, see Done — Otto Pflüger's `ASoC: qcom: q6afe: remove "port already open" error`, message-id `20231029165716.69878-5-otto.pflueger@abscue.de`, posted 2023-10-29 and still `new`. Read it before sending ours; a reply on that thread is more likely right than a competing series
 - [ ] the machine-driver patch: decide between waiting for D-1 and posting the generic `q6afe` clock-set change into Otto's/Adam's thread (README "The chain is shorter than it looks")
 - [ ] measure the AFE `api_version` this ADSP reports (the one number the q6afe redesign turns on)
@@ -571,7 +571,10 @@ To do:
 - [ ] cut after the driver series are `applied`; one commit per logical step in the `arm64: dts: qcom: sdm632-fairphone-fp3: <verb> <thing>` form
 - [ ] every enabled node measured working on the device (unbound-node check from the skill)
 
-Done: - 2026-09-03  #150: the overlay split is on `wip/7.1.3/camera` (`c6996a7c79c3`; twins `integration`
+Done: - 2026-09-03  reply to Bert sent (the person): lc898217 taken with his authorship, the overlay
+              decision, the system-pc hold, the QRTR port data; asked for a formal Tested-by and for
+              his module label / EEPROM contents
+- 2026-09-03  #150: the overlay split is on `wip/7.1.3/camera` (`c6996a7c79c3`; twins `integration`
               `de3de641cc64`, `debug-int` `7f18166c7b7c`, pushed): base dts without the rear camera,
               `sdm632-fairphone-fp3-rear-camera-{ak7374,lc898217}.dtso`, both composed in the Makefile.
               Host check: the ak7374 composite equals the old monolithic dtb node-for-node and
