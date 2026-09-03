@@ -1,0 +1,13 @@
+# /etc/systemd/system/fp3-night-start.timer
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+[Unit]
+Description=FP3: start the overnight replication at 19:00
+[Timer]
+OnCalendar=*-*-* 19:00:00
+# ☠️ Persistent=false ON PURPOSE. A missed 19:00 must NOT fire at the next boot -
+# the three boots of the run itself happen after 19:00, and a persistent timer
+# would re-arm the run from inside the run.
+Persistent=false
+AccuracySec=1min
+[Install]
+WantedBy=timers.target

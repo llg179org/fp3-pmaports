@@ -1,0 +1,13 @@
+# /etc/systemd/system/fp3-night-start.service
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+[Unit]
+Description=FP3: arm the overnight replication at the agreed hour
+# ☠️ The run is a state machine that reboots itself, so fp3-night.service must be
+# ENABLED (not merely started) - it has to come up on each of the three boots.
+# It disables itself when the sequence completes.
+After=multi-user.target ModemManager.service
+[Service]
+Type=oneshot
+# ☠️ SELF-DISABLING. Without this the timer fires again tomorrow at 19:00 and
+# starts an unasked-for five-hour measurement on a phone somebody is using.
+ExecStart=/bin/sh -c 'systemctl enable fp3-night.service && systemctl start --no-block fp3-night.service; systemctl disable fp3-night-start.timer'
