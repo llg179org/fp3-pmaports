@@ -76,6 +76,16 @@ repeated.
 > A task is **claimed** when the hook hands it out, so two windows are never given
 > the same one; a claim expires after 90 minutes, so a closed window releases its
 > task by doing nothing. `queue.cjs claims` shows who holds what.
+>
+> ☠️ **`continues:` is not `after:`, and the difference is what makes affinity
+> work.** `after:` means "cannot start until that is finished" — seven tasks here
+> are `after: 85` and six of them are entirely different work, merely gated on its
+> result. `continues:` means "this is the same work, carried on", and only the
+> author knows which is which. When a session finishes a task, a task that
+> `continues:` it is offered **back to that session first** — because a follow-on
+> handed to an empty context is paid for twice: once to rebuild what the other
+> agent already had, and once in the mistakes that rebuild makes. The hold lasts
+> 15 minutes and then it is anybody's; a parked task is worse than a cold one.
 
 <!-- FP3-QUEUE:BEGIN -->
 - [ ] 127. Turn the hooks back on
@@ -97,6 +107,7 @@ repeated.
 - [~] 118. Evaluate the night's balance against the pre-registered bands
       after: 85
       why: the morning triage; night-budget.py and the bands are ready
+      continues: 85
 - [~] 79. Shunt calibration — the only witness that does not pass through the PMI632
       until: 09-04 10:24
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
