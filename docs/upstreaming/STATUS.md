@@ -658,6 +658,23 @@ teardown is only reachable once an edge is wakeup-capable, so a series with only
 first applied crashes on remoteproc stop — folded (bisect rule), the oops kept in the
 message without timestamps. checkpatch's one warning is the 84-char oops line.
 
+**Prior art, found 2026-09-03 via Bert's pointer to ModemManager work item 694** (the
+issue itself is readable through the GitLab API; its notes need a login). Caleb
+Connolly sent the *glink* twin of this patch in January 2023 — *"rpmsg: qcom: glink:
+support waking up on channel rx"*, message-id
+`20230117142414.983946-1-caleb.connolly@linaro.org` (lore `t.mbox.gz` 200, three
+messages) — same design: every channel wakeup-capable, disabled by default, armed
+from sysfs. Bjorn Andersson (2023-01-18): *"This looks reasonable to me"*, then
+suggested **EPOLLWAKEUP per socket** as an alternative; Caleb (2023-05-27) argued
+for the sysfs switch (IPA does the same; the sensor DSP uses it to wake on motion;
+not tied to ModemManager) and reported a rare NULL `channel->ept.rpdev` splat in
+his rx path. **Never merged** — `torvalds/master` `qcom_glink_native.c` has no
+wakeup code; postmarketOS carried it. Consequences for this series: `Link:` that
+thread in the cover, CC Caleb, state that this is the SMD counterpart and that we
+answer Bjorn's question the same way Caleb did (the arming is a policy the modem
+daemon should not have to own); our teardown-ordering fix has no glink analogue
+(the splat he saw is a different path).
+
 Test: measured on the FP3 (incoming call wakes s2idle; the crash reproduced and gone). Checkers: checkpatch --strict, 1 warning (the oops line).
 
 Rounds: none yet.
@@ -870,6 +887,7 @@ Order of sending, forced by content: the driver series in any order, then
 |---|---|---|---|---|---|---|
 | D-1 | *MSM8953/MSM8976 ASoC support* v3, 8 patches — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski &lt;a39.skl@gmail.com&gt; (code by Vladimir Lypak), 2024-07-31 | patchwork series [875540](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=875540); cover message-id `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` (patchwork API, confirmed against the lore thread mbox, 2026-09-03) | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
 | D-2 | *ASoC: qcom: check ADSP version when setting clocks* v2, 4 patches | Otto Pflüger &lt;otto.pflueger@abscue.de&gt;, 2023-10-29 (v1 2023-10-14, superseded) | v2 cover message-id `20231029165716.69878-1-otto.pflueger@abscue.de` (patchwork API, confirmed against the lore thread mbox, 2026-09-03). ☠️ **patchwork has no *series* object for v2** — only the individual patches, so the only series ids are v1's: [793237](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=793237) (linux-arm-msm) and 793291 (alsa-devel) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
+| D-4 | *rpmsg: qcom: glink: support waking up on channel rx*, 1 patch — the glink twin of `qcom-smd-wake` | Caleb Connolly &lt;caleb.connolly@linaro.org&gt;, 2023-01-17 | message-id `20230117142414.983946-1-caleb.connolly@linaro.org` (lore thread mbox fetched 2026-09-03); ModemManager work item 694 (2023-01-19, RFC: QRTR wake on SMS/Call) | never merged; Bjorn: "looks reasonable", suggested EPOLLWAKEUP; author preferred sysfs; carried by postmarketOS | nothing — related, not a dependency; cite it and CC the author on `qcom-smd-wake` | 2026-09-03 |
 | D-3 | *QRTR bus and Qualcomm Sensor Manager IIO drivers* v2, 4 patches — turns QRTR into a bus and adds the SMGR IIO driver (v1 2025-04-06, 3 patches, `20250406140706.812425-1-y.oudjana@protonmail.com`) | Yassine Oudjana &lt;y.oudjana@protonmail.com&gt;, via B4 Relay, 2025-07-10 | cover message-id `20250710-qcom-smgr-v2-0-f6e198b7aa8e@protonmail.com`, [lore](https://lore.kernel.org/all/20250710-qcom-smgr-v2-0-f6e198b7aa8e@protonmail.com/) (thread mbox fetched 2026-09-03) | `changes-requested` on 4/4. On-list: Andy Shevchenko (2/4, 4/4) and Simon Horman 2025-07-10, **Jonathan Cameron** 2025-07-13 and 2025-07-19, Casey Connolly 2025-07-21; the author answered 2025-07-17. ☠️ **Last activity 2025-07-21** — quiet for ~14 months as of 2026-09-03, so "stalled" is the honest word, not "in review" | the **ambient-light channel**. His cover: *"Currently supported sensor types include accelerometers, gyroscopes, magentometers, proximity and pressure sensors. Other types (namely light and temperature sensors) are close to being implemented."* We have light working. Plus a `Tested-by` on the FP3 — his cover names **MSM8953** explicitly as an ADSP-category SoC in scope | 2026-09-03 |
 
 ☠️ **D-3 is not a dependency of `qmi-encdec-fix`, and the bringup page says it is.**
