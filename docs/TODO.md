@@ -201,6 +201,30 @@ repeated.
       why: the Test block is empty for all eight series and there is no control — without a boot from the submission base every failure is ours by default. Also the first measurement of which of msm8953-pmOS's 232 commits the FP3 actually needs (expected gaps: audio = D-1, camera/charger/sensors = the series themselves
       expected working: display, touch, GPU, WiFi/BT, USB, modem). Branch test/linux-next-<tag>+debug, never under integration/ or debug-int/. ☠️ olddefconfig drops unknown symbols silently — diff the config before and after
       lane: phone
+- [ ] 136. B1: rebuild the IMX363 import commit on wip/7.1.3/camera so it adds ONLY the IMX363 hunks — today it deletes VIDEO_OV2732 and VIDEO_T4KA3 from Kconfig+Makefile and strips select V4L2_CCI_I2C from OG01A1B/OV9282 (30 deletions in a commit that certifies byte-identical import); then regenerate upstreaming/imx363-camera
+      why: docs/upstreaming/review-2026-09-03-wip-and-series.md B1 — a maintainer applying patch 1 would see four unrelated drivers regress under a message that says nothing changed. wip cda174905a83, series 7b5eb48928cd. Nothing from this series moves before this
+      lane: upstreaming
+- [ ] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
+      why: review B2/B6 — a tool trailer on somebody else's unchanged commit is a false disclosure
+      the skill's own worked example of an uncited import is still uncited
+      a non-existent model id sits in the disclosure trailer
+      lane: upstreaming
+- [ ] 138. B3: drop 50e424881f1e (q6afe ADSP_EALREADY) from upstreaming/wcd9335-audio and answer Otto Pfluger's v2 4/4 thread instead (Tested-by + the FP3 measurement)
+      why: review B3 — same fix as a posted, still-new patch
+      STATUS.md already says it must not go out unanswered
+      lane: upstreaming
+- [ ] 139. B4+B5: adapt smb5-charger to devm_thermal_of_cooling_device_register(dev, u32 cdev_id, ...) on wip/7.1.3/charger and record the failed next-20260902 build in its Test block; re-cut i2c-qup-pinctrl on the current i2c-host tip (qup_i2c_enable_clocks now returns an error) with Fixes: from blame
+      why: review B4/B5 — the series does not build on the tree it targets and the record says rebased
+      the cooling patch is silently missing from upstreaming-int
+      the i2c series and the integration carry different resolutions
+      lane: upstreaming
+- [ ] 140. B7 + DTS hygiene before fp3-dts is cut: imx363 leftovers (// NOT SURE HOW TO FIND THIS VALUE, //0c40, C++ comments), vdig 1.175 V hardcode -> board l2 constraints, FP3-named delays; audio DTS: drop DMIC4/DMIC5/AMIC5 routes (measured silent 2026-08-02), move slimbam/slim_msm to msm8953.dtsi, interrupts-extended, no output-high in pinctrl; charger DTSI: 48 interrupt-names vs 4 in the binding; XCLR reset polarity ACTIVE_LOW
+      why: review B7 and section 3 — board facts in a generic driver, DT describing hardware the project measured absent, and a dtbs_check failure the series binding does not cover
+      lane: upstreaming
+- [ ] 141. Re-triage the power category: the left-out table calls sendable fixes 'not upstream-shaped' — pinctrl-msm8953 wakeirq map, irq-qcom-mpm wakeup timer/accessor/cap, qcom_smd wake irq + double teardown, qcom_smd-regulator set_suspend ops (minus both_sets), smsm proc-awake (+ a binding that does not exist yet), msm8953.dtsi MPM/rpm-stats/domain-idle-states, msm8916-wcd-digital mclk, slimbus disable_stream; plus camss RDI stride, leds-qcom-flash PMI632, ak7375 PM rework from camera
+      why: review section 4 — each patches a file in Linus' tree with a measurement behind it and is blocked by none of D-1/D-2/D-3
+      the experiments (xo_sleep_off, sleep_init, sleep_bw_off, both_sets) stay behind
+      lane: upstreaming
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
