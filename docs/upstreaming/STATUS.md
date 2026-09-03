@@ -613,6 +613,9 @@ To do:
 - [ ] cover letter (the `generated-content.rst` disclosure); a build on the base
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-qcom-mpm-wakeup-timer-pre-trailer-20260903`, series now `dcff270a15f3`
 - 2026-09-03  cut on `tip/irq/core`, pushed
 
 ## pinctrl-msm8953-mpm
@@ -639,6 +642,9 @@ To do:
 - [ ] cover letter
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-pinctrl-msm8953-mpm-pre-trailer-20260903`, series now `7f84196a63c4`
 - 2026-09-03  #153: cover letter written into the b4 cover commit (`1a491cc65cf5`; series tip
               `2c49bbdbc873`, old tip tagged `archive/upstreaming-qcom-smd-wake-pre-cover-20260903`):
               the SMD counterpart of Caleb's glink patch, the EPOLLWAKEUP answer, why no port
@@ -739,6 +745,9 @@ To do:
 - [ ] cover letter with the DT-vs-match-data question
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping (the binding patch, written today, carries only `claude-fable-5-1`); trees
+              unchanged, old tip tagged `archive/upstreaming-smsm-proc-awake-pre-trailer-20260903`, series now `191029603da9`
 - 2026-09-03  cut on `qcom/for-next`, pushed
 
 ## wcd-digital-mclk
@@ -765,6 +774,9 @@ To do:
 - [ ] cover letter
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-fable-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-wcd-digital-mclk-pre-trailer-20260903`, series now `359fc6dd4661`
 - 2026-09-03  cut on `sound/for-next`, pushed
 
 ## ngd-disable-stream
@@ -792,6 +804,9 @@ To do:
 - [ ] cover letter; ask which tree
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-fable-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-ngd-disable-stream-pre-trailer-20260903`, series now `9041abc4b3de`
 - 2026-09-03  cut on torvalds `master`, pushed
 
 ## camss-rdi-stride
@@ -821,6 +836,9 @@ To do:
 - [ ] cover letter naming the libcamera half and the Adreno 506 pitch measurement
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-camss-rdi-stride-pre-trailer-20260903`, series now `84fc35ac679b`
 - 2026-09-03  cut on `media/next`, pushed
 
 ## qcom-flash-pmi632
@@ -847,6 +865,9 @@ To do:
 - [ ] cover letter
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-qcom-flash-pmi632-pre-trailer-20260903`, series now `97d93f44d020`
 - 2026-09-03  cut on `for-leds-next`, pushed
 
 ## ak7375-pm
@@ -880,6 +901,9 @@ To do:
 - [ ] cover letter
 
 Done:
+- 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
+              with `Claude:claude-fable-5-1` as the second trailer for the reshaping; trees
+              unchanged, old tip tagged `archive/upstreaming-ak7375-pm-pre-trailer-20260903`, series now `fb4389d28c06`
 - 2026-09-03  cut on `media/next`, pushed
 
 ## Planned series — the power re-triage (2026-09-03)
