@@ -416,6 +416,13 @@ Done:
               `imx363.c`, while the commit message certified three files. That
               is what let B1 through. A certification is checked against every
               file it names, not the one that matters most
+- 2026-09-03  #146 (B7, host half): the four leftover C++ comments and the "NOT SURE HOW TO
+              FIND THIS VALUE" note in `imx363.c` replaced (wip `d9245062005f`, twins on
+              integration/debug-int, pushed), and folded into the series' cleanup patch
+              (`4299ac06294d`; old tip tagged `archive/upstreaming-imx363-camera-pre-b7-20260903`,
+              series now `f27ef2d05b11`). The 636 MHz comment says what is known: it came with the
+              imported Pixel 3a driver and was not derived from the PLL registers — a reviewer may
+              ask for the derivation; that is the honest state
 - 2026-09-03  #143: Bert Karwatzki's lc898217 two-supply fix taken onto `wip/7.1.3/camera` with his
               authorship (`78a9e301a72f`) plus a binding patch of ours (`e677aed32138`); twins on
               `integration/7.1.3` and `debug-int/7.1.3`, pushed. Not compiled here (no cross toolchain);
