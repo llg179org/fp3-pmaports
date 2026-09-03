@@ -9749,80 +9749,83 @@ and both addresses appear 21 times — but by re-parsing, not by the number havi
 been chased when it was first seen. **A count in a published table that nobody can
 account for is a defect report, not a curiosity.**
 
-## 2026-09-03 — a mérés előtti nap: két éjszaka-vesztő hiba, egy indító timer, és a kapuk első mért verdiktje
+## 2026-09-03 — the day before the measurement: two night-losing defects, a starter timer, and the gates' first measured verdict
 
-Ezen a napon nem mértünk a telefonon: a 19:00-s replikáció **előkészítése** és a
-szerszámok voltak soron. Négy dolog került elő, mind méréssel, nem érveléssel.
+Nothing was measured on the phone this day: the work was **preparing** the 19:00
+replication, and the tooling. Four things came out, all by measurement rather
+than argument.
 
-### 1. Az OCV-végpont kitalált volna egy `0 mV` driftet
+### 1. The OCV endpoint would have invented a `0 mV` drift
 
-A `night-run.sh` `ocv()` függvényében a meredekséget `set -- $(awk …)` olvassa be,
-ami **felülírja a pozicionális paramétereket** — tehát attól a sortól kezdve `$1`
-a *meredekség*, nem a `start`/`end` címke. Az utána jövő sorok viszont még
-`$1`-et használtak. Az eszközön, a valódi `ocv.txt` ellen mérve:
+In `night-run.sh`'s `ocv()` the slope is read with `set -- $(awk …)`, which
+**overwrites the positional parameters** — so from that line on `$1` is the
+*slope*, not the `start`/`end` tag. The lines after it still used `$1`. Measured
+on the device against the real `ocv.txt`:
 
 ```
 FIXED  -> OCV end done: 4154137uV, drift: -83 mV
 BROKEN -> OCV 0.10 done: uV, drift: 0 mV
 ```
 
-`grep "^0.10 "` semmit nem talál, `first`/`last` üres, és a busybox az üres
-operandust **0**-nak veszi (`set -u` nem üt be: a változó be van állítva, csak
-üres). ☠️ A futás tehát **nem hasal el** — kitalált `0 mV` driftet ír, ami
-**tökéletesen pihent pakknak olvasódik**. Ez a legrosszabb alak, amit egy elromlott
-műszer felvehet: pontosan akkor jelenti a lehető legjobb eredményt, amikor semmit
-nem mért. Javítva (`tag=$1`), telepítve. Az éjszaka egyik terméke, a kalibrációs
-offset-korlát, épp ezen a verdikten állt.
+`grep "^0.10 "` matches nothing, `first`/`last` come back empty, and busybox
+reads an empty operand as **0** (`set -u` does not fire: the variables are set,
+merely empty). ☠️ So the run does **not** crash — it writes an invented `0 mV`
+drift, which **reads as a perfectly rested pack**. That is the worst shape a
+broken instrument can take: it reports the best possible result exactly when it
+measured nothing. Fixed (`tag=$1`) and installed. One of the night's two
+products, the calibration offset bound, rests on that verdict.
 
-### 2. Egy engedélyezett unit minden booton elindult volna
+### 2. An enabled unit would have started on every boot
 
-A `fp3-night-ladder.service` `WantedBy=multi-user.target`, önkikapcsolás nélkül,
-és a főpróba **3/3 bootján elindult**. Egy `night-ladder.sh 8 3600` — nyolcórás,
-töltést felfüggesztő létra —, miközben a replikáció háromszor rebootol.
+`fp3-night-ladder.service` is `WantedBy=multi-user.target`, has no self-disable,
+and started on **3 of 3 boots** of the rehearsal. It runs `night-ladder.sh 8
+3600` — an eight-hour ladder that suspends the charge input — while the
+replication reboots three times.
 
-☠️ Ma csak **véletlenül** ártalmatlan: a 66. sor a `pmi632-battery/status`-ra ír
-(a működő út a `pmi632-charger/status`), „Permission denied"-del elszáll, majd
-**`success`-szel lép ki**, tehát a `Restart=on-failure` sem üt be. A védelmünk egy
-jogosultsági hiba volt, nem döntés. Letiltva.
+☠️ It is harmless today only by **accident**: line 66 writes to
+`pmi632-battery/status` (the working path is `pmi632-charger/status`), dies with
+"Permission denied", and then exits **successfully**, so `Restart=on-failure`
+never fires either. Our protection was a permission error, not a decision.
+Disabled.
 
-### 3. Semmi nem indította volna el a mérést
+### 3. Nothing would have started the measurement
 
-Se systemd timer, se `at`, se host-cron: a 19:00-s indítás azon múlt, hogy valaki
-emlékezzen rá. `fp3-night-start.timer` telepítve (`enable`-öli és indítja a
-`fp3-night.service`-t, majd **letiltja saját magát**; `Persistent=false`, mert a
-futás saját bootjai 19:00 *után* vannak és egy persistent timer a futáson belülről
-armazná újra). Ellenőrizve: `Thu 2026-09-03 19:00:00 CEST`.
+No systemd timer, no `at`, no host cron: the 19:00 start rested on somebody
+remembering. `fp3-night-start.timer` installed (it enables and starts
+`fp3-night.service`, then **disables itself**; `Persistent=false`, because the
+run's own boots happen *after* 19:00 and a persistent timer would re-arm the run
+from inside the run). Verified: `Thu 2026-09-03 19:00:00 CEST`.
 
-★ És egy mérés, ami a kábel árát tisztázza: a `night-run.sh:313` **maga vágja el
-az USB-bemenetet** közvetlenül a láb előtt. Tehát a bedugott kábel **a
-replikációt nem viszi el** — az éjszakai OCV-korlátot viszi, és 100 %-on a
-végpontok a lapos tetőn ülnek. Fél éjszaka, nem egész.
+★ And one measurement that settles what the cable costs: `night-run.sh:313` cuts
+the USB input **itself**, immediately before the leg. So a plugged cable does
+**not** cost the replication — it costs the whole-night OCV bound, and at 100 %
+it leaves the endpoints on the flat top. Half the night, not all of it.
 
-### 4. Az SMSM-kísérlet leadja, hogy hol tart — és a lapja az ellenkezőjét állította
+### 4. The SMSM experiment reports where it stands — and its own page said the opposite
 
-A `smsm-proc-awake.md` záró bekezdése szerint *„Nothing is deployed. The package
-`_commit` is untouched."* Mérve: **félig hamis**. Az APKBUILD `b8023520`-t pineli
-`pkgrel=80`-nal, és **az a commit maga a patch DT-fele**; mindkét commit a
-`debug-int/7.1.3` csúcsán ül. De a telefon **r78**-at futtat, és a futó
-device tree-ben **nincs `proc-awake` property** — a „megépült és be van pinelve"
-nem azonos a „telepítve"-vel.
+`smsm-proc-awake.md` closes with *"Nothing is deployed. The package `_commit` is
+untouched."* Measured: **half false**. The APKBUILD pins `b8023520` at
+`pkgrel=80`, and **that commit is the DT half of this very patch**; both commits
+sit at the tip of `debug-int/7.1.3`. But the phone runs **r78**, and the live
+device tree has **no `proc-awake` property** — built and pinned is not installed.
 
-☠️ És a tétel egy **halott hipotézist** hordozott: az előregisztrált olvasata még
-az MPSS-duty volt, holott 2026-09-01-én kiderült, hogy a modem maszkja az APPS
-bejegyzés fölött **csak a 23. bit**, és a 12-esre **egyedül az ADSP** iratkozott
-fel. A helyes olvasat a **LPASS-számláló alváson át**.
+☠️ And the task carried a **dead hypothesis**: its pre-registered reading was
+still MPSS duty, although on 2026-09-01 the subscription table showed the modem's
+mask over the APPS entry is **bit 23 alone**, and the **ADSP** is the only
+subscriber to bit 12. The correct reading is the **LPASS counter across
+suspend**.
 
-☠️ **Hiányosság a saját capture-jeinkben:** sem a `2026-09-02_ims-ma3`, sem a
-replikáció `PREREGISTERED.md`-je nem rögzíti a kernel `pkgrel`-jét, amin futott —
-utólag kellett visszanyerni az eszközről. Napokon átívelő összehasonlításnál a
-csomagverzió oda kell a fejlécbe, ahogy a sáv és a cella már ott van.
+☠️ **A gap in our own captures:** neither `2026-09-02_ims-ma3` nor the
+replication's `PREREGISTERED.md` records the kernel `pkgrel` it ran on — it had
+to be recovered off the device afterwards. Any capture compared across days needs
+the package version in its header, the way band and cell already are.
 
-### 5. A kapuk első mért verdiktje
+### 5. The gates' first measured verdict
 
-[`../../gates.md`](../../gates.md): karbantartási hányad **4,4 % / 5,4 %**,
-felülbírálási ráta **5,4 %** — de a kapunkénti precizió **visszamenőleg
-mérhetetlen** volt, mert a napló csak azt rögzítette, *hogy* egy kapu tüzelt.
-`gatelog.cjs` óta van kimenet-mező; az `unrecorded-result` az első kapu ebben a
-projektben mért verdikttel: **3 tüzelés, 3 fogás, „earns its place"**. A
-`review-due` megkapta az első `false`-t: üresjáratban sült el, mert **faliórát
-mér, nem aktív munkát**.
+[`../../gates.md`](../../gates.md): maintenance share **4.4 % / 5.4 %**, override
+rate **5.4 %** — but per-gate precision was **unmeasurable retrospectively**,
+because the log only recorded *that* a gate fired. Since `gatelog.cjs` there is
+an outcome field; `unrecorded-result` is the first gate here with a measured
+verdict: **3 firings, 3 catches, "earns its place"**. `review-due` got the first
+`false`: it fired in an idle window, because it measures **wall-clock hours
+rather than active work**.

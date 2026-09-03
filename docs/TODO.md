@@ -24,96 +24,93 @@ repeated.
 > bootloader, and the lk2nd menu is unusable because the screen stays black —
 > do not plan around either.
 
-## A sor — mi a következő
+## The queue — what is next
 
-> Ez a **munkasor**: rövid, gépi és ez az egyetlen forrás. A hook
-> (`plugins/fp3/hooks/queue.cjs`) ezt olvassa, és mást nem tart nyilván. Alatta a
-> lap többi része **dosszié**, nem feladatlista — oda a mérés és az indoklás megy.
+> This is the **work queue**: short, machine-readable, and the only source. The
+> hook (`plugins/fp3/hooks/queue.cjs`) reads this and keeps nothing of its own.
+> Everything below it on this page is a **dossier**, not a task list — that is
+> where the measurements and the reasoning go.
 >
-> Jelölések: `[ ]` mehet · `[~]` a sessionön kívül várakozik · `[@]` emberre vár ·
-> `[x]` kész (innen a [`TODO-DONE.md`](TODO-DONE.md)-be költözik).
-> Kulcsok: `after:` előfeltétel · `until:` mikor él újra · `when:`/`they-do:`
-> emberi tételnél · `why:` egy sor, hogy miért ez a feladat.
+> Markers: `[ ]` ready · `[~]` waiting on something outside the session ·
+> `[@]` needs a person · `[x]` done (then it moves to
+> [`TODO-DONE.md`](TODO-DONE.md)).
+> Keys: `after:` prerequisite · `until:` when it comes back · `when:`/`they-do:`
+> for a person's item · `why:` one line on why this task is worth doing.
 >
-> A kapukat (hookok, amik blokkolnak) a [`gates.md`](gates.md) tartja számon:
-> incidens, felülvizsgálati dátum, és hogy tüzeltek-e azóta jogosan.
+> The gates (hooks that block) are tracked in [`gates.md`](gates.md): the
+> incident, the review date, and whether they have fired justly since.
 >
-> ☠️ **Egy `[x]` NEM rögzít semmit a mérésből.** Amit egy lezárt feladat
-> megtanított, három helyre megy, és a hookok egyike sem tereli oda:
-> a **nyers adat** a [`power/bringup/captures/`](power/bringup/captures/) alá egy
-> saját `README.md`-vel; a **datált lelet** a
-> [`power/bringup/findings-log.md`](power/bringup/findings-log.md) végére; és ha
-> megváltoztatja, hogy a telefon **ma** mit csinál, a
-> [`power/README.md`](power/README.md) „current state" szakaszába is. Egy
-> megdőlt állítást **soha ne törölj** — írd le, miért dőlt meg: egy törölt
-> cáfolatot újra felfedeznek.
+> ☠️ **An `[x]` records NOTHING about the measurement.** What a finished task
+> taught goes to three places, and no hook steers it there: **raw data** to
+> [`power/bringup/captures/`](power/bringup/captures/) with its own `README.md`;
+> the **dated finding** to the end of
+> [`power/bringup/findings-log.md`](power/bringup/findings-log.md); and, only if
+> it changes what the phone does **today**, the "current state" section of
+> [`power/README.md`](power/README.md). **Never delete a disproven claim** —
+> write down why it fell: a deleted refutation gets rediscovered.
 >
-> ☠️ **Az ütemezés kulcs, nem próza.** „PARKOL, a 116. mögé" némán elavul és
-> senki nem olvassa újra; egy `after: 116` minden feldolgozáskor ellenőrződik.
+> ☠️ **Scheduling is a key, not prose.** "Parked behind 116" goes stale silently
+> and nothing re-reads it; an `after: 116` is checked on every parse.
 
 <!-- FP3-QUEUE:BEGIN -->
-- [~] 50. SMSM PROC_AWAKE (12. bit) — az A/B lefuttatása és a mérés a commit-üzenetbe
+- [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
-      why: az EGYETLEN nyitott tétel, ami LKML-patchet termel. ☠️ A patch MEGVAN és be van pinelve (r80, `_commit` b8023520, checkpatch-tiszta), DE a telefon r78-at futtat és a futó DT-ben nincs `proc-awake` property ⇒ a mérés FLASH-t és rebootot kér, az pedig kicserélné a kernelt a ma esti replikáció alól. ☠️ Az előregisztrált olvasat NEM az MPSS-duty (az a modem-változat, ami 09-01-én megdőlt: a modem maszkja bit 23), hanem a LPASS-számláló alvason át — a bit egyetlen feliratkozója az ADSP
-- [x] 82. Kapu-napló és felülvizsgálati dátum minden kemény kapuhoz
-      why: kész — docs/gates.md: 5 kapu incidenssel és lejárattal, karbantartási hányad 4,4 %/5,4 %, felülbírálási ráta 5,4 %. ☠️ A precizió NEM mérhető visszamenőleg (a napló nem rögzít kimenetet) ⇒ új tétel: 125.
-- [x] 125. Kimenet-mező a kapu-naplóba (fogás / hamis / felülbírálva)
-      why: kész — gatelog.cjs (közös, append-only, a KÖVETKEZŐ tüzelés kérdez az előzőről). A 37 régi tüzelés betöltve; `unrecorded-result` az első MÉRT verdikt: 3/3 fogás, „earns its place"
-- [@] 63. Elérhetőség-teszt: óránként egy hívás nappal
-      when: óránként nappal; a reggeli sarok-minta CSAK mérés nélküli éjszaka után
-      they-do: óránként egy hívás, kicsöngetve, felvétel nélkül — jelenteni nem kell semmit. ☠️ MA ESTE NE: 19:00-tól a telefon mér, a rádió-ki ablakokban jogosan nem csöng
-      why: a csöngés az EGYETLEN elfogadható kapu; a CS-attach/SGs csak prediktor
-- [@] 112. Ránézés a napi, gyári Androidos FP3 státuszsorára hívás közben
-      when: a következő nappali hívásnál
-      they-do: a HÍVÓ készüléken nézd meg, LTE/4G marad-e (VoLTE/HD ikon), vagy 2G/E/G-re vált a hívás idejére. Egy szó a válasz. ☠️ A napi telefonhoz egyébként nem nyúlunk
-      why: gyors elő-szűrő a második kapura — ha egy tanúsított készülék is CSFB-zik, az imsd-út ezen a hálózaton értelmetlen
-- [~] 85. Replikáció 3 booton + OCV-vs-QG
+      why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
+- [@] 63. Reachability test: one call an hour during the day
+      when: hourly during the day; the morning corner sample ONLY after a night with no measurement
+      they-do: one call an hour, let it ring, do not answer — nothing to report back. ☠️ NOT tonight: the phone measures from 19:00, and in the radio-off windows it rightly does not ring
+      why: ringing is the ONLY acceptable gate; CS attach / SGs is a predictor only
+- [@] 112. Glance at the daily factory-Android FP3's status bar during a call
+      when: at the next daytime call
+      they-do: on the CALLING handset, check whether it stays on LTE/4G (a VoLTE/HD icon) or drops to 2G/E/G for the duration. One word is the answer. ☠️ Otherwise we do not touch the daily phone
+      why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
+- [~] 85. Replication across 3 boots + OCV-vs-QG
       until: 19:00
-      why: ez adja a 40,3 mA boot-közti hibasávját és a kalibrációs offset-korlátot; eszközoldali timer indítja (fp3-night-start.timer), ellenőrizve
-- [~] 118. Az éjszakai mérleg kiértékelése az előregisztrált sávok ellen
+      why: this buys the boot-to-boot band of the 40.3 mA figure and the calibration offset bound; started by a device-side timer (fp3-night-start.timer), verified
+- [~] 118. Evaluate the night's balance against the pre-registered bands
       after: 85
-      why: a reggeli triázs; a night-budget.py és a sávok készen állnak
-- [~] 79. Sönt-kalibráció — az egyetlen tanú, ami nem a PMI632-n megy át
+      why: the morning triage; night-budget.py and the bands are ready
+- [~] 79. Shunt calibration — the only witness that does not pass through the PMI632
       until: 09-04 10:24
-      why: nem blokkol, hanem erősít: a lezárás kimondható a |ε| ≤ 1,49 (δ + I·|g|) korláttal is
-- [~] 72. Küszöb-idő módszer (kalibráció nélküli áram-arány)
+      why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
+- [~] 72. Threshold-time method (a current ratio needing no calibration)
       after: 85
-      why: feltételes tartalék — csak akkor él, ha az esti OCV-párból számolt |ε| korlát nem elég szoros
-- [~] 75. Ki írja vissza: ModemManager --log-level=DEBUG drop-in
+      why: conditional fallback — only alive if the |ε| bound computed from tonight's OCV pair is not tight enough
+- [~] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
       after: 85
-      why: egy reboot, nulla kockázat — de a következő úgyis-reboot UTÁN, mert a debug-naplózás a ma esti lábakat szennyezné
-- [~] 81. Mérés-indító wrapper (fp3-measure), gép-szintű zárral
+      why: one reboot, zero risk — but AFTER the next reboot we are having anyway, because debug logging would contaminate tonight's legs
+- [~] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
       after: 85
-      why: a mai PreToolUse-kapu csak a saját sessionömben fut; egyetlen belépési pont zárná a több-gép- és a kézi-ssh-lyukat is
-- [~] 124. A QG nyers számláló kitétele mainline-ra (CHARGE_COUNTER)
+      why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
+- [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
       after: 85
-      why: docs/TODO.md kimondja kérdésként, de nincs mögötte tétel; a driver a mért rendszer része, ezért csak a replikáció után
-- [~] 116. A döntő tanú a készülék-policy kapujára: UT-orákulum slot, azonos IMEI
-      why: EZ A HORGONY — egy orákulum-session, egy csekklistával; hat tétel áll mögötte
-- [~] 55. Attach-PDN lista mindkét sloton
+      why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
+- [~] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
+      why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
+- [~] 55. Attach-PDN list on both slots
       after: 116
-      why: a 116. orákulum-session 2. sora
-- [~] 54. DIAG OTA-capture az orákulum sloton (RRC cause + NAS/ESM típusok)
+      why: line 2 of the 116 oracle session
+- [~] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
-      why: a 116. orákulum-session 3. sora
-- [~] 41. A következő slot-váltás: sáv-illesztett orákulum-mérés, nem pref-olvasás
+      why: line 3 of the 116 oracle session
+- [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
-      why: a 116. orákulum-session 4. sora
-- [~] 64. A „miért bont" — egyetlen, határolt ~30 perces IMS/QIPCALL capture
+      why: line 4 of the 116 oracle session
+- [~] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
-      why: a P-CSCF-lelet óta ez nem dönt el semmit, amíg a 116. ki nem mondta, hogy az imsd-út egyáltalán él; ☠️ a DIAG-folyam némasága külön akadály
-- [~] 19. A′ kontroll a bearer-karra (bearer lebontva, minden más azonos)
+      why: since the P-CSCF finding this decides nothing until 116 has said whether the `imsd` path is alive at all; ☠️ the silent DIAG stream is a separate obstacle
+- [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
       after: 116
-      why: az imsd-jövő árazása
-- [~] 30. A bearer-kar újramérése sáv-lockkal
+      why: pricing the `imsd` future
+- [~] 30. Re-measure the bearer arm with a band lock
       after: 116
-      why: az imsd-jövő árazása; a mai mérés sávja nem volt rögzítve
-- [~] 31. A sáv-preferencia mint szállítható kar
+      why: pricing the `imsd` future; the earlier measurement never recorded its band
+- [~] 31. Band preference as a shippable lever
       after: 30
-      why: lezárás utáni tétel — a cél a duplázás lezárása, nem a minimum megtalálása
-- [~] 53. A modem saját története (modem-story infrastruktúra)
+      why: a post-closure item — the goal is closing the 2× gap, not finding the minimum
+- [~] 53. The modem's own story (modem-story infrastructure)
       after: 85
-      why: megértés-infrastruktúra; az újraírt célfüggvény nem fizet érte — lezárás után újranézni, vagy elejteni
+      why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
