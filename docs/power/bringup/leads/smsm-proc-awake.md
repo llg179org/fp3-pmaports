@@ -139,6 +139,32 @@ not merely in the source: `qcom,proc-awake-bit = <0x0c>`.
 still running the previous kernel; the commits are not pushed. The A/B waits for
 the overnight decay window to close.
 
+### ☠️ That paragraph half-decayed, measured 2026-09-03 08:1x
+
+It is now wrong in one direction and right in the other, which is the shape of
+claim that gets believed whole:
+
+* **Wrong:** the `_commit` is *not* untouched. `linux-fp3/APKBUILD` pins
+  `_commit=b8023520cddb…` at `pkgrel=80`, and that commit **is** the DT half of
+  this patch — both commits sit at the tip of `debug-int/7.1.3` and on
+  `wip/7.1.3/power`.
+* **Right, and it is the half that matters:** the phone is **not running it**.
+  `apk list -I linux-fp3` reads **r78**, and the running device tree has no
+  `proc-awake` property at all (`grep -rl proc-awake /proc/device-tree` → empty).
+  Built and pinned is not installed.
+
+So the A/B still needs a build, a flash and a reboot — and that is exactly why it
+cannot be run today. The 2026-09-03 night replication measures the boot-to-boot
+band of a 40.3 mA figure taken on **this** kernel; installing a different one
+first would put a new variable inside the series meant to isolate boot-to-boot
+variation. The experiment is queued behind it.
+
+☠️ **And a gap this exposed in our own captures:** neither
+`2026-09-02_ims-ma3/README.md` nor the replication's `PREREGISTERED.md` records
+the kernel `pkgrel` the measurement ran on. It had to be recovered from the
+device afterwards. Every capture that compares across days needs the package
+version in its header, the way band and cell already are.
+
 ☠️ Two bugs were found by reading the diff, both in the error path and both
 introduced by me:
 

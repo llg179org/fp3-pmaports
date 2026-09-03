@@ -39,8 +39,9 @@ repeated.
 > senki nem olvassa újra; egy `after: 116` minden feldolgozáskor ellenőrződik.
 
 <!-- FP3-QUEUE:BEGIN -->
-- [ ] 50. SMSM PROC_AWAKE (12. bit) — az orákulum bootkor 1-re állítja, mi soha
-      why: az EGYETLEN nyitott tétel, ami LKML-patchet termel; kell mellé egy eszköz-oldali igazoló mérés a commit-üzenetbe, NAPPALI slotban (ne csússzon össze a 116. orákulum-sessionnel)
+- [~] 50. SMSM PROC_AWAKE (12. bit) — az A/B lefuttatása és a mérés a commit-üzenetbe
+      after: 85
+      why: az EGYETLEN nyitott tétel, ami LKML-patchet termel. ☠️ A patch MEGVAN és be van pinelve (r80, `_commit` b8023520, checkpatch-tiszta), DE a telefon r78-at futtat és a futó DT-ben nincs `proc-awake` property ⇒ a mérés FLASH-t és rebootot kér, az pedig kicserélné a kernelt a ma esti replikáció alól. ☠️ Az előregisztrált olvasat NEM az MPSS-duty (az a modem-változat, ami 09-01-én megdőlt: a modem maszkja bit 23), hanem a LPASS-számláló alvason át — a bit egyetlen feliratkozója az ADSP
 - [ ] 82. Kapu-napló és felülvizsgálati dátum minden kemény kapuhoz
       why: asztali munka, telefon nélkül; a kapu-rothadás ellen véd — minden kapu hordozzon incidens-linket és lejáratot
 - [@] 63. Elérhetőség-teszt: óránként egy hívás nappal
