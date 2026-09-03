@@ -36,7 +36,15 @@ repeated.
 > [`TODO-DONE.md`](TODO-DONE.md) — an `[x]` left sitting here is a task nobody
 > archived, and a queue that only grows stops being readable.
 > Keys: `after:` prerequisite · `until:` when it comes back · `when:`/`they-do:`
-> for a person's item · `why:` one line on why this task is worth doing.
+> for a person's item · `why:` one line on why this task is worth doing ·
+> `lane: phone|upstreaming` — **which of the two workstreams the task belongs
+> to.** `phone` = it touches the device, and claiming it takes the **phone
+> lease** (`queue.cjs claims` shows who holds it; a running unattended
+> measurement holds it too); `upstreaming` = mail, b4, the STATUS page, never
+> the device; no lane = anybody's. A window says which lane it is
+> (`FP3_LANE=upstreaming claude`, or `queue.cjs lane phone`) and is only handed
+> tasks of its lane or of none — so an upstreaming window is never handed a
+> flash, and two windows are never handed two phone tasks at once.
 >
 > The gates (hooks that block) are tracked in [`gates.md`](gates.md): the
 > incident, the review date, and whether they have fired justly since.
@@ -66,6 +74,8 @@ repeated.
 > queue.cjs mark <id> ' '|x|~|@
 > queue.cjs done <id>            # ARCHIVES to TODO-DONE.md and releases the claim
 > queue.cjs release <id>         # give a claimed task back
+> queue.cjs drop <id>            # a mistaken add: remove WITHOUT archiving
+> queue.cjs lane phone|upstreaming|any   # this window's lane (or FP3_LANE=… in the environment)
 > queue.cjs check | next | claims
 > ```
 >
@@ -97,10 +107,11 @@ repeated.
 
 <!-- FP3-QUEUE:BEGIN -->
 - [ ] 127. Turn the hooks back on
-      why: ☠️ ALL seven hook registrations were removed on 2026-09-03 09:12 at the user's request. Restore with `cp ~/.claude/settings.json.hooks-all-on-202609030912 ~/.claude/settings.json`. Three consequences while they are off, in the order they can hurt: `measurement-watch` no longer stops an unattended measurement being started with no watcher and TONIGHT IS A MEASUREMENT NIGHT; `precompact-status` no longer writes a state snapshot before a compaction; `risky-target` no longer warns before a command touches boot config. The queue hook is off too, so nothing will show this item — it is here to be read, not to be dispatched
+      why: ☠️ ALL seven hook registrations were removed on 2026-09-03 09:12 at the user's request. Restore with `node plugins/fp3/hooks/hooks-toggle.cjs on` (edits ONLY the hooks key; the old `cp settings.json.hooks-all-on-… settings.json` recipe would also have removed the kernel-review plugin installed since). Three consequences while they are off: measurement-watch no longer stops an unattended measurement being started with no watcher; precompact-status no longer writes a state snapshot before a compaction; risky-target no longer warns before a command touches boot config. ☠️ measurement-watch was ALSO dead while 'on' until 2026-09-03 (a syntax slip crashed it on exactly its positive path) — fixed
 - [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
+      lane: phone
 - [@] 63. Reachability test: one call an hour during the day
       when: hourly during the day; the morning corner sample ONLY after a night with no measurement
       they-do: one call an hour, let it ring, do not answer — nothing to report back. ☠️ NOT tonight: the phone measures from 19:00, and in the radio-off windows it rightly does not ring
@@ -112,6 +123,7 @@ repeated.
 - [~] 85. Replication across 3 boots + OCV-vs-QG
       until: 19:00
       why: this buys the boot-to-boot band of the 40.3 mA figure and the calibration offset bound; started by a device-side timer (fp3-night-start.timer), verified
+      lane: phone
 - [~] 118. Evaluate the night's balance against the pre-registered bands
       after: 85
       why: the morning triage; night-budget.py and the bands are ready
@@ -119,44 +131,71 @@ repeated.
 - [~] 79. Shunt calibration — the only witness that does not pass through the PMI632
       until: 09-04 10:24
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
+      lane: phone
 - [~] 72. Threshold-time method (a current ratio needing no calibration)
       after: 85
       why: conditional fallback — only alive if the |ε| bound computed from tonight's OCV pair is not tight enough
 - [~] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
       after: 85
       why: one reboot, zero risk — but AFTER the next reboot we are having anyway, because debug logging would contaminate tonight's legs
+      lane: phone
 - [~] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
       after: 85
       why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
 - [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
       after: 85
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
+      lane: phone
 - [~] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
       why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
+      lane: phone
 - [~] 55. Attach-PDN list on both slots
       after: 116
       why: line 2 of the 116 oracle session
+      lane: phone
 - [~] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
       why: line 3 of the 116 oracle session
+      lane: phone
 - [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
       why: line 4 of the 116 oracle session
+      lane: phone
 - [~] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
       why: since the P-CSCF finding this decides nothing until 116 has said whether the `imsd` path is alive at all; ☠️ the silent DIAG stream is a separate obstacle
+      lane: phone
 - [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
       after: 116
       why: pricing the `imsd` future
+      lane: phone
 - [~] 30. Re-measure the bearer arm with a band lock
       after: 116
       why: pricing the `imsd` future; the earlier measurement never recorded its band
+      lane: phone
 - [~] 31. Band preference as a shippable lever
       after: 30
       why: a post-closure item — the goal is closing the 2× gap, not finding the minimum
 - [~] 53. The modem's own story (modem-story infrastructure)
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
+- [ ] 128. Cut upstreaming/wcd9335-audio from wip/7.1.3/audio with b4 prep on sound/for-next; tag submit/7.1.3/audio archive/submit-7.1.3-audio-final
+      lane: upstreaming
+      why: first series branch of the new namespace
+      STATUS.md row wcd9335-audio moves preparing → rebased when the trial rebase records its base-commit
+- [ ] 129. Archive the other six submit/7.1.3/* branches and cut their upstreaming/<series> successors (i2c-qup-pinctrl, psci-cpuidle-fixes, smb5-charger, imx363-camera, qmi-encdec-fix)
+      lane: upstreaming
+      after: 128
+      why: STATUS.md names the target series per legacy branch
+      every archive tag before any delete
+- [ ] 130. Measure the AFE api_version this ADSP reports (q6core svc info) — the one number the q6afe clock-set redesign turns on
+      lane: phone
+      after: 85
+      why: STATUS.md D-1/D-2: decides the condition in the generic q6afe patch
+      a device read, not an argument
+- [ ] 131. Track D-1 (patchwork 875540) and D-2 (Otto's q6afe series) with the kernel-review plugin: /track the cover message-ids, record them on STATUS.md
+      lane: upstreaming
+      why: the dependency list has patchwork ids but no lore message-ids yet
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
