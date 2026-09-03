@@ -153,7 +153,146 @@ in, and comparing across regimes is the mistake this page exists to prevent.
 Idle here means display off, WiFi associated, one SSH session open. Unless a row
 says *asleep*, it is not a measurement of a sleeping phone.
 
-### ★★★★★ The answer, as of 2026-08-28 evening: it is the modem's awake time on **LTE**
+### ★★★★★ The answer, as of 2026-09-02: the modem's awake time is an **IMS-PDN loop**, and switching it off costs the **CS domain**
+
+The 2026-08-28 block below localised the front — the modem's awake time on LTE —
+and it stands. What it could not say was *what the modem was busy with*. It is
+now named, measured on both ends, and switchable.
+
+**The mechanism.** Every **8.3–8.7 s** the modem builds an IMS PDN and tears it
+straight back down. The whole loop is readable in the NAS/ESM log
+([`bringup/captures/2026-09-02_diag-ota-pmos/`](bringup/captures/2026-09-02_diag-ota-pmos/)):
+`PDN CONNECTIVITY REQUEST` with `APN='ims'` → the network **grants** it
+(`ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST`, accepted) → **the UE's own**
+`PDN DISCONNECT REQUEST` about **30 ms** later, carrying **no ESM cause**. 22
+complete cycles in 120 s, each one needing an RRC connection, and 13–28 RRC
+messages run over the air per cycle — so the radio work is not a side effect of
+the loop, it *is* the loop. The disconnect is far too fast to be
+network-dependent: a **local** precondition fails between "bearer up" and "first
+SIP message", and the reverse-engineering literature says which one — the modem
+plays one half of a two-party protocol whose AP half (`imsdatadaemon`) pmOS does
+not run. See [`bringup/leads/ims-missing-ap-half.md`](bringup/leads/ims-missing-ap-half.md).
+
+**The duty, three times, the last two band-pinned and asleep.** Turning the
+IMS switch vector off is a modem-side write and it is causal:
+
+| ladder | A (IMS on) | **B (IMS off)** | A′ (IMS on) | conditions |
+|---|---:|---:|---:|---|
+| [`ims-ladder`](bringup/captures/2026-09-02_ims-ladder/) | 44.5 % | **4.8 %** | 46.8 % | AP awake, band-pinned |
+| [`ims-ma2`](bringup/captures/2026-09-02_ims-ma2/) | 48.0 % | **4.4 %** | 47.6 % | on battery, AP in 600 s `rtcwake` cycles |
+| [`ims-ma3`](bringup/captures/2026-09-02_ims-ma3/) | 46.8 % | **4.5 %** | 47.7 % | on battery, 60 s alarm, gauge read on every wake |
+
+In `ims-ma2`, the tightest of the three, A′ brackets A to **0.4 pp** and every
+sample in all four legs read band `eutran-1`, cell `1470762` — pinned and
+verified at each wake, not assumed. ★ **And the wake rate is a second, independent signature**: the cheap
+leg wakes **3.13–3.15 /s = 1/318–320 ms**, the LTE paging DRX cycle, at **14–15
+ms a wake**. That is not "the same behaviour, less of it" — it is a UE back in
+`RRC_IDLE`, camped, waking only for paging. It is **the oracle's own
+fingerprint** (6.9 %, 3.15 /s, 20.0 ms), reproduced on our stack. ☠️ Parity, not
+superiority: different band, different day, and this repo's own repeatability is
+~3 pp.
+
+**The loop also stops the *application processor* sleeping** — a system-level
+cost no modem-duty model ever carried. Same alarm (60 s) in every leg,
+[`ims-ma3`](bringup/captures/2026-09-02_ims-ma3/):
+
+| leg | IMS | median sleep | sleeps under 30 s |
+|---|---|---:|---:|
+| A | on | 16 s | 31/53 (58 %) |
+| **B** | **off** | **62 s** | **5/29 (17 %)** |
+| A′ | on | 18 s | 35/56 (62 %) |
+
+With IMS off three quarters of the sleeps run the full alarm; with it on, over
+half end inside thirty seconds. The loop's RRC traffic reaches the AP through the
+modem SMD edge **this project armed as a wake source so calls would ring** — the
+same edge that has cost this investigation two weeks of suspend residency.
+
+**The current, measured — and this is the first current number in this
+investigation that a sleeping phone produced.** Read from the PMI632 gauge's
+**hardware current accumulator**, which keeps counting while the AP is suspended,
+aggregated as `Σaccum / Σcnt` and gated to windows that lie inside a real sleep
+(`ma3-fit.py`, which generates the table rather than having it retyped):
+
+| leg | slept | windows kept | **current** | 95 % CI (**within-leg only**) |
+|---|---:|---:|---:|---|
+| A | 16 s | 5/54 | 90.3 mA | ±12.2 |
+| A′ | 17 s | 8/57 | 97.6 mA | ±10.2 |
+| **B** | **62 s** | **19/30** | **40.3 mA** | **±1.3** |
+
+The gap is therefore **50.1 ± 12.2** and **57.3 ± 10.2 mA**, its uncertainty
+almost entirely the expensive legs', which barely slept and hold thirteen usable
+windows between them. ☠️ **Do not quote this as "what the modem duty costs"** —
+it is a *system* difference, modem duty **plus** the AP sleep the loop destroys,
+and the third quantity (IMS on, AP sleeping through it) is not measured and is
+not cheaply measurable here, because on this platform a non-wake IRQ does not
+fail to wake the AP, it **aborts s2idle**.
+
+☠️ **Three things gate the headline, and the tight band is not the big one.**
+
+1. **Boot-to-boot is unmeasured.** Every band above is *within-leg*. A and A′ are
+   the same configuration 50 minutes apart and differ by **7.8 mA**; that is the
+   only boot-shaped evidence there is, and it is one pair. **The B leg has no
+   twin: one leg, one boot.** The real band comes from the spread of *leg means*
+   across boots, never from pooled windows — pooling hides exactly the term being
+   estimated. A tight band with no replication is the same failure the withdrawn
+   "58 mA" headline was, in a better costume.
+2. **The calibration offset is unbounded.** The accumulator and `current_now`
+   agree to ~2 mA, but they **share the PMIC and its ADC**: that validates the
+   conversion, sign and register read, and says nothing about a gain or offset
+   error in the layer they share. An offset decides between "40 mA, goal met" and
+   something else. It can be bounded without a shunt, because it enters the two
+   routes with different weight: **`|ε| ≤ 1.49 (δ + I·|g|)`** for an agreement
+   `δ` between the accumulator and the pack-curve route.
+3. Both are what the **replication** buys — three boots across two days plus
+   OCV-bounded rest blocks. Until it lands the honest label is *"measured on one
+   leg of one boot, 40.3 ± 1.3 mA within-leg, calibration unbounded"*.
+
+**The reachability half held while it was cheap: 14/14.** With IMS off, fourteen
+incoming calls over one day (four by hand, ten from `fp3-ringlog`, hourly
+10:31–18:57) all rang. Device-side latency — modem `ringing-in` to ringtone —
+**375.5 ± 34.7 ms** over the ten logged calls. ☠️ 14/14 gives a 95 % lower bound
+of `0.05^(1/14) = 0.806`; it is not yet a rate. And the dangerous corner is
+**unsampled**: hourly calls never test a phone that has idled eight hours.
+
+☠️☠️ **But the calls arrive over CSFB, and that is somebody else's service.**
+All fourteen read band `gsm/gsm-900-extended` **at call time** while the phone
+camps on LTE, and the modem reports `Domain: 'cs-ps'` — the SGs association is
+live. So the honest form of the headline is:
+
+> **On this network, today, the IMS loop costs ~50 mA, and switching it off keeps
+> calls arriving — over CSFB.** Every word of that qualifier is doing work.
+
+3G is already retired here. If 2G follows, on this configuration an incoming call
+is not slower, it is **absent**. That reclassifies the `imsd` path from curiosity
+to **contingency plan**, and it raises the value of understanding *why* the modem
+drops the bearer. See [`bringup/leads/csfb-is-a-dependency.md`](bringup/leads/csfb-is-a-dependency.md),
+and the full seven-row dependency table — one row per service, the claim resting
+on it, and the observable that would show it moved — in
+[`bringup/captures/2026-09-02_ims-ma3/README.md#-dependencies--what-this-result-rests-on-that-we-do-not-control`](bringup/captures/2026-09-02_ims-ma3/README.md).
+
+★ **The network's half of the contingency is already provisioned**: the loop
+capture's downlink `PDN CONNECTIVITY REQUEST` PCO returns two P-CSCF addresses
+(`10.149.10.129`, `10.150.10.129` — a length-validated TLV walk, each exactly
+once per message, 21/21 and 18/18), plus the IM CN Subsystem Signalling Flag and
+a DNS address, and the IMS-off control returns **zero**. ☠️ That settles the
+*first* gate only. Whether the operator admits **this device** to VoLTE is a
+second, untested gate — device policy, not network provisioning. See
+[`bringup/leads/volte-is-provisioned.md`](bringup/leads/volte-is-provisioned.md)
+and [`bringup/leads/imsd-cost-estimate.md`](bringup/leads/imsd-cost-estimate.md).
+
+☠️ **The switch does not survive a reboot.** The IMS write survives a *modem
+firmware restart* (measured), but a **system reboot restores the original,
+expensive vector** — read twice after the 2026-09-02 06:31 boot, before any
+write. So a boot-time asserting service is a **requirement**, not a convenience:
+without it every restart silently brings the ~48 % state back.
+
+---
+
+### ★★★★ 2026-08-28 evening — how the front was localised: the modem's awake time on **LTE**
+
+> This block was the current answer until 2026-09-02 and is kept because its
+> caveats and its three dead candidates still stand. What it was missing —
+> *what* the modem was awake for — is the section above.
 
 **2G reproduces the oracle's number on our own phone.** A-B-A′ on the access
 technology, MPSS duty as the measure, 184 samples a leg, the phone registered and
@@ -233,7 +372,21 @@ knob: pinning a phone to one LTE band trades coverage for power.
 ### The arithmetic underneath it
 
 Everything below this block is the trail that led here and is kept for its
-caveats; **this is the current state.**
+caveats. ☠️ **It is no longer the current state** — that is the 2026-09-02
+section at the top of this chapter. These rows are `current_now` medians taken
+**awake**; the sleeping-current numbers that supersede them come from the gauge's
+hardware accumulator.
+
+☠️ **And the duty is not a sufficient statistic for the current.** The linear
+`current = intercept + slope × duty` model that the rows below invite was
+calibrated across bands and predicts worst on `eutran-1`: it wanted 106.3 mA at
+48.8 % duty where **147** was measured (+41 residual), against +6 on `eutran-20`.
+Since the A/B/A′ ladders are pinned to `eutran-1`, any milliamp figure *derived*
+from a duty on them is an extrapolation on the least reliable band — which is
+exactly how the withdrawn "58 mA" headline was produced. The direction, the
+mechanism and every duty number stand; **the derived milliamps do not, and were
+replaced by measurement.** See
+[`bringup/leads/duty-is-not-sufficient.md`](bringup/leads/duty-is-not-sufficient.md).
 
 | | idle, panel dark, radio up | instrument |
 |---|---|---|
@@ -399,8 +552,22 @@ that rules out sampling shortfall, because too few samples under-count. The
 likeliest reading is that **the sampling itself wakes the phone**. That ratio must
 **not** be carried over to "correct" a pmOS figure: it is a property of how often
 a system wakes, which is the thing under comparison. Every row above is therefore
-integrated-against-integrated. **Getting a coulomb counter onto the mainline side
-is the highest-value instrument work left in this area.**
+integrated-against-integrated. ☠️ **SOLVED 2026-09-02 — we have one now, and it was never missing.** The
+sentence that used to close this paragraph, *"getting a coulomb counter onto the
+mainline side is the highest-value instrument work left in this area"*, treated a
+**driver** limitation as a **hardware** one: `charge_counter` does not exist here
+and `charge_now` is frozen at the 3 060 000 µAh nameplate, so coulometry looked
+unavailable. The counter is in the **PMIC, one layer below the driver that
+froze** — QG peripheral base `0x4800` on the PMI632 (the value our own
+`qcom_smbx.c` already carries as `.qg_base`), read through the SPMI regmap
+debugfs: `QG_I_ACCUM_DATA0` at `0x488b–0x488d` (24-bit LE, **signed**) over
+`QG_ACCUM_CNT` at `0x488e`, converted with the vendor's own `I_RAW_TO_UA`. It
+**keeps counting while the AP is suspended**, and its sampling rate is the same
+asleep as awake (**3.39/s against 3.35/s**, measured across an `rtcwake -s 40`),
+so a sleeping window is a real average and not an artefact of who was awake to
+read it. That is what produced the 40.3 mA above — the first sleeping-current
+number in this investigation that did not come from a voltage slope. See
+[`bringup/leads/qg-accumulator-current.md`](bringup/leads/qg-accumulator-current.md).
 
 ☠️ **The 15.3 mA oracle floor is withdrawn** (2026-08-26). It was one window on
 2026-08-24, and the state-of-charge explanation offered for it died on its own
@@ -502,7 +669,12 @@ runs. The reasoning behind each is in
 
 | question | where it is being worked |
 |---|---|
-| ★★★★★ **what keeps our modem core awake 34–36 % against the oracle's 6.3 %** — same firmware, same SoC, both registered; every Linux-side lever flat and the firmware candidate dead. Next: compare attach state / DRX / bearer between the two stacks | [`bringup/findings-log.md`](bringup/findings-log.md) 2026-08-28 |
-| ★ **the call-wake ↔ suspend-residency trade** — armed edge: calls arrive, residency ~2.8 %; disarmed: suspends hold 3/3, calls do not. The ring is IPCRTR signal-level traffic and IPCRTR is also how a call arrives, so the channel is not a lever | [`bringup/findings-log.md`](bringup/findings-log.md) 2026-08-22 / 08-28 |
+| ★★★★★ **is 40.3 mA a number or a leg?** — the cheap state is measured on **one leg of one boot**, with a within-leg band only. The boot-to-boot term is the dominant unknown and no single leg can see it; three boots across two days give the real band as the spread of leg *means* | replication, [`../STATUS.md`](../STATUS.md) item 85 |
+| ★★★★★ **the calibration offset is unbounded** — every current number in this project, the 2185 mAh reference curve included, passes through the same PMI632 ADC, so accumulator-vs-`current_now` agreement validates nothing about a shared offset. Bounded without a shunt by `\|ε\| ≤ 1.49 (δ + I·\|g\|)` from a rested, radio-off OCV block | [`bringup/captures/2026-09-02_ims-ma3/`](bringup/captures/2026-09-02_ims-ma3/) |
+| ☠️☠️ **the cheap configuration rests on the network's CS domain** — all fourteen delivered calls fell back to `gsm-900-extended`. 3G is retired here; if 2G follows, an incoming call is not slower, it is absent. Witness in place (the ring log's `band` column) | [`bringup/leads/csfb-is-a-dependency.md`](bringup/leads/csfb-is-a-dependency.md) |
+| ★★★ **the `imsd` contingency: two gates, one settled** — the network provisions IMS for this SIM (two P-CSCF addresses, measured). Whether the operator admits *this device* is untested, and the cheapest witness is a certified handset's status bar during a call | [`bringup/leads/volte-is-provisioned.md`](bringup/leads/volte-is-provisioned.md), [`imsd-cost-estimate.md`](bringup/leads/imsd-cost-estimate.md) |
+| ★★★ **why the modem drops the bearer 30 ms after asking for it** — no ESM cause, so a local precondition fails; the AP half of the protocol is missing. Value went up when CSFB became a dependency. ☠️ Currently blocked by a silent DIAG log stream | [`bringup/leads/ims-missing-ap-half.md`](bringup/leads/ims-missing-ap-half.md), [`diag-bringup.md`](bringup/leads/diag-bringup.md) |
+| ★ **the call-wake ↔ suspend-residency trade, much loosened** — the armed edge was the wake path, but the *traffic* was the IMS loop: with IMS off the AP sleeps the full 60 s alarm in three quarters of windows **with the edge still armed**, and 14/14 calls arrived. What is left is the residual ring, not the trade as it was stated | [`bringup/captures/2026-09-02_ims-ma3/`](bringup/captures/2026-09-02_ims-ma3/) |
+| ☠️ **the 8-hour idle corner is unsampled** — reachability was tested hourly, which never asks whether a phone that has idled all night still rings. It is a first-touch-of-the-morning measurement and it costs a measurement-free night | [`../STATUS.md`](../STATUS.md) item 63 |
 | ⏳ **the gauge divides by the nameplate** — this pack yields 2175 mAh across the OCV table's full span against a declared 3060, so `capacity` floors at 35 % and UPower never acts. Fix is a learned `charge_full`, design settled | [`../TODO.md`](../TODO.md) T1 |
 | ★ **the modem stack costs ~36 mA asleep** — reproduced against a same-day control, and **the only intervention that has ever moved the sleeping slope**. The mechanism is still unnamed, and this is where the next measurement belongs | [`bringup/findings-log.md`](bringup/findings-log.md) (Part II) |
