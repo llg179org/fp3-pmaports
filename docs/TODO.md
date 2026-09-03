@@ -217,11 +217,12 @@ repeated.
       lane: upstreaming
       after: 79
 
-- [ ] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
+- [@] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
       why: mail from Bert Karwatzki 2026-09-03 — reverting the commit fixes it on his device
       the review's section 4 had just listed that dtsi work as sendable
       a regression on a second device outranks that
       lane: phone
+      they-do: attach/power on the FP3 dev device: no USB gadget enumerated, no NCM iface, 172.16.42.1 unreachable (measured 2026-09-04). The hold is verified in place and the A/B protocol is pre-registered in docs/power/bringup/findings-log.md; the reproduction needs the phone plus one human touch-after-resume confirmation.
 
 - [ ] 149. Cut msm8953-dtsi-idle (rpm-stats, rpm-master-stats, MPM node + wakeup-parent, domain-idle-states rename, drop local-timer-stop, system-pc request, SMSM bit) on the qcom SoC DT tree; keep 0314fee3ce35 (system-pc affinity) OUT until #142 settles; dtbs_check against the upstream bindings
       lane: upstreaming
@@ -235,13 +236,12 @@ repeated.
       lane: upstreaming
       until: when/he-replies
       why: asked in the 2026-09-03 mail; nothing to do until he answers
-- [ ] 153. qcom-smd-wake cover letter: Link: Caleb Connolly's 2023 glink thread (20230117142414.983946-1-caleb.connolly@linaro.org) and MM work item 694, CC Caleb + Bert; state it is the SMD counterpart, answer Bjorn's EPOLLWAKEUP question the way Caleb did (arming is policy, sysfs per edge), and say why no port filter in the kernel (port 52 = WMS on Bert's firmware, DSD on ours - per-firmware numbers); generated-content.rst disclosure
-      lane: upstreaming
-      why: D-4 prior art found 2026-09-03; a maintainer who saw Caleb's patch will ask how this relates
+
 - [~] 154. Next mail to Bert (person sends): tell him port 52 is DSD on our firmware (measured 2026-08-30), i.e. the qrtr-lookup numbers are per-firmware, which confirms his own caveat; say our qcom-smd-wake keeps the filter in user space and uses a wake IRQ instead of IRQF_NO_SUSPEND; ask whether he wants to be CC'd / co-credited (Reported-by or a Link: to his note) on the series
       lane: upstreaming
       until: when/he-replies
-      why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two<!-- FP3-QUEUE:END -->
+      why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
+<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 

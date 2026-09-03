@@ -9829,3 +9829,62 @@ an outcome field; `unrecorded-result` is the first gate here with a measured
 verdict: **3 firings, 3 catches, "earns its place"**. `review-due` got the first
 `false`: it fired in an idle window, because it measures **wall-clock hours
 rather than active work**.
+
+## 2026-09-04 — #142 did not run: the device is not attached. The hold, verified; the protocol, pre-registered
+
+**BLOCKED, not measured.** Nothing about touch-after-suspend was read on our FP3
+today. `lsusb` shows no gadget, `ip -br addr` shows only `lo` and the wired LAN
+(no NCM interface), `ping -c2 172.16.42.1` returns 100 % loss, and `fp3-ssh`
+exhausted its retries with no output. That is "not measured", not "no regression
+found".
+
+**What was verified mechanically — the other half of the task, the hold.**
+
+- `0314fee3ce35` (*"arm64: dts: qcom: msm8953: name the right affinity level for
+  system-pc"*, 2026-08-17) changes exactly one property: `system_pc`'s
+  `arm,psci-suspend-param`, `0x41000353` → `0x42000353`.
+- The value is `0x42000353` on `wip/7.1.3/power`, on `integration/7.1.3`, on
+  `debug-int/7.1.3` **and** in the tree of the package's pinned
+  `_commit b8023520cddb` (`git show <ref>:arch/arm64/boot/dts/qcom/msm8953.dtsi`).
+  So our phone is a valid reproduction subject: it carries the suspect value.
+  (`git merge-base --is-ancestor` answers *no* for integration/debug-int only
+  because the twin there is a cherry-pick with a different sha — compare the
+  property, not the hash.)
+- ☠️ **No `upstreaming/*` series carries it.** Measured 2026-09-04 across all 17
+  series branches: `arch/arm64/boot/dts/qcom/msm8953.dtsi` is in none of them,
+  and no series carries any `.dts`/`.dtsi` at all. The hold holds by
+  construction — the DTS series (`msm8953-dtsi-idle`, `fp3-dts`) have not been
+  cut yet — rather than by anyone having remembered to exclude it. That is worth
+  knowing precisely because it means the hold will need re-asserting at cut time,
+  which is what queue #149 says.
+
+**Pre-registered protocol, written before any data exists** (Step 0), so the
+window that has the phone can run it rather than re-derive it:
+
+- *Hypothesis:* the affinity-level-2 suspend param drives a deeper system
+  power-collapse in which state the hx83112b touch controller depends on — its
+  i2c bus, its supply, or its reset/pinmux — is lost across resume, so the first
+  transaction after resume fails with `-110`/`-6`.
+- *Single change:* that one DT property, `0x42000353` → `0x41000353`. **DTB-only
+  vehicle**: build `qcom/sdm632-fairphone-fp3.dtb` from **`debug-int/7.1.3`**
+  (never from a `wip` worktree — a category-branch DTB silently drops every other
+  layer), back up `/boot/`, copy, reboot. No kernel build, no flash.
+- *Signals, all three across the same window:* (a) `dmesg` for hx83112b / i2c
+  errors after resume — the machine-readable half, needs no human; (b) the
+  **delta** of `/sys/power/suspend_stats/success`, so a null result cannot be
+  "it never suspended"; (c) touch itself, which is a Step-4h human-in-the-loop
+  read — one action, wait for the explicit "done", never a timer.
+- *Pass/fail, in advance:* **reproduced** = with `0x42000353` the post-resume i2c
+  errors appear and touch is dead, and with `0x41000353` both are absent, same
+  protocol, same boot shape. **Not reproduced** = no i2c error on either arm,
+  with the suspend counter proving the phone actually suspended. ☠️ Name the
+  third outcome now: **touch dead on both arms** means the A/B is measuring
+  something else (a panel or driver state, not the idle state) and says nothing
+  about the commit.
+- *Ordering:* measure the deployed (suspect) value first — it costs nothing, it
+  is already on the phone — then revert and repeat.
+- ☠️ *And the limit of a null result here:* Bert Karwatzki's report is on a
+  **second** FP3. A clean run on ours does not disprove it; two devices
+  disagreeing is itself the finding, and the question then moves to what differs
+  between them (touch/panel module variant, bootloader, firmware) rather than to
+  whether the commit is innocent.
