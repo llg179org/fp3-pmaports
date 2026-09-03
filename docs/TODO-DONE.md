@@ -2012,8 +2012,47 @@ is felülírta a *„No autonomous run is active."* sorral. Egy állapot, ami cs
 egy nem verziókövetett fájlban él, nincs meg — ugyanaz a lecke, mint amit a
 [`gates.md`](gates.md) a verziókövetetlen kapukról ír.
 
-A tételszámok az eredetiek, hogy a hivatkozások feloldódjanak. `[x]` = kész,
-`[-]` = elejtve.
+The item numbers are the originals so that references resolve. `[x]` = done,
+`[-]` = dropped.
+
+## ☠️ This block stays in Hungarian, and it is an ARCHIVE, not a source
+
+The repository is otherwise English (`docs/` pages, capture READMEs, leads). This
+one section is kept in the language it was written in, because it is a verbatim
+archive of working notes rather than a page anybody reads to learn what the
+device does. **New entries here are written in English.**
+
+That is only defensible because the substance is elsewhere, which was checked
+rather than assumed, 2026-09-03:
+
+| check | result |
+|---|---|
+| closed items with a resolving witness | **86 / 86 done items** (a capture directory, a commit, or a declared `unverifiable:`) |
+| items with no witness | 18 — **exactly the dropped ones**, which by definition produced no result |
+| measured numbers in the notes | 150 |
+| …that also appear elsewhere under `docs/` | **138 (92 %)** |
+| …that appear nowhere else | 12, each inspected by hand |
+
+The twelve were all leg-context or validation values whose *finding* is recorded
+elsewhere — the QMI census's 50.9 % duty, the RAT ladder's 49.8 %, the XO
+series' 50.6 %, and so on — with their capture directory intact. Two were worth
+naming:
+
+- ☠️ **The contaminated IMS-off window** (item 56: MPSS 0 wakeups in 600 s,
+  `exit>enter` ⇒ awake throughout, the modem continuously awake for >766 s,
+  because the DIAG log mask is modem-side state that outlives the capture
+  process). Recorded in
+  [`power/bringup/leads/ims-missing-ap-half.md`](power/bringup/leads/ims-missing-ap-half.md):
+  *"The one window taken with IMS off is unusable."*
+- ☠️ **A 1 ms discrepancy nobody had noticed**: the fourth reachability call is
+  **325 ms** in the ringlog's own replay (machine-derived) and **326 ms** in the
+  hand analysis quoted in `STATUS.md`, while the note claims the two are
+  "exactly the same numbers". It changes no conclusion — the mean is 385 ± 92 ms
+  — but it is left standing here rather than silently reconciled, because
+  picking one without the journal would be a guess.
+
+The OCV acceptance threshold (`< 0.2 mV/min over the last five minutes`) appears
+only here among the pages — it lives where it is enforced, in `night-run.sh`.
 
 - [x] **1.** ★★★★★ A CENSUS EREDMENYENEK ROGZITESE: capture + a 'terse buys no residency' verdikt VISSZAVONASA a leads/modemmanager-suspend-modes.md-ben
       - tanú: `capture:docs/power/bringup/captures/2026-08-31_modem-night`
