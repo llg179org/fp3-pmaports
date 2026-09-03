@@ -359,7 +359,8 @@ Left out of this series (2026-09-03, measured against `wip/7.1.3/camera`):
 |---|---|---|
 | `drivers/clk/qcom/gcc-msm8953.c` | 3+/3- | the **gcc-msm8953-csiphy** series — a different tree (clk) |
 | `pmi632.dtsi` + `sdm632-fairphone-fp3.dts` | 113 | the **fp3-dts** series, sent last |
-| `lc898217.c`, `s5k4h7.c` and their bindings (front camera + its actuator) | 596 | no series yet — front-camera bring-up, not claimed to work |
+| `lc898217.c` + binding (the rear actuator of the *other* FP3 camera module) | ~230 | no series yet. ☠️ The 2026-09-03 review called this untested hardware; **Bert Karwatzki tested it the same day** on his FP3 (IMX363 @0x10 + LC898217 @0x72) and found it needs two supplies — his fix is on `wip/7.1.3/camera` as `78a9e301a72f` (his authorship), binding `e677aed32138`. Send with the two-module DTS decision (#144) |
+| `s5k4h7.c` + binding (front camera) | ~370 | no series yet — front-camera bring-up, not claimed to work |
 | the CAMSS changes (`camss-vfe-4-1.c`, `camss-vfe-gen1.{c,h}`, `camss-vfe.c`, `camss-video.{c,h}`) | 228 | planned series **camss-rdi-stride** (2026-09-03 re-triage) |
 | the flash-LED changes (`leds-qcom-flash.c`, its Kconfig and binding) | 24 | planned series **qcom-flash-pmi632** (2026-09-03 re-triage) |
 | ☠️ the **`ak7375.c` runtime-PM rework** — hold a PM reference only while the lens is driven away from rest, measured at 0.30 W on an FP3 with nothing taking pictures | 91+/14- on wip vs 14+/0- carried | **has no series.** It is a generic driver power improvement with a measurement behind it, i.e. exactly the kind of change that belongs upstream — planned series **ak7375-pm** (2026-09-03 re-triage) |
@@ -414,6 +415,10 @@ Done:
               `imx363.c`, while the commit message certified three files. That
               is what let B1 through. A certification is checked against every
               file it names, not the one that matters most
+- 2026-09-03  #143: Bert Karwatzki's lc898217 two-supply fix taken onto `wip/7.1.3/camera` with his
+              authorship (`78a9e301a72f`) plus a binding patch of ours (`e677aed32138`); twins on
+              `integration/7.1.3` and `debug-int/7.1.3`, pushed. Not compiled here (no cross toolchain);
+              the phone lane builds it with the next `_commit` bump
 - 2026-09-03  series cut on media `next`; original authorship preserved
 - 2026-09-03  the AK7374 work folded in rather than split out (same tree, same maintainer)
 
