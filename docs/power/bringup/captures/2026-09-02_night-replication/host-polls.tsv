@@ -1,0 +1,13 @@
+2026-09-02 19:23:49 poll
+    2026-09-02 19:08:21 [+26478s d5f6a45a] OCV start: radio off, USB input suspended, resting 30 min
+    2026-09-02 19:15:26 [+26903s d5f6a45a]   rest start: 420s, 8 mV over the last 2 min
+    2026-09-02 19:22:26 [+27323s d5f6a45a]   rest start: 840s, -2 mV over the last 2 min
+    S=1 E=enabled
+2026-09-03 03:15:00 poll (end-of-run, the only one inside the measurement window)
+    2026-09-02 22:36:39 [+1709s 319334e4]   rest end: 1680s, -3 mV over the last 2 min
+    2026-09-02 22:43:39 [+2129s 319334e4]   rest end: 2100s, -1 mV over the last 2 min
+    2026-09-02 22:43:39 [+2129s 319334e4]   ☠️ rest end hit its 30 min ceiling without settling - this endpoint is suspect
+    2026-09-02 22:53:40 [+2729s 319334e4] OCV end slope over the last 5 min: -0.78 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+    2026-09-02 22:53:40 [+2729s 319334e4] OCV end done: 4161144uV, drift over the last 80 s: -6 mV
+    2026-09-02 22:54:10 [+2759s 319334e4] === NIGHT COMPLETE ===
+    S=3 E=disabled

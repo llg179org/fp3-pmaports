@@ -1,0 +1,53 @@
+=== allapot 03:15-kor:
+2026-09-02 22:36:39 [+1709s 319334e4]   rest end: 1680s, -3 mV over the last 2 min
+2026-09-02 22:43:39 [+2129s 319334e4]   rest end: 2100s, -1 mV over the last 2 min
+2026-09-02 22:43:39 [+2129s 319334e4]   ☠️ rest end hit its 30 min ceiling without settling - this endpoint is suspect
+2026-09-02 22:53:40 [+2729s 319334e4] OCV end slope over the last 5 min: -0.78 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-02 22:53:40 [+2729s 319334e4] OCV end done: 4161144uV, drift over the last 80 s: -6 mV
+2026-09-02 22:54:10 [+2759s 319334e4] === NIGHT COMPLETE ===
+S=3 E=disabled
+
+=== host-oldali lábnyomom az egesz ejszakara: 2 ssh belepes
+2026-09-02 19:23:49 poll
+2026-09-03 03:15:00 poll (end-of-run, the only one inside the measurement window)
+=== elemzo eszkozok telepitese (a meres mar veget ert) ===
+
+  telepitve: ma3-fit.py
+
+  telepitve: night-triage.sh
+
+  telepitve: ims-ma3-leg.sh
+
+=== TRIAZS ===
+=== 1. INTERFERENCE AUDIT ============================================
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = Network Manager Script Dispatcher Service;
+# audit: incoming calls during the leg = 0
+# ☠️ DISTURBED (unit): something unexpected started during this leg: Network Manager Script Dispatcher Service;
+
+=== 2. VECTOR GATES ==================================================
+2026-09-02 20:50:42 [+25s 73f2f57c] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-02 20:51:07 [+50s 73f2f57c] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+
+=== 3. BAND / CELL ===================================================
+# band/cell: eutran-1 / 1470762
+# band/cell at end: eutran-1 / 1470762
+
+=== 4. OCV ENDPOINTS =================================================
+2026-09-02 20:39:27 [+31943s d5f6a45a]   ☠️ rest start hit its 90 min ceiling without settling - this endpoint is suspect
+2026-09-02 20:49:27 [+32544s d5f6a45a] OCV start slope over the last 5 min: -0.91 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-02 20:49:27 [+32544s d5f6a45a] OCV start done: 4202602uV, drift over the last 80 s: -6 mV
+2026-09-02 22:43:39 [+2129s 319334e4]   ☠️ rest end hit its 30 min ceiling without settling - this endpoint is suspect
+2026-09-02 22:53:40 [+2729s 319334e4] OCV end slope over the last 5 min: -0.78 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-02 22:53:40 [+2729s 319334e4] OCV end done: 4161144uV, drift over the last 80 s: -6 mV
+
+=== 5. THE NUMBERS (validity first - read 1-4 before believing these) =
+--- leg1
+B        11s     302  178/189     49.4 mA   [48.3, 50.5]  +-1.1  (weighted, df=177)
+       ☠️☠️ THIS LEG IS DROPPED FROM THE AGGREGATE: unexpected units: Network Manager Script Dispatcher Service;; median sleep 11 s against a 90 s alarm.
+       Something woke the AP. The number above is not the sleeping floor of
+       anything, and no attribution of the wake changes that - naming the
+       source buys the next run, not this leg.
+
+=== 6. BOOT-TO-BOOT SPREAD (from the LEG MEANS, never the pooled windows)
+  only 1 usable leg - no boot-to-boot spread yet

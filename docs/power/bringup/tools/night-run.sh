@@ -222,9 +222,21 @@ if [ "$leg" -le "$BOOTS" ] && [ $((step % 2)) -eq 1 ]; then
 	echo Charging > /sys/class/power_supply/pmi632-charger/status
 	mmcli -m any --set-current-bands=any >/dev/null 2>&1
 	s "--- leg $leg done ---"
+	# ☠️☠️ SET THE NEXT STATE BEFORE THE REBOOT, NOT AFTER IT. This line used to
+	# sit BELOW the reboot, where it can never run: reboot_now does not return.
+	# The advance-first write at the top had already left the state at step+1 -
+	# an EVEN number - and the leg branch only fires on ODD steps, so the next
+	# boot skipped straight to the closing OCV and declared the night complete.
+	# ☠️ THE RUN COULD THEREFORE ONLY EVER PRODUCE ONE LEG, and it did exactly
+	# that on 2026-09-02: leg 1 at 20:50, "NIGHT COMPLETE" at 22:54, three boots
+	# requested and one delivered. Two rehearsals missed it because neither
+	# rehearsed the multi-boot sequence - they rehearsed a leg.
+	# ☠️ The advance-first invariant is preserved on purpose: if the LEG crashes,
+	# the state stays even and the next boot ends the night gracefully instead of
+	# repeating a reboot. Ending early is a lost measurement; looping is a brick.
+	echo $((step + 2)) > "$S"
 	if [ "$leg" -lt "$BOOTS" ]; then reboot_now; fi
 	# last leg: fall through to the closing OCV in this same run
-	echo $((step + 2)) > "$S"
 fi
 
 ocv end
