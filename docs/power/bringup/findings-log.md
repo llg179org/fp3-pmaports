@@ -9748,3 +9748,81 @@ loose matcher gives an arbitrary one. It is now explained — there are 21 reque
 and both addresses appear 21 times — but by re-parsing, not by the number having
 been chased when it was first seen. **A count in a published table that nobody can
 account for is a defect report, not a curiosity.**
+
+## 2026-09-03 — a mérés előtti nap: két éjszaka-vesztő hiba, egy indító timer, és a kapuk első mért verdiktje
+
+Ezen a napon nem mértünk a telefonon: a 19:00-s replikáció **előkészítése** és a
+szerszámok voltak soron. Négy dolog került elő, mind méréssel, nem érveléssel.
+
+### 1. Az OCV-végpont kitalált volna egy `0 mV` driftet
+
+A `night-run.sh` `ocv()` függvényében a meredekséget `set -- $(awk …)` olvassa be,
+ami **felülírja a pozicionális paramétereket** — tehát attól a sortól kezdve `$1`
+a *meredekség*, nem a `start`/`end` címke. Az utána jövő sorok viszont még
+`$1`-et használtak. Az eszközön, a valódi `ocv.txt` ellen mérve:
+
+```
+FIXED  -> OCV end done: 4154137uV, drift: -83 mV
+BROKEN -> OCV 0.10 done: uV, drift: 0 mV
+```
+
+`grep "^0.10 "` semmit nem talál, `first`/`last` üres, és a busybox az üres
+operandust **0**-nak veszi (`set -u` nem üt be: a változó be van állítva, csak
+üres). ☠️ A futás tehát **nem hasal el** — kitalált `0 mV` driftet ír, ami
+**tökéletesen pihent pakknak olvasódik**. Ez a legrosszabb alak, amit egy elromlott
+műszer felvehet: pontosan akkor jelenti a lehető legjobb eredményt, amikor semmit
+nem mért. Javítva (`tag=$1`), telepítve. Az éjszaka egyik terméke, a kalibrációs
+offset-korlát, épp ezen a verdikten állt.
+
+### 2. Egy engedélyezett unit minden booton elindult volna
+
+A `fp3-night-ladder.service` `WantedBy=multi-user.target`, önkikapcsolás nélkül,
+és a főpróba **3/3 bootján elindult**. Egy `night-ladder.sh 8 3600` — nyolcórás,
+töltést felfüggesztő létra —, miközben a replikáció háromszor rebootol.
+
+☠️ Ma csak **véletlenül** ártalmatlan: a 66. sor a `pmi632-battery/status`-ra ír
+(a működő út a `pmi632-charger/status`), „Permission denied"-del elszáll, majd
+**`success`-szel lép ki**, tehát a `Restart=on-failure` sem üt be. A védelmünk egy
+jogosultsági hiba volt, nem döntés. Letiltva.
+
+### 3. Semmi nem indította volna el a mérést
+
+Se systemd timer, se `at`, se host-cron: a 19:00-s indítás azon múlt, hogy valaki
+emlékezzen rá. `fp3-night-start.timer` telepítve (`enable`-öli és indítja a
+`fp3-night.service`-t, majd **letiltja saját magát**; `Persistent=false`, mert a
+futás saját bootjai 19:00 *után* vannak és egy persistent timer a futáson belülről
+armazná újra). Ellenőrizve: `Thu 2026-09-03 19:00:00 CEST`.
+
+★ És egy mérés, ami a kábel árát tisztázza: a `night-run.sh:313` **maga vágja el
+az USB-bemenetet** közvetlenül a láb előtt. Tehát a bedugott kábel **a
+replikációt nem viszi el** — az éjszakai OCV-korlátot viszi, és 100 %-on a
+végpontok a lapos tetőn ülnek. Fél éjszaka, nem egész.
+
+### 4. Az SMSM-kísérlet leadja, hogy hol tart — és a lapja az ellenkezőjét állította
+
+A `smsm-proc-awake.md` záró bekezdése szerint *„Nothing is deployed. The package
+`_commit` is untouched."* Mérve: **félig hamis**. Az APKBUILD `b8023520`-t pineli
+`pkgrel=80`-nal, és **az a commit maga a patch DT-fele**; mindkét commit a
+`debug-int/7.1.3` csúcsán ül. De a telefon **r78**-at futtat, és a futó
+device tree-ben **nincs `proc-awake` property** — a „megépült és be van pinelve"
+nem azonos a „telepítve"-vel.
+
+☠️ És a tétel egy **halott hipotézist** hordozott: az előregisztrált olvasata még
+az MPSS-duty volt, holott 2026-09-01-én kiderült, hogy a modem maszkja az APPS
+bejegyzés fölött **csak a 23. bit**, és a 12-esre **egyedül az ADSP** iratkozott
+fel. A helyes olvasat a **LPASS-számláló alváson át**.
+
+☠️ **Hiányosság a saját capture-jeinkben:** sem a `2026-09-02_ims-ma3`, sem a
+replikáció `PREREGISTERED.md`-je nem rögzíti a kernel `pkgrel`-jét, amin futott —
+utólag kellett visszanyerni az eszközről. Napokon átívelő összehasonlításnál a
+csomagverzió oda kell a fejlécbe, ahogy a sáv és a cella már ott van.
+
+### 5. A kapuk első mért verdiktje
+
+[`../../gates.md`](../../gates.md): karbantartási hányad **4,4 % / 5,4 %**,
+felülbírálási ráta **5,4 %** — de a kapunkénti precizió **visszamenőleg
+mérhetetlen** volt, mert a napló csak azt rögzítette, *hogy* egy kapu tüzelt.
+`gatelog.cjs` óta van kimenet-mező; az `unrecorded-result` az első kapu ebben a
+projektben mért verdikttel: **3 tüzelés, 3 fogás, „earns its place"**. A
+`review-due` megkapta az első `false`-t: üresjáratban sült el, mert **faliórát
+mér, nem aktív munkát**.

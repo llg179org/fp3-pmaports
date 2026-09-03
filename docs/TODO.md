@@ -38,6 +38,16 @@ repeated.
 > A kapukat (hookok, amik blokkolnak) a [`gates.md`](gates.md) tartja számon:
 > incidens, felülvizsgálati dátum, és hogy tüzeltek-e azóta jogosan.
 >
+> ☠️ **Egy `[x]` NEM rögzít semmit a mérésből.** Amit egy lezárt feladat
+> megtanított, három helyre megy, és a hookok egyike sem tereli oda:
+> a **nyers adat** a [`power/bringup/captures/`](power/bringup/captures/) alá egy
+> saját `README.md`-vel; a **datált lelet** a
+> [`power/bringup/findings-log.md`](power/bringup/findings-log.md) végére; és ha
+> megváltoztatja, hogy a telefon **ma** mit csinál, a
+> [`power/README.md`](power/README.md) „current state" szakaszába is. Egy
+> megdőlt állítást **soha ne törölj** — írd le, miért dőlt meg: egy törölt
+> cáfolatot újra felfedeznek.
+>
 > ☠️ **Az ütemezés kulcs, nem próza.** „PARKOL, a 116. mögé" némán elavul és
 > senki nem olvassa újra; egy `after: 116` minden feldolgozáskor ellenőrződik.
 
