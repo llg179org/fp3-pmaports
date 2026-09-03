@@ -178,11 +178,6 @@ repeated.
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
 
-- [ ] 129. Archive the other six submit/7.1.3/* branches and cut their upstreaming/<series> successors (i2c-qup-pinctrl, psci-cpuidle-fixes, smb5-charger, imx363-camera, qmi-encdec-fix)
-      lane: upstreaming
-      after: 128
-      why: STATUS.md names the target series per legacy branch
-      every archive tag before any delete
 - [ ] 130. Measure the AFE api_version this ADSP reports (q6core svc info) — the one number the q6afe clock-set redesign turns on
       lane: phone
       after: 85

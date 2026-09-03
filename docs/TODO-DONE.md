@@ -2465,3 +2465,9 @@ so that `after:` and `continues:` references still resolve.
       lane: upstreaming
       why: first series branch of the new namespace
       STATUS.md row wcd9335-audio moves preparing → rebased when the trial rebase records its base-commit
+
+- [x] **129.** Archive the other six submit/7.1.3/* branches and cut their upstreaming/<series> successors (i2c-qup-pinctrl, psci-cpuidle-fixes, smb5-charger, imx363-camera, qmi-encdec-fix)  — closed 2026-09-03 09:57
+      lane: upstreaming
+      after: 128
+      why: STATUS.md names the target series per legacy branch
+      every archive tag before any delete

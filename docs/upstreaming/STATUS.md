@@ -16,17 +16,31 @@ with a link.
 | series | category | tree | patches | state | last round | ball with | next from us | updated |
 |---|---|---|---|---|---|---|---|---|
 | wcd9335-audio | audio | ASoC `sound/for-next` | 15 on `upstreaming/wcd9335-audio` | rebased | – | us | checker gauntlet per patch; functional run from the submission base; then the cover letter | 2026-09-03 |
-| i2c-qup-pinctrl | audio | i2c | 1 (`submit/7.1.3/i2c`, based off a different base than `7.1.3/main` — API compare overflows) | preparing | – | us | cut the series branch; standalone bugfix, candidate for `Fixes:` + `Cc: stable` | 2026-09-03 |
-| psci-cpuidle-fixes | power | cpuidle / pmdomain | 2 | preparing | – | us | cut the series branch; confirm each patch is upstream-shaped (no `apcs-msm8953.c`) | 2026-09-03 |
-| smb5-charger | charger | power-supply `for-next` | 9 | preparing | – | us | cut the series branch; binding + driver + defconfig, DTS excluded | 2026-09-03 |
-| imx363-camera | camera | media | 10 | preparing | – | us | provenance split (import commit with original authorship) before anything else | 2026-09-03 |
-| qmi-encdec-fix | sensor | soc/qcom | 1 | preparing | – | us | cut the series branch; `Fixes:` from blame on torvalds/master | 2026-09-03 |
+| i2c-qup-pinctrl | audio | i2c-host `i2c/i2c-host-next` | 1 | rebased | – | us | `Fixes:` from blame; decide `Cc: stable` | 2026-09-03 |
+| psci-cpuidle-fixes | power | linux-pm `bleeding-edge` | 2 | rebased | – | us | checker gauntlet; then the cover letter | 2026-09-03 |
+| smb5-charger | charger | power-supply `for-next` | 6 | rebased | – | us | every board/battery fact out of the driver; `adc5-bat-therm` goes first or with it | 2026-09-03 |
+| adc5-bat-therm | charger | IIO `togreg` | 1 | rebased | – | us | prerequisite of `smb5-charger` — decide whether it travels with it | 2026-09-03 |
+| imx363-camera | camera | media `next` | 7 | rebased | – | us | reorder binding before driver; then the checkers | 2026-09-03 |
+| gcc-msm8953-csiphy | camera | clk `clk-next` | 1 | rebased | – | us | `Fixes:` from blame; it is a fix, not an enablement | 2026-09-03 |
+| qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | `Fixes:` from blame on torvalds/master | 2026-09-03 |
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
 
-Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. `submit/7.1.3/audio` is tagged and superseded but **not yet deleted** — deleting it is a separate call.
+Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. All seven `submit/7.1.3/*` branches are tagged `archive/submit-7.1.3-<cat>-final` and superseded, but **none is deleted** — deleting them is a separate call.
 
 ☠️ A cut series does not carry everything its category does. Each section's **Left out** table names what stayed behind and where it goes; the sum of the `upstreaming/*` series plus those tables is what reproduces the category.
+
+☠️ **A legacy branch was not one series.** Cutting the six remaining `submit/7.1.3/*`
+branches on 2026-09-03 found the categories hiding **two extra destination trees**:
+`adc5-bat-therm` (IIO) came out of `charger`, and `gcc-msm8953-csiphy` (clk) came out
+of `camera`. Both are on this page now. The lesson for the next category: group the
+commits by what `get_maintainer.pl` answers, not by which of our branches they sat on
+— our categories are bring-up areas, upstream splits by subsystem.
+
+☠️ **And two bodies of work came out with no series at all**: the fuel-gauge half of
+`wip/7.1.3/charger` (~1450 lines) and the `ak7375.c` runtime-PM rework (~91 lines).
+Neither is a decision that was made; both are named in their sections' To do. Until
+they are resolved this page understates what the fork carries.
 
 ---
 
@@ -91,95 +105,286 @@ Done:
 ```
 Category:    audio   (the speaker-amp fix; its wip home is wip/7.1.3/audio, there is no wip/7.1.3/i2c)
 Tree:        i2c — Andi Shyti; CC linux-i2c, linux-arm-msm
-Source:      upstreaming/i2c-qup-pinctrl (to be cut) — content today: submit/7.1.3/i2c
+Source:      upstreaming/i2c-qup-pinctrl — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-i2c-qup-pinctrl-7d3ee5a31cab
+             base-commit 04e9bf1648f846976b543e91c1838a712433772a
+             (andi.shyti i2c/i2c-host-next, 2026-06-18 — the tree's tip has not moved since)
+             legacy: submit/7.1.3/i2c, tagged archive/submit-7.1.3-i2c-final
+             sent rounds: – (none yet)
 Depends:     –
 ```
+
+☠️ The tree is **Andi Shyti's i2c-host**, not Wolfram Sang's `i2c/for-next` —
+`get_maintainer.pl` on `drivers/i2c/busses/i2c-qup.c` answers "I2C SUBSYSTEM HOST
+DRIVERS / Andi Shyti", and wsa's `i2c/for-next` is still at `Linux 7.1`
+(2026-06-14). Measured 2026-09-03. This also explains the second commit that used
+to show on the legacy branch: `i2c: nomadik: Use generic definitions for bus
+frequencies` is the **base tip**, not our work.
+
+Left out: nothing — the whole of this series' content is the one 13-line change,
+and its line set matches `wip/7.1.3/audio` exactly.
 
 Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
 To do:
-- [ ] cut the series branch; `git blame` on torvalds/master for the `Fixes:` target; decide `Cc: stable`
-- [ ] "applies clean" check against the current `i2c-qup.c` (`gh api …/contents` + `git apply --check`)
+- [ ] `git blame` on torvalds/master for the `Fixes:` target; decide `Cc: stable`
+- [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
 
-Done: –
+Done:
+- 2026-09-03  series cut on i2c/i2c-host-next; the commit cherry-picks clean
 
 ## psci-cpuidle-fixes
 
 ```
 Category:    power
-Tree:        cpuidle (psci) and pmdomain — Ulf Hansson, Sudeep Holla; CC linux-pm, linux-arm-kernel
-Source:      upstreaming/psci-cpuidle-fixes (to be cut) — content today: submit/7.1.3/power
+Tree:        linux-pm — Rafael J. Wysocki, Ulf Hansson (+ Lorenzo Pieralisi, Sudeep Holla,
+             Daniel Lezcano on the psci patch); CC linux-pm, linux-arm-kernel
+Source:      upstreaming/psci-cpuidle-fixes — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-psci-cpuidle-fixes-68ffc9e9da1a
+             base-commit 208027d2c8957800e199a9e0f55da5fdb9550207
+             (rafael/linux-pm bleeding-edge, 2026-09-01)
+             legacy: submit/7.1.3/power, tagged archive/submit-7.1.3-power-final
+             sent rounds: – (none yet)
 Depends:     –
 ```
+
+**One series, not two — measured, not assumed.** The open question was whether
+`cpuidle-psci.c` and `pm_domain.h` answer to different trees. `get_maintainer.pl`
+on both, 2026-09-03, returns the same maintainers (Rafael J. Wysocki, Ulf Hansson)
+and the same list (`linux-pm@vger.kernel.org`), so by the skill's rule — two
+candidate series answering with the same tree and maintainer are probably one
+series — they travel together.
+
+Left out of this series (the `power` category is mostly not upstream-shaped):
+
+| left out | lines | why |
+|---|---|---|
+| `drivers/clk/qcom/apcs-msm8953.c` — the PLL-retune fix | 123 | patches a file that does not exist in the torvalds tree |
+| `msm8953.dtsi`, `clk-smd-rpm.c`, `icc-rpm.{c,h}`, `msm8953.c`, `irq-qcom-mpm.c`, `pinctrl-msm8953.c`, `qcom_smd-regulator.c`, `qcom_smd.c`, `qcom-ngd-ctrl.c`, `smd-rpm.c`, `smsm.c`, `qcom_smd_rpm.h`, `msm8916-wcd-digital.c` | ~650 | bring-up and instrumentation work, not upstream-shaped; stays on `wip/7.1.3/power` |
+
+Distillation check, 2026-09-03: on the two paths this series carries, `wip` and
+the series produce identical diffs (`cpuidle-psci.c` 10+/1-, `pm_domain.h` 1+/1-).
 
 Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
 To do:
-- [ ] cut the series branch; confirm neither patch touches `apcs-msm8953.c` (not upstream)
-- [ ] two maintainers, possibly two series — ask `get_maintainer.pl` per patch
+- [ ] `PM: domains: Fix the cached power-down state index being a bool` reads like a
+      `Fixes:` candidate — get the target from blame on torvalds/master
+- [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
 
-Done: –
+Done:
+- 2026-09-03  series cut on linux-pm `bleeding-edge`; both commits cherry-pick clean
+- 2026-09-03  the two-tree question settled by `get_maintainer.pl`: one series
 
 ## smb5-charger
 
 ```
 Category:    charger
-Tree:        power-supply, sre/linux-power-supply for-next — Sebastian Reichel; CC linux-pm, devicetree
-Source:      upstreaming/smb5-charger (to be cut) — content today: submit/7.1.3/charger
-Depends:     –
+Tree:        power-supply, sre/linux-power-supply for-next — Sebastian Reichel,
+             Casey Connolly (QUALCOMM SMB CHARGER DRIVER); CC linux-pm, linux-arm-msm, devicetree
+Source:      upstreaming/smb5-charger — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-smb5-charger-f653be687965
+             base-commit 2da28b059e0ddcd2e1956eeae383246207965573
+             (sre/linux-power-supply for-next, 2026-08-11)
+             legacy: submit/7.1.3/charger, tagged archive/submit-7.1.3-charger-final
+             sent rounds: – (none yet)
+Depends:     adc5-bat-therm (the driver reads the PMI632 BAT_THERM ADC channel)
 ```
+
+Left out of this series (2026-09-03, measured against `wip/7.1.3/charger`):
+
+| left out | lines | where it goes instead |
+|---|---|---|
+| `drivers/iio/adc/qcom-spmi-adc5.c` | 2 | the **adc5-bat-therm** series — a different tree (IIO), and a prerequisite of this one |
+| `pmi632.dtsi` + `sdm632-fairphone-fp3.dts` | 337 | the **fp3-dts** series, sent last |
+| ☠️ the **fuel-gauge (QG) work** in `qcom_smbx.c` — charge counting, OCV correction, the charge-end path, the charging policy | ~1450 of the 2252 lines `wip` adds | **has no series at all.** `wip/7.1.3/charger` carries ~25 commits of it that post-date the legacy submit branch; the series carries 803+/34-. This is not a decision that was made, it is one that is outstanding — see To do |
+| `battery.yaml` (`id-resistor-ohms`) and the rest of the binding | 10 + 47 | belongs with the fuel-gauge work above |
 
 Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
 To do:
-- [ ] cut the series branch: binding (`qcom,pmi8998-charger.yaml` extended) → driver → defconfig; the FP3 DTS hunks move to `fp3-dts`
+- [ ] ☠️ decide what happens to the fuel-gauge half of `wip/7.1.3/charger`: a second
+      series (`smbx-fuel-gauge`) after this one lands, or a named permanent leave-out.
+      Until that is decided this page understates the category by ~1450 lines
 - [ ] every board/battery fact out of the driver and into DT (skill: "no board fact hidden in the driver")
+- [ ] `defconfig`: check whether the PMI632 needs a `CONFIG_` symbol that is not already there
+- [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
 
-Done: –
+Done:
+- 2026-09-03  series cut on power-supply `for-next`; all six commits cherry-pick clean
+
+## adc5-bat-therm
+
+```
+Category:    charger
+Tree:        IIO, jic23/iio togreg — Jonathan Cameron; CC linux-iio, linux-arm-msm
+Source:      upstreaming/adc5-bat-therm — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-adc5-bat-therm-73e744791445
+             base-commit 183f05a300eab41e4578337eac59335730dfebf9 (jic23/iio togreg, 2026-08-31)
+             legacy: part of submit/7.1.3/charger, tagged archive/submit-7.1.3-charger-final
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+A series that did not exist on this page until 2026-09-03. It was one commit
+inside the `charger` legacy branch, and it goes to a **different tree**: two lines
+adding the PMI632 BAT_THERM channel to `qcom-spmi-adc5.c`. `smb5-charger` reads
+that channel, so this is its prerequisite, not an afterthought.
+
+Test: not yet run from a submission base. Checkers: –.
+
+Rounds: none yet.
+
+To do:
+- [ ] decide the ordering with `smb5-charger`: send this first and cite it, or ask
+      whether one tree can take both (skill: "a dependency that crosses trees is a
+      handshake" — ask, do not assume)
+- [ ] ☠️ two lines with an `Assisted-by:` trailer is exactly the shape that drew
+      *"Claude assisting to write a one-liner patch? It's becoming ridiculous."* on
+      the list. Do not drop the disclosure; consider whether it can travel inside
+      `smb5-charger` instead of alone
+
+Done:
+- 2026-09-03  series cut on IIO `togreg`; the commit cherry-picks clean
 
 ## imx363-camera
 
 ```
 Category:    camera
-Tree:        media (linux-media) — Sakari Ailus; CC linux-media, devicetree
-Source:      upstreaming/imx363-camera (to be cut) — content today: submit/7.1.3/camera
+Tree:        media, git.linuxtv.org/media.git `next` — Sakari Ailus, Mauro Carvalho Chehab;
+             CC linux-media, devicetree
+Source:      upstreaming/imx363-camera — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-imx363-camera-2ae977b0269c
+             base-commit cee9395acd8043be0644b25c34bfa86623f2b935 (media `next`, 2026-08-30 = v7.3-rc1)
+             legacy: submit/7.1.3/camera, tagged archive/submit-7.1.3-camera-final
+             sent rounds: – (none yet)
 Depends:     –
 ```
+
+**The provenance split was already done** — the earlier to-do here was stale.
+Verified 2026-09-03: the import commit is authored by **Joel Selvaraj
+<foss@joelselvaraj.com>**, carries the full citation (gitlab.com/sdm670-mainline/linux,
+commit 5130bc702ea2, MR !3), a four-deep `Signed-off-by` chain ending in ours, and
+`imx363.c` in it is **byte-identical** to the archival snapshot `vendor/imx363-sdm670`.
+
+**The AK7374 actuator work travels with the sensor**, not as its own series:
+`get_maintainer.pl` answers Sakari Ailus for both `ak7375.c` and the IMX363, it is
+one hardware-enablement story (rear camera: sensor + focus actuator), and the
+skill's first maintainer rule is one branch per subsystem, not sub-split.
+
+☠️ One conflict, and it was the neighbours': the import's `drivers/media/i2c/Kconfig`
+hunk carries `VIDEO_OV9282` as context, and upstream has since changed that entry
+(`depends on OF_GPIO` → `depends on OF` + `select V4L2_CCI_I2C`). Resolved by
+keeping HEAD — this series does not touch OV9282. Everything else cherry-picks clean.
+
+Left out of this series (2026-09-03, measured against `wip/7.1.3/camera`):
+
+| left out | lines | where it goes instead |
+|---|---|---|
+| `drivers/clk/qcom/gcc-msm8953.c` | 3+/3- | the **gcc-msm8953-csiphy** series — a different tree (clk) |
+| `pmi632.dtsi` + `sdm632-fairphone-fp3.dts` | 113 | the **fp3-dts** series, sent last |
+| `lc898217.c`, `s5k4h7.c` and their bindings (front camera + its actuator) | 596 | no series yet — front-camera bring-up, not claimed to work |
+| the CAMSS changes (`camss-vfe-4-1.c`, `camss-vfe-gen1.{c,h}`, `camss-vfe.c`, `camss-video.{c,h}`) | 228 | no series yet |
+| the flash-LED changes (`leds-qcom-flash.c`, its Kconfig and binding) | 24 | no series yet |
+| ☠️ the **`ak7375.c` runtime-PM rework** — hold a PM reference only while the lens is driven away from rest, measured at 0.30 W on an FP3 with nothing taking pictures | 91+/14- on wip vs 14+/0- carried | **has no series.** It is a generic driver power improvement with a measurement behind it, i.e. exactly the kind of change that belongs upstream — see To do |
+| `lens-focus: true` in `sony,imx363.yaml` | 2 | on `wip` and not on the series; the binding should describe it once the actuator is wired — see To do |
 
 Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
 To do:
-- [ ] provenance: the driver was imported from a third-party out-of-tree branch — import commit with the original authorship and citation, our changes in the next commit, style cleanup in a third (skill: "Find the immediate source")
-- [ ] then the series cut
+- [ ] ☠️ reorder: the skill's shape is *binding → driver + Kconfig → defconfig → DTS*,
+      and this series currently puts the imported driver first because that is the
+      order it was discovered in. The binding and MAINTAINERS commits move ahead of
+      the driver
+- [ ] ☠️ decide the `ak7375.c` runtime-PM rework: fold it into this series (it is the
+      strongest patch in the category — generic, measured, benefits every AK7375
+      board) or name it a permanent leave-out
+- [ ] add `lens-focus: true` to `sony,imx363.yaml`, which `wip` has and this does not
+- [ ] `defconfig`: `CONFIG_VIDEO_IMX363` is new, so a defconfig patch is owed unless
+      the arm64 defconfig already covers it — check, do not assume
+- [ ] the driver is a reverse-engineering effort against Android register logs, and
+      the imported file says so in its own comments; the cover letter must say it too
+- [ ] checker gauntlet per patch (the import carries the style debt — keep it in the
+      import commit so it is not blamed on us); cover letter with the disclosure
 
-Done: –
+Done:
+- 2026-09-03  series cut on media `next`; import verified byte-identical to
+              `vendor/imx363-sdm670`, original authorship preserved
+- 2026-09-03  the AK7374 work folded in rather than split out (same tree, same maintainer)
+
+## gcc-msm8953-csiphy
+
+```
+Category:    camera
+Tree:        clk, clk/linux clk-next — Stephen Boyd, Bjorn Andersson (QUALCOMM CLOCK DRIVERS);
+             CC linux-clk, linux-arm-msm
+Source:      upstreaming/gcc-msm8953-csiphy — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-gcc-msm8953-csiphy-8bf1541e0f8d
+             base-commit 551ba775497e93d93bb849f6ee572ca768cbaa3e (clk-next, 2026-09-02)
+             legacy: part of submit/7.1.3/camera, tagged archive/submit-7.1.3-camera-final
+             sent rounds: – (none yet)
+Depends:     –
+```
+
+A series that did not exist on this page until 2026-09-03. It was one commit inside
+the `camera` legacy branch and it goes to a **different tree**: the CSIPHY timer
+source select for GPLL0_DIV2 in `gcc-msm8953.c`. It is a **fix to an existing
+in-tree driver**, not part of the camera enablement, and it stands on its own.
+
+Test: not yet run from a submission base. Checkers: –.
+
+Rounds: none yet.
+
+To do:
+- [ ] `Fixes:` from `git blame` on torvalds/master — this corrects a wrong parent
+      selection, so there is a commit to name (skill: "a `Fixes:` target comes from
+      blame, never from the file's age")
+- [ ] say in the message what the wrong select produced on hardware, in the words
+      someone hitting it would search for
+- [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
+
+Done:
+- 2026-09-03  series cut on `clk-next`; the commit cherry-picks clean
 
 ## qmi-encdec-fix
 
 ```
 Category:    sensor
 Tree:        soc/qcom — Bjorn Andersson, Konrad Dybcio; CC linux-arm-msm
-Source:      upstreaming/qmi-encdec-fix (to be cut) — content today: submit/7.1.3/sensor
+Source:      upstreaming/qmi-encdec-fix — b4 prep branch, cut 2026-09-03
+             change-id 20260903-upstreaming-qmi-encdec-fix-d9277cbef2bf
+             base-commit e61cfc881090cf9de9dbd3b6b7452661dfb0261f (qcom/linux for-next, 2026-09-02)
+             legacy: submit/7.1.3/sensor, tagged archive/submit-7.1.3-sensor-final
+             sent rounds: – (none yet)
 Depends:     –
 ```
+
+Left out: everything else in the `sensor` category — the SMGR drivers, the QRTR
+prerequisites, `qmi_interface.c`, the `file2alias`/`mod_devicetable` plumbing,
+~2775 lines across 29 files. Not undone: **unsendable**, because it patches files
+that are not upstream. See `docs/sensors/README.md`. `qmi_encdec.c` is the one
+file in the category that mainline already has, which is why it is the one series.
 
 Test: not yet run from a submission base. Checkers: –.
 
 Rounds: none yet.
 
 To do:
-- [ ] cut the series branch; `Fixes:` from blame on torvalds/master (regression, this year — skill "A Fixes: target comes from blame")
-- [ ] the rest of the sensor work is unsendable (patches files that are not upstream) — stays on wip, see `docs/sensors/README.md`
+- [ ] `Fixes:` from blame on torvalds/master (regression, this year — skill "A `Fixes:`
+      target comes from blame"), and `get_maintainer.pl` puts the author of the
+      regression on Cc
+- [ ] checker gauntlet — `sparse` especially, this is a width bug; cover letter
 
-Done: –
+Done:
+- 2026-09-03  series cut on qcom `for-next`; the commit cherry-picks clean
 
 ## q6voice
 
@@ -198,8 +403,23 @@ State `unsendable`: the one-line DAPM route patches a driver that is not upstrea
 Category:    all (audio, charger, camera, sensor — one DTS commit per logical step)
 Tree:        qcom SoC — Bjorn Andersson, Konrad Dybcio; CC linux-arm-msm, devicetree
 Source:      upstreaming/fp3-dts (to be cut, from the DTS hunks of every category)
-Depends:     wcd9335-audio, smb5-charger, imx363-camera (binding + driver landed), D-1 (the audio machine driver)
+Depends:     wcd9335-audio, smb5-charger, adc5-bat-therm, imx363-camera, gcc-msm8953-csiphy
+             (binding + driver landed), D-1 (the audio machine driver)
 ```
+
+The DTS hunks now waiting here, measured 2026-09-03 as every `.dts`/`.dtsi` line
+each category's `wip` branch adds and no cut series carries:
+
+| from | file | lines |
+|---|---|---|
+| audio | `sdm632-fairphone-fp3.dts` | 250+/2- |
+| charger | `sdm632-fairphone-fp3.dts` + `pmi632.dtsi` | 337 |
+| camera | `sdm632-fairphone-fp3.dts` + `pmi632.dtsi` | 113 |
+
+☠️ These overlap — three categories add to the same board file — so the series is
+not a concatenation. It is one commit per logical enablement step, in the
+`arm64: dts: qcom: sdm632-fairphone-fp3: <verb> <thing>` form, rebuilt from the
+final DTS rather than replayed.
 
 Test: not yet. Checkers: dtbs_check as a differential (the base fails it by itself — skill).
 
