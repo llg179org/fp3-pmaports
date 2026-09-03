@@ -7,7 +7,7 @@
 > anything prepared for the LKML carries `Assisted-by:` instead and never a
 > `Signed-off-by` from the assistant, since only a human can certify the DCO.
 
-Where each series stands, and what is blocking it. **If the vocabulary or the
+Where each series stands, and what is blocking it. **The per-series state, review rounds, test evidence and dependency list now live on [`STATUS.md`](STATUS.md)**; this page keeps the analysis. **If the vocabulary or the
 shape of the process is what you need, read
 [`bringup/README.md`](bringup/README.md) first** — it explains the whole thing
 from the beginning, in order. The method (checklists, traps, commands) is in the
