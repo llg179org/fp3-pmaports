@@ -437,8 +437,8 @@ Done: –
 
 | id | what | author, date | link | state | what it needs from us | updated |
 |---|---|---|---|---|---|---|
-| D-1 | *MSM8953/MSM8976 ASoC support* v3, 8 patches — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski &lt;a39.skl@gmail.com&gt; (code by Vladimir Lypak), 2024-07-31 | patchwork series [875540](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=875540); cover message-id `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` (patchwork API, 2026-09-03) | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
-| D-2 | *ASoC: qcom: check ADSP version when setting clocks* v2, 4 patches | Otto Pflüger &lt;otto.pflueger@abscue.de&gt;, 2023-10-29 (v1 2023-10-14, superseded) | v2 cover message-id `20231029165716.69878-1-otto.pflueger@abscue.de` (patchwork API, 2026-09-03). ☠️ **patchwork has no *series* object for v2** — only the individual patches, so the only series ids are v1's: [793237](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=793237) (linux-arm-msm) and 793291 (alsa-devel) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
+| D-1 | *MSM8953/MSM8976 ASoC support* v3, 8 patches — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski &lt;a39.skl@gmail.com&gt; (code by Vladimir Lypak), 2024-07-31 | patchwork series [875540](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=875540); cover message-id `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` (patchwork API, confirmed against the lore thread mbox, 2026-09-03) | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
+| D-2 | *ASoC: qcom: check ADSP version when setting clocks* v2, 4 patches | Otto Pflüger &lt;otto.pflueger@abscue.de&gt;, 2023-10-29 (v1 2023-10-14, superseded) | v2 cover message-id `20231029165716.69878-1-otto.pflueger@abscue.de` (patchwork API, confirmed against the lore thread mbox, 2026-09-03). ☠️ **patchwork has no *series* object for v2** — only the individual patches, so the only series ids are v1's: [793237](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=793237) (linux-arm-msm) and 793291 (alsa-devel) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
 
 **D-2, patch by patch** (message-ids from the patchwork API, 2026-09-03):
 
@@ -446,7 +446,7 @@ Done: –
 |---|---|---|---|
 | v2 0/4 | cover: *ASoC: qcom: check ADSP version when setting clocks* | `new` | `20231029165716.69878-1-otto.pflueger@abscue.de` |
 | v2 1/4 | `ASoC: qcom: q6core: expose ADSP core firmware version` | `new` | `20231029165716.69878-2-otto.pflueger@abscue.de` |
-| v2 2/4 | not retrieved — the patchwork search did not return it; by position its id is `…69878-3-…`, but that is **inference, not a fetched fact**, so it is not recorded as one | – | – |
+| v2 2/4 | `ASoC: qcom: q6afe: provide fallback for digital codec clock` | `new` | `20231029165716.69878-3-otto.pflueger@abscue.de` |
 | v2 3/4 | `ASoC: qcom: q6afe-dai: check ADSP version when setting sysclk` | `new` | `20231029165716.69878-4-otto.pflueger@abscue.de` |
 | v2 4/4 | `ASoC: qcom: q6afe: remove "port already open" error` | `new` | `20231029165716.69878-5-otto.pflueger@abscue.de` |
 
@@ -456,14 +456,55 @@ open" error*, posted 2023-10-29 and still `new`. Sending ours without answering
 his is a competing submission of somebody else's patch — read it first, and the
 right move is probably a reply on that thread, not a fresh series.
 
-☠️ **The lore link is not recorded, because it could not be verified.**
-`https://lore.kernel.org/all/<msgid>/` answers **403 to automated fetches** — and
-the negative control settles that it proves nothing either way: a deliberately
-bogus id (`BOGUS-control@example.invalid`) gets the **same 403**. Patchwork does
-have a working control (series 875540 → 200, series 99999999 → 404), which is why
-every id above is cited to the patchwork API and not to an archive URL. The
-`lkml.iu.edu` hypermail mirror answers 200 at its root and is the fallback the
-skill names; resolving these two threads on it is still to do.
+**Lore links, verified 2026-09-03** — every message-id below was fetched *and*
+its subject read back out of the thread mbox:
+
+| id | message-id | lore |
+|---|---|---|
+| D-1 cover | `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` | [[PATCH v3 0/8] MSM8953/MSM8976 ASoC support](https://lore.kernel.org/all/20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com/) |
+| D-2 v2 cover | `20231029165716.69878-1-otto.pflueger@abscue.de` | [[PATCH v2 0/4] ASoC: qcom: check ADSP version when setting clocks](https://lore.kernel.org/all/20231029165716.69878-1-otto.pflueger@abscue.de/) |
+| D-2 v1 cover | `20231014172624.75301-1-otto.pflueger@abscue.de` | [[PATCH 0/3] same series, superseded](https://lore.kernel.org/all/20231014172624.75301-1-otto.pflueger@abscue.de/) |
+
+☠️ **How to check a lore message-id from a script** — the obvious ways all lie, so
+this is the one recipe, measured 2026-09-03 on a 3x3 of endpoint x User-Agent:
+
+```sh
+# the ONLY combination that discriminates: real -> 200, invented -> 404
+curl -sL -o /dev/null -w '%{http_code}\n' "https://lore.kernel.org/all/<msgid>/t.mbox.gz"
+# and read the subject back, so the id is tied to the thread it claims:
+curl -sL "https://lore.kernel.org/all/<msgid>/t.mbox.gz" | zcat | grep -m1 '^Subject:'
+```
+
+| endpoint | tool UA (curl's own) | browser UA |
+|---|---|---|
+| `/all/<msgid>/` | **403** real and bogus alike | **200** both — and the body is the Anubis *"Making sure you're not a bot!"* page, 7544 bytes, byte-identical for a real and an invented id |
+| `/all/<msgid>/raw`, `/t.atom`, `?q=` | **403** | 200, same challenge page |
+| `/all/<msgid>/t.mbox.gz` | **200 real / 404 bogus** ✅ | **200 both** ❌ |
+
+Two traps in that table, and the second is the dangerous one:
+
+1. A 403 is not "the id is bad" and a 200 is not "the id is good" — on the HTML
+   paths the status carries no information about the id at all.
+2. ☠️ **Sending a browser User-Agent destroys the check.** Anubis challenges
+   anything that looks like a browser and waves tool UAs through, so the
+   *more* realistic User-Agent is strictly worse: with `Mozilla/5.0` even
+   `BOGUS-control@example.invalid` returns 200 on `t.mbox.gz`. Do not "fix" a
+   403 by pretending to be a browser.
+
+`b4` is the better tool where it fits and passes the same control — a real id
+gives the thread, an invented one prints `Could not retrieve thread: Server
+returned an error: 404`. ☠️ Its **shell exit code is 0 either way**, so test the
+output or the file, never `$?`:
+
+```sh
+b4 mbox -o <dir> '<msgid>'
+```
+
+The public-inbox **git transport** is ungated too (`git ls-remote
+https://lore.kernel.org/linux-arm-msm/0` works; a non-existent list answers
+`Not Found`), which is the route for bulk work. There is **no REST/JSON API** on
+lore — public-inbox has never had one; patchwork's API is the JSON one, and it
+keeps its own working control (series 875540 -> 200, 99999999 -> 404).
 
 **The kernel-review plugin is not installed on this machine.** The skill's gate
 item 3 (`ls ~/.claude/plugins | grep -i kernel-review`) reports MISSING, verified
