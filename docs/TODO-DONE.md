@@ -2480,3 +2480,7 @@ so that `after:` and `continues:` references still resolve.
       why: docs/upstreaming/bringup/README.md 8b names it as a dependency of qmi-encdec-fix and of everything sensor-shaped, but STATUS.md's D- list stops at D-2
       the ledger says STATUS.md is the live record, so the record must carry it
       lane: upstreaming
+
+- [x] **136.** B1: rebuild the IMX363 import commit on wip/7.1.3/camera so it adds ONLY the IMX363 hunks — today it deletes VIDEO_OV2732 and VIDEO_T4KA3 from Kconfig+Makefile and strips select V4L2_CCI_I2C from OG01A1B/OV9282 (30 deletions in a commit that certifies byte-identical import); then regenerate upstreaming/imx363-camera  — closed 2026-09-03 19:41
+      why: docs/upstreaming/review-2026-09-03-wip-and-series.md B1 — a maintainer applying patch 1 would see four unrelated drivers regress under a message that says nothing changed. wip cda174905a83, series 7b5eb48928cd. Nothing from this series moves before this
+      lane: upstreaming

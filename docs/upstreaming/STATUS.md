@@ -316,8 +316,29 @@ To do:
       import commit so it is not blamed on us); cover letter with the disclosure
 
 Done:
-- 2026-09-03  series cut on media `next`; import verified byte-identical to
-              `vendor/imx363-sdm670`, original authorship preserved
+- 2026-09-03  ☠️ the import commit was **rebuilt** (queue 136 / review B1): it had
+              taken the source tree's whole `drivers/media/i2c` Kconfig and
+              Makefile instead of the IMX363 hunk, so it **deleted**
+              `config VIDEO_OV2732` and `config VIDEO_T4KA3` with their Makefile
+              lines, stripped `select V4L2_CCI_I2C` from `VIDEO_OG01A1B` and
+              `VIDEO_OV9282`, and reverted the DS90UB960 help text — **31
+              deletions under a message certifying a byte-identical import**.
+              Fixed on `wip/7.1.3/camera` and regenerated: the import is now
+              **1525 insertions, 0 deletions**, Joel Selvaraj's authorship and
+              date preserved, and the message no longer claims the whole files
+              are byte-identical — only the driver file is, with the Kconfig
+              entry and Makefile line *added* rather than copied over.
+              Same content restored on `integration/7.1.3` (d697876d8bfe) and
+              `debug-int/7.1.3` (e64849f5d41b) as a commit on top, not a
+              rewrite, so the package's pinned `_commit` stays reachable
+              (verified: tarball 200, bogus hash 404).
+              Tags: `archive/wip-7.1.3-camera-pre-import-fix`,
+              `archive/upstreaming-imx363-camera-pre-import-fix`.
+- 2026-09-03  ☠️ my earlier "the import is byte-identical" check measured only
+              `imx363.c`, while the commit message certified three files. That
+              is what let B1 through. A certification is checked against every
+              file it names, not the one that matters most
+- 2026-09-03  series cut on media `next`; original authorship preserved
 - 2026-09-03  the AK7374 work folded in rather than split out (same tree, same maintainer)
 
 ## gcc-msm8953-csiphy

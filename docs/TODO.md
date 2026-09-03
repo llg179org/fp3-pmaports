@@ -201,9 +201,7 @@ repeated.
       why: the Test block is empty for all eight series and there is no control — without a boot from the submission base every failure is ours by default. Also the first measurement of which of msm8953-pmOS's 232 commits the FP3 actually needs (expected gaps: audio = D-1, camera/charger/sensors = the series themselves
       expected working: display, touch, GPU, WiFi/BT, USB, modem). Branch test/linux-next-<tag>+debug, never under integration/ or debug-int/. ☠️ olddefconfig drops unknown symbols silently — diff the config before and after
       lane: phone
-- [ ] 136. B1: rebuild the IMX363 import commit on wip/7.1.3/camera so it adds ONLY the IMX363 hunks — today it deletes VIDEO_OV2732 and VIDEO_T4KA3 from Kconfig+Makefile and strips select V4L2_CCI_I2C from OG01A1B/OV9282 (30 deletions in a commit that certifies byte-identical import); then regenerate upstreaming/imx363-camera
-      why: docs/upstreaming/review-2026-09-03-wip-and-series.md B1 — a maintainer applying patch 1 would see four unrelated drivers regress under a message that says nothing changed. wip cda174905a83, series 7b5eb48928cd. Nothing from this series moves before this
-      lane: upstreaming
+
 - [ ] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
       why: review B2/B6 — a tool trailer on somebody else's unchanged commit is a false disclosure
       the skill's own worked example of an uncited import is still uncited
