@@ -571,7 +571,14 @@ To do:
 - [ ] cut after the driver series are `applied`; one commit per logical step in the `arm64: dts: qcom: sdm632-fairphone-fp3: <verb> <thing>` form
 - [ ] every enabled node measured working on the device (unbound-node check from the skill)
 
-Done: –
+Done: - 2026-09-03  #150: the overlay split is on `wip/7.1.3/camera` (`c6996a7c79c3`; twins `integration`
+              `de3de641cc64`, `debug-int` `7f18166c7b7c`, pushed): base dts without the rear camera,
+              `sdm632-fairphone-fp3-rear-camera-{ak7374,lc898217}.dtso`, both composed in the Makefile.
+              Host check: the ak7374 composite equals the old monolithic dtb node-for-node and
+              property-for-property (phandles/`__symbols__` aside; 0 other differences). ☠️ Not booted:
+              the phone must switch to the ak7374 composite (queue #151, phone lane) — a build that
+              keeps the plain dtb name has no rear camera. `dtbs_check` not run (no dtschema here)
+–
 
 ---
 

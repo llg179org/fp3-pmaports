@@ -223,12 +223,6 @@ repeated.
       a regression on a second device outranks that
       lane: phone
 
-- [ ] 147. Cut the four host-only power driver series from the 2026-09-03 plan (STATUS 'Planned series'): qcom-mpm-wakeup-timer (3 wip commits → 1, on tip/irq/core), pinctrl-msm8953-mpm (pinctrl/for-next), qcom-smd-wake (fold d0e738c107e3 into 8c9b25687119, rpmsg), smsm-proc-awake (write qcom,smsm.yaml binding first, qcom for-next); b4 prep each, checkpatch --strict, section in STATUS
-      lane: upstreaming
-      why: review §4 — each patches a torvalds file with a measurement behind it and no D- dependency
-- [ ] 148. Cut the ASoC/slimbus/media/LEDs series from the 2026-09-03 plan: wcd-digital-mclk (sound/for-next), ngd-disable-stream (squash c44534943e82), camss-rdi-stride (media/next, name the libcamera half), qcom-flash-pmi632 (binding then driver+Kconfig folded), ak7375-pm (AK7374 id alone; PM rework to final shape; Fixes: only where blame on master supports it); b4 prep each, checkpatch --strict, section in STATUS
-      lane: upstreaming
-      why: same re-triage, second half; all host-only
 - [ ] 149. Cut msm8953-dtsi-idle (rpm-stats, rpm-master-stats, MPM node + wakeup-parent, domain-idle-states rename, drop local-timer-stop, system-pc request, SMSM bit) on the qcom SoC DT tree; keep 0314fee3ce35 (system-pc affinity) OUT until #142 settles; dtbs_check against the upstream bindings
       lane: upstreaming
       after: 142
@@ -236,7 +230,10 @@ repeated.
 - [ ] 150. Implement the #144 decision on wip/7.1.3/camera: move the rear-camera nodes out of sdm632-fairphone-fp3.dts into sdm632-fairphone-fp3-rear-camera-ak7374.dtso, add -rear-camera-lc898217.dtso from Bert's node set (IMX363@0x10, LC898217@0x72 with vaf+vio), compose both in arch/arm64/boot/dts/qcom/Makefile like sm8550-hdk-rear-camera-card; dtbs_check both composed dtbs on the host; then the phone lane must switch the flashed dtb to the -ak7374 composite (add a phone task when done)
       lane: upstreaming
       keeps the in-tree dtb name valid
-      why: STATUS fp3-dts, decided 2026-09-03: upstream's own rear-camera-card overlay pattern; keeps the in-tree dtb name valid<!-- FP3-QUEUE:END -->
+      why: #150 landed the overlay split on all three branches; a build that keeps the old dtb name silently loses the camera
+- [ ] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
+      lane: phone
+      why: #150 landed the overlay split on all three branches (wip c6996a7c79c3, debug-int 7f18166c7b7c); a build that keeps the old dtb name silently loses the camera<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
