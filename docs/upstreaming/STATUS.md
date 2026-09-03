@@ -27,7 +27,7 @@ with a link.
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
 | qcom-mpm-wakeup-timer | power | irqchip `tip/irq/core` | 1 | rebased | – | us | cover letter; a trial build on the base (no cross toolchain here) | 2026-09-03 |
 | pinctrl-msm8953-mpm | power | pinctrl `for-next` | 1 | rebased | – | us | cover letter; send with or right after the dtsi series is visible | 2026-09-03 |
-| qcom-smd-wake | power | rpmsg `rpmsg-next` | 1 | rebased | – | us | cover letter | 2026-09-03 |
+| qcom-smd-wake | power | rpmsg `rpmsg-next` | 1 | cover written | – | us | a build on the base; `b4 prep --auto-to-cc`; then send v1 (the person) | 2026-09-03 |
 | smsm-proc-awake | power | qcom `for-next` | 2 | rebased | – | us | `dt_binding_check` (no dtschema here); the DT-vs-match-data question on the cover | 2026-09-03 |
 | msm8953-dtsi-idle | power | qcom SoC (`arm64: dts: qcom`) | ≤ 9 | planned, one patch held | – | us | after the three driver series above; **`system-pc` affinity patch held** on Bert's touch regression (#142) | 2026-09-03 |
 | wcd-digital-mclk | power | ASoC `sound/for-next` | 1 | rebased | – | us | cover letter | 2026-09-03 |
@@ -639,6 +639,16 @@ To do:
 - [ ] cover letter
 
 Done:
+- 2026-09-03  #153: cover letter written into the b4 cover commit (`1a491cc65cf5`; series tip
+              `2c49bbdbc873`, old tip tagged `archive/upstreaming-qcom-smd-wake-pre-cover-20260903`):
+              the SMD counterpart of Caleb's glink patch, the EPOLLWAKEUP answer, why no port
+              filter in the kernel (port 52 = WMS on Bert's firmware, DSD on ours), wake IRQ vs
+              `IRQF_NO_SUSPEND`, the two dated measurements, and the `generated-content.rst`
+              disclosure naming both models. ☠️ The patch now carries **two** `Assisted-by:` trailers —
+              `claude-fable-5` (wrote the code, 2026-08-22/23) and `claude-fable-5-1` (reshaped it) —
+              because the skill's rule is "the model that did the work"; the eight other series cut
+              today carry only `claude-fable-5-1` and need the same correction from their `wip`
+              commits' trailers before v1
 - 2026-09-03  cut on `pinctrl/for-next`, pushed
 
 ## qcom-smd-wake
@@ -695,7 +705,9 @@ Test: measured on the FP3 (incoming call wakes s2idle; the crash reproduced and 
 Rounds: none yet.
 
 To do:
-- [ ] cover letter
+- [ ] build on the base; `b4 prep --auto-to-cc` and check the CC list against
+      `get_maintainer.pl` (Caleb + Bert are on the cover as `Cc:`)
+- [ ] v1 send is the person's, after the checker gauntlet
 
 Done:
 - 2026-09-03  cut on `rpmsg/rpmsg-next`, pushed
