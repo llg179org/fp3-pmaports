@@ -51,6 +51,31 @@ repeated.
 >
 > ☠️ **Scheduling is a key, not prose.** "Parked behind 116" goes stale silently
 > and nothing re-reads it; an `after: 116` is checked on every parse.
+>
+> ## ☠️ Edit this section with the tool, not with an editor
+>
+> Only the **goal** belongs to a person. Agents write this queue routinely — new
+> tasks, changed `after:`, items closed — and several Claude windows may be doing
+> it at the same minute. Rewriting the file whole from two windows is
+> last-writer-wins with silent loss, so every write goes through one lock:
+>
+> ```
+> queue.cjs add "<text>" -- "after: 12; why: …"   # id allocated inside the lock
+> queue.cjs set <id> after|until|when|they-do|why <value>   # empty value removes
+> queue.cjs mark <id> ' '|x|~|@
+> queue.cjs done <id>            # marks [x] and releases the claim
+> queue.cjs release <id>         # give a claimed task back
+> queue.cjs check | next | claims
+> ```
+>
+> Each one re-reads inside the lock, changes the minimum, validates that the
+> section still parses and that the task count did not change, and renames
+> atomically. Measured: 10 concurrent `add`s produce 10 distinct ids and lose
+> nothing; 10 concurrent `mark`s leave the file intact.
+>
+> A task is **claimed** when the hook hands it out, so two windows are never given
+> the same one; a claim expires after 90 minutes, so a closed window releases its
+> task by doing nothing. `queue.cjs claims` shows who holds what.
 
 <!-- FP3-QUEUE:BEGIN -->
 - [ ] 127. Turn the hooks back on
