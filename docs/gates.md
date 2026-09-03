@@ -46,7 +46,7 @@ elrejt.
 
 **Ítélet: rendben.** Húsz sorból egy megy a szerszámra.
 
-### 2. Kapunkénti precizió — **NEM MÉRHETŐ, és ez maga a lelet**
+### 2. Kapunkénti precizió — **visszamenőleg NEM MÉRHETŐ; mostantól igen**
 
 A nyugalmazott `autonomy.cjs` naplója 37 tüzelést rögzített:
 
@@ -58,7 +58,7 @@ A nyugalmazott `autonomy.cjs` naplója 37 tüzelést rögzített:
 | `OVERRIDE:human-reschedule` | 1 | 2,7 % |
 | `OVERRIDE:consulted-none` | 1 | 2,7 % |
 
-☠️ **A napló azt rögzíti, hogy egy kapu tüzelt — soha nem azt, hogy igaza
+☠️ **A napló azt rögzítette, hogy egy kapu tüzelt — soha nem azt, hogy igaza
 volt-e.** Ezért a precizió visszamenőleg nem számolható ki, és a „ha a
 hamis-blokk-ráta meghaladja a fogásokat, nettó negatív" szabály **nem
 alkalmazható a meglévő adatra**. Ez nem részletkérdés: pontosan az a mérőszám
@@ -75,9 +75,49 @@ Amit **ebből a futásból** meg lehet címkézni, mert van rá tanú:
   fölösleges.**
 - `open-work` (23×) — visszamenőleg nem címkézhető.
 
-**Teendő, ami ebből következik:** a kapu-napló bejegyzésének kell egy
-**kimenet-mező** (`fogás` / `hamis` / `felülbírálva`), amit a kapu *lezárásakor*
-kell kitölteni. Amíg nincs, a következő felülvizsgálat ugyanígy vak lesz.
+**✅ Megcsinálva, 2026-09-03** — `plugins/fp3/hooks/gatelog.cjs`:
+
+```
+gatelog.cjs log <kapu> [reszlet]                     # a kapu hivja, tuzeleskor
+gatelog.cjs outcome <id|last> catch|false|override -- "<mi tortent>"
+gatelog.cjs report [nap]                             # kapunkent + verdikt
+gatelog.cjs pending [kapu]                           # a cimkezetlen tuzelesek
+```
+
+Három tervezési döntés, mindegyik egy már megtörtént hiba ellen:
+
+- **Egy közös napló, nem kapunként egy.** Kapunként külön napló ugyanaz a hiba
+  lenne, mint a két lista, amit ma reggel szüntettünk meg.
+- **Append-only, a kimenet külön sor.** Egy napló, amit a verdikt kedvéért
+  átírnak, elveszíti, hogy *mit hittünk akkor* — és itt épp ez az érdekes.
+- ☠️ **Az érvényesítés nem egy újabb állandó utasítás.** Minden blokkoló üzenet
+  végére odaírni, hogy „és címkézd is" egy sort adna minden kapuhoz örökre —
+  vagyis pont az a zaj, amit ma reggel távolítottunk el. Helyette **a kapu
+  KÖVETKEZŐ tüzelése kérdez az előzőről**: nem kerül semmibe, ha címkézve van, és
+  sokáig nem lehet figyelmen kívül hagyni, ha nincs.
+
+A `queue.cjs` és a `measurement-watch.cjs` — a két élő blokkoló kapu — be van
+kötve. A 37 régi tüzelés betöltve, a két `OVERRIDE` automatikusan felülbírálásnak
+címkézve.
+
+☠️ **A maradék 31 betöltött tüzelés véglegesen megítélhetetlen**, és ez így is
+marad: nyugalmazott kapuk (`open-work`, `review-due`), és egyenként senki nem
+emlékszik rájuk. Ne próbáld visszamenőleg megcímkézni őket — a bizonyíték nincs
+meg. Ők a bizonyítékai annak, **miért** kellett ez a mező.
+
+**Az első valódi verdikt, `gatelog.cjs report`, 2026-09-03:**
+
+```
+gate                     fired catch false  ovrd    ?  verdict
+open-work                   23     0     0     0   23  only 0/23 labelled …
+review-due                   9     0     1     0    8  only 1/9 labelled …
+unrecorded-result            3     3     0     0    0  earns its place
+OVERRIDE:human-reschedule    1     0     0     1    0  too few firings yet (1)
+OVERRIDE:consulted-none      1     0     0     1    0  too few firings yet (1)
+```
+
+**`unrecorded-result` az első kapu ebben a projektben, aminek MÉRT verdiktje
+van:** 3 tüzelés, 3 fogás, nulla hamis.
 
 ### 3. Felülbírálási ráta — **5,4 %** (2/37)
 
