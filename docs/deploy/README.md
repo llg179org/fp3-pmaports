@@ -553,3 +553,68 @@ and it is not meson resolving `cargo` to an absolute path and missing the
 wrapper — the log says `Program cargo found: YES
 (/native/usr/lib/crossdirect/aarch64/cargo)`, so it found it. The wrapper was
 reached and declined the job.
+
+---
+
+## ☠️ The rear-camera dtb switch and the `_commit` bump are ONE change
+
+Measured 2026-09-04, preparing queue #151. Since `7f18166c7b7c` the board dts is
+split into a base dts plus two per-module overlays, composed in
+`arch/arm64/boot/dts/qcom/Makefile`:
+
+```
+sdm632-fairphone-fp3-rear-camera-ak7374-dtbs   := sdm632-fairphone-fp3.dtb sdm632-fairphone-fp3-rear-camera-ak7374.dtbo
+sdm632-fairphone-fp3-rear-camera-lc898217-dtbs := sdm632-fairphone-fp3.dtb sdm632-fairphone-fp3-rear-camera-lc898217.dtbo
+```
+
+so the **plain `sdm632-fairphone-fp3.dtb` has no rear camera** from that commit
+on, and the device has to be pointed at a composite:
+
+```
+device/testing/device-fairphone-fp3/deviceinfo
+  deviceinfo_dtb="qcom/sdm632-fairphone-fp3"                      # today
+  deviceinfo_dtb="qcom/sdm632-fairphone-fp3-rear-camera-ak7374"   # after the bump
+```
+
+Two things that decide how this is done, both measured rather than assumed:
+
+- **The `linux-fp3` APKBUILD needs no change.** All three names are in `dtb-y`
+  and the package installs with `make dtbs_install
+  INSTALL_DTBS_PATH="$pkgdir/boot/dtbs"`, so the composites ship automatically.
+  Half of #151's premise ("linux-fp3 dtb install") is already satisfied.
+- ☠️ **The `deviceinfo_dtb` edit must not land ahead of the `_commit` bump.**
+  The pinned `_commit` at the time of writing (`b8023520cddb`, `pkgrel=80`)
+  **predates** the split — the tip `7f18166c7b7c` is five commits ahead of it —
+  so the pinned kernel does not build any composite. Renaming `deviceinfo_dtb`
+  first therefore points the device at a dtb that does not exist in the package,
+  and breaks the *next* build: one step earlier than the silent camera loss the
+  task exists to prevent, and louder, but still a broken boot. Make both edits
+  in one change, or neither.
+
+Order for the window that has the phone, and it is not negotiable — the net goes
+in before the wire is cut:
+
+1. `fp3-selftest --only boot-fallback` on the **current** kernel, green.
+2. `_commit` → the `debug-int/<base>` tip and `pkgrel`+1, in **both** APKBUILD
+   copies (`pmaports/device/testing/linux-fp3` is the one that builds; the
+   `fp3-pmaports/linux-fp3` mirror builds nothing — as of 2026-09-04 the two are
+   byte-identical, so the trap is not currently armed), `deviceinfo_dtb` → the
+   ak7374 composite, `pmbootstrap checksum`, build.
+3. Flash, then `fp3-selftest` camera + focus checks.
+
+The tarball gate before any bump — and it needs its negative control, or it
+passes unconditionally:
+
+```sh
+SHA=$(git -C <fork checkout> rev-parse debug-int/<base>)
+curl -sL -o /dev/null -w '%{http_code}\n' "https://github.com/llg179org/linux/archive/$SHA.tar.gz"        # 200
+curl -sL -o /dev/null -w '%{http_code}\n' "https://github.com/llg179org/linux/archive/deadbeef…beef.tar.gz" # 404
+```
+
+Run 2026-09-04 on `7f18166c7b7cf04fb3e672d47393b2f51ee7b1a0`: **200**, control
+**404**, and `git ls-remote fork refs/heads/debug-int/7.1.3` returns that same
+sha — so the bump is unblocked whenever the device is back.
+
+☠️ And a live demonstration of why the sha comes from `rev-parse`: the first run
+of that check here used a 12-character hash extended to 40 by hand. It returned
+**404**, which said nothing about anything — a padded hash is a hash of nothing.

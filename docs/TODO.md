@@ -229,9 +229,10 @@ repeated.
       after: 142
       why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
 
-- [ ] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
+- [@] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
       lane: phone
       why: #150 landed the overlay split on all three branches (wip c6996a7c79c3, debug-int 7f18166c7b7c); a build that keeps the old dtb name silently loses the camera
+      they-do: attach/power on the FP3: the boot-fallback gate (fp3-selftest --only boot-fallback) runs BEFORE the switch and the camera/focus verify after it, so neither end is doable today (device unreachable, measured 2026-09-04). Host-side groundwork done and in docs/deploy/README.md: the linux-fp3 APKBUILD needs NO change (dtbs_install already ships both composites), and the deviceinfo_dtb rename must NOT land ahead of the _commit bump - the pinned b8023520cddb predates the split, so renaming first breaks the next build. Tarball for the tip 7f18166c7b7c verified 200 (control 404), fork ref matches.
 - [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
       lane: upstreaming
       until: when/he-replies
