@@ -191,8 +191,8 @@ repeated.
       lane: phone
 - [@] 133. Which subscription is in the dev FP3 — the corporate or the private Vodafone plan
       when: one word, whenever
-      they-do: say whether the SIM in the DEV FP3 (IMSI <imsi-old-card>, ICCID <iccid-old-card>) is the corporate or the private Vodafone plan — the same distinction that decided VoLTE on the daily handset. ☠️ No SIM needs to be moved to answer this
-      why: the 2026-09-03 pair showed vodafone HU carries VoLTE on the private plan and not on the corporate one. If the dev SIM is the corporate one, no amount of imsd work can produce VoLTE on it and the device-policy gate cannot even be tested with it
+      they-do: put the dev phone's SIM into the daily factory-Android handset (a certified device is the instrument), place one call, and during the call read Settings -> About phone -> SIM status -> 'Mobile network type'. Report the value as read, nothing else. ☠️ Restore both SIMs afterwards
+      why: THREE SIMs are in play, not two: the daily handset carries the corporate and the private card, and the dev phone carries a THIRD card whose plan is neither of those. The 2026-09-03 pair therefore says nothing about the dev subscription — it only proves vodafone HU carries VoLTE on some plans. Whether the imsd path can ever produce a VoLTE call on the dev phone depends on whether VoLTE is enabled on ITS subscription, and a certified handset is the only instrument we have that can answer it, since our own stack has no working IMS
       if it is a private one, the network side is fully open and what remains is device policy alone
       lane: phone
 <!-- FP3-QUEUE:END -->
