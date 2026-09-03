@@ -2490,3 +2490,27 @@ so that `after:` and `continues:` references still resolve.
       the cooling patch is silently missing from upstreaming-int
       the i2c series and the integration carry different resolutions
       lane: upstreaming
+
+- [x] **141.** Re-triage the power category: the left-out table calls sendable fixes 'not upstream-shaped' — pinctrl-msm8953 wakeirq map, irq-qcom-mpm wakeup timer/accessor/cap, qcom_smd wake irq + double teardown, qcom_smd-regulator set_suspend ops (minus both_sets), smsm proc-awake (+ a binding that does not exist yet), msm8953.dtsi MPM/rpm-stats/domain-idle-states, msm8916-wcd-digital mclk, slimbus disable_stream; plus camss RDI stride, leds-qcom-flash PMI632, ak7375 PM rework from camera  — closed 2026-09-03 20:41
+      why: review section 4 — each patches a file in Linus' tree with a measurement behind it and is blocked by none of D-1/D-2/D-3
+      the experiments (xo_sleep_off, sleep_init, sleep_bw_off, both_sets) stay behind
+      lane: upstreaming
+
+- [x] **143.** Take Bert Karwatzki's lc898217 two-supply fix (vaf + vio; the actuator's i2c times out with only one because the sensor rail is already down at probe) as HIS patch onto wip/7.1.3/camera, update the onnn,lc898217xc binding, drop the dev_info leftover; his device has this actuator at 0x72 with the IMX363 at 0x10  — closed 2026-09-03 20:44
+      why: mail 2026-09-03 — the actuator the review called untested hardware is now tested, by him, on the original camera module
+      his authorship and Signed-off-by, our follow-up if any
+      lane: upstreaming
+
+- [x] **144.** Two rear-camera modules, two DTS: Bert's FP3 has IMX363@0x10 + LC898217@0x72, ours IMX363@0x1a + AK7374@0x0c; decide sdm632-fairphone-fp3.dtsi common + per-module dts (his proposal) before fp3-dts is cut, and ask the qcom DT maintainers on the cover letter how they want an undetectable module variant described  — closed 2026-09-03 20:46
+      why: mail 2026-09-03 — the board DTS as written describes one of two shipped modules and disables the camera on the other
+      the eeprom@50 must stay on both
+      lane: upstreaming
+
+- [x] **145.** Draft the reply to Bert (the person sends it): thank + ask for a formal Tested-by on wcd9335-audio naming the commit set he ran (5bc4d5ebb7c0 = integration/7.1.3 of 2026-08-30, Debian trixie userspace, call audio works); our measured QRTR port data for his wakeup filter (39 voice, 40 NAS, 52 DSD; IMS off 48 -> 4.4 % duty; radio off = 1802 s sleep, so the noise is the network's); the touch regression acknowledged; his lc898217 patch taken with his authorship  — closed 2026-09-03 20:46
+      why: a second tester on a second device is the strongest thing the cover letter can carry, and every word of the reply must be the person's
+      lane: upstreaming
+
+- [x] **146.** B7 host-only half: on wip/7.1.3/camera fold the leftover C++ comments out of imx363.c (//0c40, // analog cropping, //subsampling, // digital cropping) into the cleanup patch, and replace '// NOT SURE HOW TO FIND THIS VALUE' on the 636 MHz link frequency with a comment that says what it is - a reverse-engineered value from the Pixel 3a downstream logs, carried into the binding's link-frequencies - then regenerate upstreaming/imx363-camera; no behaviour change, no build needed  — closed 2026-09-03 20:48
+      why: review B7 — a maintainer reads the file, not the tree
+      these lines survived the 'remove the commented-out code' patch and one of them contradicts any claim of measured values. The vdig hardcode and the FP3-named delays stay in 140 because moving them changes what the sensor does at power-up
+      lane: upstreaming

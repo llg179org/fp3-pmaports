@@ -213,29 +213,30 @@ repeated.
       lane: upstreaming
 
 - [ ] 140. B7 + DTS hygiene before fp3-dts is cut: imx363 leftovers (// NOT SURE HOW TO FIND THIS VALUE, //0c40, C++ comments), vdig 1.175 V hardcode -> board l2 constraints, FP3-named delays; audio DTS: drop DMIC4/DMIC5/AMIC5 routes (measured silent 2026-08-02), move slimbam/slim_msm to msm8953.dtsi, interrupts-extended, no output-high in pinctrl; charger DTSI: 48 interrupt-names vs 4 in the binding; XCLR reset polarity ACTIVE_LOW
-      why: review B7 and section 3 — board facts in a generic driver, DT describing hardware the project measured absent, and a dtbs_check failure the series binding does not cover
+      why: review B7 and section 3 — every item here changes the phone's DT or a driver's runtime behaviour, so it needs a build and a boot on the device; the phone is in the night measurement until 79 releases it. The host-only half (comments) is 146
       lane: upstreaming
-- [ ] 141. Re-triage the power category: the left-out table calls sendable fixes 'not upstream-shaped' — pinctrl-msm8953 wakeirq map, irq-qcom-mpm wakeup timer/accessor/cap, qcom_smd wake irq + double teardown, qcom_smd-regulator set_suspend ops (minus both_sets), smsm proc-awake (+ a binding that does not exist yet), msm8953.dtsi MPM/rpm-stats/domain-idle-states, msm8916-wcd-digital mclk, slimbus disable_stream; plus camss RDI stride, leds-qcom-flash PMI632, ak7375 PM rework from camera
-      why: review section 4 — each patches a file in Linus' tree with a measurement behind it and is blocked by none of D-1/D-2/D-3
-      the experiments (xo_sleep_off, sleep_init, sleep_bw_off, both_sets) stay behind
-      lane: upstreaming
+      after: 79
+
 - [ ] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
       why: mail from Bert Karwatzki 2026-09-03 — reverting the commit fixes it on his device
       the review's section 4 had just listed that dtsi work as sendable
       a regression on a second device outranks that
       lane: phone
-- [ ] 143. Take Bert Karwatzki's lc898217 two-supply fix (vaf + vio; the actuator's i2c times out with only one because the sensor rail is already down at probe) as HIS patch onto wip/7.1.3/camera, update the onnn,lc898217xc binding, drop the dev_info leftover; his device has this actuator at 0x72 with the IMX363 at 0x10
-      why: mail 2026-09-03 — the actuator the review called untested hardware is now tested, by him, on the original camera module
-      his authorship and Signed-off-by, our follow-up if any
+
+- [ ] 147. Cut the four host-only power driver series from the 2026-09-03 plan (STATUS 'Planned series'): qcom-mpm-wakeup-timer (3 wip commits → 1, on tip/irq/core), pinctrl-msm8953-mpm (pinctrl/for-next), qcom-smd-wake (fold d0e738c107e3 into 8c9b25687119, rpmsg), smsm-proc-awake (write qcom,smsm.yaml binding first, qcom for-next); b4 prep each, checkpatch --strict, section in STATUS
       lane: upstreaming
-- [ ] 144. Two rear-camera modules, two DTS: Bert's FP3 has IMX363@0x10 + LC898217@0x72, ours IMX363@0x1a + AK7374@0x0c; decide sdm632-fairphone-fp3.dtsi common + per-module dts (his proposal) before fp3-dts is cut, and ask the qcom DT maintainers on the cover letter how they want an undetectable module variant described
-      why: mail 2026-09-03 — the board DTS as written describes one of two shipped modules and disables the camera on the other
-      the eeprom@50 must stay on both
+      why: review §4 — each patches a torvalds file with a measurement behind it and no D- dependency
+- [ ] 148. Cut the ASoC/slimbus/media/LEDs series from the 2026-09-03 plan: wcd-digital-mclk (sound/for-next), ngd-disable-stream (squash c44534943e82), camss-rdi-stride (media/next, name the libcamera half), qcom-flash-pmi632 (binding then driver+Kconfig folded), ak7375-pm (AK7374 id alone; PM rework to final shape; Fixes: only where blame on master supports it); b4 prep each, checkpatch --strict, section in STATUS
       lane: upstreaming
-- [ ] 145. Draft the reply to Bert (the person sends it): thank + ask for a formal Tested-by on wcd9335-audio naming the commit set he ran (5bc4d5ebb7c0 = integration/7.1.3 of 2026-08-30, Debian trixie userspace, call audio works); our measured QRTR port data for his wakeup filter (39 voice, 40 NAS, 52 DSD; IMS off 48 -> 4.4 % duty; radio off = 1802 s sleep, so the noise is the network's); the touch regression acknowledged; his lc898217 patch taken with his authorship
-      why: a second tester on a second device is the strongest thing the cover letter can carry, and every word of the reply must be the person's
+      why: same re-triage, second half; all host-only
+- [ ] 149. Cut msm8953-dtsi-idle (rpm-stats, rpm-master-stats, MPM node + wakeup-parent, domain-idle-states rename, drop local-timer-stop, system-pc request, SMSM bit) on the qcom SoC DT tree; keep 0314fee3ce35 (system-pc affinity) OUT until #142 settles; dtbs_check against the upstream bindings
       lane: upstreaming
-<!-- FP3-QUEUE:END -->
+      after: 142
+      why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
+- [ ] 150. Implement the #144 decision on wip/7.1.3/camera: move the rear-camera nodes out of sdm632-fairphone-fp3.dts into sdm632-fairphone-fp3-rear-camera-ak7374.dtso, add -rear-camera-lc898217.dtso from Bert's node set (IMX363@0x10, LC898217@0x72 with vaf+vio), compose both in arch/arm64/boot/dts/qcom/Makefile like sm8550-hdk-rear-camera-card; dtbs_check both composed dtbs on the host; then the phone lane must switch the flashed dtb to the -ak7374 composite (add a phone task when done)
+      lane: upstreaming
+      keeps the in-tree dtb name valid
+      why: STATUS fp3-dts, decided 2026-09-03: upstream's own rear-camera-card overlay pattern; keeps the in-tree dtb name valid<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
