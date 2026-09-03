@@ -35,6 +35,9 @@ repeated.
 > Kulcsok: `after:` előfeltétel · `until:` mikor él újra · `when:`/`they-do:`
 > emberi tételnél · `why:` egy sor, hogy miért ez a feladat.
 >
+> A kapukat (hookok, amik blokkolnak) a [`gates.md`](gates.md) tartja számon:
+> incidens, felülvizsgálati dátum, és hogy tüzeltek-e azóta jogosan.
+>
 > ☠️ **Az ütemezés kulcs, nem próza.** „PARKOL, a 116. mögé" némán elavul és
 > senki nem olvassa újra; egy `after: 116` minden feldolgozáskor ellenőrződik.
 
@@ -42,8 +45,10 @@ repeated.
 - [~] 50. SMSM PROC_AWAKE (12. bit) — az A/B lefuttatása és a mérés a commit-üzenetbe
       after: 85
       why: az EGYETLEN nyitott tétel, ami LKML-patchet termel. ☠️ A patch MEGVAN és be van pinelve (r80, `_commit` b8023520, checkpatch-tiszta), DE a telefon r78-at futtat és a futó DT-ben nincs `proc-awake` property ⇒ a mérés FLASH-t és rebootot kér, az pedig kicserélné a kernelt a ma esti replikáció alól. ☠️ Az előregisztrált olvasat NEM az MPSS-duty (az a modem-változat, ami 09-01-én megdőlt: a modem maszkja bit 23), hanem a LPASS-számláló alvason át — a bit egyetlen feliratkozója az ADSP
-- [ ] 82. Kapu-napló és felülvizsgálati dátum minden kemény kapuhoz
-      why: asztali munka, telefon nélkül; a kapu-rothadás ellen véd — minden kapu hordozzon incidens-linket és lejáratot
+- [x] 82. Kapu-napló és felülvizsgálati dátum minden kemény kapuhoz
+      why: kész — docs/gates.md: 5 kapu incidenssel és lejárattal, karbantartási hányad 4,4 %/5,4 %, felülbírálási ráta 5,4 %. ☠️ A precizió NEM mérhető visszamenőleg (a napló nem rögzít kimenetet) ⇒ új tétel: 125.
+- [ ] 125. Kimenet-mező a kapu-naplóba (fogás / hamis / felülbírálva)
+      why: a 82. felülvizsgálata vakon futott: 37 tüzelésből egyet sem lehet jogosnak vagy hamisnak minősíteni, mert a napló csak azt rögzíti, HOGY tüzelt. E nélkül a következő felülvizsgálat is vak lesz, és a „nettó negatív" szabály alkalmazhatatlan
 - [@] 63. Elérhetőség-teszt: óránként egy hívás nappal
       when: óránként nappal; a reggeli sarok-minta CSAK mérés nélküli éjszaka után
       they-do: óránként egy hívás, kicsöngetve, felvétel nélkül — jelenteni nem kell semmit. ☠️ MA ESTE NE: 19:00-tól a telefon mér, a rádió-ki ablakokban jogosan nem csöng
