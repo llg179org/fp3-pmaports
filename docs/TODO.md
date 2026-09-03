@@ -114,7 +114,7 @@ repeated.
       when: hourly during the day; the morning corner sample ONLY after a night with no measurement
       they-do: one call an hour, let it ring, do not answer — nothing to report back. ☠️ NOT tonight: the phone measures from 19:00, and in the radio-off windows it rightly does not ring
       why: ringing is the ONLY acceptable gate; CS attach / SGs is a predictor only
-- [@] 112. Glance at the daily factory-Android FP3's status bar during a call
+- [x] 112. Glance at the daily factory-Android FP3's status bar during a call
       when: at the next daytime call
       they-do: on the CALLING handset, DURING the call: turn WiFi off and try to load a page over mobile data. Data works = VoLTE on LTE; data stalls for the whole call and returns when it ends = CSFB (2G/3G). Cross-check without menus-guessing: Settings -> About phone -> SIM status -> 'Mobile network type', which updates live during the call. One word is the answer. ☠️ The STATUS BAR does not answer it — measured 2026-09-03: during a call Android shows only the handset icon, the network-type indicator is gone. ☠️ Otherwise we do not touch the daily phone
       why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
@@ -186,6 +186,11 @@ repeated.
 - [ ] 131. Track D-1 (patchwork 875540) and D-2 (Otto's q6afe series) with the kernel-review plugin: /track the cover message-ids, record them on STATUS.md
       lane: upstreaming
       why: the dependency list has patchwork ids but no lore message-ids yet
+- [@] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
+      when: whenever convenient, one glance
+      they-do: Settings -> Network -> SIM cards (or the SIM status screen per slot): the operator NAME for slot 1 and slot 2. Two words. ☠️ Read-only, we do not otherwise touch the daily phone
+      why: decides what the 2026-09-03 paired VoLTE reading says about US — only if the SIM that stayed on 4G during the call is also vodafone HU (our dev FP3's operator, MCC/MNC 21670) does it prove VoLTE is provisionable on OUR network for OUR subscription
+      lane: phone
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
