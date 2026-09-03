@@ -138,8 +138,42 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 			"$(cat /sys/class/power_supply/*battery*/capacity)" >> "$D/ocv.txt"
 		nap 60
 	done
-	slope=$(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
-		NR==1{t0=$2; v0=$3} END{if (NR>1 && $2>t0) printf "%.2f", ($3-v0)/1000/(($2-t0)/60); else print "0"}')
+	# ☠️☠️ FIRST-MINUS-LAST IS NOT A SLOPE, IT IS A TWO-SAMPLE DIFFERENCE, and one
+	# outlier flips it. Measured 2026-09-03: a validation rest settled to +-1 mV
+	# over its last three minutes - genuinely rested - and was declared NOT RESTED
+	# at 5.39 mV/min, because a load spike had dipped two samples 30-90 mV nine
+	# minutes in and one of them happened to be the FIRST of the window. The rest
+	# was fine; the estimator was not, and it would have condemned good endpoints
+	# all night.
+	# ☠️ The fix is not smoothing. A load spike inside a rest IS a disturbance and
+	# has to be named: drop samples further than 3 MAD from the median, fit the
+	# slope on what is left, and SAY how many were dropped. A rest that needs many
+	# drops is a rest that was disturbed, which is a different verdict from "still
+	# relaxing" and must not be allowed to masquerade as one.
+	read -r slope dropped <<-EOF
+	$(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
+		{t[NR]=$2; v[NR]=$3}
+		END{
+			n=NR; if (n<3) {print "0 0"; exit}
+			for(i=1;i<=n;i++) w[i]=v[i]; 
+			for(i=1;i<n;i++) for(j=i+1;j<=n;j++) if(w[j]<w[i]){x=w[i];w[i]=w[j];w[j]=x}
+			med = (n%2) ? w[(n+1)/2] : (w[n/2]+w[n/2+1])/2
+			for(i=1;i<=n;i++) d[i]=(v[i]>med)?v[i]-med:med-v[i]
+			for(i=1;i<=n;i++) e[i]=d[i]
+			for(i=1;i<n;i++) for(j=i+1;j<=n;j++) if(e[j]<e[i]){x=e[i];e[i]=e[j];e[j]=x}
+			mad = (n%2) ? e[(n+1)/2] : (e[n/2]+e[n/2+1])/2
+			if (mad < 1000) mad = 1000        # 1 mV floor: do not reject noise-free data
+			k=0; st=0; sv=0; stt=0; stv=0
+			for(i=1;i<=n;i++) if (d[i] <= 3*mad) { k++; st+=t[i]; sv+=v[i] }
+			if (k<3) {printf "0 %d
+", n-k; exit}
+			mt=st/k; mv=sv/k
+			for(i=1;i<=n;i++) if (d[i] <= 3*mad) { stt+=(t[i]-mt)^2; stv+=(t[i]-mt)*(v[i]-mv) }
+			printf "%.2f %d
+", (stt>0? stv/stt : 0)/1000*60, n-k
+		}')
+	EOF
+	[ "${dropped:-0}" -eq 0 ] || s "  ☠️ OCV $1: ${dropped} sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest"
 	s "OCV $1 slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
 	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
 	# means the pack is relaxing and the number is not an OCV yet; the rehearsal's
