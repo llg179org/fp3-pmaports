@@ -1,0 +1,13 @@
+# leg 2026-09-03 05:08:20  3 min  alarm=10s
+# battery 92% v=4276953uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# 19 samples, battery 92% v=4177883uV

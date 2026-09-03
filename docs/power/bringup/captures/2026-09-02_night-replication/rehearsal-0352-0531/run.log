@@ -1,0 +1,114 @@
+2026-09-03 03:52:26 [+20656s 319334e4] === step 0  (boots=3 leg=3min rest=5min alarm=10s) ===
+2026-09-03 03:52:26 [+20656s 319334e4] battery 100% 4413394uV Charging
+2026-09-03 03:52:26 [+20656s 319334e4] OCV start: radio off, USB input suspended, resting 5 min
+2026-09-03 03:59:35 [+21084s 319334e4]   rest start: 420s, 8 mV over the last 2 min
+2026-09-03 04:06:39 [+21508s 319334e4]   rest start: 840s, 12 mV over the last 2 min
+2026-09-03 04:13:43 [+21932s 319334e4]   rest start: 1260s, 9 mV over the last 2 min
+2026-09-03 04:20:47 [+22356s 319334e4]   rest start: 1680s, 9 mV over the last 2 min
+2026-09-03 04:27:51 [+22780s 319334e4]   rest start: 2100s, 37 mV over the last 2 min
+2026-09-03 04:34:55 [+23205s 319334e4]   rest start: 2520s, -21 mV over the last 2 min
+2026-09-03 04:41:59 [+23629s 319334e4]   rest start: 2940s, 10 mV over the last 2 min
+2026-09-03 04:49:03 [+24053s 319334e4]   rest start: 3360s, -47 mV over the last 2 min
+2026-09-03 04:56:07 [+24477s 319334e4]   rest start: 3780s, 0 mV over the last 2 min
+2026-09-03 04:56:07 [+24477s 319334e4]   rest start: settled after 3780s
+2026-09-03 05:06:27 [+25097s 319334e4] OCV start slope over the last 5 min:  mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-03 05:06:27 [+25097s 319334e4] OCV start done: 4239972uV, drift over the last 80 s: 4 mV
+2026-09-03 05:06:57 [+25127s 319334e4] rebooting (next step 1)
+2026-09-03 05:07:41 [+25s d867b544] === step 1  (boots=3 leg=3min rest=5min alarm=10s) ===
+2026-09-03 05:07:41 [+25s d867b544] battery 92% 4336512uV Charging
+2026-09-03 05:07:41 [+25s d867b544] --- leg 1 of 3, after boot 25s ago ---
+2026-09-03 05:07:42 [+26s d867b544] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 05:08:07 [+50s d867b544] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 05:08:20  3 min  alarm=10s
+# battery 92% v=4276953uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# 19 samples, battery 92% v=4177883uV
+2026-09-03 05:11:31 [+255s d867b544] --- leg 1 done ---
+2026-09-03 05:11:31 [+255s d867b544] rebooting (next step 3)
+2026-09-03 05:12:15 [+25s 18bd8b06] === step 3  (boots=3 leg=3min rest=5min alarm=10s) ===
+2026-09-03 05:12:15 [+25s 18bd8b06] battery 92% 4337680uV Charging
+2026-09-03 05:12:15 [+25s 18bd8b06] --- leg 2 of 3, after boot 25s ago ---
+2026-09-03 05:12:16 [+26s 18bd8b06] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 05:12:40 [+50s 18bd8b06] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 05:12:53  3 min  alarm=10s
+# battery 92% v=4278900uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 1
+# audit: unexpected units started = Session c3 of User fp3;
+# audit: incoming calls during the leg = 0
+# ☠️ DISTURBED (unit): something unexpected started during this leg: Session c3 of User fp3;
+# ☠️☠️ THIS LEG WAS INTERFERED WITH: 1 ssh login(s) landed while it ran.
+#     An ssh login is an AP wake. Treat this leg's current as invalid, not noisy.
+# 20 samples, battery 92% v=4195790uV
+2026-09-03 05:15:57 [+247s 18bd8b06] --- leg 2 done ---
+2026-09-03 05:15:57 [+247s 18bd8b06] rebooting (next step 5)
+2026-09-03 05:17:00 [+25s 0b221840] === step 5  (boots=3 leg=3min rest=5min alarm=10s) ===
+2026-09-03 05:17:00 [+25s 0b221840] battery 92% 4342351uV Charging
+2026-09-03 05:17:00 [+25s 0b221840] --- leg 3 of 3, after boot 25s ago ---
+2026-09-03 05:17:01 [+26s 0b221840] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 05:17:26 [+50s 0b221840] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 05:17:39  3 min  alarm=10s
+# battery 92% v=4275007uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 1
+# audit: unexpected units started = Session c2 of User fp3;
+# audit: incoming calls during the leg = 0
+# ☠️ DISTURBED (unit): something unexpected started during this leg: Session c2 of User fp3;
+# ☠️☠️ THIS LEG WAS INTERFERED WITH: 1 ssh login(s) landed while it ran.
+#     An ssh login is an AP wake. Treat this leg's current as invalid, not noisy.
+# 20 samples, battery 92% v=4199099uV
+2026-09-03 05:20:54 [+258s 0b221840] --- leg 3 done ---
+2026-09-03 05:20:54 [+258s 0b221840] OCV end: radio off, USB input suspended, resting 5 min
+2026-09-03 05:24:25 [+469s 0b221840]   rest end: 420s, 12 mV over the last 2 min
+2026-09-03 05:24:25 [+469s 0b221840]   ☠️ rest end hit its 5 min ceiling without settling - this endpoint is suspect
+2026-09-03 05:31:08 [+872s 0b221840] OCV end slope over the last 5 min:  mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-03 05:31:08 [+872s 0b221840] OCV end done: 4154137uV, drift over the last 80 s: -83 mV
+2026-09-03 05:31:38 [+902s 0b221840] === NIGHT COMPLETE ===

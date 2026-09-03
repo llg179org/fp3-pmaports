@@ -99,12 +99,24 @@ nap() {   # nap <seconds> - suspend if we can, sleep if we cannot, never fail
 }
 
 ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
+	# ☠️☠️ SAVE THE TAG FIRST: `set --` BELOW DESTROYS IT. The slope estimator
+	# reads its two numbers with `set -- $(awk ...)`, which overwrites the
+	# positional parameters - so from that line on, `$1` is the SLOPE, not
+	# "start"/"end". Measured on the device 2026-09-03, before a night that would
+	# have run on it: `grep "^0.10 "` matches nothing in ocv.txt, so `first` and
+	# `last` come back EMPTY, and busybox arithmetic reads an empty operand as 0.
+	# The run does not crash - it prints `OCV 0.10 done: uV, drift over the last
+	# 80 s: 0 mV`. ☠️ A fabricated **0 mV drift reads as a perfectly rested pack**,
+	# which is the worst shape a broken instrument can take: it reports the best
+	# possible result precisely when it measured nothing. The raw ocv.txt survives,
+	# so the endpoints are recoverable offline, but the run's own verdict is not.
+	tag=$1
 	# ☠️ AN OCV TAKEN ON THE CHARGER IS THE CHARGER'S VOLTAGE, NOT THE PACK'S. The
 	# rehearsal read 4.413 V at the start with status "Charging" - that is the
 	# float voltage of the charger, and the entire offset-bounding argument needs a
 	# RESTED PACK. The radio was switched off and the charger was not; both have to
 	# go, and the state has to be verified rather than assumed.
-	s "OCV $1: radio off, USB input suspended, resting ${RESTMIN} min"
+	s "OCV $tag: radio off, USB input suspended, resting ${RESTMIN} min"
 	mmcli -m any --disable >/dev/null 2>&1 || s "  (mmcli --disable failed, continuing)"
 	echo Unknown > /sys/class/power_supply/pmi632-charger/status
 	sleep 5
@@ -122,10 +134,10 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 		v1=$(cat /sys/class/power_supply/*battery*/voltage_now); nap 120
 		v2=$(cat /sys/class/power_supply/*battery*/voltage_now)
 		mv=$(( (v2 - v1) / 1000 )); waited=$((waited + 120))
-		s "  rest $1: ${waited}s, ${mv} mV over the last 2 min"
-		[ "$mv" -lt 1 ] && [ "$mv" -gt -1 ] && { s "  rest $1: settled after ${waited}s"; break; }
+		s "  rest $tag: ${waited}s, ${mv} mV over the last 2 min"
+		[ "$mv" -lt 1 ] && [ "$mv" -gt -1 ] && { s "  rest $tag: settled after ${waited}s"; break; }
 	done
-	[ "$waited" -lt "$((CAP * 60))" ] || s "  ☠️ rest $1 hit its ${CAP} min ceiling without settling - this endpoint is suspect"
+	[ "$waited" -lt "$((CAP * 60))" ] || s "  ☠️ rest $tag hit its ${CAP} min ceiling without settling - this endpoint is suspect"
 	# ☠️ SETTLING IS AN ACCEPTANCE CRITERION, NOT AN AFTERTHOUGHT. The rehearsal's
 	# closing read was still climbing and only said so in hindsight. Take a ten
 	# minute series and judge the LAST FIVE MINUTES: under 0.2 mV/min the pack is
@@ -133,7 +145,7 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# ☠️ THE ACCEPTANCE SERIES HAS TO SLEEP TOO, and ten minutes of it used to be
 	# ten minutes of an awake phone. Sparse sleeping samples: 10 x 60 s.
 	for i in $(seq 1 10); do
-		printf '%s %s %s %s\n' "$1" "$(date +%s)" \
+		printf '%s %s %s %s\n' "$tag" "$(date +%s)" \
 			"$(cat /sys/class/power_supply/*battery*/voltage_now)" \
 			"$(cat /sys/class/power_supply/*battery*/capacity)" >> "$D/ocv.txt"
 		nap 60
@@ -177,7 +189,7 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 	# deployed block from /usr/local/bin UNCHANGED and ran it on the phone.
 	# ☠️ A repro that is easier to write than the original is usually a different
 	# program. Run what runs.
-	set -- $(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '
+	set -- $(grep "^$tag " "$D/ocv.txt" | tail -6 | awk '
 		{t[NR]=$2; v[NR]=$3}
 		END{
 			n=NR; if (n<4) {print "0 0"; exit}
@@ -198,21 +210,21 @@ ocv() {   # ocv <tag> [maxmin] - radio off, USB input off, rest, read, both back
 		}')
 	slope=${1:-}; dropped=${2:-0}
 	if [ -z "$slope" ]; then
-		s "  ☠️☠️ OCV $1: THE SLOPE ESTIMATOR RETURNED NOTHING - this is a tool"
+		s "  ☠️☠️ OCV $tag: THE SLOPE ESTIMATOR RETURNED NOTHING - this is a tool"
 		s "     failure, NOT a verdict about the pack. Do not read the endpoint as"
 		s "     'not rested': it has not been judged at all. Check that busybox awk"
 		s "     accepts the program (it uses ^ and a hand-written sort)."
 		slope=0
 	fi
-	[ "${dropped:-0}" -eq 0 ] || s "  ☠️ OCV $1: ${dropped} sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest"
-	s "OCV $1 slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
+	[ "${dropped:-0}" -eq 0 ] || s "  ☠️ OCV $tag: ${dropped} sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest"
+	s "OCV $tag slope over the last 5 min: ${slope} mV/min $(awk -v x="$slope" 'BEGIN{print (x<0.2 && x>-0.2) ? "(rested)" : "☠️ NOT RESTED - treat this endpoint as suspect"}')"
 	# ☠️ SAY WHETHER IT HAD SETTLED. Five reads twenty seconds apart still climbing
 	# means the pack is relaxing and the number is not an OCV yet; the rehearsal's
 	# closing read rose 1.2 mV across its five samples on a 3 min rest. Print the
 	# drift so a reader can discount it instead of trusting a single last value.
-	first=$(grep "^$1 " "$D/ocv.txt" | head -1 | awk '{print $3}')
-	last=$(grep "^$1 " "$D/ocv.txt" | tail -1 | awk '{print $3}')
-	s "OCV $1 done: ${last}uV, drift over the last 80 s: $(( (last - first) / 1000 )) mV"
+	first=$(grep "^$tag " "$D/ocv.txt" | head -1 | awk '{print $3}')
+	last=$(grep "^$tag " "$D/ocv.txt" | tail -1 | awk '{print $3}')
+	s "OCV $tag done: ${last}uV, drift over the last 80 s: $(( (last - first) / 1000 )) mV"
 	echo Charging > /sys/class/power_supply/pmi632-charger/status
 	mmcli -m any --enable >/dev/null 2>&1
 	sleep 30

@@ -1,0 +1,16 @@
+# leg 2026-09-03 05:12:53  3 min  alarm=10s
+# battery 92% v=4278900uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 1
+# audit: unexpected units started = Session c3 of User fp3;
+# audit: incoming calls during the leg = 0
+# ☠️ DISTURBED (unit): something unexpected started during this leg: Session c3 of User fp3;
+# ☠️☠️ THIS LEG WAS INTERFERED WITH: 1 ssh login(s) landed while it ran.
+#     An ssh login is an AP wake. Treat this leg's current as invalid, not noisy.
+# 20 samples, battery 92% v=4195790uV
