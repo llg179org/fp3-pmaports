@@ -25,6 +25,17 @@ with a link.
 | qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | `Fixes:` from blame on torvalds/master | 2026-09-03 |
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
+| qcom-mpm-wakeup-timer | power | irqchip (tglx) | 1 (from 3) | planned | – | us | cut on `tip/irq/core`; squash the three `wip` steps into the one shape upstream never had | 2026-09-03 |
+| pinctrl-msm8953-mpm | power | pinctrl (Linus W. / Bjorn) | 1 | planned | – | us | cut on `pinctrl/for-next` | 2026-09-03 |
+| qcom-smd-wake | power | rpmsg (Bjorn, Mathieu) | 1 (from 2) | planned | – | us | fold the double-teardown fix into the wake-IRQ patch (bisect rule) | 2026-09-03 |
+| smsm-proc-awake | power | qcom `for-next` + DT binding | 2 | planned | – | us | write the binding first; ask whether the bit belongs in DT or in per-SoC match data | 2026-09-03 |
+| msm8953-dtsi-idle | power | qcom SoC (`arm64: dts: qcom`) | ≤ 9 | planned, one patch held | – | us | after the three driver series above; **`system-pc` affinity patch held** on Bert's touch regression (#142) | 2026-09-03 |
+| wcd-digital-mclk | power | ASoC (Srini, Mark) | 1 | planned | – | us | cut on `sound/for-next` | 2026-09-03 |
+| ngd-disable-stream | power | slimbus (Srini) | 1 (from 2) | planned | – | us | squash the alignment fixup | 2026-09-03 |
+| camss-rdi-stride | camera | media (Bryan O'Donoghue) | 1 | planned | – | us | cut on `media/next`; name the libcamera half in the cover | 2026-09-03 |
+| qcom-flash-pmi632 | camera | LEDs (Lee Jones) + DT binding | 2 (from 3) | planned | – | us | binding, then driver with the Kconfig text folded in | 2026-09-03 |
+| ak7375-pm | camera | media (Sakari Ailus) | 3–4 (from 6) | planned | – | us | AK7374 id as its own patch; the PM rework squashed to its final shape; `Fixes:` only where blame on `master` supports it | 2026-09-03 |
+| qcom-smd-regulator-suspend | power | regulator (Mark) | 1 | held | – | – | mechanism proven on one rail, **no power win measured** and the board opt-in was reverted — a sendable op with no user; revisit when a rail is measured off-in-suspend | 2026-09-03 |
 
 Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. All seven `submit/7.1.3/*` branches are tagged `archive/submit-7.1.3-<cat>-final` and superseded, but **none is deleted** — deleting them is a separate call.
 
@@ -205,7 +216,9 @@ Left out of this series (the `power` category is mostly not upstream-shaped):
 | left out | lines | why |
 |---|---|---|
 | `drivers/clk/qcom/apcs-msm8953.c` — the PLL-retune fix | 123 | patches a file that does not exist in the torvalds tree |
-| `msm8953.dtsi`, `clk-smd-rpm.c`, `icc-rpm.{c,h}`, `msm8953.c`, `irq-qcom-mpm.c`, `pinctrl-msm8953.c`, `qcom_smd-regulator.c`, `qcom_smd.c`, `qcom-ngd-ctrl.c`, `smd-rpm.c`, `smsm.c`, `qcom_smd_rpm.h`, `msm8916-wcd-digital.c` | ~650 | bring-up and instrumentation work, not upstream-shaped; stays on `wip/7.1.3/power` |
+| `irq-qcom-mpm.c`, `pinctrl-msm8953.c`, `qcom_smd.c`, `smsm.c` (+ binding), `msm8953.dtsi`, `msm8916-wcd-digital.c`, `qcom-ngd-ctrl.c` | ~330 | **sendable — re-triaged 2026-09-03 into eight planned series**, see [Planned series — the power re-triage](#planned-series--the-power-re-triage-2026-09-03). ☠️ The earlier "not upstream-shaped" verdict lumped these with the experiments below |
+| `qcom_smd-regulator.c` `set_suspend_*` ops | 61 | held: mechanism proven on one rail, no power win measured, board opt-in reverted (see the plan) |
+| `clk-smd-rpm.c` XO experiment, `smd-rpm.c` + `qcom_smd_rpm.h` tracepoint, `icc-rpm.{c,h}` + `msm8953.c` sleep-set knobs, `qcom_smd-regulator.c` `both_sets` knob, the FP3 sleep-set DTS + its revert | ~320 | instrumentation and experiment knobs; stay on `wip/7.1.3/power` |
 
 Distillation check, 2026-09-03: on the two paths this series carries, `wip` and
 the series produce identical diffs (`cpuidle-psci.c` 10+/1-, `pm_domain.h` 1+/1-).
@@ -347,9 +360,9 @@ Left out of this series (2026-09-03, measured against `wip/7.1.3/camera`):
 | `drivers/clk/qcom/gcc-msm8953.c` | 3+/3- | the **gcc-msm8953-csiphy** series — a different tree (clk) |
 | `pmi632.dtsi` + `sdm632-fairphone-fp3.dts` | 113 | the **fp3-dts** series, sent last |
 | `lc898217.c`, `s5k4h7.c` and their bindings (front camera + its actuator) | 596 | no series yet — front-camera bring-up, not claimed to work |
-| the CAMSS changes (`camss-vfe-4-1.c`, `camss-vfe-gen1.{c,h}`, `camss-vfe.c`, `camss-video.{c,h}`) | 228 | no series yet |
-| the flash-LED changes (`leds-qcom-flash.c`, its Kconfig and binding) | 24 | no series yet |
-| ☠️ the **`ak7375.c` runtime-PM rework** — hold a PM reference only while the lens is driven away from rest, measured at 0.30 W on an FP3 with nothing taking pictures | 91+/14- on wip vs 14+/0- carried | **has no series.** It is a generic driver power improvement with a measurement behind it, i.e. exactly the kind of change that belongs upstream — see To do |
+| the CAMSS changes (`camss-vfe-4-1.c`, `camss-vfe-gen1.{c,h}`, `camss-vfe.c`, `camss-video.{c,h}`) | 228 | planned series **camss-rdi-stride** (2026-09-03 re-triage) |
+| the flash-LED changes (`leds-qcom-flash.c`, its Kconfig and binding) | 24 | planned series **qcom-flash-pmi632** (2026-09-03 re-triage) |
+| ☠️ the **`ak7375.c` runtime-PM rework** — hold a PM reference only while the lens is driven away from rest, measured at 0.30 W on an FP3 with nothing taking pictures | 91+/14- on wip vs 14+/0- carried | **has no series.** It is a generic driver power improvement with a measurement behind it, i.e. exactly the kind of change that belongs upstream — planned series **ak7375-pm** (2026-09-03 re-triage) |
 | `lens-focus: true` in `sony,imx363.yaml` | 2 | on `wip` and not on the series; the binding should describe it once the actuator is wired — see To do |
 
 Test: not yet run from a submission base. Checkers: –.
@@ -521,6 +534,41 @@ To do:
 Done: –
 
 ---
+
+## Planned series — the power re-triage (2026-09-03)
+
+Queue task #141, review §4. Every item below patches a file that exists in
+`torvalds/master` (checked at 940de590b839, 2026-09-02: none of the additions is
+there — no MPM node, `rpm-stats` or `domain-idle-states` in `msm8953.dtsi`, no
+`wakeirq_map` in `pinctrl-msm8953.c`, no wakeup handling in `qcom_smd.c`, no
+`disable_stream` in `qcom-ngd-ctrl.c`, no PMI632 in `leds-qcom-flash.c`, no
+`proc-awake` in `qcom,smsm.yaml`), has a measurement on the FP3 behind it, and
+depends on none of D-1/D-2/D-3. Maintainers from `get_maintainer.pl -f` on a
+v7.3-rc1 tree, 2026-09-03. **Nothing is cut yet** — each row is a `b4 prep`
+still to be made; when it is, it gets a section of its own above and this table
+shrinks.
+
+| series | tree, maintainers | `wip` commits → patches | shape decisions |
+|---|---|---|---|
+| **qcom-mpm-wakeup-timer** | irqchip — Thomas Gleixner, Radu Rendec; linux-kernel | `97951baf7a85` + `a8cb2c420b3d` + `ff064e2b608c` → **1** | ☠️ the third `wip` step deletes lines the first one added (`MPM_MAX_SLEEP_NS`, the `ktime_get_mono_fast_ns()` read); upstream never had a wakeup timer in this driver, so the logical change is one patch in its final shape. Not a `Fixes:` — an enablement (the RPM was never told when to wake the AP) |
+| **pinctrl-msm8953-mpm** | pinctrl — Linus Walleij, Bjorn Andersson, Bartosz Golaszewski; linux-gpio, linux-arm-msm | `aa3fc7ec6a42` → 1 | 14-line `wakeirq_map`, same shape as the msm8909/msm8996 maps already in tree; cite the downstream pin→MPM table as the *finding*, not as copied code |
+| **qcom-smd-wake** | rpmsg — Bjorn Andersson, Mathieu Poirier; linux-remoteproc, linux-arm-msm | `8c9b25687119` + `d0e738c107e3` → **1** | the double-teardown crash is only reachable once the edge is wakeup-capable, so a series with only the first patch applied crashes on remoteproc stop — fold it in (bisect rule). Keep the oops in the message, timestamps trimmed. Measurement: incoming call on QRTR port 39 wakes s2idle (2026-08-30) |
+| **smsm-proc-awake** | qcom SoC — Bjorn Andersson, Konrad Dybcio; + DT maintainers for the binding | `407669069a90` → **2** (binding first, `Documentation/devicetree/bindings/soc/qcom/qcom,smsm.yaml`, then the driver) | ☠️ no binding exists — write it. Maintainer question to put in the cover, not to guess: is the bit a DT property (`qcom,proc-awake-bit`, current shape) or per-SoC match data? Downstream drives bit 12 on msm8953; whether other SoCs share it decides the answer. The dtsi consumer travels in **msm8953-dtsi-idle** |
+| **msm8953-dtsi-idle** | qcom SoC DT — Bjorn Andersson, Konrad Dybcio; devicetree, linux-arm-msm | `3e9b16386eb5`, `a58956fb30c1`, `6052a236ba6b`, `85d0b48961f6`, `14210263b650`, `c2e90281cdfe`, `c12afd4ee241`, `bca898cde190`; **`0314fee3ce35` held** → ≤ 9 | sent **after** the three driver series (the MPM node and `wakeup-parent` are inert without the pinctrl map; the SMSM bit needs its binding). ☠️ **`0314fee3ce35` (system-pc affinity, psci-suspend-param 0x42000353) is held**: Bert Karwatzki reports it breaks hx83112b touch after resume on his FP3 (mail 2026-09-03, queue #142); until reproduced or disproved it does not go out. `rpm-master-stats` (`qcom,rpm-master-stats.yaml`) and `rpm-stats` (`qcom-stats.yaml`) bindings exist upstream — check the compatible strings at cut time, do not assume |
+| **wcd-digital-mclk** | ASoC — Srinivas Kandagatla, Mark Brown; linux-sound | `4b09b2158dd8` → 1 | 29 lines; the measurement is the mclk held for the life of the boot on a codec with no stream. Cut on `sound/for-next` like `wcd9335-audio`, but **separate series** — different driver, standalone |
+| **ngd-disable-stream** | slimbus — Srinivas Kandagatla; linux-arm-msm, linux-sound | `dbb414e0be28` + `c44534943e82` → **1** | squash the alignment fixup. The ADSP keeps the channel allocated without it — say what was observed (the failure on the second stream), name the capture |
+| **camss-rdi-stride** | media — Bryan O'Donoghue, Vladimir Zapolskiy, Loic Poulain; linux-media, linux-arm-msm | `74ea615f447f` → 1 | 228 lines on gen1 VFE; the kernel half is done (ioctl-verified, 2026-08-08), the libcamera half never left libcamera (`planesCount`=0) — say so in the cover so the reviewer knows what exercises it |
+| **qcom-flash-pmi632** | LEDs — Lee Jones, Pavel Machek; linux-leds; + DT maintainers | `0dbb575d8ddc`, `a4509f593bdf`, `dc6f36f0a4fe` → **2** | binding first, then driver with the Kconfig wording folded in (the Kconfig line is not a logical change of its own) |
+| **ak7375-pm** | media — Sakari Ailus; linux-media | `f6e4c109fb32`, `0b79b9bb25f0`, `de1b32d12750`, `dfa5c7851d6c`, `6da2d3a1a2eb`, `4880a86550ff` → 3–4 | AK7374 id support stands alone. The PM rework (`power for a position`, `last consumer parks`, `no power-up on system resume`) is one logical change in its final shape — measured 0.30 W idle (`98-camera-af-rail`, r53 FAIL / r56 PASS). `retry the first transfer` and `supplies off when resume fails` are candidate standalone fixes: take `Fixes:` from blame on `master` (last upstream change 2023-12-01, df15385e6793) only if the fault predates the rework |
+| *(held)* **qcom-smd-regulator-suspend** | regulator — Mark Brown, Liam Girdwood; linux-arm-msm | `5fe5dba65260` (without `117d3d69d58b`) | the ops are upstream-shaped and the mechanism is proven (one-rail probe, `sleep smpa/3 swen=1`, 2026-08-24), but the all-rails board opt-in was reverted (`53e51066c600`) and *on-in-suspend* carries no power benefit — so today it is an op with no in-tree user and no measured win. Held until a rail is measured off-in-suspend; then the ops and that board change go together |
+
+Stays on `wip/7.1.3/power`, deliberately: `apcs-msm8953.c` (file not upstream),
+the `clk-smd-rpm.c` XO experiment, the `smd-rpm` tracepoint, the `icc-rpm`
+`sleep_init` / suspend-zero knobs, the regulator `both_sets` knob, the FP3
+sleep-set DTS and its revert. Each is an instrument or a disproven direction.
+
+Order of sending, forced by content: the driver series in any order, then
+**msm8953-dtsi-idle**, then `fp3-dts`.
 
 ## Dependencies (foreign series)
 
