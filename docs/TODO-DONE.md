@@ -2449,3 +2449,19 @@ only here among the pages — it lives where it is enforced, in `night-run.sh`.
 - [x] **123.** ★★★ A JELENTES-OLDAL (docs/power/README.md) FRISSITESE a 09-02-i eredmenyekre: a fejlec 08-28-i allapotot hirdetett (IMS, 40,3 mA, 14/14, CSFB egyike sem volt benne). Plusz ket korrekcio: a 'nekunk nincs coulomb-szamlalonk' driver-korlat volt, nem hardveres; es az 'arithmetic' blokk meg mindig aktualis allapotkent volt cimkezve, a duty-modell figyelmeztetese nelkul
       - tanú: `commit:df1a619`
       - MEGVAN (df1a619). A 09-02-i szakasz a 'Where the numbers stand' ELEJERE kerult (mechanizmus 8,3-8,7 s / 30 ms / nincs ESM-ok; harom duty-letra; az AP-alvas tablaja; az akkumulator-aram tablaja 40,3 +- 1,3-mal), es a harom kapu (boot-kozti szoras, kalibracios offset, CSFB) A SZAMMAL EGYUTT utazik. A 08-28-i blokk lefokozva 'igy lett lokalizalva a front'-ra. Ket korrekcio: (a) 'nekunk nincs coulomb-szamlalonk' DRIVER-korlat volt, nem hardveres - a szamlalo a PMIC-ben van, alvason at szamol (3,39/s vs 3,35/s); a 'ez a legertekesebb hatralevo muszer-munka' mondat kicserelve arra, amiva valt; (b) az 'arithmetic' blokk mar nem 'current state', es megkapta a duty-nem-elegseges figyelmeztetest (+41 mA reziduál eutran-1-en, +6 eutran-20-on). A nyitott-kerdes tabla elso sora MEGVALASZOLVA; helyette a ket replikacio-fuggo hezag + CSFB + a ket imsd-kapu + a mintavetelezetlen 8 oras sarok. ☠️ A 113. 'Fuggosegek szakasza' MAR KESZ VOLT (2588374) - a 112. 'I DO MEANWHILE' sora elavult, es majdnem masodszor irtam meg ugyanazt; egy elavult terv-jegyzet ugyanugy hamis instrukcio, mint egy elavult banner.
+
+---
+
+# Closed from the queue
+
+Tasks closed out of the `FP3-QUEUE` section of [`TODO.md`](TODO.md),
+newest last, moved by `queue.cjs done`. The item number is the original
+so that `after:` and `continues:` references still resolve.
+
+- [x] **127.** Turn the hooks back on  — closed 2026-09-03 09:31
+      why: ☠️ ALL seven hook registrations were removed on 2026-09-03 09:12 at the user's request. Restore with `node plugins/fp3/hooks/hooks-toggle.cjs on` (edits ONLY the hooks key; the old `cp settings.json.hooks-all-on-… settings.json` recipe would also have removed the kernel-review plugin installed since). Three consequences while they are off: measurement-watch no longer stops an unattended measurement being started with no watcher; precompact-status no longer writes a state snapshot before a compaction; risky-target no longer warns before a command touches boot config. ☠️ measurement-watch was ALSO dead while 'on' until 2026-09-03 (a syntax slip crashed it on exactly its positive path) — fixed
+
+- [x] **128.** Cut upstreaming/wcd9335-audio from wip/7.1.3/audio with b4 prep on sound/for-next; tag submit/7.1.3/audio archive/submit-7.1.3-audio-final  — closed 2026-09-03 09:41
+      lane: upstreaming
+      why: first series branch of the new namespace
+      STATUS.md row wcd9335-audio moves preparing → rebased when the trial rebase records its base-commit

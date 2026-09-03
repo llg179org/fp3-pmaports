@@ -106,8 +106,6 @@ repeated.
 > 15 minutes and then it is anybody's; a parked task is worse than a cold one.
 
 <!-- FP3-QUEUE:BEGIN -->
-- [ ] 127. Turn the hooks back on
-      why: ☠️ ALL seven hook registrations were removed on 2026-09-03 09:12 at the user's request. Restore with `node plugins/fp3/hooks/hooks-toggle.cjs on` (edits ONLY the hooks key; the old `cp settings.json.hooks-all-on-… settings.json` recipe would also have removed the kernel-review plugin installed since). Three consequences while they are off: measurement-watch no longer stops an unattended measurement being started with no watcher; precompact-status no longer writes a state snapshot before a compaction; risky-target no longer warns before a command touches boot config. ☠️ measurement-watch was ALSO dead while 'on' until 2026-09-03 (a syntax slip crashed it on exactly its positive path) — fixed
 - [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
@@ -179,10 +177,7 @@ repeated.
 - [~] 53. The modem's own story (modem-story infrastructure)
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
-- [ ] 128. Cut upstreaming/wcd9335-audio from wip/7.1.3/audio with b4 prep on sound/for-next; tag submit/7.1.3/audio archive/submit-7.1.3-audio-final
-      lane: upstreaming
-      why: first series branch of the new namespace
-      STATUS.md row wcd9335-audio moves preparing → rebased when the trial rebase records its base-commit
+
 - [ ] 129. Archive the other six submit/7.1.3/* branches and cut their upstreaming/<series> successors (i2c-qup-pinctrl, psci-cpuidle-fixes, smb5-charger, imx363-camera, qmi-encdec-fix)
       lane: upstreaming
       after: 128

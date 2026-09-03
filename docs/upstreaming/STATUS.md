@@ -15,7 +15,7 @@ with a link.
 
 | series | category | tree | patches | state | last round | ball with | next from us | updated |
 |---|---|---|---|---|---|---|---|---|
-| wcd9335-audio | audio | ASoC `sound/for-next` | 18 on `submit/7.1.3/audio` (measured via API; README's earlier count was 13 — reconcile when the series branch is cut) | preparing | – | us | cut `upstreaming/wcd9335-audio` from wip, trial-rebase on `sound/for-next` | 2026-09-03 |
+| wcd9335-audio | audio | ASoC `sound/for-next` | 15 on `upstreaming/wcd9335-audio` | rebased | – | us | checker gauntlet per patch; functional run from the submission base; then the cover letter | 2026-09-03 |
 | i2c-qup-pinctrl | audio | i2c | 1 (`submit/7.1.3/i2c`, based off a different base than `7.1.3/main` — API compare overflows) | preparing | – | us | cut the series branch; standalone bugfix, candidate for `Fixes:` + `Cc: stable` | 2026-09-03 |
 | psci-cpuidle-fixes | power | cpuidle / pmdomain | 2 | preparing | – | us | cut the series branch; confirm each patch is upstream-shaped (no `apcs-msm8953.c`) | 2026-09-03 |
 | smb5-charger | charger | power-supply `for-next` | 9 | preparing | – | us | cut the series branch; binding + driver + defconfig, DTS excluded | 2026-09-03 |
@@ -24,7 +24,9 @@ with a link.
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
 
-Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable.
+Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. `submit/7.1.3/audio` is tagged and superseded but **not yet deleted** — deleting it is a separate call.
+
+☠️ A cut series does not carry everything its category does. Each section's **Left out** table names what stayed behind and where it goes; the sum of the `upstreaming/*` series plus those tables is what reproduces the category.
 
 ---
 
@@ -33,9 +35,27 @@ Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<c
 ```
 Category:    audio
 Tree:        ASoC, sound/for-next — Mark Brown, Srinivas Kandagatla; CC alsa-devel, devicetree (binding), linux-arm-msm
-Source:      upstreaming/wcd9335-audio (to be cut) — content today: submit/7.1.3/audio
-Depends:     D-1 (for the machine-driver patch and the board DTS only; 10 of the driver/binding patches have no fork dependency — README "Dependency status", 2026-08-30)
+Source:      upstreaming/wcd9335-audio — b4 prep branch, cut 2026-09-03 from the
+             content of wip/7.1.3/audio; change-id 20260903-upstreaming-wcd9335-audio-5909b6e35e3a
+             base-commit 27a50351cbc82e9f0811df417c5e7d2a72f60ef5 (sound/for-next, 2026-09-02)
+             legacy: submit/7.1.3/audio, tagged archive/submit-7.1.3-audio-final
+             sent rounds: – (none yet)
+Depends:     – (nothing this series carries needs D-1; the two patches that did were left out, below)
 ```
+
+Left out of this series, deliberately (2026-09-03, measured):
+
+| left out | lines | where it goes instead |
+|---|---|---|
+| `sound/soc/qcom/apq8016_sbc.c` — the SLIMbus-backend and channel-map patches | 140 | blocked on **D-1**: MSM8953 support in `apq8016_sbc.c` is not upstream, so the patch conflicts on `sound/for-next` (cherry-pick, 2026-09-03: `U sound/soc/qcom/apq8016_sbc.c`). Add once D-1 lands, or once the open decision below is made |
+| `arch/arm64/boot/dts/qcom/sdm632-fairphone-fp3.dts` | 252 | the **fp3-dts** series — a board DTS is always its own series, sent last |
+| `drivers/i2c/busses/i2c-qup.c` | 13 | the **i2c-qup-pinctrl** series — different tree |
+| `sound/soc/codecs/snd-soc-aw8898.c` | 48 | **unsendable**: the driver does not exist upstream (`torvalds/linux` contents API → 404, 2026-09-03) |
+
+Distillation check, 2026-09-03: on the twelve paths the series does carry, the
+line set of `fork/7.1.3/main..wip/7.1.3/audio` and of
+`27a50351cbc8..upstreaming/wcd9335-audio` are **identical** — 1220 lines each,
+`comm -3` empty. Per-file `--stat` totals match one-for-one.
 
 Test:
 ```
@@ -51,14 +71,18 @@ Rounds:
 | – | | | | | |
 
 To do:
-- [ ] cut `upstreaming/wcd9335-audio` with `b4 prep`, from `wip/7.1.3/audio`, on `sound/for-next`; tag the legacy branch `archive/submit-7.1.3-audio-final`
-- [ ] trial rebase onto `sound/for-next`, record the `base-commit:`
+- [ ] ☠️ the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 contains `ASoC: qcom: q6afe: remove "port already open" error`** — read that patch before sending ours, so this is not a competing submission of the same fix
 - [ ] the machine-driver patch: decide between waiting for D-1 and posting the generic `q6afe` clock-set change into Otto's/Adam's thread (README "The chain is shorter than it looks")
 - [ ] measure the AFE `api_version` this ADSP reports (the one number the q6afe redesign turns on)
 - [ ] checker gauntlet per patch; functional run from the submission base with the debug layer on top; fill the Test block
-- [ ] cover letter with the `generated-content.rst` disclosure
+- [ ] cover letter with the `generated-content.rst` disclosure — still b4's `EDITME` placeholder
 
 Done:
+- 2026-09-03  `upstreaming/wcd9335-audio` cut with `b4 prep -e` on `sound/for-next`
+              27a50351cbc8 (2026-09-02); 15 of the 18 legacy commits, all 15
+              cherry-picking clean onto that tip with no conflict. Legacy branch
+              tagged `archive/submit-7.1.3-audio-final`; branch and tag pushed to
+              `fork`
 - 2026-08-29  the argument for the series measured against mainline `master` (no jack support in `wcd9335.c`, six in-tree WCD9335 boards) — README
 - 2026-08-30  dependency status measured file by file against `v7.1`; the q6afe finding re-checked on `sound/for-next` — README
 
