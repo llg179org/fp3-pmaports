@@ -183,9 +183,7 @@ repeated.
       after: 85
       why: STATUS.md D-1/D-2: decides the condition in the generic q6afe patch
       a device read, not an argument
-- [ ] 131. Track D-1 (patchwork 875540) and D-2 (Otto's q6afe series) with the kernel-review plugin: /track the cover message-ids, record them on STATUS.md
-      lane: upstreaming
-      why: the dependency list has patchwork ids but no lore message-ids yet
+
 - [@] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
       when: whenever convenient, one glance
       they-do: Settings -> Network -> SIM cards (or the SIM status screen per slot): the operator NAME for slot 1 and slot 2. Two words. ☠️ Read-only, we do not otherwise touch the daily phone

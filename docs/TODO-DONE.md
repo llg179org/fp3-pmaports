@@ -2471,3 +2471,7 @@ so that `after:` and `continues:` references still resolve.
       after: 128
       why: STATUS.md names the target series per legacy branch
       every archive tag before any delete
+
+- [x] **131.** Track D-1 (patchwork 875540) and D-2 (Otto's q6afe series) with the kernel-review plugin: /track the cover message-ids, record them on STATUS.md  — closed 2026-09-03 10:03
+      lane: upstreaming
+      why: the dependency list has patchwork ids but no lore message-ids yet

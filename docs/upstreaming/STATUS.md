@@ -85,7 +85,7 @@ Rounds:
 | – | | | | | |
 
 To do:
-- [ ] ☠️ the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 contains `ASoC: qcom: q6afe: remove "port already open" error`** — read that patch before sending ours, so this is not a competing submission of the same fix
+- [ ] ☠️ the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 v2 4/4 is the same fix** — Otto Pflüger's `ASoC: qcom: q6afe: remove "port already open" error`, message-id `20231029165716.69878-5-otto.pflueger@abscue.de`, posted 2023-10-29 and still `new`. Read it before sending ours; a reply on that thread is more likely right than a competing series
 - [ ] the machine-driver patch: decide between waiting for D-1 and posting the generic `q6afe` clock-set change into Otto's/Adam's thread (README "The chain is shorter than it looks")
 - [ ] measure the AFE `api_version` this ADSP reports (the one number the q6afe redesign turns on)
 - [ ] checker gauntlet per patch; functional run from the submission base with the debug layer on top; fill the Test block
@@ -437,7 +437,37 @@ Done: –
 
 | id | what | author, date | link | state | what it needs from us | updated |
 |---|---|---|---|---|---|---|
-| D-1 | *MSM8953/MSM8976 ASoC support* v3 — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski (code by Vladimir Lypak), 2024-07-31 | patchwork series 875540 | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
-| D-2 | *check ADSP version when setting clocks* (q6afe) | Otto Pflüger, 2023-10-29 | lore (message-id to be recorded when tracked) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
+| D-1 | *MSM8953/MSM8976 ASoC support* v3, 8 patches — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski &lt;a39.skl@gmail.com&gt; (code by Vladimir Lypak), 2024-07-31 | patchwork series [875540](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=875540); cover message-id `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` (patchwork API, 2026-09-03) | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
+| D-2 | *ASoC: qcom: check ADSP version when setting clocks* v2, 4 patches | Otto Pflüger &lt;otto.pflueger@abscue.de&gt;, 2023-10-29 (v1 2023-10-14, superseded) | v2 cover message-id `20231029165716.69878-1-otto.pflueger@abscue.de` (patchwork API, 2026-09-03). ☠️ **patchwork has no *series* object for v2** — only the individual patches, so the only series ids are v1's: [793237](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=793237) (linux-arm-msm) and 793291 (alsa-devel) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
 
-Tracked with `jlelli/claude-kernel-reviews` (`/track <cover message-id>`) in the kernel checkout's `.claude/tracked-series/` once the cover message-ids are fetched; until then the patchwork series id is the reference.
+**D-2, patch by patch** (message-ids from the patchwork API, 2026-09-03):
+
+| # | subject | state | message-id |
+|---|---|---|---|
+| v2 0/4 | cover: *ASoC: qcom: check ADSP version when setting clocks* | `new` | `20231029165716.69878-1-otto.pflueger@abscue.de` |
+| v2 1/4 | `ASoC: qcom: q6core: expose ADSP core firmware version` | `new` | `20231029165716.69878-2-otto.pflueger@abscue.de` |
+| v2 2/4 | not retrieved — the patchwork search did not return it; by position its id is `…69878-3-…`, but that is **inference, not a fetched fact**, so it is not recorded as one | – | – |
+| v2 3/4 | `ASoC: qcom: q6afe-dai: check ADSP version when setting sysclk` | `new` | `20231029165716.69878-4-otto.pflueger@abscue.de` |
+| v2 4/4 | `ASoC: qcom: q6afe: remove "port already open" error` | `new` | `20231029165716.69878-5-otto.pflueger@abscue.de` |
+
+☠️ **v2 4/4 is the same fix `wcd9335-audio` carries.** Ours is *ASoC: q6afe: treat
+ADSP_EALREADY as success when starting a port*; Otto's is *remove "port already
+open" error*, posted 2023-10-29 and still `new`. Sending ours without answering
+his is a competing submission of somebody else's patch — read it first, and the
+right move is probably a reply on that thread, not a fresh series.
+
+☠️ **The lore link is not recorded, because it could not be verified.**
+`https://lore.kernel.org/all/<msgid>/` answers **403 to automated fetches** — and
+the negative control settles that it proves nothing either way: a deliberately
+bogus id (`BOGUS-control@example.invalid`) gets the **same 403**. Patchwork does
+have a working control (series 875540 → 200, series 99999999 → 404), which is why
+every id above is cited to the patchwork API and not to an archive URL. The
+`lkml.iu.edu` hypermail mirror answers 200 at its root and is the fallback the
+skill names; resolving these two threads on it is still to do.
+
+**The kernel-review plugin is not installed on this machine.** The skill's gate
+item 3 (`ls ~/.claude/plugins | grep -i kernel-review`) reports MISSING, verified
+2026-09-03, so `/track` could not be run and `.claude/tracked-series/` does not
+exist. Installing it is one command a person has to type:
+`/plugin marketplace add jlelli/claude-kernel-reviews`. Until then this table is
+the tracking, refreshed by re-running the patchwork queries.
