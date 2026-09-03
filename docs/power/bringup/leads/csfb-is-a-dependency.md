@@ -1,48 +1,48 @@
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
-# ☠️ A takarékos konfiguráció egy hálózati szolgáltatáson áll: CSFB
+# ☠️ The cheap configuration rests on a network service: CSFB
 
-**CS** = *Circuit Switched*, a klasszikus 2G/3G-s beszédhívás-út. **CSFB** =
-*Circuit Switched FallBack*: a UE LTE-n táborozik, de amikor CS-hívás jön, a
-hálózat a hívás idejére átküldi 2G/3G-re.
+**CS** = *Circuit Switched*, the classic 2G/3G voice path. **CSFB** = *Circuit
+Switched FallBack*: the UE camps on LTE, but when a CS call arrives the network
+moves it to 2G/3G for the duration of the call.
 
-## A mérés
+## The measurement
 
-A `fp3-ringlog` a hívás **után** olvassa a sávot, és 2026-09-02-án három egymást
-követő hívásnál `gsm-900-extended`-et rögzített, miközben a telefon LTE-n
-táborozott (`mmcli … access tech: lte`). A modem `--nas-get-system-info`-ja
-`Domain: 'cs-ps'`-t ad: az LTE-regisztráció **tartalmazza a CS-tartományt**, azaz
-az SGs-kapcsolat él a hálózat (vodafone HU, 21670) és a MSC között.
+`fp3-ringlog` reads the band **after** a call, and on 2026-09-02 it recorded
+`gsm-900-extended` on three consecutive calls while the phone was camped on LTE
+(`mmcli … access tech: lte`). The modem's `--nas-get-system-info` reports
+`Domain: 'cs-ps'`: the LTE registration **includes the CS domain**, i.e. the SGs
+association between the network (vodafone HU, 21670) and the MSC is live.
 
-Vagyis a hívások nem „valahogy" jönnek át — **méréssel igazoltan CSFB-vel**.
+So the calls do not arrive "somehow" — **they arrive by CSFB, measured.**
 
-## ☠️ Amit ez a jelentésről mond
+## ☠️ What this says about the report
 
-A `≤50 mA` konfiguráció ára az, hogy az IMS-t lekapcsoljuk, és a hívás CS-en jön.
-Ez **nem a telefon tulajdonsága, hanem a hálózaté**: ha az üzemeltető
-lekapcsolja a 2G-t (a 3G-t Magyarországon már lekapcsolták), akkor ezen a
-konfiguráción a bejövő hívás nem lassabb lesz, hanem **nem lesz**.
+The price of the `≤50 mA` configuration is that IMS is switched off and the call
+comes in over CS. That is **not a property of the phone but of the network**: if
+the operator switches off 2G (3G is already gone in Hungary), then on this
+configuration an incoming call is not slower, it is **absent**.
 
-A jelentés eddig úgy fogalmazott, hogy „a hívás-út működik IMS=off mellett" — ez
-igaz, de hiányzott belőle a **feltétel**. A helyes alak:
+The report used to say "the call path works with IMS off" — true, but it was
+missing the **condition**. The correct form:
 
-> A hívás-út működik IMS=off mellett, **amíg a hálózat CS-tartománya elérhető**
-> (mérve: SGs él, a hívás gsm-900-ra esik vissza). Ez a konfiguráció így egy
-> hálózati szolgáltatásra támaszkodik, aminek a kivezetése be van jelentve a
-> szektorban — nem a mi eszközünkön múlik, és nem a mi ütemünk szerint.
+> The call path works with IMS off, **as long as the network's CS domain is
+> reachable** (measured: SGs is live, the call falls back to gsm-900). This
+> configuration therefore leans on a network service whose retirement has been
+> announced across the sector — it is not on our device and not on our schedule.
 
-## Amit ez a TERVRŐL mond
+## What this says about the PLAN
 
-Az `imsd`-út — az AP-oldali IMS-daemon megépítése, ami VoLTE-t adna — eddig
-„külön projekt, külön döntéssel, nem ennek a szálnak a farka" címkével feküdt.
-Ez a besorolás **túl alacsony**: nem kíváncsiság, hanem a **tartalék terv**.
-Ha a 2G elmegy, a választás nem „IMS ki vagy be", hanem „VoLTE vagy semmi", és
-akkor a 8,4 s-os PDN-hurok kikapcsolása helyett azt kell megérteni, **miért**
-bontja a modem a bearert — vagyis pontosan a 64. tétel, amit most a néma
-DIAG-folyam blokkol.
+The `imsd` path — building the AP-side IMS daemon, which would give VoLTE — was
+filed as "a separate project, a separate decision, not the tail of this thread".
+That grading is **too low**: it is not a curiosity, it is the **contingency
+plan**. If 2G goes, the choice is not "IMS on or off" but "VoLTE or nothing", and
+then the question is not how to switch off the 8.4 s PDN loop but **why** the
+modem tears the bearer down — which is exactly the item currently blocked by the
+silent DIAG stream.
 
-## Amit NEM állítunk
+## What we are NOT claiming
 
-Nincs mérésünk arról, hogy ez a hálózat mikor kapcsolja le a 2G-t, és a
-szolgáltatói bejelentések nem tartoznak ehhez a repóhoz. Amit tudunk: **ma
-működik**, és a konfigurációnk függ tőle.
+We have no measurement of when this network will switch off 2G, and operator
+announcements do not belong in this repository. What we know: **it works today**,
+and our configuration depends on it.

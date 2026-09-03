@@ -1,25 +1,24 @@
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
-# ☠️ A második főpróba (03:52–05:31) és a hiba, amit kihozott: az OCV **kitalált 0 mV driftet** írt volna
+# ☠️ The second rehearsal (03:52–05:31) and the defect it exposed: the OCV would have written an **invented 0 mV drift**
 
-Ez a futás a 121. tétel főpróbája **után** ment, a `0b311ba` javításokkal, és
-`=== NIGHT COMPLETE ===`-tel zárt. Miniatűr paraméterekkel (3 perces lábak,
-`alarm=10s`, `RESTMIN=5`) — tehát **a lábak árama érvénytelen**, és a leg 3-at
-egy ssh-belépés is megzavarta (az audit ezt helyesen ki is írta). Az értéke nem
-a mérésben van, hanem abban, amit a szerkezetéről elárult.
+This run went **after** item 121's rehearsal, with the `0b311ba` fixes, and
+closed with `=== NIGHT COMPLETE ===`. On miniature parameters (3-minute legs,
+`alarm=10s`, `RESTMIN=5`) — so **the legs' current is invalid**, and leg 3 was
+disturbed by an ssh login as well (the audit said so correctly). Its value is not
+in the measurement but in what it revealed about the structure.
 
-## A lelet: a tag-et megsemmisíti a saját becslője
+## The finding: the tag is destroyed by its own estimator
 
-Az `ocv()` a meredekséget így olvassa be:
+`ocv()` reads the slope like this:
 
 ```sh
 set -- $(grep "^$1 " "$D/ocv.txt" | tail -6 | awk '…')
 slope=${1:-}; dropped=${2:-0}
 ```
 
-A `set --` **felülírja a pozicionális paramétereket**, tehát attól a sortól
-kezdve `$1` már **a meredekség**, nem a `start`/`end` címke. Az utána következő
-sorok viszont még `$1`-et használnak:
+`set --` **overwrites the positional parameters**, so from that line on `$1` is
+**the slope**, not the `start`/`end` tag. The lines that follow still use `$1`:
 
 ```sh
 first=$(grep "^$1 " "$D/ocv.txt" | head -1 | awk '{print $3}')
@@ -27,52 +26,54 @@ last=$(grep  "^$1 " "$D/ocv.txt" | tail -1 | awk '{print $3}')
 s "OCV $1 done: ${last}uV, drift over the last 80 s: $(( (last - first) / 1000 )) mV"
 ```
 
-**Az eszközön mérve, a valódi `ocv.txt` ellen, még a mérés-éjszaka előtt:**
+**Measured on the device, against the real `ocv.txt`, before the measurement
+night:**
 
 ```
 FIXED  -> OCV end done: 4154137uV, drift: -83 mV
 BROKEN -> OCV 0.10 done: uV, drift: 0 mV
 ```
 
-`grep "^0.10 "` semmit nem talál, tehát `first` és `last` **üres**, a busybox
-aritmetika pedig az üres operandust **0**-nak veszi (külön ellenőrizve;
-`set -u` nem üt be, mert a változók be vannak állítva, csak üresek). A futás
-tehát **nem hasal el** — ez a rossz hír.
+`grep "^0.10 "` matches nothing, so `first` and `last` are **empty**, and busybox
+arithmetic reads an empty operand as **0** (checked separately; `set -u` does not
+fire, because the variables are set and merely empty). So the run does **not
+crash** — which is the bad news.
 
-☠️ **Egy kitalált `0 mV drift` tökéletesen pihent pakknak olvasódik.** Ez a
-legrosszabb alak, amit egy elromlott műszer felvehet: pontosan akkor jelenti a
-lehető legjobb eredményt, amikor **semmit nem mért**. A nyers `ocv.txt` túléli,
-tehát a végpontok offline visszanyerhetők — de a futás saját verdiktje nem, és
-az éjszakai lánc éppen attól a verdikttől függ, hogy az OCV-végpontokat
-elfogadja-e.
+☠️ **An invented `0 mV drift` reads as a perfectly rested pack.** That is the
+worst shape a broken instrument can take: it reports the best possible result
+precisely when it **measured nothing**. The raw `ocv.txt` survives, so the
+endpoints are recoverable offline — but the run's own verdict is not, and the
+night chain depends on exactly that verdict to accept or reject the OCV
+endpoints.
 
-**Javítás:** `tag=$1` az `ocv()` elején, és minden `set --` utáni hivatkozás
-`$tag`-re. A `night-run.sh`-ban javítva, `busybox sh -n`-nel szintaxis-ellenőrizve
-és az eszközre telepítve (md5 egyezik a repóéval).
+**Fix:** `tag=$1` at the top of `ocv()`, and every reference after `set --` moved
+to `$tag`. Fixed in `night-run.sh`, syntax-checked with `busybox sh -n`, and
+installed on the device (md5 matches the repository).
 
-## Amit ez a MÓDSZERRŐL mond
+## What this says about METHOD
 
-A hibát nem kód-olvasás találta meg, hanem az, hogy a **főpróba naplóját
-elolvastam, mielőtt az éles futás elindult volna**. A napló nem hibát jelzett:
-`OCV end slope over the last 5 min:  mV/min ☠️ NOT RESTED` — egy üres hely, ahol
-szám tartozna, és egy elmarasztaló verdikt, ami *az üres helyre* vonatkozott. A
-blank meredekség oka külön hiba volt (a here-doc, `0b311ba`), és a javítása után
-maradt ez a második, amit a blank addig eltakart.
+The defect was not found by reading code. It was found by **reading the
+rehearsal's log before the live run started**. The log did not report an error:
+`OCV end slope over the last 5 min:  mV/min ☠️ NOT RESTED` — a blank where a
+number belongs, and a condemning verdict that applied *to the blank*. The cause
+of the blank slope was a separate defect (the here-doc, `0b311ba`), and once that
+was fixed this second one was left behind, which the blank had been hiding.
 
-☠️ **Ugyanaz a család, harmadszor ebben a szálban:** a műszer élettartama, a
-műszer közege, és most a műszer *címkéje*. Mindhárom úgy bukott meg, hogy a
-kimenet elfogadhatónak látszott.
+☠️ **The same family, for the third time in this thread:** the instrument's
+lifetime, the instrument's medium, and now the instrument's *label*. All three
+failed while producing output that looked acceptable.
 
-## Az éjszaka előtti takarítás
+## The clean-up before the night
 
-A `/var/log/fp3/night` **minden fájlja hozzáfűzéssel** íródik (`>>`) — `ocv.txt`,
-`run.log`, `samples-B.txt`, `mpss-B.txt` —, és az `ocv.txt`-t a drift-számítás
-`head -1` / `tail -1`-gyel olvassa vissza. Ha az éles futás ugyanabban a
-könyvtárban indul, **a főpróba 03:56-os nyitó OCV-je lenne az éjszaka
-kezdőpontja**, és a lábak mintái elé a 3 perces főpróba mintái kerülnének.
+Every file under `/var/log/fp3/night` is written by **append** (`>>`) —
+`ocv.txt`, `run.log`, `samples-B.txt`, `mpss-B.txt` — and `ocv.txt` is read back
+by the drift calculation with `head -1` / `tail -1`. If the live run started in
+the same directory, **the rehearsal's 03:56 opening OCV would have been the
+night's start point**, and the 3-minute rehearsal's samples would have been
+prepended to every leg.
 
-Ezért a futás-könyvtár ide mentve, az eszközön pedig
-`/var/log/fp3/night-rehearsal-20260903-0531`-re átnevezve. Az éles futás üres
-könyvtárban, `state=0`-ról, a beépített alapértékekkel indul: `BOOTS=3`,
-`LEGMIN=75`, `RESTMIN=30`, `ALARM=90`, `BAND=eutran-1` — ellenőrizve, hogy
-**nincs `conf` fájl**, tehát nincs örökölt miniatűr paraméter.
+So the run directory is archived here, and renamed on the device to
+`/var/log/fp3/night-rehearsal-20260903-0531`. The live run starts in an empty
+directory, from `state=0`, on the built-in defaults: `BOOTS=3`, `LEGMIN=75`,
+`RESTMIN=30`, `ALARM=90`, `BAND=eutran-1` — verified that **there is no `conf`
+file**, so no miniature parameter can be inherited.

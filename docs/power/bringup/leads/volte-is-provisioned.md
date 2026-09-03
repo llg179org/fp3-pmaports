@@ -1,63 +1,66 @@
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
-# ★ A hálózat AD IMS-t ennek a SIM-nek — a bizonyíték egy meglévő capture-ben volt
+# ★ The network DOES provision IMS for this SIM — the evidence was already in a capture
 
-A [CSFB-függőség](csfb-is-a-dependency.md) felvetette, hogy ha a 2G elmegy, az
-`imsd`-út a tartalék. De egy tartalék, amit **a hálózat nem provisionál**, nem
-tartalék. A kérdés megválaszolható volt **új mérés nélkül**.
+The [CSFB dependency](csfb-is-a-dependency.md) raised the point that if 2G goes
+away, the `imsd` path is the fallback. But a fallback the **network does not
+provision** is not a fallback. The question could be answered **with no new
+measurement**.
 
-## Amit a hurok maga elárul
+## What the loop gives away by itself
 
-Az IMS-PDN hurok minden ciklusát a hálózat egy `ACTIVATE DEFAULT EPS BEARER
-CONTEXT REQUEST`-tel (ESM **0xC1**, letöltő irány) nyitja, és **abban** a
-**Protocol Configuration Options** mezőben adja vissza a **P-CSCF címeket** — a
-SIP-proxyt, amivel a UE regisztrálna. A cím megléte *maga* a VoLTE-provisioning.
+Every cycle of the IMS-PDN loop is opened by the network with an `ACTIVATE
+DEFAULT EPS BEARER CONTEXT REQUEST` (ESM **0xC1**, downlink), and it is **in
+that message** that the **Protocol Configuration Options** field returns the
+**P-CSCF addresses** — the SIP proxy the UE would register against. The presence
+of the address *is* the VoLTE provisioning.
 
-`tools/pcscf-scan.py`, a 2026-09-02-i hurok-capture-ön, **hossz-validált
-TLV-sétával**:
+`tools/pcscf-scan.py`, over the 2026-09-02 loop capture, with a
+**length-validated TLV walk**:
 
-| capture | log-bejegyzés | ESM 0xC1 | zárt PCO-séta | P-CSCF | kísérő tartalom |
+| capture | log entries | ESM 0xC1 | closed PCO walk | P-CSCF | what came with it |
 |---|---:|---:|---:|---|---|
-| `diag.bin` | 612 | **21** | **21 / 21** | `10.149.10.129` ×21, `10.150.10.129` ×21 | DNS `80.244.99.36` ×21, **IMS-signalling flag** ×21 |
-| `diag-ims-held.bin` | 497 | **18** | **18 / 18** | ugyanaz a kettő, ×18 | ugyanaz |
-| `diag-ims-off.bin` *(kontroll)* | 179 | **0** | — | **nincs** | — |
+| `diag.bin` | 612 | **21** | **21 / 21** | `10.149.10.129` ×21, `10.150.10.129` ×21 | DNS `80.244.99.36` ×21, **IMS signalling flag** ×21 |
+| `diag-ims-held.bin` | 497 | **18** | **18 / 18** | the same two, ×18 | the same |
+| `diag-ims-off.bin` *(control)* | 179 | **0** | — | **none** | — |
 
-Négy dolog teszi ezt méréssé és nem minta-találattá:
+Four things make this a measurement rather than a pattern match:
 
-1. **A séta a PCO fejlécétől indul és minden konténer saját hossz-mezőjével
-   lép**, és a hosszaknak **az IE határán kell zárniuk**. 21/21 és 18/18 zárt.
-   Egy elcsúszott illesztés olyan hosszra érkezne, ami nem zár — a szkript akkor
-   a hibát jelenti, nem leletet.
-2. **A kísérő konténerek értelmesek**: ugyanaz a séta hozza ki a DNS-szervert
-   (`80.244.99.36`, publikus cím) és az **IM CN Subsystem Signalling Flag**-et —
-   ez utóbbi nem cím, hanem a hálózat kimondása, hogy ez a PDN IMS-jelzésre való.
-   Egy cím lehetne elavult provisioning-maradék; ez a flag a válasz maga.
-3. **A negatív kontroll**: ahol a modem nem kért bearert, ott nulla REQUEST és
-   nulla cím van.
-4. **A számok pontosan egyeznek**: két P-CSCF cím, mindegyik pontosan annyiszor,
-   ahány REQUEST van. Nincs gazdátlan szám.
+1. **The walk starts at the PCO header and steps by each container's own length
+   field**, and the lengths have to **close on the IE boundary**. 21/21 and 18/18
+   closed. A misaligned match would arrive at a length that does not close, and
+   the script then reports the error rather than a finding.
+2. **The neighbouring containers make sense**: the same walk yields the DNS
+   server (`80.244.99.36`, a public address) and the **IM CN Subsystem
+   Signalling Flag** — the latter is not an address but the network stating that
+   this PDN is for IMS signalling. An address could be a stale provisioning
+   leftover; that flag is the answer itself.
+3. **The negative control**: where the modem asked for no bearer, there are zero
+   REQUESTs and zero addresses.
+4. **The counts match exactly**: two P-CSCF addresses, each appearing precisely
+   as many times as there are REQUESTs. No orphan number.
 
-☠️ **JAVÍTVA 2026-09-02 este — az első változat rossz üzenetet nevezett meg, és
-csak azért adott jó választ, mert túl szélesen keresett.** A `0xC2` (ACCEPT) a UE
-feltöltő visszaigazolása, és **nem visz PCO-t**; a szigorú séta rajta „0 / 22"-t
-ír. A közölt „`10.149.10.129` ×22, `10.150.10.129` ×21, 22 elfogadás ellen"
-párosítás **két független szám egybeesése** volt: a régi szkenner *minden*
-ESM-üzenetet bájt-mintával pásztázott, a 22 pedig az elfogadások száma volt, nem
-a címeké. A gazdátlan 21-es szám — amit akkor nem magyaráztam meg — pontosan ez
-volt a hiba jelzése. A következtetés túlélte a javítást, de **nem a szerszám
-érdeméből**.
+☠️ **CORRECTED 2026-09-02 evening — the first version named the wrong message and
+only gave the right answer because it searched too widely.** `0xC2` (ACCEPT) is
+the UE's uplink acknowledgement and **carries no PCO**; the strict walk reports
+"0 / 22" on it. The published pairing — *"`10.149.10.129` ×22, `10.150.10.129`
+×21, against 22 accepts"* — was **a coincidence of two independent numbers**: the
+old scanner byte-scanned *every* ESM message, and the 22 was the count of
+accepts, not of addresses. The orphan 21, which went unexplained at the time, was
+precisely the signal that something was wrong. The conclusion survived the fix,
+but **not on the tool's merit**.
 
-## Mit jelent, és mit nem
+## What it means, and what it does not
 
-**Jelenti:** a hálózat ennek az előfizetésnek IMS-t provisionál, tehát az
-`imsd`-tartaléknak **van hova regisztrálnia**. A hálózati fél nem akadály.
+**It means:** the network provisions IMS for this subscription, so the `imsd`
+fallback **has somewhere to register**. The network side is not the obstacle.
 
-☠️ **Nem jelenti**, hogy az üzemeltető beengedné **ezt a készüléket**: az
-IMS-regisztrációt a szolgáltatók gyakran készülék-policyhoz (IMEI-lista, tanúsított
-modellek) kötik. Az `imsd`-út tehát **két kapun** áll — technikai (a daemon
-megépítése) és policy (beengednek-e) —, és ez a lelet csak az elsőt érinti a
-hálózat oldaláról.
+☠️ **It does not mean** the operator would admit **this device**: carriers
+frequently tie IMS registration to device policy (IMEI lists, certified models).
+The `imsd` path therefore stands on **two gates** — technical (building the
+daemon) and policy (being let in) — and this finding touches only the first, from
+the network's side.
 
-A második kapu legolcsóbb tanúja a tulajdonos **napi, gyári Androidos FP3-a
-ugyanezen a hálózaton**: ha az hívás közben LTE-n marad, a policy megengedő
-ehhez a modellhez; ha az is 2G-re esik, akkor nem.
+The cheapest witness for the second gate is the owner's **daily factory-Android
+FP3 on this same network**: if it stays on LTE during a call, policy is permissive
+for this model; if it also drops to 2G, it is not.

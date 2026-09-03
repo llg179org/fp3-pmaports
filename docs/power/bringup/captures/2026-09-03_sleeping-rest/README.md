@@ -1,56 +1,58 @@
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
-# ★ Az alvó rest működik — és ugyanez a mérés buktatta le az elfogadási kritériumot
+# ★ The sleeping rest works — and the same measurement caught the acceptance criterion lying
 
-2026-09-03 03:30–03:46, 15 × 60 s alvó minta, rádió ki, USB-bemenet felfüggesztve.
-A [09-02-i éjszaka](../2026-09-02_night-replication/) két restje **nulla** suspenddel
-futott — sima `sleep`-pel, tehát az AP végig ébren volt, és emiatt egyik OCV-végpont
-sem tudott leülni.
+2026-09-03 03:30–03:46, 15 × 60 s sleeping samples, radio off, USB input
+suspended. Both rests of the [2026-09-02 night](../2026-09-02_night-replication/)
+ran with **zero** suspends — on a plain `sleep`, so the AP was awake throughout,
+and neither OCV endpoint could settle.
 
-## Amit a javítás hozott
+## What the fix bought
 
-| | 09-02 éjszaka | 09-03, `nap()`-pal |
+| | 09-02 night | 09-03, with `nap()` |
 |---|---:|---:|
-| `PM: suspend entry` a rest alatt | **0** | **15** |
-| a feszültség az utolsó 3 percben | −0,78…−0,91 mV/perc | **4,264 / 4,263 / 4,264 / 4,264 V** = ±1 mV |
+| `PM: suspend entry` during the rest | **0** | **15** |
+| voltage over the last 3 minutes | −0.78…−0.91 mV/min | **4.264 / 4.263 / 4.264 / 4.264 V** = ±1 mV |
 
-A `sleep` → `rtcwake` csere tehát pontosan azt csinálja, amiért bekerült.
+So swapping `sleep` for `rtcwake` does exactly what it was added for.
 
-## ☠️ De a verdikt PIROS lett, és a hiba a MŰSZERBEN volt
+## ☠️ But the verdict came out RED, and the fault was in the INSTRUMENT
 
-A szkript „5,39 mV/perc, NOT RESTED"-et írt egy olyan sorozatra, aminek az utolsó
-négy pontja **1 mV-on belül** van. Az ok: a meredekséget az utolsó hat pont
-**első és utolsó** értékéből számolta — ez nem meredekség, hanem kétmintás
-különbség —, és kilenc perccel a kezdés után egy terhelési letörés két mintát
-30 és 90 mV-tal lehúzott. Az egyik pont épp az ablak *elejére* esett.
+The script reported "5.39 mV/min, NOT RESTED" for a series whose last four points
+are **within 1 mV**. The cause: it computed the slope from the **first and last**
+of the trailing six points — that is a two-sample difference, not a slope — and
+nine minutes in, a load dip pulled two samples down by 30 and 90 mV. One of them
+landed at the *start* of the window.
 
 ```
  496 s  4.282 V
- 558 s  4.236 V   ← letörés
- 620 s  4.204 V   ← letörés
+ 558 s  4.236 V   ← dip
+ 620 s  4.204 V   ← dip
  682 s  4.264 V
  744 s  4.263 V
  806 s  4.264 V
  868 s  4.264 V
 ```
 
-Ugyanezen az adaton:
+On the same data:
 
-| becslő | eredmény |
+| estimator | result |
 |---|---|
-| régi (első−utolsó, utolsó 6) | **5,42 mV/perc → NOT RESTED** |
-| új (MAD-szűrés + illesztés, utolsó 6) | **0,10 mV/perc → RESTED**, „2 minta eldobva kiugróként" |
+| old (first−last of the trailing 6) | **5.42 mV/min → NOT RESTED** |
+| new (MAD filter + fit, trailing 6) | **0.10 mV/min → RESTED**, "2 samples dropped as outliers" |
 
-☠️ **A javítás nem simítás.** Egy terhelési letörés a restben **zavar**, nem zaj,
-és meg kell nevezni: a szkript kiírja, hány mintát dobott, és ha négynél kevesebb
-marad, a verdikt nem „nem ült le", hanem **„zavart rest"** — két különböző dolog,
-és az egyiknek nem szabad a másiknak álcáznia magát. Ugyanaz az elv, mint a lábak
-attribúciós szabályánál: a magyarázat a *címkét* változtatja, nem a sorsot.
+☠️ **The fix is not smoothing.** A load dip inside a rest is a **disturbance**,
+not noise, and it has to be named: the script prints how many samples it dropped,
+and if fewer than four survive the verdict is not "did not settle" but
+**"disturbed rest"** — two different things, and one must not be allowed to
+masquerade as the other. Same principle as the legs' attribution rule: the
+explanation changes the *label*, not the fate.
 
-☠️ **És egy ablak-hossz lecke.** Nyolc mintára (≈7 perc) az illesztés −2,73 mV/perc,
-mert az ablak visszanyúlik a letörés *előtti* magasabb szintre — a letörés
-maradandóan lejjebb vitte a pakkot, tehát ott valódi esés van. Hatra (≈5 perc)
-0,10. A kritérium eredeti szándéka is „az utolsó öt perc" volt; a hosszabb ablak
-nem robusztusabb, hanem **más kérdésre válaszol**.
+☠️ **And a window-length lesson.** Over eight samples (≈7 min) the fit gives
+−2.73 mV/min, because the window reaches back to the higher level *before* the
+dip — the dip moved the pack permanently lower, so there is a real fall there.
+Over six (≈5 min) it gives 0.10. The criterion's original intent was "the last
+five minutes" too; the longer window is not more robust, it **answers a different
+question**.
 
-Nyers adat: [`raw.txt`](raw.txt).
+Raw data: [`raw.txt`](raw.txt).

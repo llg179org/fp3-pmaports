@@ -53,6 +53,8 @@ repeated.
 > and nothing re-reads it; an `after: 116` is checked on every parse.
 
 <!-- FP3-QUEUE:BEGIN -->
+- [ ] 126. Turn the blocking Stop hooks back on
+      why: ☠️ measurement-watch, queue and results-guard were disabled on 2026-09-03 08:56 for an uninterrupted translation pass. Backup of the working config: `~/.claude/settings.json.hooks-on-202609030856`. measurement-watch is the one that matters — without it an unattended measurement can be started with no watcher, and tonight is a measurement night
 - [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber

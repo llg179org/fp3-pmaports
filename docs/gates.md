@@ -1,111 +1,112 @@
-# A kapuk — mi tiltja a munkát, mikor jár le, és megérte-e
+# The gates — what blocks work, when it expires, and whether it paid
 
-> ⚠️ **AI-generated.** Ezt a lapot és a leírt méréseket Claude (Opus 5) írta
-> Lajosházi, László Gergely irányításával, aki minden változtatást átnézett.
+> ⚠️ **AI-generated.** This page and the measurements on it were written by
+> Claude (Opus 5) under the direction of Lajosházi, László Gergely, who reviewed
+> every change.
 
-Ez a projekt hookokkal védekezik a saját visszatérő hibái ellen: egy hiba
-megtörténik, és utána egy kapu megakadályozza, hogy még egyszer megtörténjen.
-Minden kapu **fel tud mutatni egy incidenst** — és pontosan ezért veszélyesek:
-az incidens örökre igaz marad, a kapu haszna nem.
+This project defends against its own recurring mistakes with hooks: something
+goes wrong once, and afterwards a gate stops it happening again. Every gate here
+**can point at an incident** — and that is exactly what makes them dangerous.
+The incident stays true for ever; the gate's usefulness does not.
 
-☠️ **A kérdés, amit eddig senki nem tett fel: tüzelt-e még JOGOSAN azóta?** Egy
-kapu, ami két hete nem fogott semmit, de minden körben szól, nettó negatív. Ez a
-lap ezért nem azt írja le, *miért* született egy kapu, hanem hogy **mit csinál
-azóta** — és mikor kell újra megnézni.
+☠️ **The question nobody had asked: has it fired JUSTLY since?** A gate that has
+caught nothing in a fortnight but speaks every turn is net negative. So this page
+does not record *why* a gate was born, but **what it has done since** — and when
+to look again.
 
-**A szabály, ami az egészet keretezi:** a nettó irány addig rendben, **amíg a
-kivétel ugyanolyan olcsó, mint a hozzáadás.** Ha egy kaput nehezebb elvenni,
-mint betenni, a készlet csak nőni tud, és a rothadás beépül.
+**The rule that frames all of it:** the net direction is fine as long as
+**removing a gate is as cheap as adding one.** If a gate is harder to take out
+than to put in, the set can only grow, and the rot is built in.
 
-## A kapuk
+## The gates
 
-| kapu | esemény | miért született (incidens) | felülvizsgálat |
+| gate | event | the incident that produced it | review |
 |---|---|---|---|
-| [`risky-target.cjs`](https://github.com/llg179org/fp3-pmaports) *(a skills-repóban)* | `PreToolUse` | 2026-08-16 boot-hang: a tudás két helyen megvolt (`docs/deploy/README.md` és a `/fp3-kernel-test` skill), de mindkettő **húzó** mechanizmus — tudnod kell, hogy szükséged van rá. Ez a *célpontra* kulcsol, ezért anélkül tüzel, hogy bárki tudná, hogy kellene | **2026-10-01** |
-| `precompact-status.cjs` | `PreCompact` | 2026-08-23 06:10: auto-tömörítés 264k-nál, `bandsFired: []`, nulla sáv-injektálás — a session munkaállapota elveszett. Nem függ attól, hogy a modell észrevesz-e valamit: a lemezen lévő transzkriptet olvassa | **2026-10-01** |
-| `measurement-watch.cjs` | `PostToolUse`, `Stop` | „mérés + figyelő = egy objektum": kétszer bukott prózában, ezért lett gép által kikényszerítve. ☠️ És 2026-09-02-án a **figyelő maga** volt a zavar egy alvás-hosszt mérő lábban — egy kapunak ára van | **2026-09-15** ☠️ *korábbi dátum: ennek a kapunak MÉRT mellékhatása van* |
-| `queue.cjs` | `Stop`, `SessionStart` | 2026-09-03: a hook saját 124 tételes listát tartott egy négy napja nem frissült `TODO.md` mellett. Ez már nem tart listát; a sor a `TODO.md`-ben van | **2026-10-01** |
-| ~~`autonomy.cjs`~~ | — | **nyugalmazott 2026-09-03.** A repóban marad, kikapcsolva; a `queue.cjs` váltotta | — |
+| `risky-target.cjs` | `PreToolUse` | 2026-08-16 boot hang. The knowledge existed in two places — `docs/deploy/README.md` and the `/fp3-kernel-test` skill — and both are **pull** mechanisms: you have to already know you need them, which is the thing that is missing at the moment they would help. This keys on the *target*, so it fires without anybody knowing it should | **2026-10-01** |
+| `precompact-status.cjs` | `PreCompact` | 2026-08-23 06:10: an auto-compaction at 264k with `bandsFired: []` and zero band injections — the session's working state was lost. It does not depend on the model noticing anything; it reads the transcript already on disk | **2026-10-01** |
+| `measurement-watch.cjs` | `PostToolUse`, `Stop` | "a measurement and its watcher are one object": it failed twice as prose, so it became machine-enforced. ☠️ And on 2026-09-02 the **watcher itself** was the disturbance in a leg measuring sleep length — a gate has a price | **2026-09-15** ☠️ *earlier date on purpose: this gate has a measured side effect* |
+| `queue.cjs` | `Stop`, `SessionStart` | 2026-09-03: the hook kept its own 124-item list beside a `TODO.md` that had not changed in four days. It keeps no list now; the queue is in `TODO.md` | **2026-10-01** |
+| `results-guard.cjs` | `Stop` | 2026-09-03: replacing the hook retired `unrecorded-result` as a side effect — the only gate here with a measured verdict — and nobody noticed until the day's `findings-log.md` entries turned out to be missing | **2026-10-01** |
+| ~~`autonomy.cjs`~~ | — | **retired and DELETED 2026-09-03.** Replaced by `queue.cjs` (dispatch), `results-guard.cjs` (the guards worth keeping) and `gatelog.cjs` (this page's data). It is in git history, not in the tree: a retired gate left lying about is read as a gate | — |
 
-## A három mérőszám, 2026-09-03
+## The three metrics, 2026-09-03
 
-### 1. Karbantartási hányad — **4,4 % a commitokból, 5,4 % a sorokból**
+### 1. Maintenance share — **4.4 % of commits, 5.4 % of lines**
 
-A kérdés: mennyi munka megy a szerszámok karbantartására a valódi munkához
-képest? 2026-08-20 óta:
+The question: how much work goes into maintaining the tools against the real
+work? Since 2026-08-20:
 
-| | hook-repó | munka-repó (nyers capture-ök nélkül) | hányad |
+| | hook repo | work repo (excluding raw captures) | share |
 |---|---:|---:|---:|
-| commit | 32 | 697 | **4,4 %** |
-| hozzáadott sor | 2 616 | 45 388 | **5,4 %** |
+| commits | 32 | 697 | **4.4 %** |
+| lines added | 2 616 | 45 388 | **5.4 %** |
 
-☠️ **A capture-öket ki kellett venni a nevezőből**, különben a szám hamisan
-kedvező: nyers adattal együtt a munka-repó 131 249 sor, és a hányad 2,0 %-ra
-esik. Egy nevező, amit adat-dömping hizlal, bármilyen szerszám-költséget
-elrejt.
+☠️ **The captures had to come out of the denominator**, or the number flatters:
+with raw data included the work repo is 131 249 lines and the share falls to
+2.0 %. A denominator fattened by data dumps hides any tooling cost at all.
 
-**Ítélet: rendben.** Húsz sorból egy megy a szerszámra.
+**Verdict: fine.** One line in twenty goes to the tools.
 
-### 2. Kapunkénti precizió — **visszamenőleg NEM MÉRHETŐ; mostantól igen**
+### 2. Per-gate precision — **not measurable retrospectively; measurable from now on**
 
-A nyugalmazott `autonomy.cjs` naplója 37 tüzelést rögzített:
+The retired `autonomy.cjs` log recorded 37 firings:
 
-| kapu | tüzelés | |
+| gate | firings | |
 |---|---:|---:|
-| `open-work` | 23 | 62,2 % |
-| `review-due` | 9 | 24,3 % |
-| `unrecorded-result` | 3 | 8,1 % |
-| `OVERRIDE:human-reschedule` | 1 | 2,7 % |
-| `OVERRIDE:consulted-none` | 1 | 2,7 % |
+| `open-work` | 23 | 62.2 % |
+| `review-due` | 9 | 24.3 % |
+| `unrecorded-result` | 3 | 8.1 % |
+| `OVERRIDE:human-reschedule` | 1 | 2.7 % |
+| `OVERRIDE:consulted-none` | 1 | 2.7 % |
 
-☠️ **A napló azt rögzítette, hogy egy kapu tüzelt — soha nem azt, hogy igaza
-volt-e.** Ezért a precizió visszamenőleg nem számolható ki, és a „ha a
-hamis-blokk-ráta meghaladja a fogásokat, nettó negatív" szabály **nem
-alkalmazható a meglévő adatra**. Ez nem részletkérdés: pontosan az a mérőszám
-hiányzik, ami eldöntené, hogy egy kaput el kell-e venni.
+☠️ **The log recorded THAT a gate fired — never whether it was right.** So
+precision cannot be computed backwards, and the rule this review was written
+around — *"if the false-block rate exceeds the catches, the gate is net
+negative"* — cannot be applied to any of the existing data. That is not a
+detail: the missing metric is exactly the one that would justify **removing** a
+gate.
 
-Amit **ebből a futásból** meg lehet címkézni, mert van rá tanú:
+What **this run** can label, because there are witnesses:
 
-- `unrecorded-result` (3×) — a külső bírálat nevezte meg *„a compaction-veszteség
-  egyetlen aktív védelmének"*. Hamis tüzelésre nincs adat. **Jogos.**
-- `review-due` (9×) — a 2026-09-03 07:36-os tüzelés **üresjáratban** történt
-  (nulla elvégezhető tétel, a következő esemény 11 óra múlva), tehát az
-  *időzítése* hibás volt. A kikért bírálat viszont **három számomat döntötte
-  meg**, tehát a tüzelés tartalmilag hasznos volt. Címke: **rosszul időzítve, nem
-  fölösleges.**
-- `open-work` (23×) — visszamenőleg nem címkézhető.
+- `unrecorded-result` (3×) — named by outside review as *"the only active defence
+  against compaction loss"*. No evidence of a false firing. **Justified.**
+- `review-due` (9×) — the 2026-09-03 07:36 firing landed in an **idle window**
+  (nothing actionable, next event eleven hours out), so its *timing* was wrong.
+  The review it forced overturned three of my own numbers, so the firing was
+  useful in substance. Label: **mistimed, not useless.**
+- `open-work` (23×) — cannot be labelled retrospectively.
 
-**✅ Megcsinálva, 2026-09-03** — `plugins/fp3/hooks/gatelog.cjs`:
+**✅ Fixed, 2026-09-03** — `plugins/fp3/hooks/gatelog.cjs`:
 
 ```
-gatelog.cjs log <kapu> [reszlet]                     # a kapu hivja, tuzeleskor
-gatelog.cjs outcome <id|last> catch|false|override -- "<mi tortent>"
-gatelog.cjs report [nap]                             # kapunkent + verdikt
-gatelog.cjs pending [kapu]                           # a cimkezetlen tuzelesek
+gatelog.cjs log <gate> [detail]                      # the gate calls this when it fires
+gatelog.cjs outcome <id|last> catch|false|override -- "<what happened>"
+gatelog.cjs report [days]                            # per gate, with a verdict
+gatelog.cjs pending [gate]                           # the unlabelled firings
 ```
 
-Három tervezési döntés, mindegyik egy már megtörtént hiba ellen:
+Three design choices, each against a mistake already made here:
 
-- **Egy közös napló, nem kapunként egy.** Kapunként külön napló ugyanaz a hiba
-  lenne, mint a két lista, amit ma reggel szüntettünk meg.
-- **Append-only, a kimenet külön sor.** Egy napló, amit a verdikt kedvéért
-  átírnak, elveszíti, hogy *mit hittünk akkor* — és itt épp ez az érdekes.
-- ☠️ **Az érvényesítés nem egy újabb állandó utasítás.** Minden blokkoló üzenet
-  végére odaírni, hogy „és címkézd is" egy sort adna minden kapuhoz örökre —
-  vagyis pont az a zaj, amit ma reggel távolítottunk el. Helyette **a kapu
-  KÖVETKEZŐ tüzelése kérdez az előzőről**: nem kerül semmibe, ha címkézve van, és
-  sokáig nem lehet figyelmen kívül hagyni, ha nincs.
+- **One shared log, not one per gate.** Per-gate logs would be the same mistake
+  as the two task lists undone that morning: a question with two answers.
+- **Append-only, outcomes as separate lines.** A log rewritten to add a verdict
+  loses what was believed at the time — which is the interesting part.
+- ☠️ **Enforcement is not another standing instruction.** Appending "and label
+  it" to every blocking message would add a line to every gate for ever, which is
+  the noise that morning was spent removing. Instead **the gate's NEXT firing
+  asks about the previous one**: free when gates are labelled, impossible to
+  ignore for long when they are not.
 
-A `queue.cjs` és a `measurement-watch.cjs` — a két élő blokkoló kapu — be van
-kötve. A 37 régi tüzelés betöltve, a két `OVERRIDE` automatikusan felülbírálásnak
-címkézve.
+`queue.cjs` and `results-guard.cjs` — the live blocking gates — are wired in. The
+37 historical firings are backfilled, and the two `OVERRIDE` entries labelled
+automatically.
 
-☠️ **A maradék 31 betöltött tüzelés véglegesen megítélhetetlen**, és ez így is
-marad: nyugalmazott kapuk (`open-work`, `review-due`), és egyenként senki nem
-emlékszik rájuk. Ne próbáld visszamenőleg megcímkézni őket — a bizonyíték nincs
-meg. Ők a bizonyítékai annak, **miért** kellett ez a mező.
+☠️ **The remaining 31 backfilled firings are permanently unjudgeable**, and they
+stay that way: retired gates (`open-work`, `review-due`), and nobody remembers
+them one by one. Do not try to label them after the fact — the evidence is gone.
+They are the evidence for **why** the field had to exist.
 
-**Az első valódi verdikt, `gatelog.cjs report`, 2026-09-03:**
+**The first real verdict, `gatelog.cjs report`, 2026-09-03:**
 
 ```
 gate                     fired catch false  ovrd    ?  verdict
@@ -116,36 +117,34 @@ OVERRIDE:human-reschedule    1     0     0     1    0  too few firings yet (1)
 OVERRIDE:consulted-none      1     0     0     1    0  too few firings yet (1)
 ```
 
-**`unrecorded-result` az első kapu ebben a projektben, aminek MÉRT verdiktje
-van:** 3 tüzelés, 3 fogás, nulla hamis.
+**`unrecorded-result` is the first gate in this project with a measured
+verdict:** 3 firings, 3 catches, zero false.
 
-### 3. Felülbírálási ráta — **5,4 %** (2/37)
+### 3. Override rate — **5.4 %** (2/37)
 
-Két explicit felülbírálás: egy `human-reschedule`, egy `consulted none`.
+Two explicit overrides: one `human-reschedule`, one `consulted none`.
 
-**Ítélet: a kapukat betartják, nem kerülik meg.** Ha ez a szám 20 % fölé megy,
-az azt jelenti, hogy a kapu rosszul van hangolva, nem azt, hogy a felhasználója
-fegyelmezetlen.
+**Verdict: the gates are obeyed, not routed around.** If this number goes above
+20 %, it means a gate is mistuned — not that its user is undisciplined.
 
-## ☠️ Amit ez a felülvizsgálat menet közben talált
+## ☠️ What this review found on its way
 
-**Két kapu egyáltalán nem volt verziókövetve.** A `fp3-risky-target.cjs` és a
-`precompact-status.cjs` csak a `~/.claude/hooks/` alatt létezett, nulla
-találattal a skills-repóban. Egy kapu git-történet nélkül **auditálhatatlan**:
-nem lehet megkérdezni, mikor került be, milyen incidensre, és mi változott rajta
-azóta — vagyis pont az a három kérdés, amire ez a lap való. Mindkettő bekerült a
-repóba és symlinkkel van a helyén; mindkettő tüzelés-tesztelve a költöztetés
-után.
+**Two gates were not under version control at all.** `fp3-risky-target.cjs` and
+`precompact-status.cjs` existed only under `~/.claude/hooks/`, with zero hits in
+the skills repository. A gate with no git history is **unauditable**: you cannot
+ask when it was added, for which incident, or what has changed on it since —
+which are precisely the three questions this page exists to answer. Both are now
+in the repository and symlinked into place, and both were fire-tested after the
+move.
 
-## Hogyan kell egy kaput elvenni
+## How to remove a gate
 
-Ugyanolyan olcsón, mint betenni — ez a lap fenti szabálya, kimondva:
+As cheaply as adding one — the rule at the top of this page, stated:
 
-1. A `settings.json`-ből ki a bejegyzés (a fájl maradhat, kikapcsolva).
-2. Egy sor **ide**, hogy mikor és **milyen mérés alapján** lett elvéve.
-3. Nem kell hozzá engedély, ha a felülvizsgálati dátum lejárt és a kapu azóta
-   nem mutat fogást.
+1. Remove the entry from `settings.json` (the file may stay, unregistered).
+2. One line **here**: when it was removed, and **on what measurement**.
+3. No permission is needed once the review date has passed with no catch to show.
 
-☠️ Egy kapu elvétele **nem** kudarc-beismerés. A kapu egy incidensre válaszolt;
-ha az a hibamód megszűnt (más lett a szerszám, más lett az eljárás), a kapu
-tovább él a saját indoklásán, és onnantól már csak fogyaszt.
+☠️ Removing a gate is **not** an admission of failure. The gate answered an
+incident; if that failure mode is gone — the tool changed, the procedure changed
+— the gate lives on by its own reasoning alone, and from then on it only costs.

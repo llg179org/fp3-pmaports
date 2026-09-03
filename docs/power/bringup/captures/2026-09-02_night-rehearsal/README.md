@@ -1,132 +1,135 @@
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
-# ★★★★★ A főpróba megtalálta a hibákat, amiket az éjszaka nem mondott volna meg
+# ★★★★★ The rehearsal found the defects the night would not have reported
 
-2026-09-02 11:19–11:37, a teljes éjszakai lánc **tizedében**: `BOOTS=1`,
-`LEGMIN=6`, `RESTMIN=3`, `ALARM=90`. Az indok, amiért egyáltalán lefutott: az
-éjszakai mérés **egylövetű és felügyeletlen**, és szinte minden alkatrésze aznap
-készült.
+2026-09-02 11:19–11:37, at a **tenth** of the full night chain: `BOOTS=1`,
+`LEGMIN=6`, `RESTMIN=3`, `ALARM=90`. The reason for running it at all: the night
+measurement is **one-shot and unattended**, and almost every part of it was built
+that same day.
 
-## Ami működött
+## What worked
 
-A mechanika hibátlan. A `rest+OCV → reboot → láb → rest+OCV` sorozat végigment,
-az állapotgép a reboot után magától folytatta (`step 0` → `step 1`), és a
-szolgáltatás a végén **letiltotta önmagát** (`ENABLED=disabled`). Ez volt a
-legfontosabb kockázat: egy állapotgép, ami nem tud leállni, boot-loop egy
-telefonon, aminek csöngenie kell.
+The mechanics were faultless. The `rest+OCV → reboot → leg → rest+OCV` sequence
+ran through, the state machine resumed by itself after the reboot (`step 0` →
+`step 1`), and the service **disabled itself** at the end (`ENABLED=disabled`).
+That was the biggest risk: a state machine that cannot stop is a boot loop on a
+phone that has to keep ringing.
 
-## ☠️ NÉGY HIBA, MIND NÉMA LETT VOLNA
+## ☠️ FOUR DEFECTS, ALL OF WHICH WOULD HAVE BEEN SILENT
 
-### 1. A láb a DRÁGA állapotot mérte, miközben olcsónak hitte magát
+### 1. The leg measured the EXPENSIVE state while believing itself cheap
 
-A napló szerint „a reconciler szólt", és a futás ment tovább. A láb
-visszaolvasása:
+The log said "the reconciler spoke", and the run carried on. The leg's own
+read-back:
 
 ```
 # IMS at start: voice=True VoWiFi=False video=telephony SMS=True UT=True
 # IMS at end:   voice=True VoWiFi=False video=telephony SMS=True UT=True
 ```
 
-Hat percen át az **IMS bekapcsolva**. Az ok: a konvergencia-ellenőrzés a
-journalban a `fp3-ims-reconcile:` sztringre illesztett, és az illeszkedett a unit
-saját **leírására** — *„Finished Hold the modem's IMS service switches off"* —,
-amit a systemd akkor is kiír, ha a reconciler nem ért el semmit.
+Six minutes with **IMS on**. The cause: the convergence check matched the string
+`fp3-ims-reconcile:` in the journal, and that matched the unit's own
+**description** — *"Finished Hold the modem's IMS service switches off"* — which
+systemd prints whether or not the reconciler achieved anything.
 
-**Egy naplósor nem állapot.** A javítás a *vektort* olvassa, nem a naplót, és ha
-négy percen belül nem megy off, **feladja a lábat** — mert a hiányzó láb egy rés,
-a félrecímkézett láb egy hazugság.
+**A log line is not a state.** The fix reads the *vector*, not the log, and if it
+does not go off within four minutes it **gives up on the leg** — because a
+missing leg is a gap, and a mislabelled leg is a lie.
 
-A vektor-ellenőrzés mindhárom ágon megmutatva: a főpróbában mért rossz vektort
-elutasítja, a jót átengedi, és a **részleges** driftet (csak az SMS áll vissza)
-szintén elutasítja.
+The vector check is demonstrated on all three branches: it rejects the bad vector
+measured in the rehearsal, passes the good one, and also rejects a **partial**
+drift (only SMS coming back on).
 
-### 2. Az OCV a töltőn készült
+### 2. The OCV was taken on the charger
 
 ```
 11:19:54 battery 100% 4413005uV Charging
 ```
 
-4,413 V a **töltő lebegtetési feszültsége**, nem a pakké. Az egész sönt nélküli
-offset-korlát egy *pihentetett pakkot* igényel. A rádiót lekapcsoltuk, a töltőt
-nem. Most mindkettő megy, és a script **ellenőrzi**, hogy a státusz tényleg
-`Discharging`.
+4.413 V is the **charger's float voltage**, not the pack's. The whole
+shunt-free offset bound needs a *rested pack*. The radio was switched off, the
+charger was not. Now both go, and the script **verifies** that the status really
+reads `Discharging`.
 
-### 3. A sáv és a cella üresen maradt
+### 3. Band and cell came out empty
 
 ```
 # band/cell:
 ```
 
-Az `sed` mintája elhagyta a záró aposztrófot, tehát a mezők üresek. A sáv ezen az
-eszközön ~17 pp dutyt és ~54 mA-t ér — **egy sáv nélküli láb semmivel nem
-összehasonlítható**. Javítva, és a láb *végén* is rögzíti, mert a sáv menet
-közben elmozdulhat.
+The `sed` pattern dropped the closing apostrophe, so the fields were empty. On
+this device the band is worth ~17 pp of duty and ~54 mA — **a leg without a band
+is comparable to nothing**. Fixed, and it is now recorded at the *end* of the leg
+too, because the band can move mid-run.
 
-### 4. Az OCV nem ült le, és ezt nem mondta meg
+### 4. The OCV had not settled, and did not say so
 
-A záró öt olvasás 3 perc pihenő után még **emelkedett** (4 347 801 → 4 348 969
-µV). A script mostantól kiírja a driftet, hogy az olvasó leértékelhesse ahelyett,
-hogy az utolsó értéket elhinné.
+The closing five reads were still **rising** after a 3-minute rest (4 347 801 →
+4 348 969 µV). The script now prints the drift, so a reader can discount it
+instead of believing the last value.
 
-## A tanulság, amit a nap már kétszer kimondott
+## The lesson the day had already stated twice
 
-Mindhárom mai hibaosztály ugyanaz: **a lecke leírva, a kód a régit csinálja**, és
-mindegyik **csak éles próbán** jött elő — a `RuntimeMaxSec=1800` egy 9 órás
-ablakra, az `fp3-*` minta az állandó unitokra, és most egy grep, ami egy systemd
-unit-leírást fogadott el mérési bizonyítéknak.
+All three of that day's defect classes are the same one: **the lesson is written
+down, the code does the old thing** — and each surfaced **only in a live
+rehearsal**: `RuntimeMaxSec=1800` against a 9-hour window, the `fp3-*` pattern
+against permanent units, and now a grep that accepted a systemd unit description
+as measurement evidence.
 
-Nyers kimenet: `rehearsal-raw.txt`.
+Raw output: `rehearsal-raw.txt`.
 
 ---
 
-# Második főpróba, a négy javítás után — mind az öt elvárás teljesült, és két új hiba
+# Second rehearsal, after the four fixes — all five expectations met, and two new defects
 
-2026-09-02 11:41–11:59, ugyanaz a miniatűr alak. Az elvárásokat **a futás előtt**
-rögzítettük, hogy utólag ne lehessen rámagyarázni.
+2026-09-02 11:41–11:59, the same miniature shape. The expectations were written
+down **before** the run, so that nothing could be explained into place
+afterwards.
 
-| # | elvárás | eredmény |
+| # | expectation | result |
 |---|---|---|
-| 1 | a láb `IMS at start` **és** `at end` csupa `False` | ✅ mindkettő |
-| 2 | nincs „charger status … not Discharging" | ✅ 0 találat |
-| 3 | `band/cell` kitöltve, a láb végén is | ✅ — **és épp ez talált hibát** |
-| 4 | a drift mV-ban kiírva mindkét OCV-nél | ✅ 5 mV és 6 mV |
-| 5 | a service letiltja önmagát | ✅ `disabled` |
+| 1 | the leg's `IMS at start` **and** `at end` all `False` | ✅ both |
+| 2 | no "charger status … not Discharging" | ✅ 0 hits |
+| 3 | `band/cell` filled in, at the end of the leg too | ✅ — **and this is what found a defect** |
+| 4 | the drift printed in mV at both OCVs | ✅ 5 mV and 6 mV |
+| 5 | the service disables itself | ✅ `disabled` |
 
-## ★ A vektor-kapu élesben elsült
+## ★ The vector gate fired for real
 
 ```
 11:47:27 vector NOT off yet (attempt 0) - starting the reconciler
 11:47:52 vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False
 ```
 
-Pontosan az az állapot, ami az első főpróbát tönkretette — csak most **a mérés
-előtt** derült ki, nem utána.
+Exactly the state that ruined the first rehearsal — except this time it came out
+**before** the measurement, not after.
 
-## ☠️ ÚJ HIBA 1: a sáv elmozdult a láb közepén
+## ☠️ NEW DEFECT 1: the band moved mid-leg
 
 ```
 # band/cell:        eutran-3 / 1470732
 # band/cell at end: eutran-1 / 1470762
 ```
 
-Hat perc alatt. A sáv ezen az eszközön ~17 pp dutyt és ~54 mA-t ér; három láb
-három booton **csak a bootban** különbözhet, különben a legnagyobb mért
-konfundálót méri. Javítás: a lábak sáv-pinelve futnak, és a láb **kiabál**, ha a
-sáv menet közben mégis elmozdul.
+In six minutes. On this device the band is worth ~17 pp of duty and ~54 mA; three
+legs across three boots may differ **in the boot alone**, otherwise they measure
+the largest confounder ever recorded here. Fix: the legs run band-pinned, and the
+leg **shouts** if the band moves anyway.
 
-Ezt a hibát az a mező találta meg, amit az *első* főpróba hiányzónak mutatott.
+That defect was found by the very field the *first* rehearsal had shown to be
+missing.
 
-## ☠️☠️ ÚJ HIBA 2: a mérést a saját ellenőrzésem rontotta el
+## ☠️☠️ NEW DEFECT 2: my own check ruined the measurement
 
-A láb medián alvása **9 s** lett egy 90 s-os ébresztő ellen: 28 minta hat perc
-alatt négy helyett, és a kapu 28-ból **egyet** tartott meg.
+The leg's median sleep came out at **9 s** against a 90 s alarm: 28 samples in
+six minutes instead of four, and the gate kept **one** of the 28.
 
-Az ok: 11:49-kor — a láb közepén — ssh-val és pinggel néztem meg a telefont, hogy
-megválaszoljak egy kérdést. **Egy ssh-bejelentkezés AP-ébresztés.** Ugyanez a
-csapda aznap reggel írásban is szerepelt, a tulajdonosnak címezve.
+The cause: at 11:49 — mid-leg — I looked at the phone over ssh and with a ping,
+to answer a question. **An ssh login is an AP wake.** The same trap had been
+written down that morning, addressed to the owner.
 
-A kapu skálája a láb *saját* alvása, ezért a zavart láb **így is adott egy
-számot** (45,1 mA), és semmi nem mondta, hogy zavart. Javítás: a fit kimondja —
+The gate's scale is the leg's *own* sleep, so the disturbed leg **still produced
+a number** (45.1 mA), and nothing said it was disturbed. Fix: the fit says so —
 
 ```
 ☠️☠️ THIS LEG WAS DISTURBED: median sleep 9 s against a 90 s alarm.
@@ -134,4 +137,4 @@ számot** (45,1 mA), és semmi nem mondta, hogy zavart. Javítás: a fit kimondj
      The number above is not the sleeping floor of anything.
 ```
 
-Nyers kimenet: `rehearsal-2-raw.txt`.
+Raw output: `rehearsal-2-raw.txt`.
