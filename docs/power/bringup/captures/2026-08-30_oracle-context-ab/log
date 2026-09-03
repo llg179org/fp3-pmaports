@@ -8,6 +8,6 @@
 2026-08-30 13:54:29 # DONE
 2026-08-30 13:54:29 restoring context
 1: lo    inet 127.0.0.1/8 scope host lo\       valid_lft forever preferred_lft forever
-9: rmnet_data0    inet 10.17.128.83/29 scope global rmnet_data0\       valid_lft forever preferred_lft forever
-10: rmnet_data1    inet 10.84.91.57/30 scope global rmnet_data1\       valid_lft forever preferred_lft forever
-26: wlan0    inet 192.168.100.15/24 brd 192.168.100.255 scope global dynamic noprefixroute wlan0\       valid_lft 84938sec preferred_lft 84938sec
+9: rmnet_data0    inet 10.17.x.x/29 scope global rmnet_data0\       valid_lft forever preferred_lft forever
+10: rmnet_data1    inet 10.84.x.x/30 scope global rmnet_data1\       valid_lft forever preferred_lft forever
+26: wlan0    inet 192.168.x.x/24 brd 192.168.x.x scope global dynamic noprefixroute wlan0\       valid_lft 84938sec preferred_lft 84938sec

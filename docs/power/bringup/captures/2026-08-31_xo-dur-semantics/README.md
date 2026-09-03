@@ -93,7 +93,7 @@ journalctl --since "2026-08-30 18:00" --until "2026-08-31 05:00" | grep -ci "wla
 ```
 
 **2803** matching lines across the step-0 night, with NetworkManager renewing the
-DHCP lease on `wlan0` (`192.168.100.17`) at 04:37:03 — the interface was
+DHCP lease on `wlan0` (`192.168.x.x`) at 04:37:03 — the interface was
 associated and working for the whole run.
 
 The step-0 night's three gates are ModemManager stopped, `bl_power=4` and

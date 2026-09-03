@@ -27,8 +27,8 @@
 ```
 mmcli -m any --simple-connect='apn=internet.vodafone.net'
   -> Bearer/1  connected: yes  multiplexed: yes  interface: qmapmux0.0
-     10.112.79.62/30  gw 10.112.79.61  dns 80.244.99.37
-ip link set qmapmux0.0 up ; ip addr add 10.112.79.62/30 dev qmapmux0.0
+     10.112.x.x/30  gw 10.112.x.x  dns 80.244.x.x
+ip link set qmapmux0.0 up ; ip addr add 10.112.x.x/30 dev qmapmux0.0
   -> 3/3 ping to 8.8.8.8 over LTE
 ```
 

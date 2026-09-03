@@ -56,7 +56,7 @@ session that took the measurement was riding it. That is not a small omission
 here:
 
 **a Wi-Fi ssh session *is* PRONTO wake length.** This device has two working
-links to the host, USB NCM (`172.16.42.x`) and Wi-Fi (`192.168.100.17`), and the
+links to the host, USB NCM (`172.16.42.x`) and Wi-Fi (`192.168.x.x`), and the
 tools do not care which one they arrive on. A window measured over Wi-Fi and one
 measured over USB differ in PRONTO by construction, before the modem is
 considered at all.
@@ -77,7 +77,7 @@ PRONTO on its own.
 
 For the record, the transport of the overnight window opened at 20:24 tonight is
 **USB NCM** (`SSH_CONNECTION` = `172.16.42.2 → 172.16.42.1`). ☠️ That is not the
-same as "PRONTO is idle": `wlan0` is **up and associated** (`192.168.100.17`,
+same as "PRONTO is idle": `wlan0` is **up and associated** (`192.168.x.x`,
 `carrier=1`) through the whole night, so the Wi-Fi core is still serving an
 association — it simply is not carrying the measurement. Both facts are recorded
 in that run's `transport.txt`, which had to be written **by hand** because

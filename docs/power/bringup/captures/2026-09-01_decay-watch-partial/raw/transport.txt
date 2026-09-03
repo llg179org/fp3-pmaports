@@ -16,4 +16,4 @@ lo               UNKNOWN        127.0.0.1/8 ::1/128
 usb0             UP             172.16.42.1/16 fe80::fc38:1aff:fee5:aea6/64 
 rmnet_ipa0       DOWN           
 ipa_lan0         DOWN           
-wlan0            UP             192.168.100.17/24 2a01:36d:1400:c11:a700:ccdf:c0fe:a0d9/64 2a01:36d:1400:c11:65ac:e85:d0a:40d3/64 fe80::f0a:293f:c26:d30f/64 
+wlan0            UP             192.168.x.x/24 2a01:36d:1400:c11:a700:ccdf:c0fe:a0d9/64 2a01:36d:1400:c11:65ac:e85:d0a:40d3/64 fe80::f0a:293f:c26:d30f/64 

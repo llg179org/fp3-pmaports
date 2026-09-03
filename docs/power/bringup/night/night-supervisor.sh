@@ -34,7 +34,7 @@ HOSTDIR=$(cd "$(dirname "$0")" && pwd)/runs/$TAG
 mkdir -p "$HOSTDIR"
 TL=$HOSTDIR/timeline.txt
 
-WIFI=192.168.100.17
+WIFI=192.168.x.x
 USB=172.16.42.1
 SSHOPT="-o ConnectTimeout=8 -o StrictHostKeyChecking=no -o BatchMode=yes"
 

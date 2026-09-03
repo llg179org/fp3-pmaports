@@ -1,5 +1,5 @@
 18:27:08 # supervisor night-20260825d start poll=300s max=13h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/night-20260825d
-18:27:11 192.168.100.17 up=9973 q=active g=active cap=96 v=4411253 chg=Charging root=rw [9965] # preflight 95 
+18:27:11 192.168.x.x up=9973 q=active g=active cap=96 v=4411253 chg=Charging root=rw [9965] # preflight 95 
 18:27:12 # the queue reported itself finished - pulling once more and exiting
 18:27:20 # supervisor night-20260825d done; artefacts in /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/night-20260825d
 total 56

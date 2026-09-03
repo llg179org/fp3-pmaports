@@ -3160,7 +3160,7 @@ safe direction, but a longer settle would be better.
 **To resume, at night:**
 
 ```sh
-ssh fp3@192.168.100.17 'echo <pw> | sudo -S sh -c "
+ssh fp3@192.168.x.x 'echo <pw> | sudo -S sh -c "
   : > /home/fp3/suspend-slope.txt
   systemd-run --unit=slope1 --collect /home/fp3/suspend-slope.sh S4 900 8
   systemd-run --unit=curlog --collect sh -c \"/home/fp3/curlog.sh > /home/fp3/curlog.txt\""'
@@ -3170,7 +3170,7 @@ Runs ~4.3 h. The phone is unreachable during phase A *by design* - WiFi drops in
 s2idle, so a failed ping is it working, not broken.
 
 ```sh
-ssh fp3@192.168.100.17 'cat /home/fp3/suspend-slope.txt'
+ssh fp3@192.168.x.x 'cat /home/fp3/suspend-slope.txt'
 ```
 
 Every line carries `phase=`, `t=` (uptime, s), `v=` and `i=`, all live ADC. Do
@@ -3179,7 +3179,7 @@ uses the dense `curlog.txt` for phase B's mean current (the load swings
 140-490 mA, so 8 spaced samples estimate it badly):
 
 ```sh
-scp fp3@192.168.100.17:/home/fp3/{suspend-slope,curlog}.txt docs/power/
+scp fp3@192.168.x.x:/home/fp3/{suspend-slope,curlog}.txt docs/power/
 docs/power/slope-fit.py docs/power/suspend-slope.txt docs/power/curlog.txt
 ```
 
@@ -4763,11 +4763,11 @@ Full sequence, in order, and none of the steps is optional:
 #    run near 3.9 V; leg3-control.sh refuses to start below START_MIN=4.200 V
 #    because a control that begins on a half-empty pack sits on a different
 #    part of the discharge curve, which is exactly what withdrew 2026-08-17.
-ssh fp3@192.168.100.17 'cat /sys/class/power_supply/pmi632-battery/voltage_now'
+ssh fp3@192.168.x.x 'cat /sys/class/power_supply/pmi632-battery/voltage_now'
 
 # 2. ☠️ Check the charger is actually taking. suspend-slope.sh suspends USBIN
 #    and the bit lives in the PMIC across a warm reboot.
-ssh fp3@192.168.100.17 'cat /sys/class/power_supply/pmi632-charger/online'
+ssh fp3@192.168.x.x 'cat /sys/class/power_supply/pmi632-charger/online'
 # if 0:  echo Charging > /sys/class/power_supply/pmi632-charger/status
 
 # 3. Switch the boot label back and reboot. This is also the step that undoes
@@ -8022,7 +8022,7 @@ half an hour — [`captures/2026-08-28_modem-window-both/`](captures/2026-08-28_
 | access technology | **`lte`** | **`lte`** |
 | registration | `registered` | `registered` |
 | EPS attach | `packet service state: attached` | `ConnectionManager Attached = true` |
-| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `/ril_0/context1 Active = 1`, `rmnet_data2`, 10.124.125.20, `internet.vodafone.net` |
+| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `/ril_0/context1 Active = 1`, `rmnet_data2`, 10.124.x.x, `internet.vodafone.net` |
 | **MPSS awake** | **34.8 %** | **6.1 %** |
 | LPASS awake | 100 % | 3.0 % |
 | operator / cell | (not read) | One HU, MCC 216 MNC 70, CellId 1470762 |
@@ -9528,7 +9528,7 @@ data context. **All six are negative**, and the last one is negative in the
 interesting direction.
 
 Full capture: [`captures/2026-09-01_bearer-arm/`](captures/2026-09-01_bearer-arm/README.md).
-With a PDP context up (`internet.vodafone.net`, `qmapmux0.0` 10.112.79.62/30,
+With a PDP context up (`internet.vodafone.net`, `qmapmux0.0` 10.112.x.x/30,
 3/3 ping to 8.8.8.8) the modem duty rose from 33.4–36.8 % to **48.8 %**, and
 every `rtcwake` round — the path that bypasses ModemManager's sleep handshake —
 died within 1–216 s on `wakeup_irq=141`, the modem's SMD edge.
@@ -9730,7 +9730,7 @@ Walked over the requests instead:
 
 | capture | ESM 0xC1 | walks closing | P-CSCF | companions |
 |---|---:|---:|---|---|
-| `diag.bin` | 21 | **21/21** | `10.149.10.129`, `10.150.10.129`, one each per request | DNS `80.244.99.36`, **IM CN Subsystem Signalling Flag** |
+| `diag.bin` | 21 | **21/21** | `10.149.x.x`, `10.150.x.x`, one each per request | DNS `80.244.x.x`, **IM CN Subsystem Signalling Flag** |
 | `diag-ims-held.bin` | 18 | **18/18** | the same two | the same |
 | `diag-ims-off.bin` | 0 | — | none | — |
 

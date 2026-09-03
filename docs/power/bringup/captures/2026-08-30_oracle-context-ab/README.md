@@ -56,7 +56,7 @@ afternoon's measurement.
 ## ☠️ Two honesty notes, both weakening rather than helping
 
 1. **Leg B is not "no data at all".** ofono's `DeactivateAll` took down
-   `rmnet_data2` and left `rmnet_data0` (10.17.128.83) up — the IMS/default
+   `rmnet_data2` and left `rmnet_data0` (10.17.x.x) up — the IMS/default
    context. So the lever was *one context instead of two*, not *bearer versus no
    bearer*. The pmOS side of the comparison genuinely had **no** bearer, so the
    two are not exactly the same experiment.

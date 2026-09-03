@@ -272,7 +272,7 @@ on it, and the observable that would show it moved — in
 
 ★ **The network's half of the contingency is already provisioned**: the loop
 capture's downlink `PDN CONNECTIVITY REQUEST` PCO returns two P-CSCF addresses
-(`10.149.10.129`, `10.150.10.129` — a length-validated TLV walk, each exactly
+(`10.149.x.x`, `10.150.x.x` — a length-validated TLV walk, each exactly
 once per message, 21/21 and 18/18), plus the IM CN Subsystem Signalling Flag and
 a DNS address, and the IMS-off control returns **zero**. ☠️ That settles the
 *first* gate only. Whether the operator admits **this device** to VoLTE is a
@@ -314,7 +314,7 @@ systems within half an hour, same operator and cell (`captures/2026-08-28_modem-
 | | pmOS | oracle |
 |---|---|---|
 | access technology / registration | `lte`, registered | `lte`, registered |
-| data context | **none** — `rmnet_ipa0` DOWN, 0 bytes | **active** — `rmnet_data2`, 10.124.125.20 |
+| data context | **none** — `rmnet_ipa0` DOWN, 0 bytes | **active** — `rmnet_data2`, 10.124.x.x |
 | **MPSS awake** | **34.8 %** | **6.1 %** |
 
 6.1 % reproduces the 2026-08-24 figure to a fifth of a point, this time with the

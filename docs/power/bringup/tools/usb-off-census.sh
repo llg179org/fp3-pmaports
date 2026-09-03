@@ -12,7 +12,7 @@
 # phone. This unbinds the controller and the PHY, re-runs the census, and puts
 # them back.
 #
-# ☠️ RUN IT OVER WiFi (192.168.100.17). The USB link is what this removes.
+# ☠️ RUN IT OVER WiFi (192.168.x.x). The USB link is what this removes.
 # ☠️ RUN IT UNDER systemd-run. If it dies with the session, the phone comes back
 #    with no USB and, on a bad day, no way in at all.
 #

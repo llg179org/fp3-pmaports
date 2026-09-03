@@ -81,7 +81,7 @@ action:
 
 ```sh
 # 1. host: check the gate first, and read it
-ssh fp3@192.168.100.17 'echo <pw> | sudo -S /root/night/preflight.sh 2>/dev/null'
+ssh fp3@192.168.x.x 'echo <pw> | sudo -S /root/night/preflight.sh 2>/dev/null'
 
 # 2. device: the net, before anything else
 sudo systemd-run --unit=night-guardian --collect /root/night/guardian.sh 30

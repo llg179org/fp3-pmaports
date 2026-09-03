@@ -1,0 +1,54 @@
+### list-contexts (attach PDN / APN list)
+[ /ril_0 ]
+    [ /ril_0/context1 ]
+        Name = Vodafone HU
+        Active = 1
+        Preferred = 0
+        Type = internet
+        Protocol = ip
+        AccessPointName = internet.vodafone.net
+        Username = 
+        Password = 
+        AuthenticationMethod = any
+        Settings = { Interface=rmnet_data2 Method=static Address=10.72.x.x Netmask=255.255.255.252 Gateway=10.72.x.x DomainNameServers=80.244.x.x,80.244.x.x, }
+        IPv6.Settings = { }
+
+    [ /ril_0/context2 ]
+        Name = Vodafone HU MMS
+        Active = 0
+        Preferred = 0
+        Type = mms
+        Protocol = ip
+        AccessPointName = mms.vodafone.net
+        Username = 
+        Password = 
+        AuthenticationMethod = any
+        MessageProxy = 80.244.x.x:8080
+        MessageCenter = http://mms.vodafone.hu/servlets/mms
+        Settings = { }
+        IPv6.Settings = { }
+
+    [ /ril_0/context3 ]
+        Name = IMS
+        Active = 0
+        Preferred = 0
+        Type = ims
+        Protocol = dual
+        AccessPointName = ims
+        Username = 
+        Password = 
+        AuthenticationMethod = any
+        Settings = { }
+        IPv6.Settings = { }
+
+[ /ril_1 ]
+### operator
+[ /ril_0 ]
+    [ /ril_0/operator/21670 ]
+        Name = One HU
+        Status = current
+        MobileCountryCode = 216
+        MobileNetworkCode = 70
+        Technologies = gsm lte 
+
+[ /ril_1 ]

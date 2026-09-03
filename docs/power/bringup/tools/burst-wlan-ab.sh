@@ -18,7 +18,7 @@
 # power-save machinery is at least running - which does not say it is winning.
 #
 # ☠️ CHECK WHICH LINK YOUR SESSION IS ON BEFORE RUNNING THIS. This phone has two
-# (USB 172.16.42.1 and wlan 192.168.100.17) and taking the radio down over the
+# (USB 172.16.42.1 and wlan 192.168.x.x) and taking the radio down over the
 # wlan one strands the run. `ss -tnp | grep :22` answers it; this script refuses
 # to start if it can see its own ssh session on the wlan address.
 #

@@ -20,7 +20,7 @@ of the address *is* the VoLTE provisioning.
 
 | capture | log entries | ESM 0xC1 | closed PCO walk | P-CSCF | what came with it |
 |---|---:|---:|---:|---|---|
-| `diag.bin` | 612 | **21** | **21 / 21** | `10.149.10.129` ×21, `10.150.10.129` ×21 | DNS `80.244.99.36` ×21, **IMS signalling flag** ×21 |
+| `diag.bin` | 612 | **21** | **21 / 21** | `10.149.x.x` ×21, `10.150.x.x` ×21 | DNS `80.244.x.x` ×21, **IMS signalling flag** ×21 |
 | `diag-ims-held.bin` | 497 | **18** | **18 / 18** | the same two, ×18 | the same |
 | `diag-ims-off.bin` *(control)* | 179 | **0** | — | **none** | — |
 
@@ -31,7 +31,7 @@ Four things make this a measurement rather than a pattern match:
    closed. A misaligned match would arrive at a length that does not close, and
    the script then reports the error rather than a finding.
 2. **The neighbouring containers make sense**: the same walk yields the DNS
-   server (`80.244.99.36`, a public address) and the **IM CN Subsystem
+   server (`80.244.x.x`, a public address) and the **IM CN Subsystem
    Signalling Flag** — the latter is not an address but the network stating that
    this PDN is for IMS signalling. An address could be a stale provisioning
    leftover; that flag is the answer itself.
@@ -43,7 +43,7 @@ Four things make this a measurement rather than a pattern match:
 ☠️ **CORRECTED 2026-09-02 evening — the first version named the wrong message and
 only gave the right answer because it searched too widely.** `0xC2` (ACCEPT) is
 the UE's uplink acknowledgement and **carries no PCO**; the strict walk reports
-"0 / 22" on it. The published pairing — *"`10.149.10.129` ×22, `10.150.10.129`
+"0 / 22" on it. The published pairing — *"`10.149.x.x` ×22, `10.150.x.x`
 ×21, against 22 accepts"* — was **a coincidence of two independent numbers**: the
 old scanner byte-scanned *every* ESM message, and the 22 was the count of
 accepts, not of addresses. The orphan 21, which went unexplained at the time, was

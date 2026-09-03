@@ -29,7 +29,7 @@ First, is there a data path holding a connection up?
 
 ```
 rmnet_ipa0       DOWN     rx=0 tx=0
-default via 192.168.100.1 dev wlan0
+default via 192.168.x.x dev wlan0
 ```
 
 **No.** The modem interface is down and has passed zero packets since boot; the

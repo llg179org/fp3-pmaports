@@ -18,7 +18,7 @@ systems within half an hour of each other, same operator and cell —
 | access technology | `lte` | `lte` |
 | registration | `registered` | `registered` |
 | EPS attach | `packet service state: attached` | `ConnectionManager Attached = true` |
-| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `rmnet_data2`, 10.124.125.20, `internet.vodafone.net` |
+| **data context** | **none** — `rmnet_ipa0` DOWN, 0 bytes, no bearers | **active** — `rmnet_data2`, 10.124.x.x, `internet.vodafone.net` |
 | **MPSS awake** | **34.8 %** | **6.1 %** |
 | operator / cell | (not read) | One HU, 216-70, CellId 1470762 |
 | signal | ModemManager `78 %` | ofono `Strength = 12–15` |

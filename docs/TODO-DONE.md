@@ -1548,7 +1548,7 @@ across a real `rtcwake -m mem` suspend):
   `pm_runtime_forbid()` at probe (`core.c:2321`, never followed by
   `pm_runtime_allow()` on the success path) — **not** the cable. ☠️ So unplugging
   the cable on its own tests nothing; the experiment is `control=auto` on both
-  nodes **and then** detach, over the WiFi link (`fp3@192.168.100.17`, verified
+  nodes **and then** detach, over the WiFi link (`fp3@192.168.x.x`, verified
   live 2026-08-23).
 
   ★ **Measured 2026-08-24 — and it walked straight into the trap above.** With

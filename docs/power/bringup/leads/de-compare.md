@@ -86,7 +86,7 @@ regenerates `/boot/extlinux/extlinux.conf`, which drops the fallback label, the
 boot config that repeats a mistake every boot is the expensive kind of mistake.
 
 ```sh
-fp3-selftest --only boot-fallback --host 192.168.100.17   # from the host
+fp3-selftest --only boot-fallback --host 192.168.x.x   # from the host
 ```
 
 Then switch the session by editing `command` under `[initial_session]`, and

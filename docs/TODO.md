@@ -144,12 +144,12 @@ repeated.
       after: 85
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
       lane: phone
-- [~] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
+- [x] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
       why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
       lane: phone
-- [~] 55. Attach-PDN list on both slots
+- [ ] 55. Attach-PDN list on both slots
       after: 116
-      why: line 2 of the 116 oracle session
+      why: the oracle half is DONE (2026-09-03 capture 2026-09-03_ut-oracle-ims/contexts-and-operators.txt: internet APN active with a real address, mms, and an ims-type context, APN 'ims', protocol dual). What remains is the pmOS half on slot b and the comparison
       lane: phone
 - [~] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
@@ -189,7 +189,7 @@ repeated.
       they-do: Settings -> Network -> SIM cards (or the SIM status screen per slot): the operator NAME for slot 1 and slot 2. Two words. ☠️ Read-only, we do not otherwise touch the daily phone
       why: decides what the 2026-09-03 paired VoLTE reading says about US — only if the SIM that stayed on 4G during the call is also vodafone HU (our dev FP3's operator, MCC/MNC 21670) does it prove VoLTE is provisionable on OUR network for OUR subscription
       lane: phone
-- [@] 133. Which subscription is in the dev FP3 — the corporate or the private Vodafone plan
+- [x] 133. Which subscription is in the dev FP3 — the corporate or the private Vodafone plan
       when: one word, whenever
       they-do: put the dev phone's SIM into the daily factory-Android handset (a certified device is the instrument), place one call, and during the call read Settings -> About phone -> SIM status -> 'Mobile network type'. Report the value as read, nothing else. ☠️ Restore both SIMs afterwards
       why: THREE SIMs are in play, not two: the daily handset carries the corporate and the private card, and the dev phone carries a THIRD card whose plan is neither of those. The 2026-09-03 pair therefore says nothing about the dev subscription — it only proves vodafone HU carries VoLTE on some plans. Whether the imsd path can ever produce a VoLTE call on the dev phone depends on whether VoLTE is enabled on ITS subscription, and a certified handset is the only instrument we have that can answer it, since our own stack has no working IMS

@@ -1,14 +1,14 @@
 18:27:05 # supervisor lpass-20260819 start poll=300s max=6h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/lpass-20260819
-18:27:06 192.168.100.17 up=33081 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:27:06 192.168.x.x up=33081 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
 18:27:27 # supervisor lpass-20260819 start poll=300s max=6h -> /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/lpass-20260819
-18:27:28 192.168.100.17 up=33103 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:32:30 192.168.100.17 up=33405 q=active g=active cap=100 v=4412032 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:37:34 192.168.100.17 up=33709 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:42:36 192.168.100.17 up=34011 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:47:38 192.168.100.17 up=34313 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:52:39 192.168.100.17 up=34614 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
-18:57:41 192.168.100.17 up=34916 q=active g=active cap=100 v=4412226 chg=Charging root=rw [34747] # job 3 START (timeout 1800s): LPASS_STAGES=S0 /root/night/lpass-holders.sh 240 30 
-19:02:43 192.168.100.17 up=35218 q=inactive g=active cap=100 v=4412226 chg=Charging root=rw QUEUE FINISHED rc=0 
+18:27:28 192.168.x.x up=33103 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33064] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:32:30 192.168.x.x up=33405 q=active g=active cap=100 v=4412032 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:37:34 192.168.x.x up=33709 q=active g=active cap=100 v=4413394 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:42:36 192.168.x.x up=34011 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:47:38 192.168.x.x up=34313 q=active g=active cap=100 v=4412810 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:52:39 192.168.x.x up=34614 q=active g=active cap=100 v=4413005 chg=Charging root=rw [33198] # job 1 START (timeout 7200s): /root/night/lpass-holders.sh 240 30 
+18:57:41 192.168.x.x up=34916 q=active g=active cap=100 v=4412226 chg=Charging root=rw [34747] # job 3 START (timeout 1800s): LPASS_STAGES=S0 /root/night/lpass-holders.sh 240 30 
+19:02:43 192.168.x.x up=35218 q=inactive g=active cap=100 v=4412226 chg=Charging root=rw QUEUE FINISHED rc=0 
 19:02:45 # the queue reported itself finished - pulling once more and exiting
 19:02:45 # supervisor lpass-20260819 done; artefacts in /mnt/1TB/pmos/fp3-pmaports/docs/power/bringup/night/runs/lpass-20260819
 total 52

@@ -6,7 +6,7 @@
 # battery at start: 50%  v=3956776uV
 # panel: bl_power=4
 # leaving WiFi UP - this arm prices the Wi-Fi link itself
-# wlan0: wlan0            UP             192.168.100.17/24 2a01:36d:1400:c11:d42f:4147:e0df:f6b0/64 2a01:36d:1400:c11:65ac:e85:d0a:40d3/64 fe80::f0a:293f:c26:d30f/64 
+# wlan0: wlan0            UP             192.168.x.x/24 2a01:36d:1400:c11:d42f:4147:e0df:f6b0/64 2a01:36d:1400:c11:65ac:e85:d0a:40d3/64 fe80::f0a:293f:c26:d30f/64 
 # wifi radio now: enabled  wlan0: UP
 # cable IN, USBIN suspended: battery status=Discharging
 # settling 300 s before the first round

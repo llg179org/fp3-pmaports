@@ -17,7 +17,7 @@ Every line here exists because it was once got wrong and cost a run.
 ssh fp3 'uname -a; uptime; cat /proc/cmdline | tr " " "\n" | grep -i slot'
 ```
 
-* The link is `fp3` (USB, 172.16.42.1) **and** `192.168.100.17` (wlan). ☠️ A run
+* The link is `fp3` (USB, 172.16.42.1) **and** `192.168.x.x` (wlan). ☠️ A run
   that takes the wlan radio down must not be driven over the wlan address —
   `burst-wlan-ab.sh` refuses, nothing else does.
 * Read the kernel revision **off the device**, never off a doc page. That

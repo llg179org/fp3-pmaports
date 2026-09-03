@@ -168,11 +168,11 @@ the network's PCO returns:
 
 ```
 0x8021 len=16  IPCP
-0x000D len= 4  DNS IPv4                        80.244.99.36
+0x000D len= 4  DNS IPv4                        80.244.x.x
 0x0005 len= 1  MS support NRBC                 02
 0x0002 len= 0  IM CN Subsystem Signaling Flag  (present)
-0x000C len= 4  P-CSCF IPv4                     10.149.10.129
-0x000C len= 4  P-CSCF IPv4                     10.150.10.129
+0x000C len= 4  P-CSCF IPv4                     10.149.x.x
+0x000C len= 4  P-CSCF IPv4                     10.150.x.x
 ```
 
 **Two P-CSCF addresses and the IM CN flag** — exactly what the UE's own outgoing

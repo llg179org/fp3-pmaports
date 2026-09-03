@@ -1,1 +1,1 @@
-9: rmnet_data0    inet 10.17.128.83/29 scope global rmnet_data0\       valid_lft forever preferred_lft forever
+9: rmnet_data0    inet 10.17.x.x/29 scope global rmnet_data0\       valid_lft forever preferred_lft forever

@@ -321,11 +321,11 @@ ofonod[12173]: drivers/qmimodem/gprs-context.c:get_lte_attach_param_cb() error: 
 ofonod[12173]: drivers/qmimodem/gprs-context.c:start_network_common_cb() family: 4, error: 0
 ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() 
 ofonod[12173]: drivers/qmimodem/gprs-context.c:pkt_status_notify() conn status 2 ip family 4
-ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() IP addr: 10.112.77.125
-ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway: 10.112.77.126
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() IP addr: 10.112.x.x
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway: 10.112.x.x
 ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Gateway netmask: 255.255.255.252
-ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Primary DNS: 80.244.99.37
-ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Secondary DNS: 80.244.99.36
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Primary DNS: 80.244.x.x
+ofonod[12173]: drivers/qmimodem/gprs-context.c:get_settings_ipv4_cb() Secondary DNS: 80.244.x.x
 ofonod[12173]: drivers/qmimodem/network-registration.c:system_info_notify() 
 ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x12 len 0x0003
 ofonod[12173]: drivers/qmimodem/qmi.c:qmi_result_print_tlvs() tlv: 0x13 len 0x0003

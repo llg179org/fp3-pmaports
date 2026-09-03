@@ -1,0 +1,62 @@
+### cellinfo / band
+    Interfaces = org.ofono.NetworkMonitor org.ofono.IpMultimediaSystem org.ofono.SupplementaryServices org.ofono.NetworkRegistration org.ofono.CallSettings org.ofono.CallVolume org.ofono.RadioSettings org.ofono.CellBroadcast org.ofono.SimToolkit org.ofono.Phonebook org.ofono.ConnectionManager org.ofono.SmartMessaging org.ofono.PushNotification org.ofono.MessageManager org.ofono.CallBarring org.ofono.CallForwarding org.ofono.NetworkTime org.ofono.SmsHistory org.ofono.SimAuthentication org.ofono.MessageWaiting org.ofono.AllowedAccessPoints org.ofono.VoiceCallManager org.ofono.SimManager org.nemomobile.ofono.CellInfo org.nemomobile.ofono.SimInfo 
+    Features = ussd net rat cbs stk gprs sms sim 
+    Type = hardware
+    [ org.ofono.NetworkMonitor ]
+    [ org.ofono.IpMultimediaSystem ]
+        Registered = 1
+        Registration = auto
+        VoiceCapable = 1
+        SmsCapable = 1
+    [ org.ofono.SupplementaryServices ]
+        State = idle
+    [ org.ofono.NetworkRegistration ]
+        Status = registered
+        Mode = auto
+        CellId = 1470732
+        Technology = lte
+        MobileCountryCode = 216
+        MobileNetworkCode = 70
+        Name = One HU
+        Strength = 27
+    [ org.ofono.CallSettings ]
+### radio settings
+    Interfaces = org.ofono.NetworkMonitor org.ofono.IpMultimediaSystem org.ofono.SupplementaryServices org.ofono.NetworkRegistration org.ofono.CallSettings org.ofono.CallVolume org.ofono.RadioSettings org.ofono.CellBroadcast org.ofono.SimToolkit org.ofono.Phonebook org.ofono.ConnectionManager org.ofono.SmartMessaging org.ofono.PushNotification org.ofono.MessageManager org.ofono.CallBarring org.ofono.CallForwarding org.ofono.NetworkTime org.ofono.SmsHistory org.ofono.SimAuthentication org.ofono.MessageWaiting org.ofono.AllowedAccessPoints org.ofono.VoiceCallManager org.ofono.SimManager org.nemomobile.ofono.CellInfo org.nemomobile.ofono.SimInfo 
+    Features = ussd net rat cbs stk gprs sms sim 
+    Type = hardware
+    [ org.ofono.NetworkMonitor ]
+    [ org.ofono.IpMultimediaSystem ]
+        Registered = 1
+        Registration = auto
+        VoiceCapable = 1
+        SmsCapable = 1
+    [ org.ofono.SupplementaryServices ]
+        State = idle
+    [ org.ofono.NetworkRegistration ]
+        Status = registered
+        Mode = auto
+        CellId = 1470732
+        Technology = lte
+        MobileCountryCode = 216
+        MobileNetworkCode = 70
+        Name = One HU
+        Strength = 27
+    [ org.ofono.CallSettings ]
+        CallingLinePresentation = enabled
+        CallingNamePresentation = unknown
+        ConnectedLinePresentation = unknown
+        ConnectedLineRestriction = unknown
+        CalledLinePresentation = disabled
+        CallingLineRestriction = off
+        HideCallerId = default
+        VoiceCallWaiting = enabled
+    [ org.ofono.CallVolume ]
+        SpeakerVolume = 0
+        MicrophoneVolume = 0
+        Muted = 0
+    [ org.ofono.RadioSettings ]
+        TechnologyPreference = nr
+        AvailableTechnologies = gsm umts lte nr 
+    [ org.ofono.CellBroadcast ]
+### date
+2026. szept. 3., csütörtök, 12:47:32 CEST

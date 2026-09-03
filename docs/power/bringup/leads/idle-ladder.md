@@ -111,7 +111,7 @@ link. The whole measurement is the idle draw.
 ## Reading it
 
 ```sh
-scp fp3@192.168.100.17:/home/fp3/idle-ladder.txt docs/power/<date>_idle-ladder.txt
+scp fp3@192.168.x.x:/home/fp3/idle-ladder.txt docs/power/<date>_idle-ladder.txt
 python3 docs/power/idle-ladder-fit.py docs/power/<date>_idle-ladder.txt
 ```
 

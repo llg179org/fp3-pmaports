@@ -61,7 +61,7 @@ def entries(path):
         i = j + ln
 
 
-# Containers the network can hand back inside the PCO (24.008 10.5.6.3). The DNS
+# Containers the network can hand back inside the PCO (24.008 10.5.x.x). The DNS
 # ones are not what this tool is looking for - they are the CONTROL: a walk that
 # finds a plausible DNS server in the same PCO understands the structure, while a
 # byte-scan that only ever matches the one id it was told to look for has proved
