@@ -364,14 +364,19 @@ Source:      upstreaming/qmi-encdec-fix — b4 prep branch, cut 2026-09-03
              base-commit e61cfc881090cf9de9dbd3b6b7452661dfb0261f (qcom/linux for-next, 2026-09-02)
              legacy: submit/7.1.3/sensor, tagged archive/submit-7.1.3-sensor-final
              sent rounds: – (none yet)
-Depends:     –
+Depends:     – (measured: D-3 does not touch qmi_encdec.c; see the D- list)
 ```
 
 Left out: everything else in the `sensor` category — the SMGR drivers, the QRTR
 prerequisites, `qmi_interface.c`, the `file2alias`/`mod_devicetable` plumbing,
-~2775 lines across 29 files. Not undone: **unsendable**, because it patches files
-that are not upstream. See `docs/sensors/README.md`. `qmi_encdec.c` is the one
-file in the category that mainline already has, which is why it is the one series.
+~2775 lines across 29 files. See `docs/sensors/README.md`.
+
+☠️ **And the reason is stronger than "unsendable".** Measured 2026-09-03: **14 of
+those 29 files are the subject of D-3**, Yassine Oudjana's posted series. So the
+left-out work is not merely un-upstreamable — sending it would be a competing
+submission of somebody else's driver. `qmi_encdec.c` is the one file in the
+category that mainline already has **and** that D-3 does not touch, which is
+exactly why it is the one series.
 
 Test: not yet run from a submission base. Checkers: –.
 
@@ -439,6 +444,26 @@ Done: –
 |---|---|---|---|---|---|---|
 | D-1 | *MSM8953/MSM8976 ASoC support* v3, 8 patches — MSM8953 in `apq8016_sbc.c`, Quinary MI2S, compatible + binding | Adam Skladowski &lt;a39.skl@gmail.com&gt; (code by Vladimir Lypak), 2024-07-31 | patchwork series [875540](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=875540); cover message-id `20240731-msm8953-msm8976-asoc-v3-0-163f23c3a28d@gmail.com` (patchwork API, confirmed against the lore thread mbox, 2026-09-03) | stalled, `new`; review (Stephan Gerhold, 2024-08-01) asked for runtime detection of the Q6AFE clock API; author replied 2024-08-09 that he could not carry it further | the generic `q6afe.c` change (serve `LPAIF_BIT_CLK` from the new clock-set API when the firmware is the newer kind), posted into this thread rather than as a competing series; a Tested-by on the FP3 | 2026-08-30 |
 | D-2 | *ASoC: qcom: check ADSP version when setting clocks* v2, 4 patches | Otto Pflüger &lt;otto.pflueger@abscue.de&gt;, 2023-10-29 (v1 2023-10-14, superseded) | v2 cover message-id `20231029165716.69878-1-otto.pflueger@abscue.de` (patchwork API, confirmed against the lore thread mbox, 2026-09-03). ☠️ **patchwork has no *series* object for v2** — only the individual patches, so the only series ids are v1's: [793237](https://patchwork.kernel.org/project/linux-arm-msm/list/?series=793237) (linux-arm-msm) and 793291 (alsa-devel) | not rejected; its foundation (`q6core_get_svc_api_info()`, q6afe reading it at probe, the NULL-port param path) is in mainline `master` and `sound/for-next`; only its 3/4 (the dispatch by firmware version) is missing | the same q6afe change as D-1; also contains `ASoC: qcom: q6afe: remove "port already open" error` — read before sending our own q6afe patch | 2026-08-30 |
+| D-3 | *QRTR bus and Qualcomm Sensor Manager IIO drivers* v2, 4 patches — turns QRTR into a bus and adds the SMGR IIO driver (v1 2025-04-06, 3 patches, `20250406140706.812425-1-y.oudjana@protonmail.com`) | Yassine Oudjana &lt;y.oudjana@protonmail.com&gt;, via B4 Relay, 2025-07-10 | cover message-id `20250710-qcom-smgr-v2-0-f6e198b7aa8e@protonmail.com`, [lore](https://lore.kernel.org/all/20250710-qcom-smgr-v2-0-f6e198b7aa8e@protonmail.com/) (thread mbox fetched 2026-09-03) | `changes-requested` on 4/4. On-list: Andy Shevchenko (2/4, 4/4) and Simon Horman 2025-07-10, **Jonathan Cameron** 2025-07-13 and 2025-07-19, Casey Connolly 2025-07-21; the author answered 2025-07-17. ☠️ **Last activity 2025-07-21** — quiet for ~14 months as of 2026-09-03, so "stalled" is the honest word, not "in review" | the **ambient-light channel**. His cover: *"Currently supported sensor types include accelerometers, gyroscopes, magentometers, proximity and pressure sensors. Other types (namely light and temperature sensors) are close to being implemented."* We have light working. Plus a `Tested-by` on the FP3 — his cover names **MSM8953** explicitly as an ADSP-category SoC in scope | 2026-09-03 |
+
+☠️ **D-3 is not a dependency of `qmi-encdec-fix`, and the bringup page says it is.**
+Measured 2026-09-03 by diffing his v2 against `wip/7.1.3/sensor`:
+
+- **D-3 does not touch `drivers/soc/qcom/qmi_encdec.c` at all** (0 hits in the
+  series). That is precisely why `qmi_encdec.c` was the one sendable commit in the
+  sensor category — the only file there that is upstream *and* that nobody else is
+  rewriting. `qmi-encdec-fix` applied clean to `qcom/for-next` and depends on nothing.
+- **What D-3 does own is 14 of the 30 files our sensor category touches**: the whole
+  QRTR bus work (`net/qrtr/af_qrtr.c`, `qrtr.h`, `smd.c`), `drivers/soc/qcom/qmi_interface.c`,
+  the `mod_devicetable.h` / `devicetable-offsets.c` / `file2alias.c` plumbing,
+  `include/linux/soc/qcom/qrtr.h`, and the `drivers/iio/common/qcom_smgr/` tree.
+  Our "sensor prerequisites" and his series are the same ground.
+- ☠️ **Our per-sensor drivers are shaped like his v1, which he abandoned.** His
+  v1→v2 changelog says *"Remove per-sensor subdrivers and eliminate use of platform
+  devices"*, and `wip/7.1.3/sensor` still carries `smgr_accel.c`, `smgr_gyro.c`,
+  `smgr_mag.c`, `smgr_prox.c` as exactly those per-sensor subdrivers. Reworking them
+  onto his v2 shape is not polish — it is the difference between an offer and a
+  competing submission of somebody else's driver.
 
 **D-2, patch by patch** (message-ids from the patchwork API, 2026-09-03):
 

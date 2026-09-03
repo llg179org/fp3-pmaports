@@ -2475,3 +2475,8 @@ so that `after:` and `continues:` references still resolve.
 - [x] **131.** Track D-1 (patchwork 875540) and D-2 (Otto's q6afe series) with the kernel-review plugin: /track the cover message-ids, record them on STATUS.md  — closed 2026-09-03 10:03
       lane: upstreaming
       why: the dependency list has patchwork ids but no lore message-ids yet
+
+- [x] **134.** Add D-3 (Yassine Oudjana's QRTR + Sensor Manager IIO series, v2 2025-07-10, changes-requested) to the dependency list on docs/upstreaming/STATUS.md  — closed 2026-09-03 17:34
+      why: docs/upstreaming/bringup/README.md 8b names it as a dependency of qmi-encdec-fix and of everything sensor-shaped, but STATUS.md's D- list stops at D-2
+      the ledger says STATUS.md is the live record, so the record must carry it
+      lane: upstreaming
