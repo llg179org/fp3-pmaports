@@ -15,7 +15,7 @@ with a link.
 
 | series | category | tree | patches | state | last round | ball with | next from us | updated |
 |---|---|---|---|---|---|---|---|---|
-| wcd9335-audio | audio | ASoC `sound/for-next` | 15 on `upstreaming/wcd9335-audio` | rebased | – | us | checker gauntlet per patch; functional run from the submission base; then the cover letter | 2026-09-03 |
+| wcd9335-audio | audio | ASoC `sound/for-next` | 14 on `upstreaming/wcd9335-audio` | rebased | – | us | checker gauntlet per patch; functional run from the submission base; then the cover letter | 2026-09-03 |
 | i2c-qup-pinctrl | audio | i2c-host `i2c/i2c-host-next` | 1 | rebased | – | us | `Fixes:` from blame; decide `Cc: stable` | 2026-09-03 |
 | psci-cpuidle-fixes | power | linux-pm `bleeding-edge` | 2 | rebased | – | us | checker gauntlet; then the cover letter | 2026-09-03 |
 | smb5-charger | charger | power-supply `for-next` | 6 | rebased | – | us | every board/battery fact out of the driver; `adc5-bat-therm` goes first or with it | 2026-09-03 |
@@ -64,6 +64,7 @@ Left out of this series, deliberately (2026-09-03, measured):
 | `sound/soc/qcom/apq8016_sbc.c` — the SLIMbus-backend and channel-map patches | 140 | blocked on **D-1**: MSM8953 support in `apq8016_sbc.c` is not upstream, so the patch conflicts on `sound/for-next` (cherry-pick, 2026-09-03: `U sound/soc/qcom/apq8016_sbc.c`). Add once D-1 lands, or once the open decision below is made |
 | `arch/arm64/boot/dts/qcom/sdm632-fairphone-fp3.dts` | 252 | the **fp3-dts** series — a board DTS is always its own series, sent last |
 | `drivers/i2c/busses/i2c-qup.c` | 13 | the **i2c-qup-pinctrl** series — different tree |
+| `sound/soc/qcom/qdsp6/q6afe.c` — treat ADSP_EALREADY as success | 30 | **D-2 v2 4/4 is the same fix**; a reply with a Tested-by on Otto Pflüger's thread, not a competing patch |
 | `sound/soc/codecs/snd-soc-aw8898.c` | 48 | **unsendable**: the driver does not exist upstream (`torvalds/linux` contents API → 404, 2026-09-03) |
 
 Distillation check, 2026-09-03: on the twelve paths the series does carry, the
@@ -85,13 +86,34 @@ Rounds:
 | – | | | | | |
 
 To do:
-- [ ] ☠️ the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 v2 4/4 is the same fix** — Otto Pflüger's `ASoC: qcom: q6afe: remove "port already open" error`, message-id `20231029165716.69878-5-otto.pflueger@abscue.de`, posted 2023-10-29 and still `new`. Read it before sending ours; a reply on that thread is more likely right than a competing series
+- [x] ~~the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 v2 4/4 is the same fix**~~ — dropped 2026-09-03, see Done — Otto Pflüger's `ASoC: qcom: q6afe: remove "port already open" error`, message-id `20231029165716.69878-5-otto.pflueger@abscue.de`, posted 2023-10-29 and still `new`. Read it before sending ours; a reply on that thread is more likely right than a competing series
 - [ ] the machine-driver patch: decide between waiting for D-1 and posting the generic `q6afe` clock-set change into Otto's/Adam's thread (README "The chain is shorter than it looks")
 - [ ] measure the AFE `api_version` this ADSP reports (the one number the q6afe redesign turns on)
 - [ ] checker gauntlet per patch; functional run from the submission base with the debug layer on top; fill the Test block
 - [ ] cover letter with the `generated-content.rst` disclosure — still b4's `EDITME` placeholder
 
 Done:
+- 2026-09-03  ☠️ `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`
+              **dropped from the series** (review B3, queue 138): it is the same fix as
+              D-2 v2 4/4, still `new`; the reply goes on Otto Pflüger's thread. The
+              series is 14 patches; the only tree difference to the 15-patch tip is
+              `sound/soc/qcom/qdsp6/q6afe.c`. Old tip tagged
+              `archive/upstreaming-wcd9335-audio-pre-b3b6-20260903`. Moved to Left out
+- 2026-09-03  the mic-bias/DMIC patch gained its provenance paragraph **on
+              `wip/7.1.3/audio` first** (property names reused from the wcd938x and
+              lpass-macro bindings; MICB_VOUT programming from the vendor codec
+              driver; the FP3 values from Fairphone's published `msm8953-audio.dtsi`,
+              which live in the board DTS, not in the patch), then regenerated here
+              (review B6, queue 137). wip content unchanged (tree identical to
+              `archive/wip-7.1.3-audio-pre-cite-20260903`); the series patch keeps the
+              per-patch checkpatch alignment the cut applied, `checkpatch --strict` clean
+- 2026-09-03  ☠️ process incident, recorded because it is the kind that hides: while
+              regenerating, a `git checkout <old-tip> -- wcd9335.c` meant to restore two
+              aligned lines restored the whole file, the replay conflicted, and a
+              5-patch conflict-state branch was force-pushed to `fork` for about a
+              minute before the guard (`diff vs old tip touches only q6afe.c`) was
+              re-run and the branch rebuilt and replaced. Nothing was sent anywhere;
+              the lesson is that the shape check must run *before* the push, not after
 - 2026-09-03  `upstreaming/wcd9335-audio` cut with `b4 prep -e` on `sound/for-next`
               27a50351cbc8 (2026-09-02); 15 of the 18 legacy commits, all 15
               cherry-picking clean onto that tip with no conflict. Legacy branch
@@ -316,6 +338,12 @@ To do:
       import commit so it is not blamed on us); cover letter with the disclosure
 
 Done:
+- 2026-09-03  the `Assisted-by:` trailer was **dropped from Joel Selvaraj's import
+              commit** on `wip/7.1.3/camera` first, then here (review B2, queue 137):
+              the tool helped rewrite the message, not the code, and an import commit
+              carries no AI trailer; the message rewrite is disclosed in the cover
+              letter instead. Trees identical to `archive/wip-7.1.3-camera-pre-import-trailer-20260903`
+              and `archive/upstreaming-imx363-camera-pre-trailer-20260903`
 - 2026-09-03  ☠️ the import commit was **rebuilt** (queue 136 / review B1): it had
               taken the source tree's whole `drivers/media/i2c` Kconfig and
               Makefile instead of the IMX363 hunk, so it **deleted**

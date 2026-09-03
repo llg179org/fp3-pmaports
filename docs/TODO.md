@@ -202,12 +202,12 @@ repeated.
       expected working: display, touch, GPU, WiFi/BT, USB, modem). Branch test/linux-next-<tag>+debug, never under integration/ or debug-int/. ☠️ olddefconfig drops unknown symbols silently — diff the config before and after
       lane: phone
 
-- [ ] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
+- [x] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
       why: review B2/B6 — a tool trailer on somebody else's unchanged commit is a false disclosure
       the skill's own worked example of an uncited import is still uncited
       a non-existent model id sits in the disclosure trailer
       lane: upstreaming
-- [ ] 138. B3: drop 50e424881f1e (q6afe ADSP_EALREADY) from upstreaming/wcd9335-audio and answer Otto Pfluger's v2 4/4 thread instead (Tested-by + the FP3 measurement)
+- [x] 138. B3: drop 50e424881f1e (q6afe ADSP_EALREADY) from upstreaming/wcd9335-audio and answer Otto Pfluger's v2 4/4 thread instead (Tested-by + the FP3 measurement)
       why: review B3 — same fix as a posted, still-new patch
       STATUS.md already says it must not go out unanswered
       lane: upstreaming
@@ -222,6 +222,22 @@ repeated.
 - [ ] 141. Re-triage the power category: the left-out table calls sendable fixes 'not upstream-shaped' — pinctrl-msm8953 wakeirq map, irq-qcom-mpm wakeup timer/accessor/cap, qcom_smd wake irq + double teardown, qcom_smd-regulator set_suspend ops (minus both_sets), smsm proc-awake (+ a binding that does not exist yet), msm8953.dtsi MPM/rpm-stats/domain-idle-states, msm8916-wcd-digital mclk, slimbus disable_stream; plus camss RDI stride, leds-qcom-flash PMI632, ak7375 PM rework from camera
       why: review section 4 — each patches a file in Linus' tree with a measurement behind it and is blocked by none of D-1/D-2/D-3
       the experiments (xo_sleep_off, sleep_init, sleep_bw_off, both_sets) stay behind
+      lane: upstreaming
+- [ ] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
+      why: mail from Bert Karwatzki 2026-09-03 — reverting the commit fixes it on his device
+      the review's section 4 had just listed that dtsi work as sendable
+      a regression on a second device outranks that
+      lane: phone
+- [ ] 143. Take Bert Karwatzki's lc898217 two-supply fix (vaf + vio; the actuator's i2c times out with only one because the sensor rail is already down at probe) as HIS patch onto wip/7.1.3/camera, update the onnn,lc898217xc binding, drop the dev_info leftover; his device has this actuator at 0x72 with the IMX363 at 0x10
+      why: mail 2026-09-03 — the actuator the review called untested hardware is now tested, by him, on the original camera module
+      his authorship and Signed-off-by, our follow-up if any
+      lane: upstreaming
+- [ ] 144. Two rear-camera modules, two DTS: Bert's FP3 has IMX363@0x10 + LC898217@0x72, ours IMX363@0x1a + AK7374@0x0c; decide sdm632-fairphone-fp3.dtsi common + per-module dts (his proposal) before fp3-dts is cut, and ask the qcom DT maintainers on the cover letter how they want an undetectable module variant described
+      why: mail 2026-09-03 — the board DTS as written describes one of two shipped modules and disables the camera on the other
+      the eeprom@50 must stay on both
+      lane: upstreaming
+- [ ] 145. Draft the reply to Bert (the person sends it): thank + ask for a formal Tested-by on wcd9335-audio naming the commit set he ran (5bc4d5ebb7c0 = integration/7.1.3 of 2026-08-30, Debian trixie userspace, call audio works); our measured QRTR port data for his wakeup filter (39 voice, 40 NAS, 52 DSD; IMS off 48 -> 4.4 % duty; radio off = 1802 s sleep, so the noise is the network's); the touch regression acknowledged; his lc898217 patch taken with his authorship
+      why: a second tester on a second device is the strongest thing the cover letter can carry, and every word of the reply must be the person's
       lane: upstreaming
 <!-- FP3-QUEUE:END -->
 
