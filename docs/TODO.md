@@ -32,8 +32,9 @@ repeated.
 > where the measurements and the reasoning go.
 >
 > Markers: `[ ]` ready · `[~]` waiting on something outside the session ·
-> `[@]` needs a person · `[x]` done (then it moves to
-> [`TODO-DONE.md`](TODO-DONE.md)).
+> `[@]` needs a person · `[x]` done. ☠️ `done <id>` **moves the task out** to
+> [`TODO-DONE.md`](TODO-DONE.md) — an `[x]` left sitting here is a task nobody
+> archived, and a queue that only grows stops being readable.
 > Keys: `after:` prerequisite · `until:` when it comes back · `when:`/`they-do:`
 > for a person's item · `why:` one line on why this task is worth doing.
 >
@@ -63,14 +64,21 @@ repeated.
 > queue.cjs add "<text>" -- "after: 12; why: …"   # id allocated inside the lock
 > queue.cjs set <id> after|until|when|they-do|why <value>   # empty value removes
 > queue.cjs mark <id> ' '|x|~|@
-> queue.cjs done <id>            # marks [x] and releases the claim
+> queue.cjs done <id>            # ARCHIVES to TODO-DONE.md and releases the claim
 > queue.cjs release <id>         # give a claimed task back
 > queue.cjs check | next | claims
 > ```
 >
 > Each one re-reads inside the lock, changes the minimum, validates that the
 > section still parses and that the task count did not change, and renames
-> atomically. Measured: 10 concurrent `add`s produce 10 distinct ids and lose
+> atomically.
+>
+> ☠️ **What `done` does NOT do is update the pages, and that is deliberate.**
+> Moving the task out is mechanical; deciding that a result changes what the
+> phone does *today* is a judgement only the agent that ran it can make. So
+> `done` archives, and `results-guard` is what asks — every closed task's output
+> still goes by hand to `captures/…/README.md`, to `findings-log.md`, and to
+> `power/README.md` only if the current state changed. Measured: 10 concurrent `add`s produce 10 distinct ids and lose
 > nothing; 10 concurrent `mark`s leave the file intact.
 >
 > A task is **claimed** when the hook hands it out, so two windows are never given
