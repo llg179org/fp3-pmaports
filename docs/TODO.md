@@ -116,7 +116,7 @@ repeated.
       why: ringing is the ONLY acceptable gate; CS attach / SGs is a predictor only
 - [@] 112. Glance at the daily factory-Android FP3's status bar during a call
       when: at the next daytime call
-      they-do: on the CALLING handset, check whether it stays on LTE/4G (a VoLTE/HD icon) or drops to 2G/E/G for the duration. One word is the answer. ☠️ Otherwise we do not touch the daily phone
+      they-do: on the CALLING handset, DURING the call: turn WiFi off and try to load a page over mobile data. Data works = VoLTE on LTE; data stalls for the whole call and returns when it ends = CSFB (2G/3G). Cross-check without menus-guessing: Settings -> About phone -> SIM status -> 'Mobile network type', which updates live during the call. One word is the answer. ☠️ The STATUS BAR does not answer it — measured 2026-09-03: during a call Android shows only the handset icon, the network-type indicator is gone. ☠️ Otherwise we do not touch the daily phone
       why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
 - [~] 85. Replication across 3 boots + OCV-vs-QG
       until: 19:00
