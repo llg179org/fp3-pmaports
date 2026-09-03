@@ -97,6 +97,7 @@ Rounds:
 | – | | | | | |
 
 To do:
+- [ ] **Tested-by from Bert Karwatzki** — asked 2026-09-03 (reply drafted, #145; the person sends it); he ran `integration/7.1.3` @ `5bc4d5ebb7c0` (2026-08-30) with Debian trixie, call audio works. Goes on the cover and on the patches he exercised once his tag arrives, never before
 - [x] ~~the series carries `ASoC: q6afe: treat ADSP_EALREADY as success when starting a port`, and **D-2 v2 4/4 is the same fix**~~ — dropped 2026-09-03, see Done — Otto Pflüger's `ASoC: qcom: q6afe: remove "port already open" error`, message-id `20231029165716.69878-5-otto.pflueger@abscue.de`, posted 2023-10-29 and still `new`. Read it before sending ours; a reply on that thread is more likely right than a competing series
 - [ ] the machine-driver patch: decide between waiting for D-1 and posting the generic `q6afe` clock-set change into Otto's/Adam's thread (README "The chain is shorter than it looks")
 - [ ] measure the AFE `api_version` this ADSP reports (the one number the q6afe redesign turns on)
