@@ -168,6 +168,50 @@ proposing a mechanism.
 The difference reaches the chip through the display module, where there is no
 instrument from the AP side.
 
+## 5a. What the controller sees during the hang
+
+Read from the QUP registers and the two i2c pads while a transfer was hung
+(2026-09-04 19:13, full capture and its limits in
+[`REGISTERS-both-lines-low.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/REGISTERS-both-lines-low.md)):
+
+```
+--- HEALTHY (screen on, driver bound)
+pad gate (bus idle, must be 1/1): gpio10=1 gpio11=1
+[  0.001] STATE=0x01c OPER=0x0000c0[OUT_FULL,NO_INPUT] I2C_STATUS=0x0c000000[-]
+          gpio10=1 gpio11=1                                    probe 0.0003 s, errno 6
+
+--- HUNG (screen off, driver unbound)
+pad gate (bus idle, must be 1/1): gpio10=1 gpio11=1    <- one second before the probe
+[  0.001] STATE=0x01d OPER=0x000010[OUT_NOT_EMPTY]
+          I2C_STATUS=0x00138700[BUS_ACTIVE,BUS_MASTER] gpio10=0 gpio11=0
+[ 15.007] STATE=0x01c OPER=0x0000c0[OUT_FULL,NO_INPUT] gpio10=0 gpio11=0
+samples: 6197                                          probe 15.0057 s, errno 110
+```
+
+Five things, and together they narrow the mechanism a long way:
+
+1. **The controller starts.** `BUS_ACTIVE` and `BUS_MASTER` are set and
+   `QUP_STATE` 0x01d is `QUP_RUN_STATE` + `VALID`, against 0x01c
+   (`QUP_RESET_STATE`) at rest.
+2. **Both wires are held low for the entire 15 s** - and were **high one second
+   earlier** in identical conditions, which the pad gate recorded. Starting the
+   transfer pulls them down and they do not come back.
+3. **Nothing moves.** 6197 samples, two distinct states: hung, then post-timeout.
+   The sampler prints only on change.
+4. **No error, anywhere.** `QUP_ERROR_FLAGS` is 0 and the `I2C_STATUS` error mask
+   is clear: no NACK, no over- or under-run. From the controller's side nothing
+   went wrong - nothing happened.
+5. **A byte is stuck in the output FIFO** (`QUP_OPERATIONAL` = `OUT_NOT_EMPTY`).
+
+Master in RUN state, bus owned, data queued, no error, both wires grounded,
+static for fifteen seconds: a bus held down by something other than this
+controller. That is what an unpowered or unresponsive slave clamping the lines
+looks like, which is why §6's missing supplies matter.
+
+☠️ Limits: which pin is SDA and which is SCL was not verified (it does not matter
+here - both are low), and bits 10, 15, 16, 17 and 20 of `0x00138700` are
+undecoded because neither driver names them.
+
 ## 6. The oracle: what the vendor kernel does differently
 
 Ubuntu Touch runs the same silicon and does not have this symptom. Every
@@ -254,11 +298,13 @@ not send this until §6's inference is turned into a measurement.
 
 ## 8. Still unknown
 
-* **Why the transaction hangs.** Nothing readable from the AP differs between a
-  stalling and a non-stalling run (§5). Distinguishing "the chip holds SDA low"
-  from "the controller never starts" needs either a scope on gpio10/11 or a
-  readout of the QUP `I2C_STATUS` `BUS_ACTIVE`/`BUS_MASTER` bits at the moment
-  of the timeout. The latter is the next software step.
+* **What holds the lines down.** §5a settles that the controller starts and that
+  both wires are grounded for the whole timeout, which eliminates "the controller
+  never starts" and points at the slave. What it does not identify is the
+  mechanism on the chip side - an unpowered input clamping through its protection
+  diodes, a reset asserted mid-transfer, or the chip deliberately stretching
+  forever. Separating those needs either the missing supplies added (below) or a
+  scope.
 * **Whether the missing supplies are the cause** (§6).
 * **Whether `0314fee3ce35` makes it worse.** It is not the cause - stalls occur
   with no suspend at all - but whether the deeper `system-pc` state raises the
