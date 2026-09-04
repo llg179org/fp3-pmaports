@@ -39,6 +39,8 @@ with a link.
 
 Patch counts: `gh api repos/llg179org/linux/compare/7.1.3/main...submit/7.1.3/<cat> --jq .total_commits`, 2026-09-03, except `wcd9335-audio`, whose count is now its own series branch. The `submit/7.1.3/*` branches are the **legacy** namespace; each will be tagged `archive/submit-7.1.3-<cat>-final` and replaced by the `upstreaming/<series>` branch named in its section. Until then the `Source:` field names the legacy branch so the content stays findable. All seven `submit/7.1.3/*` branches are tagged `archive/submit-7.1.3-<cat>-final` and superseded, but **none is deleted** — deleting them is a separate call.
 
+2026-09-04: the ten `archive/upstreaming-*` tags created on 2026-09-03 existed only locally until today; all are on the fork now (`git ls-remote --tags fork 'refs/tags/archive/upstreaming-*'` to check — 60 s timeout, it answers).
+
 ☠️ A cut series does not carry everything its category does. Each section's **Left out** table names what stayed behind and where it goes; the sum of the `upstreaming/*` series plus those tables is what reproduces the category.
 
 ☠️ **A legacy branch was not one series.** Cutting the six remaining `submit/7.1.3/*`
@@ -388,6 +390,9 @@ To do:
       import commit so it is not blamed on us); cover letter with the disclosure
 
 Done:
+- 2026-09-04  the two AK7374 patches carried `Co-authored-by: Claude Opus 5` (the fork convention) instead
+              of the kernel-required trailer — rewritten to `Assisted-by: Claude:claude-opus-5`; tree
+              unchanged, old tip tagged `archive/upstreaming-imx363-camera-pre-trailer-20260904`
 - 2026-09-03  the `Assisted-by:` trailer was **dropped from Joel Selvaraj's import
               commit** on `wip/7.1.3/camera` first, then here (review B2, queue 137):
               the tool helped rewrite the message, not the code, and an import commit
@@ -592,7 +597,7 @@ Category:    power
 Tree:        irqchip — Thomas Gleixner, Radu Rendec; CC linux-kernel
 Source:      upstreaming/qcom-mpm-wakeup-timer — b4 prep branch, cut 2026-09-03 (#147)
              change-id 20260903-upstreaming-qcom-mpm-wakeup-timer-669405f46920
-             base-commit 1ad6d4a722f5 (tip/irq/core, 2026-07-21)
+             base-commit 1ad6d4a722f5 (tip/irq/core, committed 2026-07-22)
              sent rounds: – (none yet)
 Depends:     –
 ```
@@ -664,7 +669,7 @@ Category:    power
 Tree:        rpmsg — Bjorn Andersson, Mathieu Poirier; CC linux-remoteproc, linux-arm-msm
 Source:      upstreaming/qcom-smd-wake — b4 prep branch, cut 2026-09-03 (#147)
              change-id 20260903-upstreaming-qcom-smd-wake-badfecb4381d
-             base-commit 6c4fbf1ce493 (rpmsg/rpmsg-next, 2026-07-29)
+             base-commit 6c4fbf1ce493 (rpmsg/rpmsg-next, committed 2026-08-31)
              sent rounds: – (none yet)
 Depends:     –
 ```
@@ -732,7 +737,7 @@ Depends:     –; the dtsi consumer (`qcom,proc-awake-bit = <12>`) travels in ms
 
 Two patches: the binding (`qcom,proc-awake-bit`, uint32 ≤ 31, written 2026-09-03 —
 none existed) first, then the driver (`407669069a90`). ☠️ The binding has only been
-YAML-parsed here; `make dt_binding_check` needs dtschema, which this host lacks — run
+YAML-parsed here (and lives on `wip/7.1.3/power` since 2026-09-04); `make dt_binding_check` needs dtschema, which this host lacks — run
 it before v1. Cover-letter question: DT property or per-SoC match data — downstream
 drives bit 12 on msm8953, and whether other SoCs share it decides the answer.
 
@@ -745,6 +750,9 @@ To do:
 - [ ] cover letter with the DT-vs-match-data question
 
 Done:
+- 2026-09-04  the binding patch existed only on the series — landed on `wip/7.1.3/power` (`560ec1804ccc`)
+              with twins on `integration/7.1.3` (`09e35a75a715`) and `debug-int/7.1.3` (`c7a481512ebe`),
+              pushed, so a regeneration from `wip` keeps it
 - 2026-09-03  #155: `Assisted-by:` corrected to the model that wrote the `wip` code, `Claude:claude-opus-5`,
               with `Claude:claude-fable-5-1` as the second trailer for the reshaping (the binding patch, written today, carries only `claude-fable-5-1`); trees
               unchanged, old tip tagged `archive/upstreaming-smsm-proc-awake-pre-trailer-20260903`, series now `191029603da9`
@@ -816,7 +824,7 @@ Category:    camera
 Tree:        media — Bryan O'Donoghue, Vladimir Zapolskiy, Loic Poulain; CC linux-media, linux-arm-msm
 Source:      upstreaming/camss-rdi-stride — b4 prep branch, cut 2026-09-03 (#148)
              change-id 20260903-upstreaming-camss-rdi-stride-7384fd1ea6a5
-             base-commit 274af88c8aca (medianext/next, 2026-06-19)
+             base-commit 274af88c8aca (media `next` at git.linuxtv.org, committed 2026-09-01)
              sent rounds: – (none yet)
 Depends:     –
 ```
@@ -848,7 +856,7 @@ Category:    camera
 Tree:        LEDs — Lee Jones, Pavel Machek; binding also to the DT maintainers; CC linux-leds, devicetree
 Source:      upstreaming/qcom-flash-pmi632 — b4 prep branch, cut 2026-09-03 (#148)
              change-id 20260903-upstreaming-qcom-flash-pmi632-09bc1f0a8769
-             base-commit 4805e5ec50d0 (leds/for-leds-next, 2026-08-28)
+             base-commit 4805e5ec50d0 (leds/for-leds-next, committed 2026-09-03)
              sent rounds: – (none yet)
 Depends:     –
 ```
@@ -877,7 +885,7 @@ Category:    camera
 Tree:        media — Sakari Ailus; CC linux-media
 Source:      upstreaming/ak7375-pm — b4 prep branch, cut 2026-09-03 (#148)
              change-id 20260903-upstreaming-ak7375-pm-d1aabe655fdb
-             base-commit 274af88c8aca (medianext/next, 2026-06-19)
+             base-commit 274af88c8aca (media `next` at git.linuxtv.org, committed 2026-09-01)
              sent rounds: – (none yet)
 Depends:     – (the AK7374 id patch travels in imx363-camera, not here; nothing here needs it)
 ```
