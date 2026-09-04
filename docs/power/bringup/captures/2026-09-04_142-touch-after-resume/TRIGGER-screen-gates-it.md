@@ -46,24 +46,59 @@ Nothing Linux can see differs between a stalling and a non-stalling run. The
 difference reaches the chip through the display module, where the kernel has no
 instrument. The DT says as much: `touchscreen@48` declares **no supply at all**.
 
-## ☠️ The measurements that were wasted, and why
+## ☠️ The correction: the probe WAS a valid instrument
 
-Five automated campaigns produced 0 stalls in 52 688 transactions and each null
-was a *predicted* null:
+An earlier version of this page concluded that an unused-address probe "does not
+sample the same population" as the driver's reads, on the strength of 0 stalls in
+52 688 transactions. **That conclusion was wrong**, and the same day's data says
+so once it is sorted by the idle time *before* each probe rather than by rate:
 
-* probing at 0.33-2 transactions/s against a real-use rate of ~50/s;
-* probing at 44/s, which keeps a CPU spinning and may prevent the very idle
-  transition under suspicion;
-* **every one of them beginning with an unbind**, which may reset the state
-  being measured - raised by the operator, and unanswered;
-* and all of them counting the wrong denominator. Time, then transactions, then
-  resumes were each fitted in turn; the one that separates cleanly is the
-  **screen cycle**, which was not measured until the operator named it.
+```
+idle before probe   probes  stalls    rate
+      0.02 s (44/s)  52688       0    0.00 %
+      0.5 s           1392       0    0.00 %
+      2 s              300       0    0.00 %
+      3 s               40       0    0.00 %
+     10-60 s            20       1    5.00 %
+     15 s               60       1    1.67 %
+     45 s                3       1   33.3  %
+```
+
+There is a threshold between 3 s and 10 s, and it is the strongest effect
+measured all day - not a marginal one. Had the 52 688 fast probes carried the
+15 s rate, they would have produced ~878 stalls.
+
+What happened is a self-inflicted wound worth recording. The probe rate was
+raised through the afternoon because the operator ledger appeared to show the
+fault scaling with transactions; raising the rate necessarily dropped the idle
+below the threshold that actually governs it. The null that produced was then
+read as "the instrument is invalid" instead of "the instrument was moved out of
+its working range". The page had even flagged the risk in advance - *"the
+interesting range is below one second, and nothing has been measured there"* -
+and the sub-second measurement was taken as a verdict on the instrument rather
+than as the answer to that question.
+
+The screen A/B above is unaffected: both its arms used a 12 s blank, i.e. the
+same idle, above the threshold. Its 5/5 against 0/5 is a screen effect measured
+at constant idle.
+
+## Three gates, each measured
+
+1. **idle >= ~10 s** before the transaction (threshold between 3 s and 10 s)
+2. **screen off** (5/5 against 0/5 at an identical 12 s idle)
+3. **not a fresh boot** - the weakest leg, one observation each way:
+   `armB-clean-boot-trial2.txt` is a clean boot with a real suspend/resume on
+   the suspect `0x42000353` and ~513 post-resume touch interrupts, and **no
+   -110**; `armB-first-touch-after-resume.txt` is a boot carrying **187
+   suspends**, with one -110 landing exactly on the first touch after a resume.
+
+Gate 3 also explains the afternoon: the phone was rebooted five times, so every
+later run was on a young boot.
 
 ☠️ And the fingerprint that misled all day: the 15 s duration. It is the QUP
 `xfer_timeout` constant (2 s + 131072 x 99 us = 14.98 s), identical for every
-hang whatever the cause. "Same 15 s" was repeatedly taken as evidence of the
-same mechanism. It is evidence of nothing.
+hang whatever the cause. "Same 15 s" was repeatedly taken as evidence that two
+events were one. It is evidence of nothing.
 
 ## Where this points
 

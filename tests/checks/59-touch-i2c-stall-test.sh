@@ -101,28 +101,34 @@ else
 	say PASS "no i2c stalls across $irqs touch interrupts this boot"
 fi
 
-# --- 2. the active arm is RETIRED. Measured 2026-09-04, it did not work and it
-# was dangerous, and both halves are worth stating so nobody rebuilds it:
+# --- 2. the active arm is DISABLED HERE, but it is not useless - it was aimed
+# wrong. Sorted by the idle before each probe, 2026-09-04:
 #
-#   * it did not provoke the fault. Probing an unused address at the real-use
-#     transaction rate (~50/s, taken from the operator ledger) gave 0 stalls in
-#     52 688 transactions across two 10-minute runs, where the driver's own
-#     reads stall about once per 8000. Every earlier arm was slower still and
-#     its null was a predicted null.
-#   * it cost five reboots. It unbinds the driver first so the probe cannot
-#     collide with it, and while the screen is off the Himax probe then fails
-#     with -5, leaving the phone with no touchscreen until it is rebooted.
+#     idle    probes  stalls          idle    probes  stalls
+#     0.02 s   52688       0          10-60 s     20       1   (5.0 %)
+#     0.5  s    1392       0          15 s        60       1   (1.7 %)
+#     2    s     300       0          45 s         3       1
+#     3    s      40       0
 #
-# The deterministic reproducer that DOES work is not a selftest: it needs the
-# driver unbound and the screen cycled, so it lives with the capture -
+# The fault has a threshold between 3 s and 10 s of idle. The long null above it
+# came from raising the probe rate, which drops the idle below that threshold;
+# at the 15 s rate those 52 688 fast probes would have produced ~878 stalls.
+#
+# It is disabled in the selftest for a different reason: reproducing it needs
+# the screen OFF as well (5/5 against 0/5 at an identical 12 s idle), so the
+# check would have to blank the user's screen, unbind the driver, and rebind it
+# - and while the screen is off the Himax probe returns -5, which cost five
+# reboots in one afternoon before the rebind was moved to the screen-on state.
+#
+# The working reproducer, with that ordering baked in, is
 # docs/power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh
-# (screen off 5/5 stall, screen on 0/5, interleaved). Read TRIGGER-screen-gates-it.md
-# there before touching any of this: it lists what was eliminated by measurement
-# and why the 15 s duration is not a fingerprint but the QUP timeout constant.
+# Read TRIGGER-screen-gates-it.md beside it first: it lists the three measured
+# gates (idle >= 10 s, screen off, not a fresh boot) and why the 15 s duration
+# is not a fingerprint but the QUP timeout constant.
 if [ -n "$FP3_TOUCH_PROBE" ]; then
-	say SKIP "FP3_TOUCH_PROBE is retired - the probe does not provoke the fault"
-	say SKIP "  (0 stalls in 52688 transactions at the real-use rate) and it costs"
-	say SKIP "  a reboot when the screen is off. Use 142-trigger.sh from the capture."
+	say SKIP "FP3_TOUCH_PROBE is disabled here - reproducing the fault needs the"
+	say SKIP "  screen off and >=10 s idle, so it blanks the screen and unbinds the"
+	say SKIP "  driver. Use 142-trigger.sh from the capture instead."
 fi
 
 exit $fail
