@@ -27,6 +27,32 @@
 # no vulnerable moments, so a clean log means "not exercised", NOT "not broken".
 # This check says which of the two it is measuring.
 #
+# ☠️ HOW LONG THE ACTIVE RUN MUST BE - the number that decides whether a PASS is
+# worth anything. The 15 stalls of that session were separated by
+#
+#     23  38  43  46  47  57  62  62  104  161  243  472  618  726   seconds
+#     min 23   median 62   max 726
+#
+# so the floor has nothing to do with statistics: ANY run shorter than a few
+# times 726 s can come back clean while the fault is fully present. Call it
+# ~36 min = 730 probes at 3 s spacing as the shortest credible active run.
+# Above that floor, a clean run of length T bounds the rate at 3/T (rule of
+# three, 95 %); against the session rate of 1 stall per 200 s of active use
+# that is
+#
+#     ~10 min  clean  ->  only rules out "worse than today"
+#     ~100 min clean  ->  10x better than today
+#     ~17 h    clean  ->  100x better, i.e. "gone"
+#
+# ☠️ And the per-probe rate quoted below is soft. Measured 2026-09-04 in one
+# session: 200 probes at 0.5 s spacing produced exactly one stall - on trial 0,
+# the first access after the setup idle - and 40 probes at 3 s spacing produced
+# none at all. That 3 s arm was meant to be the known-positive control and came
+# back empty, which is what 40 probes buys you (0/40 has a 13 % chance even at
+# 5 %/probe). No two stalls were ever closer than 23 s, so there may be a
+# refractory period, and if there is, "stalls per probe" is not even well
+# defined - it falls with probe density. Size the run in TIME, not in probes.
+#
 # ☠️ IT DOES NOT PROVOKE THE FAULT BY DEFAULT, and that is deliberate. The
 # obvious active probe - a userspace read on the same bus - collided with the
 # touchscreen driver on 2026-09-04, wedged the controller into 1824 consecutive
@@ -117,8 +143,18 @@ if [ -n "$FP3_TOUCH_PROBE" ]; then
 			say FAIL "active probe: $hits of $FP3_TOUCH_PROBE first-accesses-after-idle hung"
 			fail=1
 		else
-			say PASS "active probe: 0 of $FP3_TOUCH_PROBE hung (at ~5 %/probe, $FP3_TOUCH_PROBE probes"
-			say PASS "  miss a real fault $(python3 -c "print(round(0.95**$FP3_TOUCH_PROBE*100))" 2>/dev/null || echo '?') % of the time - a pass here is weak)"
+			secs=$((FP3_TOUCH_PROBE * 3))
+			if [ "$secs" -lt 2178 ]; then
+				# below 3 x the longest observed gap (726 s): a clean run here
+				# is compatible with the fault being fully present.
+				say SKIP "active probe: 0 of $FP3_TOUCH_PROBE hung, but ${secs}s is under the"
+				say SKIP "  ~2180 s floor (3 x the longest observed 726 s gap), so this"
+				say SKIP "  proves nothing. Use FP3_TOUCH_PROBE=730 for the shortest"
+				say SKIP "  credible run, 2000 to claim a real improvement."
+			else
+				say PASS "active probe: 0 of $FP3_TOUCH_PROBE hung over ${secs}s; 95 % upper bound"
+				say PASS "  on the rate is 1 per $((secs / 3)) s, vs 1 per 200 s measured 2026-09-04"
+			fi
 		fi
 	fi
 fi
