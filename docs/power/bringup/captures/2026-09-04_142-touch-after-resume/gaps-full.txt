@@ -1,0 +1,30 @@
+== gap logger start 2026-09-04 13:10:21  (threshold 100 ms, only while BTN_TOUCH=1)
+13:10:38.181  GAP    100.8 ms   (finger down, frame 77)
+13:10:46.214  GAP    126.9 ms   (finger down, frame 366)
+13:10:46.999  GAP    429.5 ms   (finger down, frame 404)
+13:11:03.214  GAP    125.7 ms   (finger down, frame 677)
+13:11:21.860  heartbeat: frames=701 gaps>=100ms=4 down=False
+13:11:24.114  GAP    142.4 ms   (finger down, frame 718)
+13:12:02.483  GAP    109.8 ms   (finger down, frame 1498)
+13:12:15.949  GAP    123.2 ms   (finger down, frame 1930)
+13:12:24.862  heartbeat: frames=2018 gaps>=100ms=7 down=False
+13:12:28.506  GAP    110.5 ms   (finger down, frame 2082)
+13:12:32.549  GAP    110.6 ms   (finger down, frame 2231)
+13:12:33.215  GAP    110.2 ms   (finger down, frame 2260)
+13:12:44.528  GAP    109.6 ms   (finger down, frame 2460)
+13:13:06.880  GAP    100.2 ms   (finger down, frame 2691)
+13:13:19.605  GAP    107.3 ms   (finger down, frame 3133)
+13:13:24.944  heartbeat: frames=3313 gaps>=100ms=13 down=False
+13:14:03.238  GAP    100.4 ms   (finger down, frame 4068)
+13:14:05.692  GAP    114.8 ms   (finger down, frame 4147)
+13:14:24.987  heartbeat: frames=4695 gaps>=100ms=15 down=False
+13:14:30.659  GAP    109.1 ms   (finger down, frame 4868)
+== gap logger start 2026-09-04 13:15:02  (threshold 100 ms, only while BTN_TOUCH=1)
+== gap logger start 2026-09-04 13:15:27  (v2: EVERY gap >= 100 ms, down= annotated, never filtered)
+13:16:29.778  heartbeat: frames=25 gaps>=100ms=0 down=False
+13:16:46.795  GAP     123.5 ms   down=True  frame=704
+13:16:52.562  GAP     211.0 ms   down=True  frame=873
+13:17:25.698  GAP     100.7 ms   down=True  frame=1882
+13:17:29.806  heartbeat: frames=2050 gaps>=100ms=3 down=False
+13:17:39.441  GAP     107.3 ms   down=True  frame=2419
+13:18:29.862  heartbeat: frames=4414 gaps>=100ms=4 down=True
