@@ -29,8 +29,28 @@ usage: 142-i2cprobe.py <bus> <addr-hex> <idle-seconds> <trials>
 """
 import sys, time, fcntl, os, errno
 
+def bus_of(platform):
+    """Resolve an i2c bus number from its PLATFORM device, never a fixed index.
+
+    ☠️ 2026-09-04: the touchscreen bus was i2c-2 for most of the day and came
+    back as i2c-3 after a reboot, with the NFC controller taking i2c-2. A probe
+    hardcoded to /dev/i2c-2 would then have measured the wrong bus while looking
+    entirely healthy - and reading /sys/bus/i2c/devices/2-0048 made a working
+    touchscreen look dead. The index is not stable across boots; the platform
+    address is.
+    """
+    import glob, os
+    for a in glob.glob("/sys/bus/i2c/devices/i2c-*"):
+        if platform in os.path.realpath(a):
+            return int(os.path.basename(a).split("-")[1])
+    raise SystemExit("no i2c bus found for %s - refusing to guess" % platform)
+
+
 I2C_SLAVE_FORCE = 0x0706
-bus, addr, idle, n = int(sys.argv[1]), int(sys.argv[2], 16), float(sys.argv[3]), int(sys.argv[4])
+# argv[1] is either a bus NUMBER (legacy) or a platform address like 78b7000
+_b = sys.argv[1]
+bus = bus_of(_b) if not _b.isdigit() else int(_b)
+addr, idle, n = int(sys.argv[2], 16), float(sys.argv[3]), int(sys.argv[4])
 dev = "/dev/i2c-%d" % bus
 print("probe: %s addr=0x%02x idle=%.1fs trials=%d  (started %s)"
       % (dev, addr, idle, n, time.strftime("%H:%M:%S")), flush=True)

@@ -1,0 +1,66 @@
+== start 2026-09-04 14:29:28  60 probes, 15 s idle, audio on
+Running as unit: fp3-tone.service; invocation ID: 4db46c2ef48a4b4b8e3d8420242e49d6
+   playback CONFIRMED: state=RUNNING tstamp=350.667965286
+   touch unbound: yes
+probe 1  dur=0.0004s  wall=0s  audio_advanced=0.12s  state=RUNNING
+probe 2  dur=0.0002s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 3  dur=14.9915s  wall=15s  audio_advanced=15.09s  state=RUNNING  <<< STALL
+probe 4  dur=0.0004s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 5  dur=0.0004s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 6  dur=0.0005s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 7  dur=0.0003s  wall=0s  audio_advanced=0.12s  state=RUNNING
+probe 8  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 9  dur=0.0003s  wall=1s  audio_advanced=0.06s  state=RUNNING
+probe 10  dur=0.0003s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 11  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 12  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 13  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 14  dur=0.0006s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 15  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 16  dur=0.0002s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 17  dur=0.0006s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 18  dur=0.0003s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 19  dur=0.0006s  wall=0s  audio_advanced=0.05s  state=RUNNING
+probe 20  dur=0.0009s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 21  dur=0.0010s  wall=0s  audio_advanced=0.12s  state=RUNNING
+probe 22  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 23  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 24  dur=0.0006s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 25  dur=0.0002s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 26  dur=0.0003s  wall=1s  audio_advanced=0.09s  state=RUNNING
+probe 27  dur=0.0005s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 28  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 29  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 30  dur=0.0005s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 31  dur=0.0006s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 32  dur=0.0005s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 33  dur=0.0004s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 34  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 35  dur=0.0002s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 36  dur=0.0002s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 37  dur=0.0007s  wall=1s  audio_advanced=0.09s  state=RUNNING
+probe 38  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 39  dur=0.0009s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 40  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 41  dur=0.0009s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 42  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 43  dur=0.0006s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 44  dur=0.0010s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 45  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 46  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 47  dur=0.0003s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 48  dur=0.0008s  wall=1s  audio_advanced=0.09s  state=RUNNING
+probe 49  dur=0.0008s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 50  dur=0.0003s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 51  dur=0.0006s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 52  dur=0.0009s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 53  dur=0.0005s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 54  dur=0.0005s  wall=0s  audio_advanced=0.06s  state=RUNNING
+probe 55  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 56  dur=0.0006s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 57  dur=0.0008s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 58  dur=0.0004s  wall=0s  audio_advanced=0.09s  state=RUNNING
+probe 59  dur=0.0004s  wall=1s  audio_advanced=0.09s  state=RUNNING
+probe 60  dur=0.0009s  wall=0s  audio_advanced=0.09s  state=RUNNING
+== done 14:45:01
+== rebind failed twice - REBOOTING so the phone gets its touchscreen back
