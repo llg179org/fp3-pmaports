@@ -2535,3 +2535,7 @@ so that `after:` and `continues:` references still resolve.
 - [x] **155.** Assisted-by model correction on the eight series cut 2026-09-03 (all but qcom-smd-wake): for each patch take the model from its wip commit's Co-authored-by (git log on wip/7.1.3/{power,camera}) and set Assisted-by: Claude:<that model id>, adding claude-fable-5-1 as a second trailer where 5.1 reshaped the patch; force-with-lease after tagging; STATUS Done line per series  — closed 2026-09-03 21:33
       lane: upstreaming
       why: skill rule: name the model that did the work; #147/#148 wrote fable-5-1 on all, but the code was written 2026-08 by Fable 5 (and earlier models on camera)
+
+- [x] **155.** Rebase upstreaming/imx363-camera onto media next 274af88c8aca (it sits on v7.3-rc1, 16 commits behind the base camss-rdi-stride and ak7375-pm use); tag the old tip, force-with-lease, checkpatch, STATUS base line + Done  — closed 2026-09-04 05:49
+      lane: upstreaming
+      why: one media tree, three series on two different bases is a question a maintainer will ask; found by the 2026-09-04 review

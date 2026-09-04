@@ -126,10 +126,11 @@ repeated.
       after: 85
       why: the morning triage; night-budget.py and the bands are ready
       continues: 85
-- [~] 79. Shunt calibration — the only witness that does not pass through the PMI632
+- [@] 79. Shunt calibration — the only witness that does not pass through the PMI632
       until: 09-04 10:24
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
       lane: phone
+      they-do: Needs physical hardware: a shunt resistor wired in series with the battery plus a meter. That is the whole point of the task - it is the only current witness that does not pass through the PMI632 ADC, so no software route can substitute for it. ☠️ It does NOT block: the calibration offset can be bounded without a shunt by |e| <= 1.49 (delta + I*|g|) from a rested, radio-off OCV block, and tonight's #85 produces that pair (#118 evaluates it). So this is a strengthening measurement to do when the hardware is at hand, not a gate on anything.
 - [~] 72. Threshold-time method (a current ratio needing no calibration)
       after: 85
       why: conditional fallback — only alive if the |ε| bound computed from tonight's OCV pair is not tight enough
@@ -217,22 +218,24 @@ repeated.
       lane: upstreaming
       after: 79
 
-- [@] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
-      why: mail from Bert Karwatzki 2026-09-03 — reverting the commit fixes it on his device
+- [~] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
+      why: PAUSED to the weekend at the operator's request. Mechanism found and NOT the suspect commit: all 15 -110/-6 events end a 14-16 s hole that matches the QUP xfer_timeout of 14.98 s exactly (no clock-frequency in the DT -> 100 kHz default), and none needed a suspend, so 0314fee3ce35 is not the cause of what we measured. Open: why the transaction hangs. Next test is armed-and-documented in docs/power/bringup/captures/2026-09-04_142-touch-after-resume/RESUME-at-the-weekend.md - i2c runtime PM held on vs auto, with COMPARABLE touching in both arms (the -110 rate is usage-driven, ~1/min of tapping, zero on unattended boots). Device restored to control=auto, all loggers stopped, so tonight's power runs are unaffected.
       the review's section 4 had just listed that dtsi work as sendable
       a regression on a second device outranks that
       lane: phone
-      they-do: attach/power on the FP3 dev device: no USB gadget enumerated, no NCM iface, 172.16.42.1 unreachable (measured 2026-09-04). The hold is verified in place and the A/B protocol is pre-registered in docs/power/bringup/findings-log.md; the reproduction needs the phone plus one human touch-after-resume confirmation.
+      they-do: At the weekend: a few MINUTES of tapping per arm (gnome-calculator is enough), not seconds - the -110 rate is usage-driven, ~1 per minute of active tapping and zero on unattended boots, so a clean test arm proves nothing unless it saw as much touching as the baseline. Both arms and the exact commands are in RESUME-at-the-weekend.md; the scripts are already on the device in /home/fp3. Also worth telling: whether the panel has ever behaved differently on an older kernel, since the journal only holds #80-fp3 boots and cannot say if this is a regression at all.
+      until: 09-06
 
 - [ ] 149. Cut msm8953-dtsi-idle (rpm-stats, rpm-master-stats, MPM node + wakeup-parent, domain-idle-states rename, drop local-timer-stop, system-pc request, SMSM bit) on the qcom SoC DT tree; keep 0314fee3ce35 (system-pc affinity) OUT until #142 settles; dtbs_check against the upstream bindings
       lane: upstreaming
       after: 142
       why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
 
-- [@] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
+- [~] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
       lane: phone
-      why: #150 landed the overlay split on all three branches (wip c6996a7c79c3, debug-int 7f18166c7b7c); a build that keeps the old dtb name silently loses the camera
-      they-do: attach/power on the FP3: the boot-fallback gate (fp3-selftest --only boot-fallback) runs BEFORE the switch and the camera/focus verify after it, so neither end is doable today (device unreachable, measured 2026-09-04). Host-side groundwork done and in docs/deploy/README.md: the linux-fp3 APKBUILD needs NO change (dtbs_install already ships both composites), and the deviceinfo_dtb rename must NOT land ahead of the _commit bump - the pinned b8023520cddb predates the split, so renaming first breaks the next build. Tarball for the tip 7f18166c7b7c verified 200 (control 404), fork ref matches.
+      why: ☠️ CORRECTION 2026-09-04 13:30: the earlier note said 'device unreachable' - that was true at 09:00 and false by 11:30; the phone has been in use all day. The real reason to wait is different: #85 (the overnight replication) starts 19:00 on this phone, and flashing a new _commit would swap the kernel out from under it. So this waits until after tonight's run, not for the device. Host-side groundwork stands (docs/deploy/README.md): the linux-fp3 APKBUILD needs no change, and the deviceinfo_dtb rename must land in the SAME change as the _commit bump - the pinned b8023520cddb predates the overlay split, so renaming first breaks the next build. Order on the day: fp3-selftest --only boot-fallback first, then bump+rename+checksum+build, then flash, then the camera/focus checks.
+      they-do: -
+      until: 09-05
 - [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
       lane: upstreaming
       until: when/he-replies
@@ -242,9 +245,7 @@ repeated.
       lane: upstreaming
       until: when/he-replies
       why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
-- [ ] 155. Rebase upstreaming/imx363-camera onto media next 274af88c8aca (it sits on v7.3-rc1, 16 commits behind the base camss-rdi-stride and ak7375-pm use); tag the old tip, force-with-lease, checkpatch, STATUS base line + Done
-      lane: upstreaming
-      why: one media tree, three series on two different bases is a question a maintainer will ask; found by the 2026-09-04 review<!-- FP3-QUEUE:END -->
+<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
