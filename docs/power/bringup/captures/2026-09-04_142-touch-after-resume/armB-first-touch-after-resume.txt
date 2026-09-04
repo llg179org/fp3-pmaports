@@ -1,0 +1,34 @@
+Boot of 2026-09-03 23:16:29, kernel #80-fp3, _commit 5aafd59e553a, system-pc = 0x42000353
+
+Timestamp mapping anchored from inside the run (the printk clock stops across
+suspend, so boot_wall + dmesg_ts is wrong by the accumulated sleep - it gave
+09:30 for an event that happened at 11:22):
+
+    kmsg anchor   kt 37054.47  =  wall 11:26:49
+
+  kt 36373.6  = 11:15:28   PM: suspend exit            (arm B resume)
+  kt ~36400   = ~11:17     touch IRQ read as 0         (nothing had touched it)
+  kt 36824.4  = 11:22:59   Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+  kt 37054.5  = 11:26:49   anchor
+
+Operator report for 11:22:59 (verbatim, translated): pressed the wake button,
+swiped up, no reaction - "but my hand was wet". Then pressing the small upward
+triangle at the bottom of the screen worked and the lock screen changed.
+
+Counters:
+  touch IRQ (msmgpio 65, hx83112b)   0 -> 421 (11:26) -> 519 (11:30)
+  "Failed to read input event: -110" 1 in the whole boot, at 11:22:59
+  suspends this boot                 187
+
+Reading, with its limits stated:
+  - The one -110 of the entire boot lands on the FIRST touch access after the
+    resume. That is Bert's error code and Bert's position in the sequence.
+  - It is NOT explained by the wet hand: the message says the driver took the
+    interrupt and then could not read the report over i2c. Wetness degrades
+    capacitive sensing, not the AP<->controller bus.
+  - The ~98 further touches up to 11:30 produced no second -110, so on this
+    device the failure is transient and recovers, whereas Bert reports reverting
+    the commit fixes a persistent breakage. Same code, not yet the same severity.
+  - n=1 and NO control: nothing yet shows whether the first touch of a boot
+    with no suspend at all also produces it. That control is what the reboot
+    below is for.

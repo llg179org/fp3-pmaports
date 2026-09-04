@@ -90,3 +90,34 @@ confirmation, never on a timer.
 ☠️ And the limit that holds whatever we find: Bert's report is on a **second**
 FP3. A clean run here does not disprove it — two devices differing is itself the
 finding, and the question would move to what differs between them.
+
+---
+
+## Update, same day: the reproduction, and the control it still lacked
+
+`armB-first-touch-after-resume.txt` carries it. The one `-110` of the whole boot
+landed on the **first touch access after the resume** — Bert's error code in
+Bert's position in the sequence.
+
+☠️ **Reading the timestamps needed a correction that inverts the conclusion.**
+The printk clock stops across suspend while `/proc/uptime` counts suspended time,
+so `boot_wall + dmesg_ts` put the event at 09:30 — two hours before the operator
+touched anything, which reads as "unrelated to us". Anchoring the monotonic clock
+from inside the run (`kt 37054.47 = wall 11:26:49`) puts it at **11:22:59**, in
+the operator's own touch session, 7.5 min after the resume. Anchor the clock; do
+not compute wall time from boot plus a dmesg timestamp on a machine that sleeps.
+
+What the arm still lacked, and why the phone was rebooted at 11:30: **no control**.
+Nothing showed whether the first touch of a boot that has *never suspended* also
+produces a `-110`. Without that, "it happens after resume" and "it happens on the
+first access of a boot" are the same observation.
+
+Fresh boot 2026-09-04 11:30:53, same kernel and same `system-pc = 0x42000353`:
+
+```
+uptime 39 s   suspends 0   touch IRQ 0   -110 count 0
+grep pattern self-test on a synthetic line: 1   (the pattern can fire)
+```
+
+That is the clean baseline the control needs. Awaiting the operator's first touch
+on a boot with zero suspends.
