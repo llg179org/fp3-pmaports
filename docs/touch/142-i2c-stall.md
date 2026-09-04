@@ -1,0 +1,249 @@
+# The touchscreen freezes for 15 seconds (#142)
+
+> ⚠️ **AI-assisted.** The measurements on this page were run by Claude (Opus 5)
+> under the direction of Lajosházi, László Gergely, who reviewed them. Every
+> number states the conditions it was taken under; where a claim is an inference
+> rather than an observation it says so.
+
+Reported upstream by Bert Karwatzki against msm8953-mainline commit
+`0314fee3ce35` (msm8953.dtsi, `system-pc` `arm,psci-suspend-param`
+0x41000353 -> 0x42000353): the hx83112b touchscreen stops responding after
+resume. Independently observed on this device by the operator.
+
+**Status: the duration is fully explained, the trigger conditions are measured,
+the cause of the hang is not known.** The msm8953.dtsi idle-state patch is on
+HOLD until it is.
+
+---
+
+## 1. The symptom, verbatim
+
+```
+Himax-hx83112b-TS 2-0048: Failed to read input event: -110      (ETIMEDOUT)
+Himax-hx83112b-TS 2-0048: Failed to read input event: -6        (ENXIO)
+```
+
+What the user sees: the panel is dead for ~15 s, then works again. Typically
+the first touch after waking the screen. `himax_handle_input()` logs the error
+and drops the event, `himax_irq_handler()` returns `IRQ_NONE`, and **the driver
+retries nowhere**, so the touch is simply lost.
+
+Counting instrument: `dmesg | grep -c 'Failed to read input event: -110'`, against
+the touch interrupt count in `/proc/interrupts` (row `msmgpio 65 ... hx83112b`).
+
+## 2. Closed: why it is 15 seconds
+
+Not a property of the fault. `drivers/i2c/busses/i2c-qup.c` computes the
+transfer timeout **once, at probe**, from the largest transfer the controller
+could ever perform, and then applies it to every transfer:
+
+```c
+#define TOUT_MIN 2                            /* seconds */
+#define MX_DMA_TX_RX_LEN  (2 * SZ_64K)        /* 131072 bytes */
+one_bit_t  = (USEC_PER_SEC / clk_freq) + 1;
+one_byte_t = one_bit_t * 9;
+qup->xfer_timeout = TOUT_MIN * HZ + usecs_to_jiffies(MX_DMA_TX_RX_LEN * one_byte_t);
+```
+
+The DT declares no `clock-frequency`, so the driver defaults to 100 kHz:
+
+    2 s + 131072 x 99 us = 14.976 s
+
+Measured stalls: 14.99-15.17 s. That is the constant, not the fault.
+
+☠️ **The 15 s is therefore not a fingerprint.** Every hang on this bus lasts
+exactly this long whatever causes it, so "same 15 s" is not evidence that two
+events share a mechanism. That mistake cost most of a day (2026-09-04).
+
+A 4-byte read from the touch controller inherits a timeout sized for 128 KB.
+That is what turns a momentary bus problem into a 15-second dead screen, and it
+is a defect in its own right - see §7.
+
+## 3. Reproducing it
+
+`docs/power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh`
+
+Unbind the touch driver, issue one i2c transaction to an address with no device
+on it, and time it. Interleaved arms, five each (2026-09-04, `debug-int/7.1.3`,
+kernel `#80-fp3`, commit `5aafd59e553a`):
+
+```
+round 1 OFF  15.0704 s errno 110  STALL      round 1 ON  0.0006 s errno 6  ok
+round 2 OFF  15.0692 s errno 110  STALL      round 2 ON  0.0004 s errno 6  ok
+round 3 OFF  15.0899 s errno 110  STALL      round 3 ON  0.0003 s errno 6  ok
+round 4 OFF  15.0465 s errno 110  STALL      round 4 ON  0.0006 s errno 6  ok
+round 5 OFF  15.1061 s errno 110  STALL      round 5 ON  0.0006 s errno 6  ok
+
+screen OFF 5/5      screen ON 0/5      (7/7 vs 0/7 including reruns; p ~ 0.004)
+```
+
+☠️ **This is not the operator's fault, and must not be quoted as if it were.**
+The operator's fault happens with the driver **bound**; this reproducer requires
+it unbound, which never happens in normal use. What it establishes is narrower:
+the touch chip *can* hold the bus for the full timeout, and whether it does is
+gated by the screen, deterministically.
+
+☠️ The rebind must be done with the **screen on**. With the screen off the Himax
+probe returns -5 and the phone is left with no touchscreen until rebooted; that
+cost five reboots in one afternoon before the ordering was fixed.
+
+## 4. The gates, with their strength
+
+Three conditions are measured. They are not equally well established, and the
+difference matters more than the list does.
+
+**Gate 1 - idle before the transaction, >= ~10 s.** Strong, but carried entirely
+by the null in the fast range:
+
+```
+idle before probe   probes  stalls          idle    probes  stalls
+      0.02 s (44/s)  52688       0          10-60 s     20       1
+      0.5  s          1392       0          15 s        60       1
+      2    s           300       0          15 s        59       0
+      3    s            40       0          45 s         3       1
+
+pooled:  >= 10 s   3 / 142  = 2.11 %        <= 3 s   0 / 54420
+if the fast range had the slow rate: 1150 stalls expected, 0 observed
+rule of three on the fast range: < 0.0055 %  ->  >= 383x separation
+```
+
+☠️ The separation is real, but there are only **three events** above the
+threshold. "The threshold lies between 3 s and 10 s" is an inference from four
+small runs; "below 3 s the fault effectively does not occur" is the measured
+part.
+
+**Gate 2 - screen off.** Strong and clean: 5/5 against 0/5 at an **identical**
+12 s idle, interleaved arms, one variable.
+
+**Gate 3 - not a fresh boot.** Weak; three observations, one of them decisive
+only if the other two hold:
+
+| capture | suspends this boot | result |
+|---|---|---|
+| `armB-clean-boot-trial2.txt` | 1 | a real suspend/resume on the suspect psci value, ~513 post-resume touch interrupts, **no -110** |
+| 16:54 boot, 2026-09-04 | 0 | **0 stalls in 59 probes** at 15 s idle, screen off |
+| `armB-first-touch-after-resume.txt` | 187 | one -110, on the **first touch after a resume** |
+
+Gate 3 also explains an otherwise puzzling afternoon: the phone was rebooted
+five times, so every later run ran on a young boot.
+
+## 5. Eliminated by measurement
+
+Everything Linux can see is **identical** between a stalling and a
+non-stalling run. This is the part of the page most worth reading before
+proposing a mechanism.
+
+| candidate | instrument | result |
+|---|---|---|
+| a shared regulator dropping | `/sys/kernel/debug/regulator/regulator_summary`, screen on vs off | `l6` unchanged, `normal 1800mV` in both |
+| i2c controller runtime PM | `78b7000.i2c/power/runtime_status` | `suspended` in **both** arms before the probe |
+| pinctrl sleep/default state | `pinctrl/1000000.pinctrl/pinmux-pins`, pins 10/11 | identical: `gpio` while suspended, `blsp_i2c3` after; the in-tree pinctrl fix is working |
+| touchscreen reset GPIO | same file, pin 64 | `GPIO ...:592` -> `UNCLAIMED` on unbind, identically in both arms |
+| system suspend (Bert's suspect) | stalls observed with **no suspend at all** | `0314fee3ce35` is not the cause of the stall as such |
+| audio disturbed by the same stall | ALSA `tstamp` across a 15 s stall | 15.09 s of audio over 15 s of wall clock; unaffected |
+| correlation with other subsystems | kernel log +/- 20 s, charger, usbnet-watchdog, ModemManager, phoc | nothing; phoc excluded only by an activity-matched control |
+
+The difference reaches the chip through the display module, where there is no
+instrument from the AP side.
+
+## 6. The oracle: what the vendor kernel does differently
+
+Ubuntu Touch (downstream 4.9, `/mnt/1TB/pmos/ubports-fp3-kernel`) runs the same
+silicon and does not have this symptom. It stacks **three** independent
+mitigations; mainline has one of them.
+
+**Retry, in the touch driver.** `drivers/input/touchscreen/hxchipset83112b/himax_platform.c`
+wraps every read and every write in `for (retry = 0; retry < toRetry; retry++)`
+with `HIMAX_REG_RETRY_TIMES = 5` (`himax_ic.h:20`). Mainline `himax_hx83112b.c`
+retries nowhere.
+
+**Timeout proportional to the transfer.** `i2c-msm-v2.c:i2c_msm_xfer_calc_timeout()`
+sizes it per transfer from the actual byte count; constants from
+`include/linux/i2c/i2c-msm-v2.h:202-203` (`SAFETY_COEF` 10, `MIN_USEC` 500000):
+
+| transfer | downstream | mainline i2c-qup |
+|---|---|---|
+| 4-byte himax read | **0.504 s** | 14.976 s |
+| 8-byte read | 0.507 s | 14.976 s |
+| 128 KB maximum | 118.5 s | 14.976 s |
+
+Note the shape: downstream is *more* generous for a huge transfer and far
+stricter for a small one. It is not more cautious, it is **proportional**.
+
+**Pinctrl re-selected around every transfer** (`i2c-msm-v2.c:2248` and `:2293`).
+Mainline did not do this until our own
+`i2c: qup: select the sleep/default pinctrl states across runtime PM`, which is
+in the running kernel (`1380c70af7b3` on `debug-int/7.1.3`) and measured working
+in §5.
+
+**And the device tree declares supplies that ours does not.** The FP3 board file
+downstream is `arch/arm64/boot/dts/qcom/sdm450-pmi632.dtsi` (identified by
+`himax,hxcommon` at `reg = <0x48>` with `display-coords = <0 1080 0 2160>`,
+matching our `touchscreen-size-x/y`):
+
+```
+vendor sdm450-pmi632.dtsi            mainline sdm632-fairphone-fp3.dts
+  compatible = "himax,hxcommon"        compatible = "himax,hx83112b"
+  reg = <0x48>                         reg = <0x48>
+  vcc_i2c-supply = <&pm8953_l6>        (absent)
+  vdd-ana-supply = <&pm8953_l10>       (absent)
+```
+
+Our `touchscreen@48` declares **no supply at all**, and the driver requests no
+regulator. `pm8953_l6` is the same rail our *panel* node takes `iovcc` from, so
+the touch chip's i2c-pad supply is held only by the panel driver, and its analog
+supply `l10` by nobody - it reads `idle 2800mV`, with no consumer voting for it.
+
+☠️ **This is the strongest root-cause candidate on the page and it is still an
+inference**, not a measurement: the two missing supplies have not been added and
+the fault has not been shown to disappear when they are.
+
+## 7. Proposed fixes
+
+Two changes, to two different trees, **neither of which requires knowing why the
+bus hangs**. Together they remove the user-visible symptom.
+
+**`i2c: qup`: size the transfer timeout from the transfer.** A 4-byte read
+should not inherit a timeout computed for 128 KB. The downstream driver on this
+same hardware is the evidence that proportional is the correct behaviour here.
+This does not fix the hang; it turns a 15-second dead screen into a fraction of
+a second. Goes to the i2c tree, on its own.
+
+**`Input: himax_hx83112b`: retry the transfer.** Precedent on this very phone:
+`media: i2c: ak7375: retry the first transfer of a resume` - *"the first
+transfer after the supplies come up can time out ... the resume returns -110"* -
+same signature, different controller, already diagnosed and fixed here by
+retrying. Goes to the input tree.
+
+**Separately, and needing measurement first:** add `vcc_i2c` and `vdd-ana` to
+`touchscreen@48` and have the driver enable them, mirroring the vendor DT. Do
+not send this until §6's inference is turned into a measurement.
+
+## 8. Still unknown
+
+* **Why the transaction hangs.** Nothing readable from the AP differs between a
+  stalling and a non-stalling run (§5). Distinguishing "the chip holds SDA low"
+  from "the controller never starts" needs either a scope on gpio10/11 or a
+  readout of the QUP `I2C_STATUS` `BUS_ACTIVE`/`BUS_MASTER` bits at the moment
+  of the timeout. The latter is the next software step.
+* **Whether the missing supplies are the cause** (§6).
+* **Whether `0314fee3ce35` makes it worse.** It is not the cause - stalls occur
+  with no suspend at all - but whether the deeper `system-pc` state raises the
+  rate has not been measured. That is what the HOLD is for.
+* **Whether the reproducer in §3 and the operator's fault are the same
+  mechanism.** They share a duration, and §2 says why that is worth nothing.
+
+## Evidence
+
+Raw logs, scripts and the day's dated notes:
+`docs/power/bringup/captures/2026-09-04_142-touch-after-resume/`, in particular
+`TRIGGER-screen-gates-it.md` (the screen A/B and the retractions),
+`MECHANISM-qup-timeout.md`, `FINDING-not-suspend.md`,
+`ANSWER-audio-is-unaffected.md`, `CORRELATION-nothing-found.md`.
+
+☠️ Three conclusions were reached and retracted during that day, and they are
+kept because they say which reasoning to distrust: *"the fault needs a long
+idle"* (refuted by the operator tapping continuously), *"the fault scales with
+transactions"* (wrong denominator - it was fitted on interrupt counts mislabelled
+as transactions, and off by 4x besides), and *"the unused-address probe is not a
+valid instrument"* (it is; it had been moved out of its working idle range).
