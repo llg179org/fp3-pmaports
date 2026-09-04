@@ -1,0 +1,92 @@
+# 2026-09-04 — #142, Bert Karwatzki's hx83112b touch-after-resume regression
+
+**Incomplete. One arm of two, and its result is not yet evidence.** Read the
+caveat before quoting anything here.
+
+## The question
+
+`0314fee3ce35` ("arm64: dts: qcom: msm8953: name the right affinity level for
+system-pc") moves `system_pc`'s `arm,psci-suspend-param` from `0x41000353` to
+`0x42000353` (affinity level 1 → 2). Bert Karwatzki reports (mail 2026-09-03)
+that on **his** FP3 this breaks the hx83112b touchscreen after resume, with i2c
+`-110`/`-6`, and that reverting the commit fixes it. Does it reproduce on ours?
+
+Protocol pre-registered 2026-09-04 in
+[`../../findings-log.md`](../../findings-log.md) before any data existed.
+
+## Device and build
+
+```
+kernel   #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026     (pkgrel 79)
+_commit  5aafd59e553ae5385f4e44f5d8b5846c3179bd7c             (from /usr/share/kernel/fp3/fp3-commit)
+dtb      /boot/dtbs/qcom/sdm632-fairphone-fp3.dtb  md5 3181f573680e32a02ff6144ff2f59c9c
+```
+
+☠️ The installed kernel is **not** the package's pinned `_commit`
+(`b8023520cddb`, r80) — built and pinned is not installed. Every number here
+belongs to `5aafd59e553a`.
+
+**Baseline control for arm A**: the same board dtb built on the host from that
+exact commit with the package config is `3181f573680e32a02ff6144ff2f59c9c` —
+**byte-identical to the deployed one**. So a reverted dtb built the same way
+will differ from what is running by exactly the one property, and by nothing
+else. (Built with `make ARCH=arm64 CC=gcc HOSTCC=gcc qcom/sdm632-fairphone-fp3.dtb`
+in a worktree detached at `5aafd59e553a`.) This is the check that stops a
+category-branch dtb, or a tip-of-`debug-int` dtb, being deployed as if it were
+the same thing — the tip is 10 commits ahead and now also carries the rear-camera
+overlay split.
+
+## Files
+
+| file | what it is |
+|---|---|
+| `armB-suspect-0x42000353.txt` | the suspect arm, as deployed. Raw output of the capture script |
+| `142-arm.sh` | the capture script, byte-identical to what ran on the device (sha256 `5df7eff1…`), syntax-checked with the device's own `busybox ash` |
+
+## Arm B — the suspect value, measured 2026-09-04 11:15
+
+```
+system-pc param        = 42000353        (read back from the live DT during the run)
+suspend_success 186 → 187   delta=1   rtcwake_rc=0
+PM: suspend entry (s2idle) … PM: suspend exit    (both edges inside our own kmsg markers)
+i2c / hx83112b errors in the window: 0
+input4 (hx83112b) still present
+```
+
+The phone did suspend and resume — the counter delta and the entry/exit pair
+both say so, and the window is bounded at both ends by markers written from
+inside the run.
+
+## ☠️ Why the zero is not a result
+
+```
+137:  0 0 0 0 0 0 0 0  msmgpio 65 Level  hx83112b
+```
+
+The touch IRQ is at **zero for the whole boot**, and the display was `dpms Off`.
+Nobody has touched the screen since 23:16 the previous evening, so nothing has
+asked the controller for anything. Bert's symptom is an i2c error *on access*;
+with no access there is nothing to fail. **"No i2c error" here measures that we
+did not try, not that touch works.**
+
+That is the same trap as "a clean log proves nothing until the channel is shown
+to report that event class at all". The arm is therefore only half-run: the
+machine half is done, the half that exercises the controller needs a human
+touching the panel, which is a Step-4h action — one at a time, on an explicit
+confirmation, never on a timer.
+
+## What is still owed
+
+1. **Pre-suspend touch baseline** (human): touch the panel, confirm the IRQ
+   counter leaves zero. Without it, a dead touch after resume cannot be
+   distinguished from touch never having worked this boot — the outcome the
+   pre-registration names as voiding the comparison.
+2. **Arm B, second half** (human): suspend again, then touch again; read the IRQ
+   counter and the i2c errors.
+3. **Arm A**: deploy the reverted dtb (one property, `0x41000353`), built from
+   `5aafd59e553a` against the proven-identical baseline above, and repeat 1–2.
+4. Only then does the pass/fail in the pre-registration apply.
+
+☠️ And the limit that holds whatever we find: Bert's report is on a **second**
+FP3. A clean run here does not disprove it — two devices differing is itself the
+finding, and the question would move to what differs between them.

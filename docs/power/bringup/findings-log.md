@@ -9888,3 +9888,60 @@ window that has the phone can run it rather than re-derive it:
   disagreeing is itself the finding, and the question then moves to what differs
   between them (touch/panel module variant, bootloader, firmware) rather than to
   whether the commit is innocent.
+
+## 2026-09-04 — #142 arm B ran; the zero it produced is not yet evidence
+
+Capture: [`captures/2026-09-04_142-touch-after-resume/`](captures/2026-09-04_142-touch-after-resume/README.md).
+The device came back this morning, so the protocol pre-registered above could
+run. **One arm of two, and only its machine half.**
+
+The suspect value is live on the phone and the suspend really happened:
+
+```
+system-pc arm,psci-suspend-param = 42000353   (read from the live DT during the run)
+suspend_success 186 → 187  delta=1            PM: suspend entry (s2idle) … exit
+i2c / hx83112b errors inside our own kmsg markers: 0
+```
+
+☠️ **And that zero measures our procedure, not the hardware.** The touch IRQ
+(`msmgpio 65`, `hx83112b`) reads **0 across the entire boot** and the panel was
+`dpms Off`: nothing has addressed the controller since the phone booted at 23:16.
+Bert's symptom is an i2c failure *on access*, so with no access there is nothing
+to fail. The honest reading is "not tried", and it is one keystroke away from
+being written up as "does not reproduce" — which is why it is recorded here
+before anyone quotes it.
+
+Two things did come out of it that are solid:
+
+- **The arm A baseline is proven.** The board dtb built on the host from the
+  running kernel's own commit `5aafd59e553a` with the package config is
+  `md5 3181f573680e32a02ff6144ff2f59c9c` — **byte-identical to the deployed
+  `/boot/dtbs/qcom/sdm632-fairphone-fp3.dtb`**. So the reverted dtb will differ
+  from what runs today by exactly one property. Building it from the
+  `debug-int/7.1.3` tip instead would have differed by ten commits *and* by the
+  rear-camera overlay split, and the file would have looked entirely normal.
+- **The installed kernel is not the pinned one.** `_commit 5aafd59e553a` (r79) is
+  running; the APKBUILD pins `b8023520cddb` (r80). Built and pinned is not
+  installed — the same gap the SMSM item records.
+
+### Two instruments that lied on the way, both in the direction that flatters
+
+- ☠️ `find /proc/device-tree -name "arm,psci-suspend-param"` returns **0**,
+  because `/proc/device-tree` is a symlink and busybox `find` needs `-L`; with
+  `-L` it returns 5. For a few minutes this produced the confident conclusion
+  *"the installed kernel predates the idle-state work, so #142 needs a flash
+  first"* — the opposite of the truth, and a conclusion that would have sent the
+  next window to build and flash for nothing. Read a DT property by its explicit
+  path, not by searching for it.
+- ☠️ A `systemd-run` launched through `sudo -S` with an **empty** password
+  variable never started, `2>/dev/null` swallowed the authentication error, and
+  the window announced "launched" from its own `echo`. `systemctl show` then
+  answered `inactive` / `success` — because that is also what it answers for a
+  unit that **never existed**. The measurement had not run, and every surface
+  said it had. The tell that caught it: `suspend_stats/success` had not moved.
+  Verify a launch from the launcher's own output (`Running as unit: …`) and from
+  the unit existing, never from your own echo.
+
+Both are in the skill-feedback log; they are the same shape as the ugrep entry
+there — *an empty or agreeable result from a tool is a statement about the tool,
+until that tool has been shown finding, or refusing, a case you know the answer to.*

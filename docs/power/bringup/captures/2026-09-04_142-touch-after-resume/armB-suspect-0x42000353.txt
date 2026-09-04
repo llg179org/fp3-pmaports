@@ -1,0 +1,30 @@
+== arm=armB  2026-09-04 11:15:15
+kernel: #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026  commit: 5aafd59e553ae5385f4e44f5d8b5846c3179bd7c
+system-pc param: 42000353
+suspend_success_before=186
+suspend_success_after=187  delta=1  rtcwake_rc=0
+-- dmesg between our two markers:
+[36372.845128] FP3-142-armB-1788513315-START
+[36373.017871] PM: suspend entry (s2idle)
+[36373.021475] Filesystems sync: 0.003 seconds
+[36373.125502] Freezing user space processes
+[36373.129466] Freezing user space processes completed (elapsed 0.003 seconds)
+[36373.129503] OOM killer disabled.
+[36373.129512] Freezing remaining freezable tasks
+[36373.131675] Freezing remaining freezable tasks completed (elapsed 0.002 seconds)
+[36373.131691] printk: Suspending console(s) (use no_console_suspend to debug)
+[36373.142570] wlan0: deauthenticating from <home-ap-bssid> by local choice (Reason: 3=DEAUTH_LEAVING)
+[36373.168747] wcn36xx: ERROR SMD_EVENT (312) not supported
+[36373.595363] OOM killer enabled.
+[36373.595381] Restarting tasks: Starting
+[36373.603049] Restarting tasks: Done
+[36373.603129] random: crng reseeded on system resumption
+[36373.607517] PM: suspend exit
+[36373.608562] FP3-142-armB-1788513315-END
+-- i2c / touch errors in that window:
+0
+-- touch irq count line:
+137:          0          0          0          0          0          0          0          0  msmgpio  65 Level     hx83112b
+-- input device still present:
+/sys/class/input/input4/device/name
+== done
