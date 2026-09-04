@@ -16,13 +16,13 @@ with a link.
 | series | category | tree | patches | state | last round | ball with | next from us | updated |
 |---|---|---|---|---|---|---|---|---|
 | wcd9335-audio | audio | ASoC `sound/for-next` | 14 on `upstreaming/wcd9335-audio` | rebased | – | us | checker gauntlet per patch; functional run from the submission base; then the cover letter | 2026-09-03 |
-| i2c-qup-pinctrl | audio | i2c-host `i2c/i2c-host-next` | 1 | rebased | – | us | `Fixes:` from blame; decide `Cc: stable` | 2026-09-03 |
+| i2c-qup-pinctrl | audio | i2c-host `i2c/i2c-host-next` | 1 | rebased | – | us | checker gauntlet; cover letter (`Fixes:`/stable decided against, see Done) | 2026-09-04 |
 | psci-cpuidle-fixes | power | linux-pm `bleeding-edge` | 2 | rebased | – | us | checker gauntlet; then the cover letter | 2026-09-03 |
 | smb5-charger | charger | power-supply `for-next` | 6 | rebased | – | us | every board/battery fact out of the driver; `adc5-bat-therm` goes first or with it | 2026-09-03 |
 | adc5-bat-therm | charger | IIO `togreg` | 1 | rebased | – | us | prerequisite of `smb5-charger` — decide whether it travels with it | 2026-09-03 |
-| imx363-camera | camera | media `next` | 7 | rebased | – | us | reorder binding before driver; then the checkers | 2026-09-03 |
-| gcc-msm8953-csiphy | camera | clk `clk-next` | 1 | rebased | – | us | `Fixes:` from blame; it is a fix, not an enablement | 2026-09-03 |
-| qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | `Fixes:` from blame on torvalds/master | 2026-09-03 |
+| imx363-camera | camera | media `next` (cut on v7.3-rc1, 16 behind) | 7 | rebased | – | us | rebase onto media `next` 274af88c8aca; reorder binding before driver; then the checkers | 2026-09-04 |
+| gcc-msm8953-csiphy | camera | clk `clk-next` | 1 | rebased | – | us | checker gauntlet; cover letter (carries `Fixes: 9bb6cfc3c77e`) | 2026-09-04 |
+| qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | checker gauntlet (`sparse`); cover letter (carries `Fixes: fe099c387e06`) | 2026-09-04 |
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
 | qcom-mpm-wakeup-timer | power | irqchip `tip/irq/core` | 1 | rebased | – | us | cover letter; a trial build on the base (no cross toolchain here) | 2026-09-03 |
@@ -80,9 +80,9 @@ Left out of this series, deliberately (2026-09-03, measured):
 | `sound/soc/qcom/qdsp6/q6afe.c` — treat ADSP_EALREADY as success | 30 | **D-2 v2 4/4 is the same fix**; a reply with a Tested-by on Otto Pflüger's thread, not a competing patch |
 | `sound/soc/codecs/snd-soc-aw8898.c` | 48 | **unsendable**: the driver does not exist upstream (`torvalds/linux` contents API → 404, 2026-09-03) |
 
-Distillation check, 2026-09-03: on the twelve paths the series does carry, the
+Distillation check, 2026-09-03: on the eleven paths the series does carry, the
 line set of `fork/7.1.3/main..wip/7.1.3/audio` and of
-`27a50351cbc8..upstreaming/wcd9335-audio` are **identical** — 1220 lines each,
+`27a50351cbc8..upstreaming/wcd9335-audio` are **identical** — 1185 lines each (re-measured 2026-09-04 after the q6afe drop; 11 paths),
 `comm -3` empty. Per-file `--stat` totals match one-for-one.
 
 Test:
@@ -231,8 +231,9 @@ Test: not yet run from a submission base. Checkers: –.
 Rounds: none yet.
 
 To do:
-- [ ] `PM: domains: Fix the cached power-down state index being a bool` reads like a
-      `Fixes:` candidate — get the target from blame on torvalds/master
+- [x] `Fixes:` on both patches — `af5376a77e87` (psci faux device) and `e94999688e3a`
+      (genpd CPU governor), each with `Cc: stable@vger.kernel.org` (verified on the branch
+      2026-09-04)
 - [ ] checker gauntlet; cover letter with the `generated-content.rst` disclosure
 
 Done:
@@ -248,7 +249,7 @@ Tree:        power-supply, sre/linux-power-supply for-next — Sebastian Reichel
 Source:      upstreaming/smb5-charger — b4 prep branch, cut 2026-09-03
              change-id 20260903-upstreaming-smb5-charger-f653be687965
              base-commit 2da28b059e0ddcd2e1956eeae383246207965573
-             (sre/linux-power-supply for-next, 2026-08-11)
+             (sre/linux-power-supply for-next, committed 2026-08-13)
              legacy: submit/7.1.3/charger, tagged archive/submit-7.1.3-charger-final
              sent rounds: – (none yet)
 Depends:     adc5-bat-therm (the driver reads the PMI632 BAT_THERM ADC channel)
@@ -334,7 +335,9 @@ Tree:        media, git.linuxtv.org/media.git `next` — Sakari Ailus, Mauro Car
              CC linux-media, devicetree
 Source:      upstreaming/imx363-camera — b4 prep branch, cut 2026-09-03
              change-id 20260903-upstreaming-imx363-camera-2ae977b0269c
-             base-commit cee9395acd8043be0644b25c34bfa86623f2b935 (media `next`, 2026-08-30 = v7.3-rc1)
+             base-commit cee9395acd8043be0644b25c34bfa86623f2b935 (= v7.3-rc1, committed 2026-08-30)
+             ☠️ 16 commits BEHIND media `next` (274af88c8aca), the base the other two media series
+             use — measured 2026-09-04; rebase before v1
              legacy: submit/7.1.3/camera, tagged archive/submit-7.1.3-camera-final
              sent rounds: – (none yet)
 Depends:     –
@@ -374,6 +377,8 @@ Test: not yet run from a submission base. Checkers: –.
 Rounds: none yet.
 
 To do:
+- [ ] rebase onto media `next` (274af88c8aca): the series sits on v7.3-rc1, 16 commits behind the
+      base `camss-rdi-stride` and `ak7375-pm` were cut on (2026-09-04)
 - [ ] ☠️ reorder: the skill's shape is *binding → driver + Kconfig → defconfig → DTS*,
       and this series currently puts the imported driver first because that is the
       order it was discovered in. The binding and MAINTAINERS commits move ahead of
@@ -498,9 +503,8 @@ Test: not yet run from a submission base. Checkers: –.
 Rounds: none yet.
 
 To do:
-- [ ] `Fixes:` from blame on torvalds/master (regression, this year — skill "A `Fixes:`
-      target comes from blame"), and `get_maintainer.pl` puts the author of the
-      regression on Cc
+- [x] `Fixes: fe099c387e06` ("soc: qcom: preserve CPU endianness for QMI_DATA_LEN") is on the
+      patch (verified 2026-09-04); `get_maintainer.pl` puts the regression's author on Cc at send
 - [ ] checker gauntlet — `sparse` especially, this is a width bug; cover letter
 
 Done:
