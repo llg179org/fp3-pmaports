@@ -20,7 +20,7 @@ with a link.
 | psci-cpuidle-fixes | power | linux-pm `bleeding-edge` | 2 | rebased | – | us | checker gauntlet; then the cover letter | 2026-09-03 |
 | smb5-charger | charger | power-supply `for-next` | 6 | rebased | – | us | every board/battery fact out of the driver; `adc5-bat-therm` goes first or with it | 2026-09-03 |
 | adc5-bat-therm | charger | IIO `togreg` | 1 | rebased | – | us | prerequisite of `smb5-charger` — decide whether it travels with it | 2026-09-03 |
-| imx363-camera | camera | media `next` (cut on v7.3-rc1, 16 behind) | 7 | rebased | – | us | rebase onto media `next` 274af88c8aca; reorder binding before driver; then the checkers | 2026-09-04 |
+| imx363-camera | camera | media `next` | 7 | rebased | – | us | reorder binding before driver; then the checkers | 2026-09-04 |
 | gcc-msm8953-csiphy | camera | clk `clk-next` | 1 | rebased | – | us | checker gauntlet; cover letter (carries `Fixes: 9bb6cfc3c77e`) | 2026-09-04 |
 | qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | checker gauntlet (`sparse`); cover letter (carries `Fixes: fe099c387e06`) | 2026-09-04 |
 | q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
@@ -335,9 +335,8 @@ Tree:        media, git.linuxtv.org/media.git `next` — Sakari Ailus, Mauro Car
              CC linux-media, devicetree
 Source:      upstreaming/imx363-camera — b4 prep branch, cut 2026-09-03
              change-id 20260903-upstreaming-imx363-camera-2ae977b0269c
-             base-commit cee9395acd8043be0644b25c34bfa86623f2b935 (= v7.3-rc1, committed 2026-08-30)
-             ☠️ 16 commits BEHIND media `next` (274af88c8aca), the base the other two media series
-             use — measured 2026-09-04; rebase before v1
+             base-commit 274af88c8aca (media `next` at git.linuxtv.org, committed 2026-09-01) — rebased
+             2026-09-04 from v7.3-rc1; the same base as `camss-rdi-stride` and `ak7375-pm`
              legacy: submit/7.1.3/camera, tagged archive/submit-7.1.3-camera-final
              sent rounds: – (none yet)
 Depends:     –
@@ -377,8 +376,6 @@ Test: not yet run from a submission base. Checkers: –.
 Rounds: none yet.
 
 To do:
-- [ ] rebase onto media `next` (274af88c8aca): the series sits on v7.3-rc1, 16 commits behind the
-      base `camss-rdi-stride` and `ak7375-pm` were cut on (2026-09-04)
 - [ ] ☠️ reorder: the skill's shape is *binding → driver + Kconfig → defconfig → DTS*,
       and this series currently puts the imported driver first because that is the
       order it was discovered in. The binding and MAINTAINERS commits move ahead of
@@ -395,6 +392,9 @@ To do:
       import commit so it is not blamed on us); cover letter with the disclosure
 
 Done:
+- 2026-09-04  #155: rebased from v7.3-rc1 onto media `next` 274af88c8aca (0 behind); all seven
+              cherry-picked clean, our paths byte-identical to the old tip, checkpatch totals unchanged;
+              old tip tagged `archive/upstreaming-imx363-camera-pre-rebase-20260904`, series now `181a39293160`
 - 2026-09-04  the two AK7374 patches carried `Co-authored-by: Claude Opus 5` (the fork convention) instead
               of the kernel-required trailer — rewritten to `Assisted-by: Claude:claude-opus-5`; tree
               unchanged, old tip tagged `archive/upstreaming-imx363-camera-pre-trailer-20260904`
