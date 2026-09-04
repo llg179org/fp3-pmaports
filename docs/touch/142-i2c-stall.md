@@ -33,7 +33,7 @@ the touch interrupt count in `/proc/interrupts` (row `msmgpio 65 ... hx83112b`).
 
 ## 2. Closed: why it is 15 seconds
 
-Not a property of the fault. `drivers/i2c/busses/i2c-qup.c` computes the
+Not a property of the fault. [`drivers/i2c/busses/i2c-qup.c`](https://github.com/llg179org/linux/blob/debug-int/7.1.3/drivers/i2c/busses/i2c-qup.c) computes the
 transfer timeout **once, at probe**, from the largest transfer the controller
 could ever perform, and then applies it to every transfer:
 
@@ -61,7 +61,7 @@ is a defect in its own right - see §7.
 
 ## 3. Reproducing it
 
-`docs/power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh`
+[`142-trigger.sh`](../power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh)
 
 Unbind the touch driver, issue one i2c transaction to an address with no device
 on it, and time it. Interleaved arms, five each (2026-09-04, `debug-int/7.1.3`,
@@ -120,9 +120,9 @@ only if the other two hold:
 
 | capture | suspends this boot | result |
 |---|---|---|
-| `armB-clean-boot-trial2.txt` | 1 | a real suspend/resume on the suspect psci value, ~513 post-resume touch interrupts, **no -110** |
+| [`armB-clean-boot-trial2.txt`](../power/bringup/captures/2026-09-04_142-touch-after-resume/armB-clean-boot-trial2.txt) | 1 | a real suspend/resume on the suspect psci value, ~513 post-resume touch interrupts, **no -110** |
 | 16:54 boot, 2026-09-04 | 0 | **0 stalls in 59 probes** at 15 s idle, screen off |
-| `armB-first-touch-after-resume.txt` | 187 | one -110, on the **first touch after a resume** |
+| [`armB-first-touch-after-resume.txt`](../power/bringup/captures/2026-09-04_142-touch-after-resume/armB-first-touch-after-resume.txt) | 187 | one -110, on the **first touch after a resume** |
 
 Gate 3 also explains an otherwise puzzling afternoon: the phone was rebooted
 five times, so every later run ran on a young boot.
@@ -148,18 +148,25 @@ instrument from the AP side.
 
 ## 6. The oracle: what the vendor kernel does differently
 
-Ubuntu Touch (downstream 4.9, `/mnt/1TB/pmos/ubports-fp3-kernel`) runs the same
-silicon and does not have this symptom. It stacks **three** independent
+Ubuntu Touch runs the same silicon and does not have this symptom. Every
+downstream line below was read from
+[`ubports/.../android_kernel_fairphone_sdm632`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632),
+branch `ubuntutouch`, commit `6d508b494756`, and the links are pinned to that
+commit so the line numbers stay true. It stacks **three** independent
 mitigations; mainline has one of them.
 
-**Retry, in the touch driver.** `drivers/input/touchscreen/hxchipset83112b/himax_platform.c`
+**Retry, in the touch driver.**
+[`hxchipset83112b/himax_platform.c`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/drivers/input/touchscreen/hxchipset83112b/himax_platform.c)
 wraps every read and every write in `for (retry = 0; retry < toRetry; retry++)`
-with `HIMAX_REG_RETRY_TIMES = 5` (`himax_ic.h:20`). Mainline `himax_hx83112b.c`
-retries nowhere.
+with `HIMAX_REG_RETRY_TIMES = 5`
+([`himax_ic.h:20`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/drivers/input/touchscreen/hxchipset83112b/himax_ic.h#L20)). Mainline
+[`himax_hx83112b.c`](https://github.com/llg179org/linux/blob/debug-int/7.1.3/drivers/input/touchscreen/himax_hx83112b.c) retries
+nowhere.
 
-**Timeout proportional to the transfer.** `i2c-msm-v2.c:i2c_msm_xfer_calc_timeout()`
+**Timeout proportional to the transfer.**
+[`i2c-msm-v2.c:i2c_msm_xfer_calc_timeout()`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/drivers/i2c/busses/i2c-msm-v2.c#L2055)
 sizes it per transfer from the actual byte count; constants from
-`include/linux/i2c/i2c-msm-v2.h:202-203` (`SAFETY_COEF` 10, `MIN_USEC` 500000):
+[`include/linux/i2c/i2c-msm-v2.h:202-203`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/include/linux/i2c/i2c-msm-v2.h#L202-203) (`SAFETY_COEF` 10, `MIN_USEC` 500000):
 
 | transfer | downstream | mainline i2c-qup |
 |---|---|---|
@@ -170,14 +177,18 @@ sizes it per transfer from the actual byte count; constants from
 Note the shape: downstream is *more* generous for a huge transfer and far
 stricter for a small one. It is not more cautious, it is **proportional**.
 
-**Pinctrl re-selected around every transfer** (`i2c-msm-v2.c:2248` and `:2293`).
+**Pinctrl re-selected around every transfer**
+([`i2c-msm-v2.c:2244`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/drivers/i2c/busses/i2c-msm-v2.c#L2244) and
+[`:2289`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/drivers/i2c/busses/i2c-msm-v2.c#L2289)).
 Mainline did not do this until our own
 `i2c: qup: select the sleep/default pinctrl states across runtime PM`, which is
 in the running kernel (`1380c70af7b3` on `debug-int/7.1.3`) and measured working
 in §5.
 
 **And the device tree declares supplies that ours does not.** The FP3 board file
-downstream is `arch/arm64/boot/dts/qcom/sdm450-pmi632.dtsi` (identified by
+downstream is
+[`arch/arm64/boot/dts/qcom/sdm450-pmi632.dtsi`](https://gitlab.com/ubports/porting/community-ports/android10/fairphone/android_kernel_fairphone_sdm632/-/blob/6d508b49475678dbafcd106504c65ff2b8e7dc4f/arch/arm64/boot/dts/qcom/sdm450-pmi632.dtsi)
+(identified by
 `himax,hxcommon` at `reg = <0x48>` with `display-coords = <0 1080 0 2160>`,
 matching our `touchscreen-size-x/y`):
 
@@ -210,7 +221,7 @@ This does not fix the hang; it turns a 15-second dead screen into a fraction of
 a second. Goes to the i2c tree, on its own.
 
 **`Input: himax_hx83112b`: retry the transfer.** Precedent on this very phone:
-`media: i2c: ak7375: retry the first transfer of a resume` - *"the first
+[`media: i2c: ak7375: retry the first transfer of a resume`](https://github.com/llg179org/linux/commit/1a5f4a9461d2) - *"the first
 transfer after the supplies come up can time out ... the resume returns -110"* -
 same signature, different controller, already diagnosed and fixed here by
 retrying. Goes to the input tree.
@@ -236,10 +247,12 @@ not send this until §6's inference is turned into a measurement.
 ## Evidence
 
 Raw logs, scripts and the day's dated notes:
-`docs/power/bringup/captures/2026-09-04_142-touch-after-resume/`, in particular
-`TRIGGER-screen-gates-it.md` (the screen A/B and the retractions),
-`MECHANISM-qup-timeout.md`, `FINDING-not-suspend.md`,
-`ANSWER-audio-is-unaffected.md`, `CORRELATION-nothing-found.md`.
+[`captures/2026-09-04_142-touch-after-resume/`](../power/bringup/captures/2026-09-04_142-touch-after-resume/), in particular
+[`TRIGGER-screen-gates-it.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/TRIGGER-screen-gates-it.md) (the screen A/B
+and the retractions), [`MECHANISM-qup-timeout.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/MECHANISM-qup-timeout.md),
+[`FINDING-not-suspend.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/FINDING-not-suspend.md),
+[`ANSWER-audio-is-unaffected.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/ANSWER-audio-is-unaffected.md),
+[`CORRELATION-nothing-found.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/CORRELATION-nothing-found.md).
 
 ☠️ Three conclusions were reached and retracted during that day, and they are
 kept because they say which reasoning to distrust: *"the fault needs a long
