@@ -9945,3 +9945,37 @@ Two things did come out of it that are solid:
 Both are in the skill-feedback log; they are the same shape as the ugrep entry
 there — *an empty or agreeable result from a tool is a statement about the tool,
 until that tool has been shown finding, or refusing, a case you know the answer to.*
+
+## 2026-09-04 — #142: the touch controller's supply belongs to the panel node
+
+The 15-second touchscreen freeze has a cause, and it was read out of the
+regulator framework rather than measured with anything new. `pm8953_l6` has
+exactly one consumer — `1a94000.dsi.0-iovcc`, the panel — and that consumer
+drops its vote when the display is powered down:
+
+```
+screen ON    l6 use=1   1a94000.dsi.0-iovcc use=1
+screen OFF   l6 use=0   1a94000.dsi.0-iovcc use=0
+```
+
+`himax,hx83112b` is a TDDI part: one die drives the display and the touch panel.
+Mainline describes the display half in a panel binding that *requires*
+`iovcc-supply`, and the touch half in `trivial-touch.yaml`, which
+(`unevaluatedProperties: false`) cannot carry a supply at all. Our DTS follows
+both faithfully, so the touch controller runs on a vote it does not hold. When
+the panel releases the rail, the next i2c transfer takes the bus and both lines
+stay low until i2c-qup's 14.98 s timeout expires — which is the -110 and the
+fifteen seconds.
+
+Fixed on `wip/7.1.3/touch` (a new category; there was none for touch), three
+commits, cherry-picked to `integration/7.1.3` and `debug-int/7.1.3` and pushed:
+the binding had to move out of `trivial-touch.yaml` before the DTS could legally
+carry the property.
+
+☠️ **The fix is argued, not yet demonstrated.** The confirming run is
+`142-trigger.sh` on a kernel carrying it — screen-off must go 5/5 → 0/5 over
+five interleaved rounds — and that needs a flash, which is gated on #151's dtb
+switch. Until then the mechanism is measured and the cure is not.
+
+Full case: `docs/touch/142-i2c-stall.md`;
+capture: `captures/2026-09-04_142-touch-after-resume/ROOTCAUSE-the-panel-owns-the-rail.md`.

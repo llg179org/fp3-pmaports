@@ -308,9 +308,47 @@ regulator. `pm8953_l6` is the same rail our *panel* node takes `iovcc` from, so
 the touch chip's i2c-pad supply is held only by the panel driver, and its analog
 supply `l10` by nobody - it reads `idle 2800mV`, with no consumer voting for it.
 
-☠️ **This is the strongest root-cause candidate on the page and it is still an
-inference**, not a measurement: the two missing supplies have not been added and
-the fault has not been shown to disappear when they are.
+☠️ **This is no longer an inference. Measured 2026-09-04 21:00**, from the
+kernel's own regulator framework, screen toggled and nothing else changed:
+
+```
+screen ON    l6 use=1   its one consumer 1a94000.dsi.0-iovcc  use=1
+screen OFF   l6 use=0   its one consumer 1a94000.dsi.0-iovcc  use=0
+l10          use=0 in both states - no consumer at all, ever
+```
+
+`pm8953_l6` has **exactly one** consumer, the panel's iovcc, and it drops its
+vote when the display is powered down. And the reason our DTS looks correct is
+that it *is* correct against the bindings: `himax,hx83112b` appears in mainline
+twice for one piece of silicon - a panel binding that **requires**
+`iovcc-supply`, and `trivial-touch.yaml` for the touch half, which
+(`unevaluatedProperties: false`) cannot carry a supply at all. The touch
+controller therefore runs on a vote it does not hold and cannot see released.
+
+That closes the chain: screen off -> panel releases l6 -> nothing votes -> the
+touch controller's I/O rail goes -> the next transfer takes the bus and both
+lines stay low -> the 14.98 s timeout -> -110. It is also why the screen A/B
+separated so cleanly: 5/5 against 0/5 is what a rail with one voter looks like.
+Full capture: [`ROOTCAUSE-the-panel-owns-the-rail.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/ROOTCAUSE-the-panel-owns-the-rail.md).
+
+**Fixed** on `wip/7.1.3/touch` (a new category - there was none for touch),
+cherry-picked to `integration/7.1.3` and `debug-int/7.1.3` and pushed:
+
+```
+a316c7edd163  dt-bindings: input: himax,hx83112b: give the touch half its own binding
+71e8b167175c  Input: himax_hx83112b - hold the rails the touch half runs on
+18483b7410a7  arm64: dts: qcom: sdm632-fairphone-fp3: give the touchscreen its supplies
+```
+
+The binding had to move out of `trivial-touch.yaml` before the DTS could legally
+carry the property, so it is three patches to three trees rather than one.
+
+☠️ **The fix is argued, not demonstrated.** The confirming run is
+[`142-trigger.sh`](../power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh) on a kernel carrying it, and the
+pre-registered rule is that screen-off must go from 5/5 to 0/5 over five
+interleaved rounds. That needs a flash, which is gated on the dtb switch in
+queue item #151. Until that run happens, this page states a measured mechanism
+and an unproven cure.
 
 ## 7. Proposed fixes
 
@@ -342,7 +380,10 @@ not send this until §6's inference is turned into a measurement.
   diodes, a reset asserted mid-transfer, or the chip deliberately stretching
   forever. Separating those needs either the missing supplies added (below) or a
   scope.
-* **Whether the missing supplies are the cause** (§6).
+* ~~Whether the missing supplies are the cause~~ - answered at the rail level
+  (§6): l6 has one consumer and it releases the rail with the display. What is
+  **not** answered is whether restoring the vote removes the fault on the device,
+  which is the confirming run §6 describes.
 * **Whether `0314fee3ce35` makes it worse.** It is not the cause - stalls occur
   with no suspend at all - but whether the deeper `system-pc` state raises the
   rate has not been measured. That is what the HOLD is for.
