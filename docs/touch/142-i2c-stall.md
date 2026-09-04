@@ -94,8 +94,11 @@ cost five reboots in one afternoon before the ordering was fixed.
 Three conditions are measured. They are not equally well established, and the
 difference matters more than the list does.
 
-**Gate 1 - idle before the transaction, >= ~10 s.** Strong, but carried entirely
-by the null in the fast range:
+**Gate 1 - idle before the transaction, >= ~10 s. SUPERSEDED**, see the end of
+this section: the trigger is not idle at all. The table is kept because it is
+what the day measured, and because the shape it shows - the fault clustering at
+the slow end - is real and is explained by each slow run carrying its own arming
+event:
 
 ```
 idle before probe   probes  stalls          idle    probes  stalls
@@ -133,9 +136,29 @@ system wakeup" are not distinguished by anything measured here - and the second
 is the more interesting reading, since a wakeup is what produces a cluster
 idle-exit, which is what `arm,psci-suspend-param` governs.
 
-Separating them needs the idle held constant (15 s) with only the watchdog timer
-varied, interleaved. At ~1 % per probe that is ~500 probes per arm, about two
-hours each.
+**Both candidates are now dead.** That run happened (2026-09-04 21:25-23:32,
+[`ANSWER-nothing-re-arms-it.md`](../power/bringup/captures/2026-09-04_142-touch-after-resume/ANSWER-nothing-re-arms-it.md)): idle held
+at 15 s, only the watchdog varied, ten interleaved blocks, screen off.
+
+```
+WD-ON  0 / 250      WD-OFF  0 / 250      arming probe (discarded): 15.0759 s
+```
+
+At the 1.7 %/probe measured in this exact regime earlier the same day, 500
+probes expect 8.3 stalls; none appeared, P = 0.02 %. So it does not choose
+between the two readings of gate 1 - it **dissolves both**. Every one of those
+500 probes had a 15 s idle, half of them with the watchdog ticking, and none
+stalled.
+
+What separates a stalling probe from a clean one is being the **first
+transaction after an arming event**: the panel releasing pm8953_l6 (see 6), or
+an unbind. The arming probe of that very run hung for 15.08 s one minute before
+500 probes in identical conditions hung for none. Pooled across every screen-off
+run of the day, after the arming probe: **0 stalls in 26 658 probes**.
+
+☠️ The run was half the size asked for - 250 per arm, not 500 - and 0 against 0
+could not have ranked the arms at any size. The conclusion rests on the pooled
+null, not on the comparison.
 
 Gate 2 is **not** affected: its arms used an identical 12 s idle and were
 interleaved, so any periodic activity reached both equally. That is what the

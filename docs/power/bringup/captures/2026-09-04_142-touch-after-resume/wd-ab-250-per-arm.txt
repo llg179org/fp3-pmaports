@@ -1,0 +1,23 @@
+Started [systemd-run] /usr/bin/env BLOCKS=5 PER=50 IDLE=15 sh /home/fp3/142-wd.sh.
+=== #156 watchdog A/B, started 2026-09-04 21:25:17
+uptime 16251s, suspends 50
+screen dpms=Off
+driver unbound once; no further unbind until the end
+arming probe (DISCARDED): 15.0759s errno 110
+block 1 WD-ON: 0 stalls in 50 probes (screen Off)
+block 1 WD-OFF: 0 stalls in 50 probes (screen Off)
+block 2 WD-ON: 0 stalls in 50 probes (screen Off)
+block 2 WD-OFF: 0 stalls in 50 probes (screen Off)
+block 3 WD-ON: 0 stalls in 50 probes (screen Off)
+block 3 WD-OFF: 0 stalls in 50 probes (screen Off)
+block 4 WD-ON: 0 stalls in 50 probes (screen Off)
+block 4 WD-OFF: 0 stalls in 50 probes (screen Off)
+block 5 WD-ON: 0 stalls in 50 probes (screen Off)
+block 5 WD-OFF: 0 stalls in 50 probes (screen Off)
+=== result: WD-ON 0/250   WD-OFF 0/250   (idle 15s, screen off, arming probe discarded)
+=== restoring (screen on first) ===
+RESTORE VERIFIED: Himax-hx83112b-TS
+watchdog timer left active
+=== done 2026-09-04 23:32:01
+fp3-142-wd.service: Deactivated successfully.
+fp3-142-wd.service: Consumed 40.105s CPU time over 2h 6min 44.508s wall clock time, 5.8M memory peak.

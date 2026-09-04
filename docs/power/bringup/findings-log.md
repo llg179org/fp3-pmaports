@@ -9979,3 +9979,35 @@ switch. Until then the mechanism is measured and the cure is not.
 
 Full case: `docs/touch/142-i2c-stall.md`;
 capture: `captures/2026-09-04_142-touch-after-resume/ROOTCAUSE-the-panel-owns-the-rail.md`.
+
+## 2026-09-04 — #156: nothing re-arms the #142 stall, so gate 1 dissolves
+
+Idle held at 15 s, only `fp3-usbnet-watchdog.timer` varied, ten interleaved
+blocks, screen off, driver unbound once at the start:
+
+```
+WD-ON   0 / 250      WD-OFF  0 / 250
+arming probe (discarded): 15.0759 s, errno 110
+```
+
+At the 1.7 % per probe measured in this exact regime earlier the same day, 500
+probes expect 8.3 stalls; none appeared (P = 0.02 %). Pooled with every other
+screen-off run of the day, after the arming probe: **0 in 26 658 probes**.
+
+Gate 1 of `docs/touch/142-i2c-stall.md` had two candidate triggers — a long idle,
+or a periodic wakeup falling inside it — and recorded that the two were the same
+variable in every arm measured until now. This run **dissolves both**: all 500
+probes had a 15 s idle, half with the watchdog ticking and half without, and none
+stalled. What separates a stalling probe from a clean one is being the *first
+transaction after an arming event*, which is the panel releasing pm8953_l6 — the
+root cause found the same evening. The arming probe hung for 15.08 s one minute
+before 500 probes in identical conditions hung for none.
+
+☠️ **250 probes per arm ran where the task asked for 500**, and the estimate given
+at launch ("~4.2 h") was double the real 2 h 7 min. The conclusion survives on the
+pooled null; the per-arm comparison was never going to rank 0 against 0 anyway.
+
+☠️ Says nothing about the driver-bound case, which is the operator's actual fault,
+and does not test the #155 fix — that needs a flash.
+
+Capture: `captures/2026-09-04_142-touch-after-resume/ANSWER-nothing-re-arms-it.md`.

@@ -2539,3 +2539,9 @@ so that `after:` and `continues:` references still resolve.
 - [x] **155.** Rebase upstreaming/imx363-camera onto media next 274af88c8aca (it sits on v7.3-rc1, 16 commits behind the base camss-rdi-stride and ak7375-pm use); tag the old tip, force-with-lease, checkpatch, STATUS base line + Done  — closed 2026-09-04 05:49
       lane: upstreaming
       why: one media tree, three series on two different bases is a question a maintainer will ask; found by the 2026-09-04 review
+
+- [x] **156.** #142: separate the idle length from the periodic wakeup — hold the probe idle fixed at 15 s and vary ONLY whether fp3-usbnet-watchdog.timer runs, interleaved arms, ~500 probes each (~2 h per arm)  — closed 2026-09-04 21:37
+      continues: 142
+      lane: phone
+      why: RUNNING as fp3-142-wd since 21:25, ~4.2 h, finishes ~01:45. Holds the idle fixed at 15 s and varies ONLY whether fp3-usbnet-watchdog.timer runs; 10 interleaved blocks of 50 probes, screen off, driver unbound ONCE at the start (re-unbinding between blocks would re-arm the fault and measure the artifact instead of the question), arming probe discarded. ☠️ PREDICTION RECORDED BEFORE THE RUN, in the script: both arms empty. In every screen-off run so far the fault fired once, on the first transaction after the arming event, and never again - 0 in 26158 subsequent probes across three runs with the watchdog ticking throughout (~80 ticks). If the WD-ON arm DOES produce stalls, the root-cause account written for 155 is wrong and this run is what says so. Original framing partly superseded by 155: the cause is now measured (the panel is the only voter on pm8953_l6 and drops it with the display), so this arm no longer decides the mechanism - it tests whether anything RE-ARMS the fault without an unbind. Script: captures/2026-09-04_142-touch-after-resume/142-wd.sh
+      until: 01:45
