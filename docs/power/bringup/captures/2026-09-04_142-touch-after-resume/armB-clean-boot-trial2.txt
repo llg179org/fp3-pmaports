@@ -1,0 +1,47 @@
+=== clean-boot arm B result ===
+== arm=armB-clean  2026-09-04 11:34:59
+kernel: #80-fp3 SMP PREEMPT Sat Aug 29 08:52:09 UTC 2026  commit: 5aafd59e553ae5385f4e44f5d8b5846c3179bd7c
+system-pc param: 42000353
+suspend_success_before=0
+suspend_success_after=1  delta=1  rtcwake_rc=0
+-- dmesg between our two markers:
+[  250.396961] FP3-142-armB-clean-1788514499-START
+[  250.488516] PM: suspend entry (s2idle)
+[  250.490917] Filesystems sync: 0.002 seconds
+[  250.526434] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.565243] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.578819] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.587192] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.587764] Freezing user space processes
+[  250.593101] Freezing user space processes completed (elapsed 0.005 seconds)
+[  250.593125] OOM killer disabled.
+[  250.593130] Freezing remaining freezable tasks
+[  250.595069] Freezing remaining freezable tasks completed (elapsed 0.001 seconds)
+[  250.595079] printk: Suspending console(s) (use no_console_suspend to debug)
+[  250.749157] wlan0: deauthenticating from <home-ap-bssid> by local choice (Reason: 3=DEAUTH_LEAVING)
+[  250.772750] wcn36xx: ERROR SMD_EVENT (312) not supported
+[  251.637840] OOM killer enabled.
+[  251.637850] Restarting tasks: Starting
+[  251.641580] Restarting tasks: Done
+[  251.641644] random: crng reseeded on system resumption
+[  251.650143] PM: suspend exit
+[  251.651666] FP3-142-armB-clean-1788514499-END
+-- i2c / touch errors in that window:
+0
+-- touch irq count line:
+137:         41          0          0          0          0          0          0          0  msmgpio  65 Level     hx83112b
+-- input device still present:
+/sys/class/input/input4/device/name
+== done
+
+[exited with code 0]
+
+--- post-run reads, direct (11:36:41 / 11:36:55) ---
+suspend_success        1
+touch IRQ              41 (at script end, just after resume) -> 554 (11:36:41)
+-110 count this boot   0
+hx83112b lines         none
+anchor                 kt 313.18 = wall 11:36:55, so resume kt 251.65 = wall 11:35:53
+
+So: same suspect value 0x42000353, a real suspend/resume, ~513 post-resume touch
+interrupts, and NO -110. The event did not reproduce on the second trial.

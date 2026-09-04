@@ -121,3 +121,39 @@ grep pattern self-test on a synthetic line: 1   (the pattern can fire)
 
 That is the clean baseline the control needs. Awaiting the operator's first touch
 on a boot with zero suspends.
+
+---
+
+## Trial 2, and what it does to the plan
+
+Clean boot, same `system-pc = 0x42000353`, one suspend/resume (resume 11:35:53),
+~513 post-resume touch interrupts: **no `-110`**.
+
+| trial | boot state before the touch | suspends | `-110` |
+|---|---|---|---|
+| 1 | 12 h uptime, boot of 23:16 | 187 | **1**, on the first touch after resume |
+| control | fresh boot, never suspended | 0 | 0 |
+| 2 | fresh boot, one suspend | 1 | 0 |
+
+**One event in two suspend→touch trials**, and the one positive sits on a boot
+that differs from the negative in almost everything except the DT property: 12
+hours of uptime and 187 accumulated suspends against 39 seconds and one.
+
+☠️ **This is what the A/B cannot survive as designed.** A single trial per arm
+distinguishes nothing when the event is not produced by every resume: an arm A
+that comes back clean would be indistinguishable from an arm B that came back
+clean, which it just did. The rate has to be known before the revert means
+anything — the same trap this port already paid for once, where six consistent
+samples read as a null result and the same configuration later spread over an
+order of magnitude.
+
+☠️ **And the measurement is human-rate-limited.** The `-110` arises when the
+driver takes a touch interrupt and then fails the i2c read, so every trial needs
+a physical touch; it cannot be driven from the host. That is a hard constraint on
+how many trials are affordable, and it belongs in the plan rather than being
+discovered halfway through it.
+
+Open, in order:
+1. how often does it happen per resume, in the regime where it was seen at all
+   (long uptime, many suspends)?
+2. only then: the same protocol with `0x41000353`.
