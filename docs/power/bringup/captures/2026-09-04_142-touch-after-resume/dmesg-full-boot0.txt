@@ -1,0 +1,806 @@
+[   38.258522] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387702uV ibat=153045uA
+[   38.285309] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387702uV ibat=153045uA
+[   38.306603] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387702uV ibat=153045uA
+[   38.331681] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=245208uA
+[   38.356835] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.424804] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.458280] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.477302] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.506740] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.526039] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.557606] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.577561] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.606768] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397434uV ibat=206298uA
+[   38.629078] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4399769uV ibat=202026uA
+[   38.656902] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.681532] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.706936] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.743819] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.774271] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.794283] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.823340] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.842863] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.873249] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.890998] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406582uV ibat=249176uA
+[   38.922410] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=117797uA
+[   38.946519] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406776uV ibat=230102uA
+[   38.974270] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=305023uA
+[   38.994368] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.022660] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.042081] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.073645] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.092873] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.122909] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.141175] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.173767] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.191620] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=305023uA
+[   39.224507] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395877uV ibat=191192uA
+[   39.243014] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396071uV ibat=202179uA
+[   39.272845] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.418696] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.438407] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.468686] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.487837] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.510123] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=292968uA
+[   39.520900] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=201110uA
+[   39.743576] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4362983uV ibat=49591uA
+[   39.754145] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4362983uV ibat=49591uA
+[   39.791394] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4362983uV ibat=49591uA
+[   39.804202] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4362983uV ibat=49591uA
+[   39.830668] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390621uV ibat=255279uA
+[   39.854856] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397239uV ibat=192566uA
+[   39.875073] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397239uV ibat=192566uA
+[   39.905728] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397239uV ibat=192566uA
+[   39.926459] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397239uV ibat=192566uA
+[   39.956543] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397239uV ibat=192566uA
+[   40.025071] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397239uV ibat=192566uA
+[   40.054732] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397239uV ibat=192566uA
+[   40.074634] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397239uV ibat=192566uA
+[   40.104153] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397239uV ibat=192566uA
+[   40.125797] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=177612uA
+[   40.155929] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.176644] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.205656] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.226268] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.256370] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.275526] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.304981] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.326999] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.356222] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.375230] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.405596] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=293579uA
+[   40.425655] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378359uV ibat=146179uA
+[   40.456370] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.474933] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.504230] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.525323] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.555888] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.574829] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.605557] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.674950] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.705489] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=271148uA
+[   40.725461] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4383420uV ibat=166015uA
+[   40.737674] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403857uV ibat=262909uA
+[   40.742484] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4401910uV ibat=217132uA
+[   40.753285] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.774830] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.802952] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.823091] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.837211] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.843758] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.857063] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.876660] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.904225] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.923237] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.937589] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   40.975231] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404635uV ibat=293274uA
+[   41.004763] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404635uV ibat=293274uA
+[   41.025204] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387702uV ibat=150909uA
+[   41.038732] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=251617uA
+[   41.042429] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.053165] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.075050] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.104253] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.122922] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.153755] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.174948] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.203546] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.222411] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.252496] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=238342uA
+[   41.329644] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4375245uV ibat=107116uA
+[   41.340105] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.341754] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.352366] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.377281] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.402932] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.424788] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.452507] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.473150] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.504771] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.524719] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.553365] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.573069] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.584184] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=249633uA
+[   41.622499] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384782uV ibat=147552uA
+[   41.653208] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.672903] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.703644] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.722764] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.753138] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.772719] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.802875] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.822200] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.854653] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.872717] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=300140uA
+[   41.904057] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=300140uA
+[   42.787713] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4385561uV ibat=211486uA
+[   42.800720] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4385561uV ibat=211486uA
+[   42.821260] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4383225uV ibat=162658uA
+[   42.852309] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407166uV ibat=326690uA
+[   42.971056] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407166uV ibat=326690uA
+[   42.982448] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407166uV ibat=326690uA
+[   42.990936] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.001472] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.023057] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.053087] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.073017] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.084082] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407166uV ibat=326690uA
+[   43.119953] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379333uV ibat=157623uA
+[   43.151721] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.191309] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.200632] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.325939] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.351054] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.370807] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.390716] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=300293uA
+[   43.420650] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4376608uV ibat=140838uA
+[   43.451278] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.470566] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.498772] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.581514] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.599383] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.618799] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.649679] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.669047] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=306396uA
+[   43.699508] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4376218uV ibat=141601uA
+[   43.717752] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382641uV ibat=145874uA
+[   43.750518] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.769123] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.801369] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.819856] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.851843] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.874895] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.902346] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.920190] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.949927] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.967633] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410280uV ibat=296631uA
+[   43.998876] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396461uV ibat=153045uA
+[   44.019013] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379138uV ibat=125579uA
+[   44.049185] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.065540] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.100671] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.117258] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.151309] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.166701] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.198927] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.214933] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.250398] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.267593] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=284729uA
+[   44.299665] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403467uV ibat=210266uA
+[   44.319487] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397628uV ibat=198364uA
+[   44.350951] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.370238] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.417227] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.435439] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.465786] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.485388] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.515495] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.533811] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.564807] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.584569] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=280304uA
+[   44.614787] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=258178uA
+[   44.634410] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.664989] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.684357] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.714661] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.734262] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.766397] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.784904] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.816409] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.836647] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.866140] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.885512] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386339uV ibat=142669uA
+[   44.916023] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=279236uA
+[   44.933267] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   44.964251] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4382447uV ibat=122375uA
+[   44.977148] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.014781] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.032789] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.066336] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.083537] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.113937] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.133016] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.166238] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.178487] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4382447uV ibat=122375uA
+[   45.219673] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4402689uV ibat=161590uA
+[   45.235797] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.264142] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.286218] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.334162] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.352097] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.398581] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.413736] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.446514] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.464749] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=216827uA
+[   45.498787] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393736uV ibat=170745uA
+[   45.515774] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4404830uV ibat=265655uA
+[   45.546547] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.566419] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.600994] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.618206] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.646244] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.662400] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.698181] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.714763] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.748180] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.764968] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.785290] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=273437uA
+[   45.813965] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395877uV ibat=189666uA
+[   45.847851] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.864997] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.899838] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.914673] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.946337] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.967403] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4405414uV ibat=237579uA
+[   45.996233] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=237579uA
+[   46.016661] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4405414uV ibat=237579uA
+[   46.046526] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=237579uA
+[   46.065228] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4405414uV ibat=237579uA
+[   46.097210] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=158081uA
+[   46.116849] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387897uV ibat=283813uA
+[   46.147600] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.166035] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.185883] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.230805] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.241824] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.314712] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.325519] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.365233] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.377937] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=248565uA
+[   46.422133] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.442326] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.464904] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.494589] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.513898] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.544968] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.563699] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.594709] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.615056] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.647872] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.669877] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397823uV ibat=235443uA
+[   46.694835] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396850uV ibat=154113uA
+[   46.713693] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=204925uA
+[   46.743552] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.765290] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.796236] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.814652] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.846357] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.864383] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.895860] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.913932] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.943613] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.963061] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=283813uA
+[   46.994291] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=174408uA
+[   47.013259] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393930uV ibat=258026uA
+[   47.045651] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.065380] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.094867] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.109395] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.143850] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.156304] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.194052] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.210831] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.245182] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.260539] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272216uA
+[   47.294740] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392568uV ibat=148620uA
+[   47.306483] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397434uV ibat=164947uA
+[   47.344903] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.360181] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.393424] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.409525] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.447563] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.462593] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.494868] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.514368] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.564232] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.579393] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=272979uA
+[   47.611261] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391789uV ibat=143432uA
+[   47.629382] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.661413] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.679167] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.710781] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.729080] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.759589] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.777614] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.810777] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.828715] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.861095] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.879453] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390427uV ibat=106506uA
+[   47.909253] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391400uV ibat=176849uA
+[   47.927303] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   47.960105] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=76751uA
+[   47.978532] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.007294] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.027239] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.058148] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.077563] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.107247] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.129091] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.159040] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.176897] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386145uV ibat=76751uA
+[   48.207823] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390232uV ibat=129089uA
+[   48.226591] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.260148] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.277836] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.307808] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.326037] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.358384] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.377649] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.407946] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.426382] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.457792] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=56457uA
+[   48.479348] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398407uV ibat=260772uA
+[   48.509326] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=114593uA
+[   48.521133] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.562195] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.577476] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.609762] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.628617] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.659636] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.681184] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.708021] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.727606] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.757672] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.776295] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384977uV ibat=126190uA
+[   48.807561] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395293uV ibat=157318uA
+[   48.826240] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.858860] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.877059] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.908222] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.928429] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.961221] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.965444] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.981340] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393346uV ibat=138244uA
+[   48.996600] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   49.052709] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393346uV ibat=138244uA
+[   49.060942] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393346uV ibat=138244uA
+[   49.090063] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4404441uV ibat=204773uA
+[   49.110037] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.140121] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.153877] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.193841] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.209236] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.239532] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.261677] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.296074] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.310800] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.340041] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.359221] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398018uV ibat=170898uA
+[   49.390729] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4405414uV ibat=200500uA
+[   49.409612] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.441014] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.458976] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.490616] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.509660] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.540667] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.558880] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.590867] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.608693] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.641164] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.659360] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391595uV ibat=177459uA
+[   49.689085] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400353uV ibat=207061uA
+[   49.704449] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389259uV ibat=147857uA
+[   49.738611] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.752749] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.789418] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.805467] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.840200] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.855471] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.890163] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.906158] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.942830] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.957658] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392957uV ibat=257568uA
+[   49.992370] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407555uV ibat=255279uA
+[   50.009854] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.049204] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.059388] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.106079] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.125026] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.156211] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.173799] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.206104] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.225057] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.256232] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400743uV ibat=204620uA
+[   50.274590] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4396266uV ibat=211181uA
+[   50.304262] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.322549] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.355602] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.373968] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.404518] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.422716] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.456211] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.473647] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.504167] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.522402] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.554397] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398991uV ibat=150146uA
+[   50.573087] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393930uV ibat=213928uA
+[   50.605182] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.624330] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.653784] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.669668] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.703850] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.715068] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.753014] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.768804] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.780166] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.797818] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.835805] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.853886] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.865982] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406971uV ibat=185547uA
+[   50.873805] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408139uV ibat=218048uA
+[   50.884574] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394514uV ibat=179443uA
+[   50.906465] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   50.936230] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379527uV ibat=100708uA
+[   50.955656] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   50.986147] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.002255] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.036220] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.049237] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.088151] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.103407] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.136283] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.153477] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4379527uV ibat=100708uA
+[   51.186094] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408917uV ibat=184784uA
+[   51.204818] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.235758] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.253855] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.285899] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.305996] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.335758] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.354156] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.384545] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.403791] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.435734] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.453191] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4392179uV ibat=160369uA
+[   51.485457] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411642uV ibat=174713uA
+[   51.504630] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.536075] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.555425] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.586753] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.604475] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.636502] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.653635] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.684598] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.702549] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.734489] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.753083] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4393541uV ibat=160827uA
+[   51.784196] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=199585uA
+[   51.802701] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.836333] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.854660] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.886042] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.904766] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.934335] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.952943] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   51.985127] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=153045uA
+[   52.004678] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   52.035609] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4394903uV ibat=153045uA
+[   52.050524] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4394903uV ibat=153045uA
+[   52.085248] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=254516uA
+[   52.100890] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.133806] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.152681] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.183270] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.202454] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.233813] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.252729] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.284668] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.304357] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.333723] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.352207] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4387313uV ibat=125732uA
+[   52.384684] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395877uV ibat=166320uA
+[   52.403330] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.433007] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.452596] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.484463] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.504815] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.532356] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.550804] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.582817] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.601784] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.632297] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.650699] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4395098uV ibat=158386uA
+[   52.682821] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=255737uA
+[   52.701242] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.733623] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.752343] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.782084] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.800780] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.833669] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.852768] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.881160] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.901395] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.932243] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.950149] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4397044uV ibat=156860uA
+[   52.983344] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398212uV ibat=152282uA
+[   53.001586] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.031710] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.049981] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.081972] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.100850] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.125484] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.151467] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.179431] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.250668] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4389454uV ibat=153350uA
+[   53.281961] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391789uV ibat=167541uA
+[   53.299560] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.332168] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.349745] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.380426] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.398602] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.430384] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.449781] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.480557] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.498841] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.530932] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.549106] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4390816uV ibat=149841uA
+[   53.579928] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4395098uV ibat=152435uA
+[   53.598484] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.632208] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.650199] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.680055] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.698362] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.730933] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.764814] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.778756] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.794573] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.829544] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.849216] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391984uV ibat=151672uA
+[   53.881615] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396461uV ibat=159607uA
+[   53.900288] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   53.931175] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391011uV ibat=145263uA
+[   53.949723] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   53.981122] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391011uV ibat=145263uA
+[   53.999467] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.030852] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.049435] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.079800] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.099567] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.130862] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.149482] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4391011uV ibat=145263uA
+[   54.179850] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396655uV ibat=159149uA
+[   54.198207] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.229499] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.248258] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.280323] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.298431] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.329437] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.348496] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.379275] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.398116] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.427956] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.448341] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4384004uV ibat=131530uA
+[   54.480315] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4400548uV ibat=154876uA
+[   54.497322] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.528229] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.546379] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.579953] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.597799] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.628082] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.646590] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.678510] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.696862] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.727941] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.747752] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4388091uV ibat=78887uA
+[   54.778613] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4398407uV ibat=160064uA
+[   54.797011] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.827369] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.846645] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.879785] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.898245] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.929338] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.944622] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.977886] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4378943uV ibat=160675uA
+[   54.988761] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   55.029319] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4378943uV ibat=160675uA
+[   55.044690] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4378943uV ibat=160675uA
+[   55.077792] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4396071uV ibat=157013uA
+[   55.089230] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.127538] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.138721] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.176958] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.195495] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.233778] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.247710] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.284241] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.297241] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.328601] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.346734] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4386729uV ibat=141296uA
+[   55.377868] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4377970uV ibat=63476uA
+[   55.397591] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4373883uV ibat=305uA
+[   55.427466] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4373883uV ibat=305uA
+[   55.445147] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4373883uV ibat=305uA
+[   55.479432] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4373883uV ibat=305uA
+[   55.496391] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4373883uV ibat=305uA
+[   55.530875] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4373883uV ibat=305uA
+[   55.534028] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=full-on st1=0x03 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4373883uV ibat=305uA
+[   55.782882] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt chg-state-change: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=236206uA
+[   72.692923] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4401716uV ibat=149231uA
+[   72.696876] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4401716uV ibat=149231uA
+[   93.102077] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407944uV ibat=192566uA
+[   93.105620] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407944uV ibat=192566uA
+[   93.934864] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4379722uV ibat=18463uA
+[   93.944825] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4377191uV ibat=11749uA
+[   94.988079] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=190582uA
+[   95.012562] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=190582uA
+[   95.292258] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=193023uA
+[   95.345729] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=193023uA
+[   97.586698] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411837uV ibat=187835uA
+[   97.594625] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411837uV ibat=187835uA
+[   97.607699] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4411837uV ibat=187835uA
+[   97.618527] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4411837uV ibat=187835uA
+[  133.495195] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412421uV ibat=170135uA
+[  133.499153] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412421uV ibat=170135uA
+[  145.524758] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=129394uA
+[  145.533177] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=129394uA
+[  145.622249] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408528uV ibat=129394uA
+[  145.631737] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408528uV ibat=129394uA
+[  155.837068] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=163726uA
+[  155.935450] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4413199uV ibat=169067uA
+[  155.943702] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4413199uV ibat=169067uA
+[  213.074486] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=152282uA
+[  250.396961] FP3-142-armB-clean-1788514499-START
+[  250.488516] PM: suspend entry (s2idle)
+[  250.490917] Filesystems sync: 0.002 seconds
+[  250.526434] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.565243] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.578819] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.587192] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4413394uV ibat=146942uA
+[  250.587764] Freezing user space processes
+[  250.593101] Freezing user space processes completed (elapsed 0.005 seconds)
+[  250.593125] OOM killer disabled.
+[  250.593130] Freezing remaining freezable tasks
+[  250.595069] Freezing remaining freezable tasks completed (elapsed 0.001 seconds)
+[  250.595079] printk: Suspending console(s) (use no_console_suspend to debug)
+[  250.749157] wlan0: deauthenticating from <home-ap-bssid> by local choice (Reason: 3=DEAUTH_LEAVING)
+[  250.772750] wcn36xx: ERROR SMD_EVENT (312) not supported
+[  251.637840] OOM killer enabled.
+[  251.637850] Restarting tasks: Starting
+[  251.641580] Restarting tasks: Done
+[  251.641644] random: crng reseeded on system resumption
+[  251.650143] PM: suspend exit
+[  251.651666] FP3-142-armB-clean-1788514499-END
+[  251.660727] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=142059uA
+[  251.668845] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=142059uA
+[  251.694788] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=142059uA
+[  251.699538] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=142059uA
+[  251.730034] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412032uV ibat=142059uA
+[  251.735282] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412032uV ibat=142059uA
+[  253.699412] wlan0: authenticate with <home-ap-bssid> (local address=<fp3-wlan-mac>)
+[  253.699465] wlan0: send auth to <home-ap-bssid> (try 1/3)
+[  253.704367] wlan0: authenticated
+[  253.708142] wlan0: associate with <home-ap-bssid> (try 1/3)
+[  253.716378] wlan0: RX AssocResp from <home-ap-bssid> (capab=0x1431 status=0 aid=3)
+[  253.767896] wlan0: associated
+[  253.768316] wlan0: Limiting TX power to 20 (20 - 0) dBm as advertised by <home-ap-bssid>
+[  286.823872] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407360uV ibat=71716uA
+[  286.828686] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4403078uV ibat=107727uA
+[  313.175061] FP3-142-A3-11:36:55
+[  324.583930] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=134582uA
+[  324.590938] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=134582uA
+[  324.791311] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=134582uA
+[  324.794809] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=134582uA
+[  324.881738] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407944uV ibat=66986uA
+[  324.900126] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407944uV ibat=66986uA
+[  324.939352] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407944uV ibat=66986uA
+[  324.949337] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407944uV ibat=66986uA
+[  324.993572] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4407944uV ibat=66986uA
+[  324.997668] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4407944uV ibat=66986uA
+[  347.020115] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4406776uV ibat=94757uA
+[  347.020943] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4406776uV ibat=94757uA
+[  350.164807] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4410085uV ibat=93841uA
+[  350.181795] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4410085uV ibat=93841uA
+[  351.474633] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4408333uV ibat=126495uA
+[  351.476948] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4408333uV ibat=126495uA
+[  352.117573] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=135040uA
+[  352.126482] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=135040uA
+[  352.162928] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412810uV ibat=135040uA
+[  352.168189] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412810uV ibat=135040uA
+[  361.216349] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=133667uA
+[  361.222365] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412226uV ibat=133667uA
+[  479.107954] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.109176] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.119407] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.120132] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.155375] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.158378] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=125427uA
+[  479.205591] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4412226uV ibat=130004uA
+[  479.210264] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=taper st1=0x04 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4402300uV ibat=66070uA
+[ 1022.737563] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt chg-state-change: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4412615uV ibat=99334uA
+[ 3233.668524] PM: suspend entry (s2idle)
+[ 3233.673312] Filesystems sync: 0.004 seconds
+[ 3233.785531] Freezing user space processes
+[ 3233.791226] Freezing user space processes completed (elapsed 0.005 seconds)
+[ 3233.791267] OOM killer disabled.
+[ 3233.791276] Freezing remaining freezable tasks
+[ 3233.793949] Freezing remaining freezable tasks completed (elapsed 0.002 seconds)
+[ 3233.793975] printk: Suspending console(s) (use no_console_suspend to debug)
+[ 3233.805353] wlan0: deauthenticating from <home-ap-bssid> by local choice (Reason: 3=DEAUTH_LEAVING)
+[ 3233.837954] wcn36xx: ERROR SMD_EVENT (312) not supported
+[ 3234.257308] OOM killer enabled.
+[ 3234.257326] Restarting tasks: Starting
+[ 3234.262748] Restarting tasks: Done
+[ 3234.262817] random: crng reseeded on system resumption
+[ 3234.266501] PM: suspend exit
+[ 3236.207667] wlan0: authenticate with <home-ap-bssid> (local address=<fp3-wlan-mac>)
+[ 3236.207722] wlan0: send auth to <home-ap-bssid> (try 1/3)
+[ 3236.210651] wlan0: authenticated
+[ 3236.212975] wlan0: associate with <home-ap-bssid> (try 1/3)
+[ 3236.220273] wlan0: RX AssocResp from <home-ap-bssid> (capab=0x1431 status=0 aid=3)
+[ 3236.266788] wlan0: associated
+[ 3236.354121] wlan0: Limiting TX power to 20 (20 - 0) dBm as advertised by <home-ap-bssid>
+[ 3471.914050] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/a0/00/10/08 vbat=4346633uV ibat=0uA
+[ 3471.914154] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4346633uV ibat=0uA
+[ 3482.391621] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/a8/00/10/08 vbat=4346633uV ibat=0uA
+[ 3482.398381] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4346633uV ibat=0uA
+[ 3558.084615] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 3558.085990] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 3605.699801] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 3605.701118] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 3649.397444] wcn36xx: ERROR SMD_EVENT (312) not supported
+[ 3650.036785] FP3-142-A4-12:32:53
+[ 3651.522238] wlan0: authenticate with <home-ap-bssid> (local address=<fp3-wlan-mac>)
+[ 3651.522267] wlan0: send auth to <home-ap-bssid> (try 1/3)
+[ 3651.628466] wlan0: send auth to <home-ap-bssid> (try 2/3)
+[ 3651.732764] wlan0: send auth to <home-ap-bssid> (try 3/3)
+[ 3651.840480] wlan0: authentication with <home-ap-bssid> timed out
+[ 3651.857473] wcn36xx: ERROR SMD_EVENT (312) not supported
+[ 3654.375977] wlan0: authenticate with <home-ap-bssid> (local address=<fp3-wlan-mac>)
+[ 3654.376050] wlan0: send auth to <home-ap-bssid> (try 1/3)
+[ 3654.389289] wlan0: authenticated
+[ 3654.396275] wlan0: associate with <home-ap-bssid> (try 1/3)
+[ 3654.401538] wlan0: RX AssocResp from <home-ap-bssid> (capab=0x1431 status=0 aid=3)
+[ 3654.443808] wlan0: associated
+[ 3654.521571] wlan0: Limiting TX power to 20 (20 - 0) dBm as advertised by <home-ap-bssid>
+[ 4104.102013] [drm:dpu_crtc_get_vblank_counter [msm]] *ERROR* no encoder found for crtc 0
+[ 4223.649577] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 4223.650957] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 4285.358282] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 4285.359214] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 4528.572462] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 4528.574393] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 4571.324272] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 4571.325370] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 4637.678021] FP3-142-A5-12:49:20
+[ 5297.330516] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5297.331870] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 5359.537282] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5359.538721] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 5382.577637] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5382.578991] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 5439.663176] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5439.664560] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 5486.509370] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5486.509975] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 5957.538971] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 5957.540323] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 6061.728993] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 6061.730146] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 6099.872312] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 6099.873611] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 6261.149919] Himax-hx83112b-TS 2-0048: Failed to read input event: -110
+[ 6261.150444] Himax-hx83112b-TS 2-0048: Failed to read input event: -6
+[ 6395.820801] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4342157uV ibat=0uA
+[ 6395.820897] qcom-smbx-charger 200f000.spmi:pmic@2:charger@1000: evt input-current-limiting: chg=terminate st1=0x45 st2=0x28 temp=0x00 rt=00/80/00/10/08 vbat=4342157uV ibat=0uA
+[ 6572.742543] FP3-142-ARM: i2c-qup runtime PM held ON at 13:21:35
+[ 6670.124334] FP3-142-DISARM: i2c-qup runtime PM back to auto at 13:23:13
