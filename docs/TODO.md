@@ -242,7 +242,9 @@ repeated.
       lane: upstreaming
       until: when/he-replies
       why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
-<!-- FP3-QUEUE:END -->
+- [ ] 155. Rebase upstreaming/imx363-camera onto media next 274af88c8aca (it sits on v7.3-rc1, 16 commits behind the base camss-rdi-stride and ak7375-pm use); tag the old tip, force-with-lease, checkpatch, STATUS base line + Done
+      lane: upstreaming
+      why: one media tree, three series on two different bases is a question a maintainer will ask; found by the 2026-09-04 review<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
