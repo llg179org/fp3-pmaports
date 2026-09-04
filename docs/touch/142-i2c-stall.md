@@ -114,6 +114,33 @@ threshold. "The threshold lies between 3 s and 10 s" is an inference from four
 small runs; "below 3 s the fault effectively does not occur" is the measured
 part.
 
+☠️☠️ **And gate 1 is confounded, which is worse than thin.** `fp3-usbnet-watchdog`
+fires every 30 s on this phone by design (`OnUnitActiveSec=30s`), so the chance
+that a periodic system wakeup falls inside an idle window of length T is
+`min(T/30, 1)` - a quantity that moves with T exactly as the arms above do:
+
+```
+idle      0.02 s   0.5 s   2 s    3 s    15 s   45 s
+P(tick)     0.1 %   1.7 %  6.7 %  10 %    50 %  100 %
+observed    0 %     0 %    0 %    0 %   0.56 %  33 %
+```
+
+Fitting "a tick is required" on the 15 s arm gives 1.12 % per tick, and that
+model then predicts every other arm's null with probability 67-96 %. It fits as
+well as the idle-length model, because **in this design the two are the same
+variable**. So "the fault needs a long idle" and "the fault needs an intervening
+system wakeup" are not distinguished by anything measured here - and the second
+is the more interesting reading, since a wakeup is what produces a cluster
+idle-exit, which is what `arm,psci-suspend-param` governs.
+
+Separating them needs the idle held constant (15 s) with only the watchdog timer
+varied, interleaved. At ~1 % per probe that is ~500 probes per arm, about two
+hours each.
+
+Gate 2 is **not** affected: its arms used an identical 12 s idle and were
+interleaved, so any periodic activity reached both equally. That is what the
+interleaving bought.
+
 **Gate 2 - screen off.** Strong and clean: 5/5 against 0/5 at an **identical**
 12 s idle, interleaved arms, one variable.
 
@@ -148,6 +175,16 @@ arm** at 15 s spacing.
 What it does rule out is a *deterministic* effect: 50 suspends do not switch the
 fault on the way the screen does (5/5). The 187-suspend observation stands
 unexplained, and gate 3 stays the weak leg.
+
+☠️ It is also aimed off-target. **Nothing on this phone asks for a suspend** -
+`sleep-inactive-ac-type='nothing'`, `IdleAction=ignore`, documented since
+2026-08-30 in
+[`leads/opportunistic-sleep-missing.md`](../power/bringup/leads/opportunistic-sleep-missing.md).
+Measured 2026-09-04: 130 suspends in the 23:00 hour while the overnight run was
+cycling them, then **zero between 02:00 and 11:00**. So the 50 forced rtcwake
+cycles tested a state the phone does not enter on its own, and the 187-suspend
+boot that did reproduce was itself full of measurement-driven suspends. Whatever
+gate 3 is about, it is not about suspends that happen in ordinary use.
 
 ## 5. Eliminated by measurement
 
