@@ -245,7 +245,21 @@ repeated.
       lane: upstreaming
       until: when/he-replies
       why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
-<!-- FP3-QUEUE:END -->
+- [ ] 155. #142 ROOT CAUSE: give the touchscreen the two supplies it is missing — add vcc_i2c-supply = <&pm8953_l6> and vdd-ana-supply = <&pm8953_l10> to touchscreen@48 in sdm632-fairphone-fp3.dts, teach himax_hx83112b to devm_regulator_get and enable them (and disable on remove), then re-run 142-trigger.sh
+      continues: 142
+      lane: phone
+      why: The vendor DT declares both (ubports sdm450-pmi632.dtsi @ 6d508b494756, lines 419-420)
+      ours declares NO supply at all and the driver requests no regulator, so the chip is powered only by whatever the panel happens to hold. Measured 2026-09-04: during the hang the controller is in RUN state, owns the bus (BUS_ACTIVE+BUS_MASTER), has a byte stuck in its output FIFO, reports no error, and BOTH i2c lines read low for the full 15 s having been high one second earlier — the picture an unpowered slave clamping the bus gives. ☠️ PRE-REGISTERED DECISION RULE, written before the measurement: 142-trigger.sh currently gives screen-off 5/5 and screen-on 0/5. If the supplies take screen-off to 0/5 across at least 5 interleaved rounds, the root cause is confirmed and the symptom patches below are not needed. If it stays 5/5, the supplies are not it and this task records that as a measured negative. Full case: docs/touch/142-i2c-stall.md sections 5a and 6
+- [ ] 156. #142: separate the idle length from the periodic wakeup — hold the probe idle fixed at 15 s and vary ONLY whether fp3-usbnet-watchdog.timer runs, interleaved arms, ~500 probes each (~2 h per arm)
+      continues: 142
+      lane: phone
+      why: ☠️ Gate 1 of the write-up is confounded and the page now says so. The watchdog fires every 30 s by design, so P(a wakeup falls inside an idle window of length T) = min(T/30,1), which moves with T exactly as the measured arms do. Fitting "a tick is required" on the 15 s arm gives 1.12 %/tick and then predicts every other arm null at 67-96 % — it fits as well as the idle-length model, because in that design the two ARE the same variable. This is the arm that separates them, and the answer matters: if it is the wakeup, the trigger is a cluster idle-exit, which is exactly what arm,psci-suspend-param governs and puts Bert back in the frame. Run it with the screen OFF and discard trial 0 (the unbind artifact is 7/7)
+- [ ] 157. #142 FALLBACK, only if the supply fix fails: size the i2c-qup transfer timeout from the transfer, and add a retry to himax_hx83112b
+      continues: 142
+      lane: upstreaming
+      why: ☠️ LAST RESORT BY THE OPERATOR DECISION 2026-09-04 — fix the cause, not the 15 seconds. Do NOT start this while the supply task is open or unmeasured. Both are real defects and both are upstreamable on their own: i2c-qup computes xfer_timeout ONCE at probe from MX_DMA_TX_RX_LEN (128 KB) and hands the same 14.976 s to a 4-byte touch read, where the downstream i2c-msm-v2 on this same hardware computes it per transfer and gives 0.504 s
+      and himax_hx83112b retries nowhere, where the vendor driver retries every read and write 5x (HIMAX_REG_RETRY_TIMES) and ak7375 on this very phone was already fixed the same way (media: i2c: ak7375: retry the first transfer of a resume, same -110 signature). They remove the user-visible symptom without explaining it, which is why they are second
+      after: 155<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
