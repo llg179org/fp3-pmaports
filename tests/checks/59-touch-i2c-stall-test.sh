@@ -101,62 +101,28 @@ else
 	say PASS "no i2c stalls across $irqs touch interrupts this boot"
 fi
 
-# --- 2. active, only when asked for
+# --- 2. the active arm is RETIRED. Measured 2026-09-04, it did not work and it
+# was dangerous, and both halves are worth stating so nobody rebuilds it:
+#
+#   * it did not provoke the fault. Probing an unused address at the real-use
+#     transaction rate (~50/s, taken from the operator ledger) gave 0 stalls in
+#     52 688 transactions across two 10-minute runs, where the driver's own
+#     reads stall about once per 8000. Every earlier arm was slower still and
+#     its null was a predicted null.
+#   * it cost five reboots. It unbinds the driver first so the probe cannot
+#     collide with it, and while the screen is off the Himax probe then fails
+#     with -5, leaving the phone with no touchscreen until it is rebooted.
+#
+# The deterministic reproducer that DOES work is not a selftest: it needs the
+# driver unbound and the screen cycled, so it lives with the capture -
+# docs/power/bringup/captures/2026-09-04_142-touch-after-resume/142-trigger.sh
+# (screen off 5/5 stall, screen on 0/5, interleaved). Read TRIGGER-screen-gates-it.md
+# there before touching any of this: it lists what was eliminated by measurement
+# and why the 15 s duration is not a fingerprint but the QUP timeout constant.
 if [ -n "$FP3_TOUCH_PROBE" ]; then
-	# ships with the suite; the runner copies lib/ next to checks/
-	probe="${DEVICE_DIR:-.}/lib/i2c-stall-probe.py"
-	[ -r "$probe" ] || probe="$(dirname "$0")/../lib/i2c-stall-probe.py"
-	if [ ! -r "$probe" ]; then
-		say SKIP "FP3_TOUCH_PROBE set but the probe is not on the device ($probe)"
-	elif [ "$(id -u)" != 0 ]; then
-		say SKIP "FP3_TOUCH_PROBE needs root (it unbinds and rebinds the driver)"
-	else
-		drv=$(readlink "$ts_dev/driver" 2>/dev/null | sed 's|.*/||')
-		unit=$(basename "$ts_dev")
-		say PASS "active probe: unbinding $drv so the probe cannot collide with it"
-		echo "$unit" > "/sys/bus/i2c/drivers/$drv/unbind" 2>/dev/null
-		sleep 1
-		hits=0; n=0
-		while [ "$n" -lt "$FP3_TOUCH_PROBE" ]; do
-			sleep 3                       # > 1 s, so the controller autosuspends
-			d=$(python3 "$probe" 78b7000 0x50 0 1 2>/dev/null | sed -n 's/.*max \([0-9.]*\) s.*/\1/p')
-			case "$d" in [1-9]*.*) hits=$((hits+1)); say FAIL "  probe $n hung for ${d}s" ;; esac
-			n=$((n+1))
-		done
-		# ☠️ Rebind, then VERIFY. A restore that only reports success is how this
-		# phone was twice left without a touchscreen: the bind failed with -5 and
-		# the script said "bound" anyway.
-		echo "$unit" > "/sys/bus/i2c/drivers/$drv/bind" 2>/dev/null; sleep 3
-		if [ -e "$ts_dev/driver" ]; then
-			say PASS "driver rebound and verified"
-		else
-			echo "$unit" > "/sys/bus/i2c/drivers/$drv/bind" 2>/dev/null; sleep 4
-			if [ -e "$ts_dev/driver" ]; then
-				say PASS "driver rebound on the second attempt"
-			else
-				say FAIL "☠️ the driver did NOT rebind - this phone has no touchscreen"
-				say FAIL "  until it is rebooted. A stall can leave the chip unable to probe."
-				fail=1
-			fi
-		fi
-		if [ "$hits" -gt 0 ]; then
-			say FAIL "active probe: $hits of $FP3_TOUCH_PROBE first-accesses-after-idle hung"
-			fail=1
-		else
-			secs=$((FP3_TOUCH_PROBE * 3))
-			if [ "$secs" -lt 2178 ]; then
-				# below 3 x the longest observed gap (726 s): a clean run here
-				# is compatible with the fault being fully present.
-				say SKIP "active probe: 0 of $FP3_TOUCH_PROBE hung, but ${secs}s is under the"
-				say SKIP "  ~2180 s floor (3 x the longest observed 726 s gap), so this"
-				say SKIP "  proves nothing. Use FP3_TOUCH_PROBE=730 for the shortest"
-				say SKIP "  credible run, 2000 to claim a real improvement."
-			else
-				say PASS "active probe: 0 of $FP3_TOUCH_PROBE hung over ${secs}s; 95 % upper bound"
-				say PASS "  on the rate is 1 per $((secs / 3)) s, vs 1 per 200 s measured 2026-09-04"
-			fi
-		fi
-	fi
+	say SKIP "FP3_TOUCH_PROBE is retired - the probe does not provoke the fault"
+	say SKIP "  (0 stalls in 52688 transactions at the real-use rate) and it costs"
+	say SKIP "  a reboot when the screen is off. Use 142-trigger.sh from the capture."
 fi
 
 exit $fail
