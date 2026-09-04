@@ -3,10 +3,14 @@
 
 Reads /dev/input/event4 and uses the KERNEL's own timestamp on every event, so
 the resolution is the input layer's, not a sampler's. Logs the interval between
-consecutive SYN_REPORT frames, but only while a finger is actually down
-(BTN_TOUCH == 1) - a gap with no finger on the glass is the operator pausing,
-not the panel stalling, and conflating the two is what the 1 Hz ledger could not
-avoid.
+consecutive SYN_REPORT frames, but annotating each with whether a finger
+was down at the time.
+
+v2, 2026-09-04: v1 logged a gap ONLY while BTN_TOUCH==1, and was therefore blind
+to the fault it was built for. A 15 s i2c stall delivers no frames at all, so the
+BTN_TOUCH=1 of the press that triggered it never reaches the input layer either -
+`down` stays False and the gap is never logged. Three 15 s stalls passed through
+v1 unrecorded. Never filter at capture time; annotate and filter at analysis.
 """
 import struct, time, sys
 
@@ -22,7 +26,7 @@ def wall(ts):
     return time.strftime("%H:%M:%S", time.localtime(ts)) + ".%03d" % ((ts % 1) * 1000)
 
 out = open(OUT, "a", buffering=1)
-out.write("== gap logger start %s  (threshold %.0f ms, only while BTN_TOUCH=1)\n"
+out.write("== gap logger start %s  (v2: EVERY gap >= %.0f ms, down= annotated, never filtered)\n"
           % (time.strftime("%F %H:%M:%S"), GAP_MS))
 
 down = False
@@ -47,12 +51,12 @@ with open(DEV, "rb", buffering=0) as f:
 
         if typ == EV_SYN and code == SYN_REPORT:
             frames += 1
-            if down and last_syn is not None:
+            if last_syn is not None:
                 d = (ts - last_syn) * 1000.0
                 if d >= GAP_MS:
                     gaps += 1
-                    out.write("%s  GAP %8.1f ms   (finger down, frame %d)\n"
-                              % (wall(ts), d, frames))
+                    out.write("%s  GAP %9.1f ms   down=%-5s frame=%d\n"
+                              % (wall(ts), d, down, frames))
             last_syn = ts
 
         now = time.time()
