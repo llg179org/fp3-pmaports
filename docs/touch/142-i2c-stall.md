@@ -79,7 +79,9 @@ screen OFF 5/5      screen ON 0/5      (7/7 vs 0/7 including reruns; p ~ 0.004)
 
 ☠️ **This is not the operator's fault, and must not be quoted as if it were.**
 The operator's fault happens with the driver **bound**; this reproducer requires
-it unbound, which never happens in normal use. What it establishes is narrower:
+it unbound, which never happens in normal use. The first transaction after an
+unbind with the screen off has now stalled **7 times out of 7**, so anything
+measured across an unbind must discard trial 0 or it will count that instead. What it establishes is narrower:
 the touch chip *can* hold the bus for the full timeout, and whether it does is
 gated by the screen, deterministically.
 
@@ -126,6 +128,26 @@ only if the other two hold:
 
 Gate 3 also explains an otherwise puzzling afternoon: the phone was rebooted
 five times, so every later run ran on a young boot.
+
+☠️ **The one test aimed at gate 3 was underpowered and settles nothing.** On the
+16:54 boot, paired - same boot, same script, the suspend count the only thing
+changed between the arms:
+
+```
+ 0 suspends  ->  0 stalls / 59 probes at 15 s idle, screen off
+50 suspends  ->  0 stalls / 59 probes            (suspend_stats/success 0 -> 50)
+```
+
+The design is right and the result is worth nothing on its own: at the 1.7 %
+per probe measured in this exact regime at 14:29, one arm of 59 probes expects
+**1.0** stalls, so seeing none has probability 37 %; both arms pooled, 14 %. It
+could not reliably detect the *baseline*, let alone a change in it. Bounding the
+rate below the reference at 95 % needs ~180 probes per arm, which is **0.8 h per
+arm** at 15 s spacing.
+
+What it does rule out is a *deterministic* effect: 50 suspends do not switch the
+fault on the way the screen does (5/5). The 187-suspend observation stands
+unexplained, and gate 3 stays the weak leg.
 
 ## 5. Eliminated by measurement
 
