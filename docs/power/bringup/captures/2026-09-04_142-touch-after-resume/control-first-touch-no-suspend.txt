@@ -1,0 +1,40 @@
+CONTROL — first touch of a boot that has NEVER suspended
+Boot 2026-09-04 11:30:53, kernel #80-fp3, _commit 5aafd59e553a, system-pc = 0x42000353
+
+Before (11:31:29):   uptime 39 s   suspends 0   touch IRQ 0   -110 count 0
+                     grep self-test on a synthetic line: 1  (the pattern can fire)
+
+Operator action:     touched the panel, dry hands, no suspend at any point
+Operator report:     "now again it did not work at first"
+
+After (11:34:01):    uptime 191 s  suspends 0   touch IRQ 41  -110 count 0
+                     hx83112b lines in dmesg this boot: NONE
+
+READING
+The controller raised 41 interrupts and the driver read every one of them
+successfully. No i2c error of any kind. So on this boot the panel is healthy at
+the bus level, and the operator's "did not work at first" has a cause above the
+driver - lock screen, gesture recognition, first-touch wake behaviour - not the
+i2c path.
+
+☠️ THE SYMPTOM AND THE ERROR ARE TWO DIFFERENT SIGNALS, and this control is what
+separated them:
+
+  regime                          "did not work at first"   -110 in dmesg
+  after resume (11:22, 187 susp)          yes                    YES
+  fresh boot, 0 suspends (11:33)          yes                    no
+
+Had the operator's felt responsiveness been used as the pass/fail - which is the
+obvious thing to do for a touchscreen bug, and is how the task is worded ("touch
+after suspend, before/after revert") - this control would have been scored as
+"reproduces without any suspend at all", and 0314fee3ce35 would have been
+cleared on evidence that measures the lock screen.
+
+So the pass/fail for #142 is the "Failed to read input event: -110" count across
+a bounded window, and the operator's report is context, not the measurement.
+
+WHAT IT DOES AND DOES NOT SETTLE
+  - It does NOT reproduce the -110 without a suspend: n=1, clean.
+  - It therefore leaves suspend as the surviving suspect, with both sides at n=1.
+  - It says nothing yet about 0314fee3ce35 specifically: the A/B against
+    0x41000353 has not run.
