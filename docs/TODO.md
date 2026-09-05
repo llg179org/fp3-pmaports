@@ -118,11 +118,8 @@ repeated.
       when: at the next daytime call
       they-do: on the CALLING handset, DURING the call: turn WiFi off and try to load a page over mobile data. Data works = VoLTE on LTE; data stalls for the whole call and returns when it ends = CSFB (2G/3G). Cross-check without menus-guessing: Settings -> About phone -> SIM status -> 'Mobile network type', which updates live during the call. One word is the answer. ☠️ The STATUS BAR does not answer it — measured 2026-09-03: during a call Android shows only the handset icon, the network-type indicator is gone. ☠️ Otherwise we do not touch the daily phone
       why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
-- [~] 85. Replication across 3 boots + OCV-vs-QG
-      until: 19:00
-      why: this buys the boot-to-boot band of the 40.3 mA figure and the calibration offset bound; started by a device-side timer (fp3-night-start.timer), verified
-      lane: phone
-- [~] 118. Evaluate the night's balance against the pre-registered bands
+
+- [ ] 118. Evaluate the night's balance against the pre-registered bands
       after: 85
       why: the morning triage; night-budget.py and the bands are ready
       continues: 85
