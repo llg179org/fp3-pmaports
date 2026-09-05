@@ -17,7 +17,8 @@
 #   run-r1b.sh [window_s] [idle_s]        default 1800 60
 set -u
 W=${1:-1800}; I=${2:-60}
-PW=${FP3_PW:-<pw>}
+: "${FP3_PW:?FP3_PW is not set - source Claude-skills-Fairphone3/plugins/fp3/skills/fp3-porting-debug/scripts/fp3-env.sh}"
+PW=$FP3_PW
 here=$(dirname "$(readlink -f "$0")")
 
 b64=$(base64 -w0 "$here/idle-suspend-window.sh")

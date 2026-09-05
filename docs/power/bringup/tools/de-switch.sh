@@ -69,4 +69,4 @@ sed -n '/\[initial_session\]/,/^$/p' "$CONF"
 echo
 echo "☠️ Now re-check the boot config from the HOST before rebooting - an apk"
 echo "   install regenerates extlinux.conf and drops the fallback label:"
-echo "     FP3_PW=<pw> ./tests/fp3-selftest --only boot-fallback --host 192.168.x.x"
+echo "     FP3_PW=<your pmOS password> ./tests/fp3-selftest --only boot-fallback --host 192.168.x.x"

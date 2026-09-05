@@ -26,7 +26,8 @@
 set -u
 
 out=${1:?usage: kmsg-tap.sh OUTFILE}
-pw=${FP3_PW:-<pw>}
+: "${FP3_PW:?FP3_PW is not set - source Claude-skills-Fairphone3/plugins/fp3/skills/fp3-porting-debug/scripts/fp3-env.sh}"
+pw=$FP3_PW
 
 trap 'echo "=== tap stopped $(date -Is)" >>"$out"; exit 0' INT TERM
 

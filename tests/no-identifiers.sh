@@ -24,8 +24,11 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 # Found 2026-09-05 while hunting a stray script with `ps -o pid,args`. The
 # password is never written into this file, so the pattern matches the SHAPE:
 # a quoted echo piped into `sudo -S`, with a LITERAL inside the quotes -
-# `echo '$pw' | sudo -S` in a script is the correct way to write it and is
-# not a leak, so a leading `$` inside the quotes is excluded.
+# `echo '$pw' | sudo -S` in a script is the correct way to write it, and so is
+# the single-quote idiom `echo '"$FP3_PW"' | sudo -S` used to expand a
+# variable inside an otherwise single-quoted remote command. So the pattern
+# requires the quoted text to contain NO `$` at all: a literal secret has
+# none, and every correct form has one.
 scan() {
     dir=$1
     rc=0
@@ -39,7 +42,7 @@ scan() {
         '\b89[0-9]{17,18}\b' \
         '(^|[^0-9])(\+|00)[[:space:]]?36([[:space:]]?[0-9]){9}([^0-9]|$)' \
         '\b([0-9a-f]{2}:){5}[0-9a-f]{2}\b' \
-        "echo[[:space:]]+'[^'\$][^']*'[[:space:]]*\\|[[:space:]]*sudo[[:space:]]+-S"
+        "echo[[:space:]]+'[^'\$]*'[[:space:]]*\\|[[:space:]]*sudo[[:space:]]+-S"
     do
         hits=$(grep -raEn "$pat" "$dir" \
                  --exclude-dir=.git \
@@ -53,6 +56,23 @@ scan() {
             rc=1
         fi
     done
+
+    # ☠️ The device password itself, when the environment knows it. This file
+    # must never contain the secret, so the check is only possible when the
+    # caller has sourced fp3-env.sh - and it is silently skipped otherwise,
+    # which is exactly how this leak survived: 14 sites across 13 files, in a
+    # PUBLIC repository and in 1317 commits of history, found 2026-09-05 only
+    # because somebody grepped for it by hand. Matching lines are printed with
+    # the secret masked, so running the checker never reprints it.
+    if [ -n "${FP3_PW:-}" ]; then
+        hits=$(grep -raFn "$FP3_PW" "$dir" \
+                 --exclude-dir=.git \
+                 --exclude="$(basename "$0")" 2>/dev/null)
+        if [ -n "$hits" ]; then
+            echo "$hits" | sed "s/$FP3_PW/<DEVICE-PASSWORD>/g" | cut -c1-160
+            rc=1
+        fi
+    fi
     return $rc
 }
 
@@ -89,6 +109,16 @@ if [ "${1:-}" = "--self-test" ]; then
     if scan "$tmp" >/dev/null; then
         echo "SELF-TEST FAIL: an MSISDN-shaped number hidden behind a NUL byte was not caught"; exit 2
     fi
+
+    # The literal device password, when the environment knows it. Uses a
+    # sentinel rather than the real secret, so the test proves the mechanism
+    # without the file or the test output ever carrying it.
+    ( FP3_PW=SENTINEL-PASSWORD-FOR-SELFTEST
+      printf 'ssh host "echo %s | sudo -S id"\n' "$FP3_PW" > "$tmp/planted.txt"
+      export FP3_PW
+      if scan "$tmp" >/dev/null; then
+          echo "SELF-TEST FAIL: a planted device password was not caught"; exit 2
+      fi ) || exit 2
 
     # A pasted process listing carrying the device password, shape only.
     printf "%s\n" "1234 sudo -S sh -c ..." > "$tmp/planted.txt"

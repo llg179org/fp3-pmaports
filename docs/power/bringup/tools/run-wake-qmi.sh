@@ -56,7 +56,7 @@ STATE=${TMPDIR:-/tmp}/fp3-wake-qmi
 # dry run cannot reproduce, because on the host the string passes through
 # literally. See the header of rpm-xo-snapshot.sh.
 rpm_snapshot() {
-	fp3-ssh 'echo <pw> | sudo -S /usr/local/bin/rpm-xo-snapshot.sh 2>/dev/null'
+	fp3-ssh 'echo '"$FP3_PW"' | sudo -S /usr/local/bin/rpm-xo-snapshot.sh 2>/dev/null'
 }
 
 case "$CMD" in
@@ -66,7 +66,7 @@ start)
 	for f in wake-qmi.sh qmi-msgids.txt qmi-service-ids.txt rpm-xo-snapshot.sh radio-context.sh; do
 		fp3-ssh "cat > /tmp/$f" < "$D/$f"
 	done
-	fp3-ssh 'echo <pw> | sudo -S sh -c "install -m755 /tmp/wake-qmi.sh /usr/local/bin/wake-qmi.sh;
+	fp3-ssh 'echo '"$FP3_PW"' | sudo -S sh -c "install -m755 /tmp/wake-qmi.sh /usr/local/bin/wake-qmi.sh;
 		install -m755 /tmp/rpm-xo-snapshot.sh /usr/local/bin/rpm-xo-snapshot.sh;
 		install -m755 /tmp/radio-context.sh /usr/local/bin/radio-context.sh;
 		install -m644 /tmp/qmi-service-ids.txt /usr/local/bin/qmi-service-ids.txt;
@@ -100,7 +100,7 @@ start)
 
 	echo "=== census starts $(date '+%T'); ${N} rounds of ${S}s"
 	echo "    >>> SEND THE SMS during round 2, i.e. roughly $(date -d "+$((S + 40)) seconds" '+%H:%M') <<<"
-	fp3-ssh "echo <pw> | sudo -S systemd-run --unit=wakeqmi --collect \
+	fp3-ssh "echo $FP3_PW | sudo -S systemd-run --unit=wakeqmi --collect \
 		/usr/local/bin/wake-qmi.sh $S $N logind 2>/dev/null"
 	echo "=== fired and RETURNING. Expected finish ~$(date -d "+$(( (S + 25) * N + 30 )) seconds" '+%H:%M')."
 	echo "    Watch with host-sleep-census.sh; do NOT log in. Then: $0 post"

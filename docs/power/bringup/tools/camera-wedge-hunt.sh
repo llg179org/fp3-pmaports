@@ -33,7 +33,8 @@ OUTDIR=${2:-./wedge-hunt}
 SETTLE=${3:-0}
 HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../../../.." && pwd)
-PW=${FP3_PW:-<pw>}
+: "${FP3_PW:?FP3_PW is not set - source Claude-skills-Fairphone3/plugins/fp3/skills/fp3-porting-debug/scripts/fp3-env.sh}"
+PW=$FP3_PW
 
 mkdir -p "$OUTDIR"
 KMSG="$OUTDIR/kmsg.log"

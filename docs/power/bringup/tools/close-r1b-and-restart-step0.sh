@@ -25,7 +25,8 @@
 # floor stays at 55 to match the pre-registered protocol: it is a safety stop,
 # not a finish line, and changing it mid-run changes the experiment.
 set -u
-PW=${FP3_PW:-<pw>}
+: "${FP3_PW:?FP3_PW is not set - source Claude-skills-Fairphone3/plugins/fp3/skills/fp3-porting-debug/scripts/fp3-env.sh}"
+PW=$FP3_PW
 FLOOR=${1:-55}; SECS=${2:-600}; GAP=${3:-20}
 here=$(dirname "$(readlink -f "$0")")
 

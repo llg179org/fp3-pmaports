@@ -147,7 +147,7 @@ done
 UNIT="fp3-$(basename "${prog:-$1}" | sed 's/\.[^.]*$//')-$(date +%s)"
 echo "launching $UNIT on $DEV, ETA ${ETA} min (due $(date -d "+${ETA} min" '+%H:%M' 2>/dev/null || echo "+${ETA}m"))"
 [ -n "$cap" ] || echo "note: no RuntimeMaxSec in this launch - nothing stops it if it hangs"
-ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
+ssh "$DEV" "echo "$FP3_PW" | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || die "launch failed"
 
 # ☠️ AND TELL THE PHONE ITSELF, because the session gate cannot see another
 # machine. /run/fp3-measuring is read by the login ledger (~/.ssh/rc), which
@@ -156,7 +156,7 @@ ssh "$DEV" "echo <pw> | sudo -S -p '' systemd-run --unit=$UNIT --collect $*" || 
 # - but it turns the leg's bare "N logins" audit into an attributable list.
 # ☠️ /run is tmpfs: a run that reboots must re-assert this at every boot, which is
 # why night-run.sh writes it per step rather than once at the start.
-ssh "$DEV" "echo <pw> | sudo -S -p '' sh -c 'printf \"unit=%s eta=%s min, started %s\\n\" \"$UNIT\" \"$ETA\" \"\$(date \"+%F %T\")\" > /run/fp3-measuring'" \
+ssh "$DEV" "echo "$FP3_PW" | sudo -S -p '' sh -c 'printf \"unit=%s eta=%s min, started %s\\n\" \"$UNIT\" \"$ETA\" \"\$(date \"+%F %T\")\" > /run/fp3-measuring'" \
 	|| echo "☠️ could not set the device-side lock - logins will not be stamped"
 
 # ☠️ TELL THE SESSION THE PHONE IS BUSY, so a later "let me just check" ssh is
