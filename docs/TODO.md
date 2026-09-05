@@ -140,9 +140,9 @@ more than one is.
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
       lane: phone
       they-do: Needs physical hardware: a shunt resistor wired in series with the battery plus a meter. That is the whole point of the task - it is the only current witness that does not pass through the PMI632 ADC, so no software route can substitute for it. ☠️ It does NOT block: the calibration offset can be bounded without a shunt by |e| <= 1.49 (delta + I*|g|) from a rested, radio-off OCV block, and tonight's #85 produces that pair (#118 evaluates it). So this is a strengthening measurement to do when the hardware is at hand, not a gate on anything.
-- [ ] 72. Threshold-time method (a current ratio needing no calibration)
-      after: 85
-      why: conditional fallback — only alive if the |ε| bound computed from tonight's OCV pair is not tight enough
+- [~] 72. Threshold-time method (a current ratio needing no calibration)
+      after: 158
+      why: Conditional fallback: alive only if the |e| bound from a rested OCV pair is not tight enough. ☠️ THAT CONDITION CANNOT BE EVALUATED YET, and the dispatcher offered this as ready on 2026-09-05 because its blocker was recorded as #85, which is closed. #85 closed, but #118's evaluation of it reads: the 09-03 night FAILED its own gates and produced nothing usable - all three legs dropped, median sleep 13/18/9 s against a 90 s alarm. So no OCV pair exists, no bound was computed, and docs/power/README.md still lists the calibration offset as unbounded. This waits on a night that actually completes, which is #158. If that night lands and the bound comes out tight, this task is dead and should be closed as unnecessary rather than done
 - [ ] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
       after: 85
       why: one reboot, zero risk — but AFTER the next reboot we are having anyway, because debug logging would contaminate tonight's legs
