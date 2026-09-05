@@ -172,11 +172,6 @@ repeated.
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
 
-- [ ] 130. Measure the AFE api_version this ADSP reports (q6core svc info) — the one number the q6afe clock-set redesign turns on
-      lane: phone
-      after: 85
-      why: STATUS.md D-1/D-2: decides the condition in the generic q6afe patch
-      a device read, not an argument
 
 - [x] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
       when: whenever convenient, one glance
@@ -254,6 +249,14 @@ repeated.
 - [ ] 158. Night replication, third attempt: record WHAT WAKES THE AP before running another night — add a per-leg /sys/kernel/debug/wakeup_sources (or wake-reason) snapshot to night-run.sh, then re-run the three-boot replication
       lane: phone
       why: ☠️ Two nights (2026-09-02, 2026-09-03) both failed the same way and NEITHER can say why: every leg dropped for a median sleep of 9-18 s against a 90 s alarm, both OCV endpoints unrested on their ceilings, and the legs record only log.txt/mpss-B.txt/samples-B.txt — no wake-source capture at all. The triage says "naming the source buys the next run, not this leg", and the next run cannot name it either unless the instrument changes. Running the night unchanged a third time would produce a third identical failure. This is what still blocks the boot-to-boot band on 40.3 mA and the calibration-offset bound, i.e. the whole of what #85 was for. Evidence: captures/2026-09-05_118-night-triage/README.md
+- [ ] 159. Close the loop for device-run measurements: make a scripted run on the phone update the queue when it finishes, so the dispatcher can hand out what was waiting on it
+      lane: any
+      why: ☠️ MEASURED COST, 2026-09-05. #85 was started by a device-side timer (fp3-night-start.timer), ran to completion 2026-09-03 23:17 -> 09-04 01:15, and then sat unclosed for TWO DAYS with NINE tasks blocked behind it — because no session was in the loop and the queue only reads markers, it never infers from the device. Worse, it was a deadlock rather than mere lag: #118, the task that judges whether the night is good enough, carried after: 85, so the evaluation that would justify closing 85 was itself blocked behind 85. Design constraints the fix has to respect, all learned tonight: (1) the run must NOT close its own task on the "unit exited" signal alone — the 09-03 night exited cleanly and produced nothing usable, every leg dropped, so completion is not success
+      (2) the evaluator is a separate task and must become dispatchable the moment the run FINISHES, not when someone judges it — i.e. the run should satisfy the dependency, not the verdict
+      (3) whatever the phone writes has to survive the reboots the measurement itself performs (#85 reboots three times), so a /run marker is wrong and it has to land somewhere durable or be pushed to the host
+      (4) a bare exit code is not enough — the triage output carries the invalidating information and should travel with the completion. Candidate shapes to weigh, not a decision: a completion sentinel file the run writes and queue.cjs check notices
+      the run calling queue.cjs on the host over the link
+      or a host-side watcher like measurement-watch that learns about timer-started runs it never saw launched. ☠️ The third is the real gap: measurement-watch only knows about runs a session started with systemd-run, which is exactly why a timer-started one is invisible to it.
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap

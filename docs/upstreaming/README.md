@@ -135,10 +135,19 @@ that fills it. Nothing reads it. The finding holds where it matters.
 (`for-7.4` does not exist yet — 404 — which is what an open merge window looks
 like on the maintainer's side.)
 
-☠️ Not yet verified, and it is the next thing to measure: **which `api_version`
-this device's ADSP actually reports** for the AFE service, and therefore what the
-condition should test. That is a device-side reading, not an argument — and it is
-the one number the whole redesign turns on.
+☠️ **Measured 2026-09-05: this ADSP reports AFE `api_version = 2`,
+`api_branch_version = 0`**, with the query returning success (so the zero in the
+branch field is a real zero, not a lookup miss). Read with a kretprobe on
+`q6core_get_svc_api_info()` triggered by an APR-bus rebind of the AFE service —
+no rebuild and no flash, because nothing in the tree prints it. Full method,
+both self-checks, and ☠️ the cost (the rebind wedges the AFE ports and needed a
+reboot) in
+[`../audio/bringup/captures/2026-09-05_130-afe-api-version/`](../audio/bringup/captures/2026-09-05_130-afe-api-version/README.md).
+
+What that number *selects* is still not ours to say: our tree branches on
+`ainfo` nowhere, and the dispatch by firmware version is patch 3/4 of Otto's v2,
+which is not in mainline. The measurement supplies the condition's **input** on
+this device, not the condition.
 
 **The constructive move** is to join that work rather than compete with it: the
 change is generic (msm8909/8916/8917/8953/8976), it is small now that its

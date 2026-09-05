@@ -355,3 +355,24 @@ sequences when it loads the card, so a running instance still applies the old
 ones. And note that while the screen is locked the *greeter* runs its own
 PulseAudio: a `pactl` aimed at the user's runtime directory then talks to an
 autospawned empty daemon, which looks exactly like "the card lost its sink".
+
+## 2026-09-05 — the AFE service api_version this ADSP reports
+
+`api_version = 2`, `api_branch_version = 0`, query successful. It is the number
+the generic q6afe clock-set redesign (Otto Pflüger's D-2 3/4, not in mainline)
+has to dispatch on, and nothing in our tree prints it — read with a kretprobe on
+`q6core_get_svc_api_info()` triggered by an APR-bus rebind of the AFE service,
+no rebuild and no flash.
+
+☠️ **Do not repeat the method casually: the rebind wedges the AFE ports.**
+`fail to start AFE port 7f`, `ASoC error (-110) on QUIN_MI2S_RX`, and a second
+rebind did not clear it — it took a reboot. If the number is wanted again, fold a
+one-line `dev_info` into `q6afe_probe()` on the next flash instead.
+
+☠️ The first read was one struct field out and would have been reported as
+`api_version = 0`. Both 0 and 2 are plausible values, so nothing about the wrong
+number looked wrong; it was caught by reading `q6core.h`, and the corrected read
+carries two checks — `ret=0` (the service was found) and `f_svc=0` (a field the
+function never writes).
+
+[`bringup/captures/2026-09-05_130-afe-api-version/`](bringup/captures/2026-09-05_130-afe-api-version/README.md)
