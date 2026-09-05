@@ -33,11 +33,19 @@ scan() {
     dir=$1
     rc=0
     # IMEI: 15 digits, and 35 is the TAC range these phones report
+    # ☠️ AND THE HYPHENATED FORM. SIP carries the IMEI as
+    #   +sip.instance="<urn:gsma:imei:35781109-111770-4>"
+    # which the plain 15-digit pattern cannot match - the hyphens break \b
+    # and the digit run. Found 2026-09-05 in an imsd REGISTER dump, after the
+    # guard had reported clean on a file containing it. The second pattern is
+    # anchored on the word imei so it cannot fire on ordinary hyphenated
+    # numbers elsewhere.
     # IMSI: MCC 216 (HU) + 12 digits          ICCID: 89 + 17-18 digits
     # MSISDN: +36 / 0036 followed by 9 digits, spaces tolerated
     # BSSID/MAC: only lowercase colon form; the uppercase one is a PDC config ID
     for pat in \
         '\b35[0-9]{13}\b' \
+        '(imei|IMEI)[^0-9]{0,6}[0-9]{2}[0-9-]{10,18}[0-9]' \
         '\b216[0-9]{12}\b' \
         '\b89[0-9]{17,18}\b' \
         '(^|[^0-9])(\+|00)[[:space:]]?36([[:space:]]?[0-9]){9}([^0-9]|$)' \
@@ -119,6 +127,13 @@ if [ "${1:-}" = "--self-test" ]; then
       if scan "$tmp" >/dev/null; then
           echo "SELF-TEST FAIL: a planted device password was not caught"; exit 2
       fi ) || exit 2
+
+    # The hyphenated IMEI a SIP +sip.instance carries. Synthetic digits.
+    fake_urn="35000000-000000-6"
+    printf '+sip.instance="<urn:gsma:imei:%s>"\n' "$fake_urn" > "$tmp/planted.txt"
+    if scan "$tmp" >/dev/null; then
+        echo "SELF-TEST FAIL: a hyphenated IMEI in a sip.instance was not caught"; exit 2
+    fi
 
     # A pasted process listing carrying the device password, shape only.
     printf "%s\n" "1234 sudo -S sh -c ..." > "$tmp/planted.txt"

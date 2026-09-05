@@ -1,0 +1,24 @@
+diff --git a/implementations/main.cpp b/implementations/main.cpp
+index 43b77f1..704f247 100644
+--- a/implementations/main.cpp
++++ b/implementations/main.cpp
+@@ -906,6 +906,7 @@ private:
+         std::string response = imsd::aka::DigestAkav1(*nonceB64, aka->res, cnonce, ctx_.id.regUri, ctx_.id.impi, ctx_.id.domain);
+         std::string auth = imsd::msg::AuthAka(ctx_, *nonceB64, cnonce, response);
+         std::string reg2 = imsd::msg::BuildRegisterProtected(ctx_, callidReg, ftag, rng_.Token(16), 2, spiUc, spiUs, auth);
++        DumpRaw("imsd-register-protected-sent.raw", reg2);
+         if (!sip_.Send(reg2)) throw std::runtime_error("send protected REGISTER failed");
+         std::string ok;
+         for (;;) {
+@@ -913,7 +914,10 @@ private:
+             if (!m) throw std::runtime_error("no reply to protected REGISTER");
+             auto st = imsd::sip::Status(*m);
+             if (st == 200) { ok = *m; break; }
+-            if (st && *st >= 300) throw std::runtime_error(std::format("REGISTER failed {}", *st));
++            if (st && *st >= 300) {
++                DumpRaw("imsd-register-fail.raw", *m);
++                throw std::runtime_error(std::format("REGISTER failed {}", *st));
++            }
+         }
+         reg_.callid = callidReg; reg_.ftag = ftag; reg_.cseq = 2;
+         reg_.spiUc = spiUc; reg_.spiUs = spiUs;

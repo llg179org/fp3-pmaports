@@ -76,3 +76,63 @@ IPv6-only auto-detection entirely, so **the daemon needed no patch**), `DEV`,
 
 `ims-pdn-up.sh` was **bypassed**, not adapted, for this first pass — the scripts
 that replaced it are beside this page.
+
+## The 500, read (attempt 3, with a local patch that dumps it)
+
+`DumpRaw` only ran on success paths, so a one-line patch was added to our package
+(`0001-dump-the-failing-protected-REGISTER.patch`) to dump both the protected
+REGISTER we send and the failing response. What came back:
+
+```
+SIP/2.0 500 Server Internal Error
+Via: SIP/2.0/TCP <addr>:45062;branch=…;rport=45061
+Call-ID: …@<addr>
+From: <sip:<impu>@ims.mnc070.mcc216.3gppnetwork.org>;tag=…
+To:   <sip:<impu>@ims.mnc070.mcc216.3gppnetwork.org>;tag=…
+CSeq: 2 REGISTER
+Warning: 399 <operator diagnostic string>.ims.mnc070.mcc216.3gppnetwork.org "Server Internal Error"
+Content-Length: 0
+```
+
+★ It carries a **`Warning: 399`** header with an operator-internal diagnostic
+code. That is a server-side failure inside their core, not a rejection of us —
+a refusal would be 403 or 404.
+
+## ★ And what we sent contains the thing #163 said might be missing
+
+The protected REGISTER is structurally complete: `Authorization: Digest …
+algorithm=AKAv1-MD5`, `Require`/`Proxy-Require: sec-agree`, a `Security-Client`
+and a `Security-Verify` carrying the negotiated SPIs and the P-CSCF's protected
+ports, `P-Access-Network-Info: 3GPP-E-UTRAN-FDD` with the cell id, `Supported:
+sec-agree, path`. And in the Contact:
+
+```
+Contact: <sip:<impu>@<addr>:45062>;+sip.instance="<urn:gsma:imei:…>";
+         +g.3gpp.icsi-ref="urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel";expires=600000
+```
+
+**`+g.3gpp.icsi-ref=…mmtel` is the MMTEL voice feature tag** — the first of the
+two candidates
+[`../2026-09-05_163-same-card-two-devices/`](../2026-09-05_163-same-card-two-devices/)
+named for why the network treats this UE as not IMS-voice-capable. `imsd` offers
+it. So if a registration completes, it completes as a voice-capable contact.
+
+## Candidates for the 500, as candidates
+
+Not established — the Warning code is operator-internal and we cannot decode it:
+
+- ☠️ **The IMPU is derived from the IMSI.** This card is a **USIM with no ISIM**,
+  so there is no provisioned IMPU and the temporary public identity
+  `sip:<IMSI>@ims.mnc…` is used. If the HSS has no such temporary IMPU, an
+  S-CSCF lookup can fail internally — which fits a 500 better than a 403.
+- The requested `Expires: 600000` is large; some cores object.
+- Something in the header set their P-CSCF cannot process.
+
+## ☠️ A masking gap this found, in our own guard
+
+The Contact carries the IMEI as `+sip.instance="<urn:gsma:imei:35…-…-…>"`. The
+repository guard's IMEI pattern was `\b35[0-9]{13}\b`, which **cannot match the
+hyphenated form** — the hyphens break both the word boundary and the digit run.
+It reported clean on a file containing it. `tests/no-identifiers.sh` now carries
+a second pattern anchored on the word `imei`, with a self-test case using
+synthetic digits.

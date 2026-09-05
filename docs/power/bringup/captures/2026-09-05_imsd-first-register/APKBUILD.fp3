@@ -1,0 +1,42 @@
+# Contributor: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+# Maintainer: Lajosházi, László Gergely <lajoshazilg@gmail.com>
+#
+# Local FP3 packaging of Catcrafts' imsd. Upstream ships packaging/APKBUILD;
+# this differs from it in exactly two ways, both forced:
+#
+#   ☠️ 1. UPSTREAM HAS NO RELEASE TAG YET. Its source= fetches
+#         archive/v0.3.0.tar.gz, which returns 404 - and so does a bogus
+#         version, so that check discriminates. Archives by sha 404 too. So the
+#         source here is a local git-archive of the clone, pinned by _commit.
+#   ☠️ 2. makedepends are upstream's names. If apk cannot resolve one, the
+#         build says so precisely - which is a better instrument than guessing
+#         Alpine's versioned toolchain names from an index read that came back
+#         empty for packages that certainly exist.
+pkgname=imsd
+pkgver=0.3.0_git1987275
+pkgrel=1
+_commit="1987275a54a8a9a7b84502dfb3b7d611c7f9b7f7"
+pkgdesc="Userspace IMS/VoLTE daemon for mainline Linux phones"
+url="https://forgejo.catcrafts.net/Catcrafts/imsd"
+arch="aarch64"
+license="GPL-3.0-only"
+depends="modemmanager opencore-amr vo-amrwbenc pipewire-tools"
+makedepends="clang lld libc++-dev llvm-libunwind-dev llvm-runtimes glib-dev pkgconf"
+provides="81voltd=$pkgver-r$pkgrel"
+source="imsd-$pkgver.tar.gz
+	0001-dump-the-failing-protected-REGISTER.patch
+	"
+builddir="$srcdir/imsd"
+options="!check"   # the unit tests need the same toolchain; run them once it builds
+
+build() {
+	make
+}
+
+package() {
+	make install DESTDIR="$pkgdir"
+}
+sha512sums="
+63a23c4777b3b8899757aba0beb7a65437ffddc9f416364674471999fb2dc36403c7deb6f026f5b749059b939625c984605c7b7d8dce6d6c7f64edff0bd0b2e5  imsd-0.3.0_git1987275.tar.gz
+d1e54b1bd1aa4424814322455d7114850088bb0f5b565518a75ab44d2dfc1c165433f8f253957b5c081f5ffdb3072b181f12d8f5e308900cc87b03e5c748462b  0001-dump-the-failing-protected-REGISTER.patch
+"
