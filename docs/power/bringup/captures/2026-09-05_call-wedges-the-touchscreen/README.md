@@ -29,6 +29,25 @@ The panel was not dead in the sense of silent: its **interrupt kept firing at th
 same ~158/s** as the failing reads, so the controller was asserting IRQ
 continuously and every i2c read returned `-5` (EIO).
 
+## ☠️ What the operator actually sees: a key held down, not a dead screen
+
+Reported alongside the freeze: **the calculator's `7` key stayed pressed**, and
+the app had to be restarted to clear it.
+
+That is a sharper description of the fault than "the touchscreen froze", and it
+constrains the mechanism. A stuck key means userspace received a **touch-down
+that never got its touch-up**: the controller wedged *while a finger was on the
+glass*, mid-gesture, and the last state it managed to deliver was "contact
+present at this coordinate". Everything after that was `-5`.
+
+It also explains the interrupt behaviour. The controller had a pending touch to
+report and kept **asserting IRQ at the same ~158/s as the failing reads** — it
+was not silent, it was trying, and every read failed.
+
+For the user this is worse than an unresponsive panel: an application receives a
+button press with no release and stays in that state until it is restarted, even
+after the driver recovers.
+
 ## Why this matters more than #142
 
 | | #142, as characterised | this |
