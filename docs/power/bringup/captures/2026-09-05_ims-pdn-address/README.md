@@ -51,3 +51,31 @@ feasibility risk for that path, ahead of anything about the modem generation.
 ```sh
 sudo sh ims-pdn-addr.sh      # raise the ims APN, read the address, tear it down
 ```
+
+## ★ Resolved the same day, by reading the source: `imsd` is IPv4-capable
+
+The risk above was stated at 16:0x and answered at 16:2x, before any packaging
+work — which is what the task said to do. Read from
+`forgejo.catcrafts.net/Catcrafts/imsd`, branch `main`:
+
+| where | what it does |
+|---|---|
+| `implementations/main.cpp` — all four socket sites (`SipTcp::Connect`, the `FreshRegister` UDP socket, and both `ServerPorts::Open` sockets) | `socket(fam, …)` where `fam = Is6(local) ? AF_INET6 : AF_INET` |
+| `main.cpp` — `MakeAddr` | branches to `sockaddr_in6`/`inet_pton(AF_INET6,…)` or `sockaddr_in`/`inet_pton(AF_INET,…)` |
+| `Imsd-Util` — `Is6()` | `return a.contains(':')` |
+| `Imsd-Ipsec.cppm` | `int plen = imsd::util::Is6(local) ? 128 : 32;` — the `ip xfrm` policies are built per family, no `inet6` hardcode |
+| `Imsd-Sip.cppm` | parses both `[v6]:port` and `host:port` sent-by forms |
+| `main.cpp` — `DetectLocal(dev)` | ☠️ **the one IPv6 hardcode**: it runs `ip -6 addr show dev <dev> scope global` |
+
+**So the address family is threaded through the code as data, and only the
+convenience auto-detection assumes v6.** With `LOCAL` set explicitly — which the
+README already lists as a configuration variable — an IPv4 `PCSCF` and an IPv4
+`LOCAL` are what the code is written to handle.
+
+☠️ **What this does not establish.** It was read through a fetching tool that
+summarises, not from a local clone, and nothing here has been compiled or run.
+It says the code has no v6 assumption in its transport; it does not say the
+operator's IMS core will accept SIP and an IPsec SA over IPv4 from this UE,
+though the P-CSCF addresses being IPv4 is a strong hint that v4 is the expected
+transport on this network. AMR-WB and the USIM AKA path on an msm8953-generation
+modem remain untested.
