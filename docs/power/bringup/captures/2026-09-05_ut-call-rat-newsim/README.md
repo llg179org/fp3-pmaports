@@ -318,3 +318,40 @@ switch states rather than two tariffs. It should not be relied on until re-read.
 If the FP3 does get VoLTE with this card, the next gate is device whitelisting -
 operators commonly gate VoLTE on the IMEI/TAC, which is a known wall for custom
 ROMs and Linux phones, and the FP3's status with this operator is unknown.
+
+## The corporate SIM: a proper control, and it restores the tariff explanation
+
+The daily Android holds two cards: the **corporate** SIM (which placed the calls)
+and the **dev** card. On the corporate SIM both "4G hívás" **and** mobile data are
+enabled - and its calls still ring out on **EDGE**.
+
+| card | device | switches | RAT during the call |
+|---|---|---|---|
+| dev | daily Android | 4G calling on (data off) | **4G** |
+| corporate | daily Android | 4G calling **and** data on | **EDGE** |
+
+Same handset, same Android, same modem, both switches on, two subscriptions, two
+outcomes. The device-side confounder that invalidated the #160 answer is removed
+here, so this is the first clean statement of the point: **on this operator, VoLTE
+is a property of the subscription and it differs between subscriptions.**
+
+That also settles the note flagged as suspect earlier on this page - the older
+"the two daily-handset SIMs differ by tariff" observation. It could have been two
+switch states; with the switches read and on, it is not. The tariff explanation
+stands.
+
+⚠️ One asymmetry worth stating: the corporate observation is a **mobile-originated**
+call and the dev-card observation was **mobile-terminated**. Both are CS domain
+selection and the FP3 was measured to CSFB in both directions, so they are being
+treated as comparable - but they are not the identical procedure.
+
+### And this does not exonerate or convict the FP3
+
+The card in the FP3 is neither of these two. It is the daily handset's former
+SIM2, and **its VoLTE status has never been measured in a device that could use
+it** - the UT oracle has no such switch to read and lands on EDGE regardless. So
+the FP3's EDGE remains unattributed: it is compatible with a non-VoLTE
+subscription, with a device/stack limitation, and with both.
+
+The decisive test is unchanged: the **dev card**, now measured as VoLTE-capable on
+this network, in the FP3.

@@ -10213,3 +10213,20 @@ the FP3 and call it.
 
 ☠️ Also suspect for the same reason: the older "the two daily-handset SIMs differ
 by tariff" explanation may have been two switch states, not two tariffs.
+
+## 2026-09-05 (control) — VoLTE differs by subscription, measured with the switches read
+
+The daily Android holds the corporate SIM and the dev card. With "4G hívás" on for
+both, and mobile data on for the corporate one as well, the corporate SIM's calls
+ring out on **EDGE** while the dev card holds **4G**. Same handset, same Android,
+same modem.
+
+So on this operator VoLTE is a property of the subscription and differs between
+subscriptions - stated cleanly for the first time, because the per-SIM switch that
+invalidated the #160 answer is read and on in both cases. This also restores the
+older "the two daily-handset SIMs differ by tariff" note, which had been flagged
+suspect earlier the same day on the grounds that it might have been two switch
+states.
+
+☠️ It still says nothing about the FP3, whose card is a third one whose VoLTE
+status has never been measured in a device that could use it.
