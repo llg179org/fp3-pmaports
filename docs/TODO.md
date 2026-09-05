@@ -121,10 +121,11 @@ more than one is.
 > 15 minutes and then it is anybody's; a parked task is worse than a cold one.
 
 <!-- FP3-QUEUE:BEGIN -->
-- [ ] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
+- [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
       lane: phone
+      until: the phone is on pmOS and a flash to r80 is agreed - the same flash the touchscreen fix needs
 - [@] 63. Reachability test: one call an hour during the day
       when: hourly during the day; the morning corner sample ONLY after a night with no measurement
       they-do: ☠️ READ THIS BEFORE RUNNING ANOTHER ROUND - the value of hourly daytime calls is lower than this task implied. docs/power/README.md records 14/14 incoming calls ringing with IMS off, device-side latency 375.5 +/- 34.7 ms, and states plainly that 14/14 is a 95 % lower bound of 0.806 and NOT yet a rate, and that THE DANGEROUS CORNER IS UNSAMPLED: hourly calls never test a phone that has idled eight hours. More hourly samples do not reach that corner - they are the wrong instrument for it, not too few of it. So: run this only when there is an actual policy change to validate, and when you do, the sample that counts is the FIRST call after a long idle, not the hourly ones. ☠️ NOT on a night the phone measures from 19:00 - in the radio-off windows it rightly does not ring. ☠️ SIM history 2026-09-05: the card was swapped out and back the same day, so the phone holds the card it had before (dev card, ICCID ...6542, One HU / MCC 216 MNC 070); samples from before that day and after the swap-back are comparable, only roughly 04:30-07:10 that day used a different card
@@ -160,7 +161,7 @@ more than one is.
       lane: phone
 - [ ] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
-      why: line 3 of the 116 oracle session
+      why: ☠️ NOT simply 'do it on the oracle slot' any more. Attempted from the other end on 2026-09-05 (#169) and the whole path was stood up on UT with no slot switch - /dev/diag exists there, QCSuper's prebuilt aarch64 adb_bridge runs in the Android container and reports 'Connection to Diag established', QCSuper reaches it over TCP - and it then died on 'DIAG_LOG_CONFIG_F timed out' with a 24-byte pcap holding zero packets. That is the wall leads/diag-bringup.md describes, and it holds on the stock downstream stack too, not only on mainline. The route that works is the DIAG_CNTL log-mask path tools/diag-log-capture.py uses, and that tool needs pmOS's rpmsg control device. So this task now inherits #169's blocker: it needs a UT-side control-channel implementation, or it runs on pmOS. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
 - [ ] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
