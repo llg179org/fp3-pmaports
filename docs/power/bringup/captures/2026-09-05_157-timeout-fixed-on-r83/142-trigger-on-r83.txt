@@ -1,0 +1,16 @@
+
+=== #142 trigger A/B: unbind-then-probe, screen OFF vs ON, 3 each
+=== started 2026-09-05 19:05:00; bus i2c-2, device 2-0048, driver Himax-hx83112b-TS
+
+round 1 OFF screen=Off  first transaction after unbind:    2.0173 s errno 110  >>> STALL
+round 1 ON  screen=On   first transaction after unbind:    0.0006 s errno 6  ok
+round 2 OFF screen=Off  first transaction after unbind:    2.0353 s errno 110  >>> STALL
+round 2 ON  screen=On   first transaction after unbind:    0.0006 s errno 6  ok
+round 3 OFF screen=Off  first transaction after unbind:    2.0305 s errno 110  >>> STALL
+round 3 ON  screen=On   first transaction after unbind:    0.0008 s errno 6  ok
+
+=== result ===
+screen OFF: 3 / 3 stalled on the first transaction after unbind
+screen ON : 0 / 3 stalled
+touch driver now: Himax-hx83112b-TS
+=== done 2026-09-05 19:07:20 ===

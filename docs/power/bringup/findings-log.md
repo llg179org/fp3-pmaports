@@ -10459,3 +10459,37 @@ response is discarded and `DUMP_SIP=1` wrote nothing. Next step is a one-line
 change to dump it. Not looped — the README warns of a fresh-SA throttle.
 
 Full write-up: `captures/2026-09-05_imsd-first-register/`.
+
+## 2026-09-05 — ★ a touch stall now costs 2.0 s instead of 15.1 s (#157)
+
+`i2c-qup` computed its transfer timeout **once at probe** from
+`MX_DMA_TX_RX_LEN` (128 KB) and handed the same 14.976 s to a four-byte touch
+read. r83 sizes it from `msg->len` instead. Measured with the reproducer that
+already had a recorded answer, unchanged, same script:
+
+| arm | r82 (2026-09-04) | r83 (2026-09-05) |
+|---|---|---|
+| screen OFF | 15.0704 15.0692 15.0899 15.0465 15.1061 s, 5/5 | 2.0173 2.0353 2.0305 s, 3/3 |
+| screen ON | 0.0004–0.0006 s, 0/5 | 0.0006–0.0008 s, 0/3 |
+
+**15.076 s → 2.028 s, 7.4x**, with the healthy path unchanged as the control.
+The predicted value was exact before the run (`2 s + 1 x 99 us`).
+
+☠️ The stall itself is **not** fixed — 3/3 with the screen off. This is the cost,
+not the cause. And the remaining 2 s is upstream's `TOUT_MIN`, deliberately left
+alone: it is shared by every i2c-qup user.
+
+☠️ **#175 answered negatively along the way.** The #155 supply fix did not end
+#142. Eleven minutes of ordinary r82 use produced **five** `-110`/`-6` pairs plus
+a three-minute `-5` wedge of 28 608 log lines; the operator noticed three of the
+six. One pair is datable to its trigger: it began the second an incoming call
+arrived and the modem fell back `lte -> gsm`. A ~18:08 touch dropout the operator
+reported has **no kernel line at all** and is a different, unexplained fault.
+
+The second half of #157 - three retries in `himax_read_events` plus
+`dev_err_ratelimited` - is **not** measured by the reproducer, which probes a raw
+i2c address rather than the driver's event read. It needs ordinary use against
+the r82 rate above.
+
+Write-ups: `captures/2026-09-05_157-fault-rate-on-r82/` and
+`captures/2026-09-05_157-timeout-fixed-on-r83/`.
