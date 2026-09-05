@@ -292,3 +292,25 @@ the compositor), and xdg-desktop-portal is interactive and needs a user session
 the greeter does not have. Where UI evidence is needed, D-Bus object state is
 the substitute — a `/org/gnome/Calls/window/N` object, for instance, is a claim
 about what is on screen rather than a log line about what was logged.
+
+## `no-identifiers.sh` — do not publish subscriber or premises identifiers
+
+Captures are pasted in from the phone, and ofono, dmesg and journald hand you the
+IMEI, the IMSI, the ICCID, the caller's number and the home access point's BSSID
+as a matter of course. Every one of those reached a pushed commit at least once
+(2026-09-05), so this is a repository check rather than advice.
+
+```sh
+sh tests/no-identifiers.sh              # scan the working tree; run before committing a capture
+sh tests/no-identifiers.sh --self-test  # prove it still catches a planted IMEI
+```
+
+It is deliberately **not** in `checks/` and `fp3-selftest` does not run it: those
+run on the device and test the device, this one tests the repository.
+
+The self-test is the point of the script, not a nicety - it plants an IMEI and
+fails if the scan misses it, then plants a modem PDC config ID (twenty
+colon-separated hex bytes, whose first six look exactly like a MAC) and a power
+log column run, and fails if either is reported. Both of those false positives
+were real, and a checker that cries wolf gets ignored, which is the same as not
+having one.
