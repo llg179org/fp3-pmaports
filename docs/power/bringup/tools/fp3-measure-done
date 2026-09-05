@@ -1,0 +1,61 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely.
+#
+# THE COMPLETION SENTINEL. A measurement the phone runs on its own has nobody to
+# tell the queue it finished, so the task sits ready-but-unclosed and everything
+# behind it stops.
+#
+# ☠️ MEASURED COST, 2026-09-05. Queue item #85 was started by fp3-night-start.timer,
+# ran 2026-09-03 23:17 -> 09-04 01:15, and then sat for TWO DAYS with NINE tasks
+# blocked behind it. Worse than lag, it was a deadlock: #118, the task that judges
+# whether the night is good enough, carried `after: 85`, so the evaluation that
+# would have justified closing 85 was itself blocked behind 85.
+#
+#   fp3-measure-done <task-id> <outcome> "<one-line summary>" [data-dir]
+#
+#     task-id   the queue number this run belongs to
+#     outcome   finished | aborted     ☠️ NOT "ok"/"failed" - see below
+#     summary   one line a human reads first; the invalidating fact if there is one
+#     data-dir  where the raw output landed, so the evaluator does not have to guess
+#
+# ☠️ WHY THE OUTCOME IS NOT A VERDICT. The 2026-09-03 night exited cleanly and
+# produced nothing usable - every leg dropped for a median sleep of 9-18 s against
+# a 90 s alarm. "The unit exited" is not "the measurement succeeded", and a
+# sentinel that conflated them would close tasks on failed runs. So this file says
+# only that the run STOPPED, and whether it stopped of its own accord; judging it
+# is a separate task, and the whole point of the sentinel is to let that task
+# start.
+#
+# ☠️ AND IT HAS TO SURVIVE THE RUN'S OWN REBOOTS. #85 reboots three times, so
+# /run is wrong: it would be erased mid-measurement. /var/log/fp3 persists.
+set -u
+DIR=/var/log/fp3/completions
+
+[ $# -ge 3 ] || { echo "usage: fp3-measure-done <task-id> finished|aborted \"<summary>\" [data-dir]" >&2; exit 2; }
+task=$1; outcome=$2; summary=$3; data=${4:-}
+
+case "$outcome" in
+	finished|aborted) ;;
+	*) echo "fp3-measure-done: outcome must be finished or aborted, not '$outcome'" >&2; exit 2 ;;
+esac
+case "$task" in
+	''|*[!0-9]*) echo "fp3-measure-done: task id must be a number, not '$task'" >&2; exit 2 ;;
+esac
+
+mkdir -p "$DIR" || exit 1
+# One file per task, rewritten if the run repeats - the host consumes by content
+# hash, so a second identical run does not look like new news.
+{
+	echo "task=$task"
+	echo "outcome=$outcome"
+	echo "ended=$(date '+%F %T')"
+	echo "boot=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)"
+	echo "uptime_s=$(cut -d. -f1 /proc/uptime)"
+	echo "unit=${FP3_MEASURE_UNIT:-unknown}"
+	echo "data=$data"
+	echo "summary=$summary"
+} > "$DIR/$task.done.tmp" && mv "$DIR/$task.done.tmp" "$DIR/$task.done"
+
+echo "completion recorded: $DIR/$task.done ($outcome)"

@@ -43,6 +43,22 @@ S=$D/state
 LOG=$D/run.log
 MAXSTEP=40
 
+# ☠️ TELL THE QUEUE THE RUN STOPPED. Without this a timer-started measurement has
+# nobody to report to: #85 finished 2026-09-04 01:15 and sat unclosed for two days
+# with nine tasks behind it. The sentinel says only that the run STOPPED - judging
+# it is night-triage.sh's job and a separate queue task - and it must be written on
+# EVERY exit path, which is why it is a function and not a line.
+done_sentinel() {
+	# ☠️ FP3_TASK must be set by whoever arms the run. It used to default to 85,
+	# which is now closed - a later night would have annotated a dead task and
+	# released nothing, silently. Unset writes task 0, which queue-sync reports
+	# as unattributed on every run instead of acting on the wrong entry.
+	[ -n "${FP3_TASK:-}" ] || s "☠️ FP3_TASK not set - the completion will be unattributed"
+	FP3_MEASURE_UNIT=fp3-night.service \
+		fp3-measure-done "${FP3_TASK:-0}" "$1" "$2" "$D" >> "$LOG" 2>&1 \
+		|| s "☠️ could not write the completion sentinel - the queue will not learn this ran"
+}
+
 mkdir -p "$D"
 # ☠️ THE WALL CLOCK IS WRONG AFTER EVERY BOOT UNTIL NTP LANDS - this device's RTC
 # starts at 1970. Three boots' legs cannot be lined up against each other on a
@@ -60,6 +76,10 @@ BAND=${BAND:-eutran-1}
 
 give_up() {
 	s "GIVE UP: $*"
+	# ☠️ THE ABORT PATH NEEDS THE SENTINEL MOST. A run that gives up silently is
+	# exactly the case that leaves the queue waiting for a night that will never
+	# report - which is the failure #159 exists to remove.
+	done_sentinel aborted "gave up: $*"
 	systemctl disable fp3-night.service 2>/dev/null
 	echo Charging > /sys/class/power_supply/pmi632-charger/status 2>/dev/null
 	mmcli -m any --set-current-bands=any >/dev/null 2>&1
@@ -296,6 +316,7 @@ if [ "$leg" -le "$BOOTS" ] && [ $((step % 2)) -eq 1 ]; then
 		echo $((step + 2)) > "$S"
 		ocv end
 		s "=== NIGHT COMPLETE (last leg dropped) ==="
+		done_sentinel aborted "last leg dropped: the vector would not go off"
 		systemctl disable fp3-night.service 2>/dev/null
 		exit 0
 	fi
@@ -347,5 +368,6 @@ fi
 
 ocv end
 s "=== NIGHT COMPLETE ==="
+done_sentinel finished "$BOOTS legs and both OCV blocks ran; validity is night-triage.sh's to judge"
 systemctl disable fp3-night.service 2>/dev/null
 systemctl start fp3-ims-reconcile.timer 2>/dev/null

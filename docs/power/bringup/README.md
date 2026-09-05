@@ -644,3 +644,13 @@ Deliberately not listed on this page. See [`../README.md`](../README.md) for
 where the numbers stand and [`../../TODO.md`](../../TODO.md) for the rest —
 including the direct rail measurement, and the suspend experiment that must not
 be run unattended.
+
+## Telling the queue a device-run measurement finished
+
+A measurement the phone starts on a timer has nobody to report to: #85 ran to
+completion on 2026-09-04 01:15 and sat unclosed for two days with nine tasks
+behind it. `tools/fp3-measure-done` (on the phone, at every exit path) and
+`hooks/queue-sync.cjs` (on the host) close that loop, and
+[`tools/COMPLETION-LOOP.md`](tools/COMPLETION-LOOP.md) states the convention —
+in particular that an evaluator waits with `until: completion:R`, never
+`after: R`, because a verdict must not gate the task that produces the verdict.
