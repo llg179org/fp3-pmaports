@@ -10393,3 +10393,28 @@ independent voice for the caution already on #166.
 
 So the reframing: pmOS is not behind on VoLTE. **Mainline Linux does not have
 VoLTE on any device.** Building it here would be doing it first, not catching up.
+
+## 2026-09-05 (#166) — the carrier-config experiment is blocked by a qmicli segfault
+
+Authorised to change the modem provided it is reversible, so the before-state went
+down first: `--pdc-list-configs` for software and platform, 25 configs,
+`ROW_Commercial` **Active**, plus the exact restore command written before anything
+was touched.
+
+☠️ That re-read settles one of the three unverified legs of the MBN hypothesis: the
+Active-generic reading was from an August capture and might have moved. It has not.
+
+Then `qmicli -d qrtr://0 --pdc-load-config=<file>` **segfaults**, `rc=139`,
+reproducibly, on qmicli 1.39.0. It is specific to that verb - `--pdc-list-configs`
+and `--pdc-noop` both work in the same session - and the crash is client-side,
+after CTL negotiation. No public bug report exists for it.
+
+**The modem is unchanged**: 25 configs, ROW_Commercial still Active, verified after
+the crashes. Nothing was sent to it, so the MBN hypothesis is neither advanced nor
+damaged - and the restore path was never needed, though writing it first is what
+made the attempt permissible.
+
+Unblocking it means a different libqmi build, and the crash is worth reporting
+upstream with a backtrace.
+
+Capture: `docs/power/bringup/captures/2026-09-05_mbn-hungary-experiment/`.
