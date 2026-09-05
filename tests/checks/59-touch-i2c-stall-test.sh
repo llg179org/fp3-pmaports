@@ -94,15 +94,40 @@ if [ "$stalls" -gt 0 ]; then
 	say FAIL "$stalls i2c stalls this boot ($irqs touch interrupts): the panel was dead"
 	say FAIL "  for ~15 s each time. dmesg | grep 'Failed to read input event'"
 	fail=1
-elif [ "$irqs" -lt 500 ]; then
-	# ☠️ A clean log on an unexercised panel is not evidence. Say so rather than
-	# banking a PASS the next reader will treat as one.
-	say SKIP "no stalls, but only $irqs touch interrupts this boot - the panel has"
-	say SKIP "  barely been used, so this measures that nobody touched it. Tap the"
-	say SKIP "  screen for a minute with pauses, or run FP3_TOUCH_PROBE=20 for the"
-	say SKIP "  active version."
 else
-	say PASS "no i2c stalls across $irqs touch interrupts this boot"
+	# ☠️ THE INTERRUPT COUNT IS THE WRONG QUANTITY, and this check used to gate on
+	# it at ">= 500". Measured 2026-09-05: an r83 boot logged 2002 interrupts over
+	# 104 minutes and passed that gate, while 1590 of them fell inside ONE
+	# two-minute window and the panel was untouched for the other 100 minutes. The
+	# fault is per first-access-after-an-idle, so what bounds a clean run is ACTIVE
+	# TIME - a phone nobody touches has no vulnerable moments and its clean log
+	# measures the operator's absence.
+	#
+	# Active time cannot be had from one sample. It comes from the sampler's TSV
+	# (docs/power/bringup/captures/2026-09-05_178-retry-rate-on-r83/), whose
+	# analyser is touch-exposure.py. When that log is present, use it; when it is
+	# not, say that the interrupt count is a proxy and what it fails to see.
+	tsv=$(ls -t /var/log/fp3-touch/*.tsv 2>/dev/null | head -1)
+	active_min=""
+	if [ -n "$tsv" ]; then
+		# minutes in which the interrupt counter actually moved, this boot only
+		active_min=$(awk -v bid="$(cat /proc/sys/kernel/random/boot_id)" '
+			$NF == bid { if (p && $1 > pt && $2 > p) a += $1 - pt; p = $2; pt = $1 }
+			END { printf "%d", a / 60 }' "$tsv" 2>/dev/null)
+	fi
+
+	if [ -n "$active_min" ] && [ "$active_min" -ge 36 ]; then
+		say PASS "no i2c stalls across $active_min min of ACTIVE use ($irqs interrupts)"
+	elif [ -n "$active_min" ]; then
+		say SKIP "no stalls, but only $active_min min of ACTIVE use ($irqs interrupts)."
+		say SKIP "  Below the ~36 min floor this file derives from the r82 inter-stall"
+		say SKIP "  gaps (23-726 s), so a clean run of this length rules out nothing."
+	else
+		say SKIP "no stalls across $irqs touch interrupts, but no /var/log/fp3-touch"
+		say SKIP "  TSV to say how much of the boot was ACTIVE use. The interrupt count"
+		say SKIP "  is a poor proxy: one four-minute burst reaches 2000 of them while"
+		say SKIP "  the panel sits untouched for an hour and forty minutes."
+	fi
 fi
 
 # --- 2. the active arm is DISABLED HERE, but it is not useless - it was aimed
