@@ -217,3 +217,56 @@ the whole MBN hypothesis and it remains unverified.
 ☠️ **And do not reach for `Global-VoLTE-Vodafone`:** it carries
 `ims52.testnetz-vd2.de`, a Vodafone Germany *test network* APN. Whatever it is
 for, it is not a live-network config for this operator.
+
+## #167 — the MBN parse is INCONCLUSIVE, and the parser is why
+
+The three MBNs are ELF-wrapped Qualcomm `MCFG` containers (magic at offset 8192).
+Header: `MCFG`, `format_type=4`, `config_type=1`, then an item count — 92 for
+`ROW_Commercial`, 82 for the Hungarian one — and a version. Items carry their EFS
+path inline, so a scanner over the paths recovers most of them:
+`mbn-parse-attempt.py` in this directory, kept for the next attempt.
+
+Item layout, as far as it was established:
+
+```
+uint32 item_length          e.g. 0x445 = 1093
+uint32 type                 0x00001902 for these
+uint16 ?                    0x0001
+uint16 filename_length      0x34 = 52, matching the path + NUL exactly
+char   filename[]
+...                         <- the part that was NOT established
+```
+
+**What the parser could show:**
+
+- it is not blind — it reports a genuine difference on `/sd/rat_acq_order`
+  (`0a 00` for ROW and the Hungarian config, `0b 00` for `Global-VoLTE-Vodafone`);
+- of the items recovered in all three files, one path exists **only** in the
+  Hungarian config: `/nv/item_files/modem/data/dsmgr/suppress_gsm_on_srvcc_csfb`;
+- coverage is partial: 47–49 path-items recovered against 82–92 declared, because
+  the scanner only sees items that embed a path and misses NV-id items entirely.
+
+☠️ **What it could not show, and why the answer is "unknown" rather than a number.**
+The parser reported `voice_domain_pref = 2` (CS preferred) in all three files, which
+would have been a clean result — the Hungarian config does not flip the voice
+domain, so loading it would not help. It also reported
+`qp_ims_service_enablement_config = 1025`, which is impossible for a service
+enablement blob. Dumping that item raw shows why: `1025` is the **data length**, and
+the two bytes the parser took as the value are the length field. The same ambiguity
+sits over the short items — six bytes follow `sms_domain_pref`'s filename and it is
+not established which two of them are the value.
+
+**So the load-bearing question is still open**: whether
+`eu/vodafone/commerci/hungary` sets a PS-preferring voice domain and enables MMTEL
+voice where `common/row/commerci` does not. Answering it needs a real mcfg parser,
+not this scanner.
+
+☠️ The near-miss is the same one as three sections above, one layer deeper. A
+plausible reading of a partially-understood format produced exactly the kind of
+crisp number that ends an investigation. It was caught only because one value —
+1025 for a config blob — was implausible on its face; the `voice_domain_pref` read
+was perfectly plausible and equally unfounded.
+
+**Consequence for #166.** Writing the Hungarian config into the modem was to be
+justified by this parse. It is not justified by it. #166 stays behind a real parse
+or an independent reason.
