@@ -1,0 +1,26 @@
+# ofono QtiRadioRegInfo, read with 'journalctl -o cat' so the newline-separated
+# second half of the DBG message survives. MSISDN redacted; the IMS domain is
+# the operator's and is kept. FP3 on UT, card ...3899, boot of 2026-09-05 04:47.
+# cmd: ut-ssh "journalctl -o cat --since '2026-09-05 04:45' | grep -a -A1 QtiRadioRegInfo"
+
+ims:imsradio0 ims_state=0
+ims:imsradio0
+--
+ims:imsradio1 ims_state=0
+ims:imsradio1
+--
+ims:imsradio0: QtiRadioRegInfo state:1 radiotech:21 error_code:0
+ uri: error_msg:
+--
+ims:imsradio0 ims_state=1
+imsradio0> [00000002] 4 requestRegistrationChange
+--
+ims:imsradio0: QtiRadioRegInfo state:2 radiotech:15 error_code:2147483647
+ uri: error_msg:
+ims:imsradio0 ims_state=2
+imsradio0 > 4 onRegistrationChanged
+--
+ims:imsradio0: QtiRadioRegInfo state:0 radiotech:15 error_code:2147483647
+ uri:sip:<msisdn-fp3>@ims.mnc070.mcc216.3gppnetwork.org|tel:<msisdn-fp3> error_msg:
+ims:imsradio0 ims_state=3
+imsradio0 > 6 onServiceStatusChanged

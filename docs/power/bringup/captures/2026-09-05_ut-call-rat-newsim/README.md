@@ -672,3 +672,55 @@ core** rather than merely reaching a modem-internal state, which is what separat
 registered. That enum is not in the plugin source - it comes from the vendor HIDL,
 whose libraries are on the device at
 `/vendor/lib64/vendor.qti.hardware.radio.ims@1.{3,4,5,6}.so`.
+
+## #164 ANSWERED — the phone really is registered with One HU's IMS core
+
+The plugin's `DBG` writes the registration info as **one message containing a
+newline**, and `journalctl`'s default renderer drops everything after it. Every
+capture on this page therefore recorded only the first half. `journalctl -o cat`
+prints the raw `MESSAGE` and the missing half appears:
+
+```
+ims:imsradio0: QtiRadioRegInfo state:1 radiotech:21 error_code:0
+ uri: error_msg:
+ims:imsradio0: QtiRadioRegInfo state:2 radiotech:15 error_code:2147483647
+ uri: error_msg:
+ims:imsradio0: QtiRadioRegInfo state:0 radiotech:15 error_code:2147483647
+ uri:sip:<msisdn>@ims.mnc070.mcc216.3gppnetwork.org|tel:<msisdn> error_msg:
+```
+
+Raw (MSISDN redacted): `ims-registration.txt`.
+
+**So the P-Associated-URI is populated**, from the operator's own IMS domain
+(`ims.mnc070.mcc216.3gppnetwork.org` — MNC 070 / MCC 216 is One HU), carrying the
+subscriber's number in both SIP and TEL form, with an empty `error_msg`. That is a
+**completed SIP REGISTER against the operator's IMS core**, not a modem-internal
+state: the URI is a value the network sends back in the 200 OK. It appears only in
+the `state:0` (REGISTERED) transition; the two earlier states carry an empty `uri`,
+which is exactly the behaviour that makes it a usable discriminator.
+
+☠️ **No patch and no rebuild were needed.** The task was written on the belief that
+the plugin discards these fields. It does not - the source has printed them since
+its first commit (2024-10-08), and the literal is present in the installed binary.
+What discarded them was the **log renderer**, one layer further out than anyone
+looked. Checking `grep -c error_msg` against the shipped `.so` would have shown
+this in one command, before any talk of building anything.
+
+### What this changes
+
+The hypothesis that this subscription has no IMS provisioning at all is **dead**:
+the network accepted the registration and issued a URI for it.
+
+☠️ What it does **not** prove is VoLTE authorisation. IMS registration and MMTEL
+voice authorisation are different things - operators routinely register a UE for
+SMS-over-IMS or RCS without granting voice - and nothing here shows which media
+feature tags the registration carried, nor what the network's T-ADS answers for
+terminating calls. So the two candidates survive in a narrowed form:
+
+1. the subscription is IMS-registered but **not authorised for MMTEL voice**;
+2. the device registers IMS but does not offer or complete the **voice** feature
+   tag, so the network correctly routes to CS.
+
+`radiotech:15` at registration (and `21` while not registered) is still undecoded -
+the enum is in the vendor HIDL at
+`/vendor/lib64/vendor.qti.hardware.radio.ims@1.{3,4,5,6}.so`.
