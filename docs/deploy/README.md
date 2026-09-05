@@ -111,6 +111,47 @@ place regardless of what `abuild.conf` says, and `ccache -s` shows six hundred
 thousand hits to prove it. **Two instruments, one of them blind, and the blind
 one was the one that agreed with the hypothesis.**
 
+☠️ **`pmb build --src` cannot build a kernel tree, and it fails silently-ish.**
+Measured 2026-09-05 while trying to build without the network. pmbootstrap's
+`fetch()` for `--src` does
+
+```sh
+local exclude_from="<src>/.gitignore"
+rsync -a --exclude=".git/" --exclude-from="$exclude_from" --ignore-errors --force ...
+```
+
+and **rsync's `--exclude-from` does not implement git's `!` negation**. The kernel
+`.gitignore` is built on negations — `.*` then `!.gitignore`, `*.bc` then
+`!kernel/time/timeconst.bc` — so every negated pattern loses and **557 tracked
+files were dropped** from the copy (406 `.gitignore`, 38 `.kunitconfig`, plus 20
+`.h`, 12 `.sh`, 6 `.c`). The build dies at
+
+```
+make[2]: *** No rule to make target 'kernel/time/timeconst.bc', needed by include/generated/timeconst.h
+```
+
+which names one file and hides the other 556.
+
+To see the real extent, compare against git rather than guessing:
+
+```sh
+git -C <src> ls-files | LC_ALL=C sort > /tmp/tracked
+sudo sh -c 'cd <chroot>/tmp/pmbootstrap-local-source-copy && find . \( -type f -o -type l \) | sed "s|^\./||"' \
+  | LC_ALL=C sort > /tmp/copied
+LC_ALL=C comm -23 /tmp/tracked /tmp/copied | wc -l      # 0 when the copy is complete
+```
+
+☠️ Two traps inside that check itself: `LC_ALL=C` on **both** sides or `comm`
+prints `file 1 is not in sorted order` and returns garbage — a first run of this
+reported 614 that way; and `find -type f` alone misses symlinks, which made 99
+tracked files look absent when `Documentation/Changes -> process/changes.rst`
+and friends were there all along.
+
+**Patching the copy does not work.** The build's own rsync runs again on every
+invocation and it carries `--delete`, so files added by hand are removed before
+`make` starts. Fixing this needs a pmbootstrap change (enumerate with
+`git ls-files` instead of feeding `.gitignore` to rsync), not a workaround here.
+
 ☠️ **GitHub rate-limits the archive endpoint, and a 429 is a FILE.** Measured
 2026-09-05 after four ~250 MB kernel tarballs in one day: `pmb checksum` failed
 with `wget: server returned error: HTTP/1.1 429 Too Many Requests`. Two things
