@@ -2622,3 +2622,7 @@ so that `after:` and `continues:` references still resolve.
       lane: phone
       after: 135
       why: ☠️ THE QUESTION leads/ims-missing-ap-half.md NAMES AS UNMEASURED, and it gates everything else about that loop. The loop is real and measured: 22 complete IMS PDN up/down cycles in 120 s on APN ims, 8.3-8.7 s apart, each needing an RRC connection, the UE's own PDN DISCONNECT REQUEST arriving ~30 ms after it accepted the bearer it just asked for. Turning IMS off is measured to stop it dead (220 ESM messages -> 0). ☠️ WHAT IS NOT MEASURED is whether any of that moves the power duty. The one IMS-off window (2026-09-02 00:17) is unusable for two independent reasons the tool's own header records: DIAG log masks were still armed modem-side with no consumer, so the modem never entered XO shutdown, and the band moved inside the window. THE TOOL EXISTS: tools/ims-ab.sh, a band-pinned A/B/A' ladder, run as root on the device, default 600 s per leg. ☠️ Run it BEFORE any work on the loop itself: if the duty does not move, the loop is cosmetic and neither direction - turning IMS off, nor supplying the missing AP half - is worth building. If it does move, the number is what justifies the work. ☠️ Clear the DIAG log masks first and verify the modem reaches XO shutdown, or the A leg repeats the unusable window
+
+- [x] **116.** The deciding witness for the device-policy gate: the UT oracle slot, same IMEI  — closed 2026-09-05 10:24
+      why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
+      lane: phone

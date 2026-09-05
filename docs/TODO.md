@@ -24,6 +24,21 @@ repeated.
 > bootloader, and the lk2nd menu is unusable because the screen stays black —
 > do not plan around either.
 
+## Priority order, set by the operator 2026-09-05
+
+Categories, highest first. Within a category the queue's own `after:` and `until:`
+still decide what is startable; this says which category to reach into first when
+more than one is.
+
+| | category | what it is | ids |
+|---|---|---|---|
+| 1 | **touchscreen fix** | the #142 15 s i2c stall — root cause found, fix not yet proven on device | 151 → 155 → 157 |
+| 2 | **VoLTE** | why this phone has no 4G calling, and the cheap IMS win | 169, 166, 173, 172, 64 |
+| 3 | **energy / duty** | finishing the ~50 mA IMS result: replication, calibration, band lock | 158, 79, 19, 30, 31, 41, 50, 53, 72, 75, 81, 124 |
+| 4 | **reachability** | ☠️ only when there is a policy change to validate — see the task | 63 |
+| 5 | **baseline** | linux-next boot, pure mainline | 135 |
+| 6 | **upstreaming** | Bert's thread, DTS hygiene, the idle series | 152, 154, 140, 149, 157 |
+
 ## The queue — what is next
 
 > This is the **work queue**: short, machine-readable, and the only source. The
@@ -106,7 +121,7 @@ repeated.
 > 15 minutes and then it is anybody's; a parked task is worse than a cold one.
 
 <!-- FP3-QUEUE:BEGIN -->
-- [~] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
+- [ ] 50. SMSM PROC_AWAKE (bit 12) — run the A/B and put the measurement in the commit message
       after: 85
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
       lane: phone
@@ -124,51 +139,49 @@ repeated.
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
       lane: phone
       they-do: Needs physical hardware: a shunt resistor wired in series with the battery plus a meter. That is the whole point of the task - it is the only current witness that does not pass through the PMI632 ADC, so no software route can substitute for it. ☠️ It does NOT block: the calibration offset can be bounded without a shunt by |e| <= 1.49 (delta + I*|g|) from a rested, radio-off OCV block, and tonight's #85 produces that pair (#118 evaluates it). So this is a strengthening measurement to do when the hardware is at hand, not a gate on anything.
-- [~] 72. Threshold-time method (a current ratio needing no calibration)
+- [ ] 72. Threshold-time method (a current ratio needing no calibration)
       after: 85
       why: conditional fallback — only alive if the |ε| bound computed from tonight's OCV pair is not tight enough
-- [~] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
+- [ ] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
       after: 85
       why: one reboot, zero risk — but AFTER the next reboot we are having anyway, because debug logging would contaminate tonight's legs
       lane: phone
-- [~] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
+- [ ] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
       after: 85
       why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
-- [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
+- [ ] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
       after: 85
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
       lane: phone
-- [x] 116. The deciding witness for the device-policy gate: the UT oracle slot, same IMEI
-      why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
-      lane: phone
+
 - [x] 55. Attach-PDN list on both slots
       after: 116
       why: the oracle half is DONE (2026-09-03 capture 2026-09-03_ut-oracle-ims/contexts-and-operators.txt: internet APN active with a real address, mms, and an ims-type context, APN 'ims', protocol dual). What remains is the pmOS half on slot b and the comparison
       lane: phone
-- [~] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
+- [ ] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
       why: line 3 of the 116 oracle session
       lane: phone
-- [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
+- [ ] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
       why: line 4 of the 116 oracle session
       lane: phone
-- [~] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
+- [ ] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
       why: since the P-CSCF finding this decides nothing until 116 has said whether the `imsd` path is alive at all; ☠️ the silent DIAG stream is a separate obstacle
       lane: phone
-- [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
+- [ ] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
       after: 116
       why: pricing the `imsd` future
       lane: phone
-- [~] 30. Re-measure the bearer arm with a band lock
+- [ ] 30. Re-measure the bearer arm with a band lock
       after: 116
       why: pricing the `imsd` future; the earlier measurement never recorded its band
       lane: phone
 - [~] 31. Band preference as a shippable lever
       after: 30
       why: a post-closure item — the goal is closing the 2× gap, not finding the minimum
-- [~] 53. The modem's own story (modem-story infrastructure)
+- [ ] 53. The modem's own story (modem-story infrastructure)
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
 
