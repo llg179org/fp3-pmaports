@@ -26,7 +26,10 @@ imsdev() { ls /sys/class/net 2>/dev/null | grep -c imsradio; }
 
 {
   echo "== ut-callwatch2 start $(date '+%F %T')  (${DUR}s)"
-  echo "== card:    iccid=$(prop SimManager CardIdentifier) imsi=$(prop SimManager SubscriberIdentity) mcc=$(prop SimManager MobileCountryCode) mnc=$(prop SimManager MobileNetworkCode)"
+  # ☠️ Never print the ICCID or IMSI: a capture is committed to a public repo.
+  # The last 4 digits distinguish the cards in play without identifying anyone,
+  # which is the only thing a reader of this file actually needs.
+  echo "== card:    iccid=...$(prop SimManager CardIdentifier | tail -c5) mcc=$(prop SimManager MobileCountryCode) mnc=$(prop SimManager MobileNetworkCode)"
   echo "== network: name=$(prop NetworkRegistration Name) mcc=$(prop NetworkRegistration MobileCountryCode) mnc=$(prop NetworkRegistration MobileNetworkCode)"
   echo "== ims:     Registered=$(prop IpMultimediaSystem Registered) VoiceCapable=$(prop IpMultimediaSystem VoiceCapable) SmsCapable=$(prop IpMultimediaSystem SmsCapable)"
   echo "== rat pref: $(prop RadioSettings TechnologyPreference)   imsradio netdevs: $(imsdev)"

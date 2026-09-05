@@ -355,3 +355,52 @@ subscription, with a device/stack limitation, and with both.
 
 The decisive test is unchanged: the **dev card**, now measured as VoLTE-capable on
 this network, in the FP3.
+
+## Part 3 — one call, both legs observed at once
+
+**Raw:** `ut-mo2.txt`, `mo2-journal.txt`. The FP3 (UT, holding the `…3899` card)
+called the daily Android (holding the dev card), and both ends were read.
+
+```
+FP3 / UT / card ...3899                  daily Android / dev card
+06:29:50  tech=lte   states=dialing
+06:29:52  tech=edge  states=dialing      <- CSFB, 2 s into the dial
+06:29:55  tech=edge  states=alerting
+06:30:08  tech=edge  states=active       <- answered      4G   (operator's reading)
+06:30:17  tech=edge  call ends           <- 9 s of speech
+06:30:18  tech=lte
+imsreg=true imsvoice=true throughout
+```
+
+Journal: `ims:Dialing (ext) <msisdn>` → `imsradio0< [00000006] 2 dial` →
+`ims:Dialing return 6`, and the call still went to GERAN.
+
+**Why this one is worth more than the others.** The two legs are the *same call*,
+so they share the moment, the operator and the radio conditions. At 06:30:08 this
+network was carrying a call over IMS for one subscription while refusing it to
+another. That eliminates "LTE voice was not available just then" as an
+explanation, which no earlier capture could rule out.
+
+⚠️ It does **not** separate device from subscription: the FP3 differs from the
+Android in both the card and the stack. It removes the network from the list; the
+remaining two are still tied together, and only #163 unties them.
+
+### Also settled here: UT has no VoLTE switch that was left off
+
+The Ubuntu Touch setting the operator found (2G/3G/4G/5G selected) is the **network
+mode preference**, not a VoLTE toggle — it is ofono's
+`RadioSettings.TechnologyPreference`, which reads `nr`, i.e. everything permitted,
+the most permissive setting available. `org.ofono.IpMultimediaSystem` does expose
+`SetProperty`, `Register` and `Unregister`, so IMS *can* be driven from software,
+but `Registration` is already `auto` and `Registered` is already `true`. There is
+no switch on this side that we forgot to turn on — which is what made the Android's
+per-SIM switch such an easy confounder to miss.
+
+### ☠️ The instrument was writing identifiers into its own captures
+
+`ut-callwatch2.sh` printed the full ICCID and IMSI in every capture header, so each
+capture it produced had to be scrubbed by hand — and this one was caught only
+because `tests/no-identifiers.sh` had been written earlier the same day. The script
+now prints the last four ICCID digits and the MCC/MNC, which is all a reader needs
+to tell the cards apart, and nothing that identifies a subscriber. Fix the
+instrument, not the output.
