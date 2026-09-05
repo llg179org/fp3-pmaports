@@ -185,11 +185,12 @@ repeated.
       if it is a private one, the network side is fully open and what remains is device policy alone
       lane: phone
 
-- [ ] 135. Baseline kernel from linux-next + the debug layer, no FP3 work: boot it and record what the phone does on pure mainline
+- [~] 135. Baseline kernel from linux-next + the debug layer, no FP3 work: boot it and record what the phone does on pure mainline
       after: 85
-      why: the Test block is empty for all eight series and there is no control — without a boot from the submission base every failure is ours by default. Also the first measurement of which of msm8953-pmOS's 232 commits the FP3 actually needs (expected gaps: audio = D-1, camera/charger/sensors = the series themselves
+      why: The Test block is empty for all eight series and there is no control — without a boot from the submission base every failure is ours by default. Also the first measurement of which of msm8953-pmOS 232 commits the FP3 actually needs. ☠️ READY TO RUN, DELIBERATELY NOT RUN NOW (2026-09-05 03:52): the kernel is already built — fp3-next-wt on test/linux-next-next-20260902+debug, arch/arm64/boot/Image.gz from 09-03 16:16, debug layer on top — so what remains is flash, boot, record, flash back. The reason to wait is the phone, not the work: it has been undisturbed since 23:32 and that is the ONE condition the reachability census (#63) has never had in 27 calls — all 26 daytime samples were 08:00-18:54 on a phone up 5-7 hours and in use. A baseline-kernel boot would take the morning corner sample on a foreign stack, which is not a sample of our configuration at all. Run it after the morning call, not before. ☠️ Also read #151 first if the flash touches the device package dtb.
       expected working: display, touch, GPU, WiFi/BT, USB, modem). Branch test/linux-next-<tag>+debug, never under integration/ or debug-int/. ☠️ olddefconfig drops unknown symbols silently — diff the config before and after
       lane: phone
+      until: after the morning reachability call (#63)
 
 - [x] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
       why: review B2/B6 — a tool trailer on somebody else's unchanged commit is a false disclosure
