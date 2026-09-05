@@ -159,3 +159,21 @@ hyphenated form** — the hyphens break both the word boundary and the digit run
 It reported clean on a file containing it. `tests/no-identifiers.sh` now carries
 a second pattern anchored on the word `imei`, with a self-test case using
 synthetic digits.
+
+## One candidate eliminated: it is not the P-CSCF
+
+The PCO returned **two** P-CSCF addresses. Attempt 4 pointed `PCSCF` at the
+second one, one run, everything else identical:
+
+```
+401 challenge → USIM AKA → IPsec SAs → protected TCP connect → REGISTER failed 500
+```
+
+Byte for byte the same outcome. **Both of the operator's proxies answer 500**, so
+the proxy is not the variable — the failure lies in what we send, or in a
+subscriber- or device-level check inside their core, not in which P-CSCF we
+reach. `/etc/imsd.env` was put back to the primary afterwards.
+
+That is a negative result and it is worth as much as a positive one here: it
+removes the cheapest remaining explanation and leaves the oracle diff as the
+next real instrument.
