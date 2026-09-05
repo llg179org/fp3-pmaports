@@ -1,0 +1,25 @@
+touchscreen 3-0048, driver Himax-hx83112b-TS
+screen dpms=On  (must be On)
+=== BOUND ===
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+          l6                         2    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+             3-0048-iovcc            1                                 0mA     0mV     0mV
+             1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+          3-0048-vdda                1                                 0mA     0mV     0mV
+=== UNBOUND ===
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+          l6                         1    1      0 unknown  1800mV     0mA  1800mV  1800mV 
+             1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l10                           0    0      0 unknown  2800mV     0mA  2800mV  3000mV 
+=== REBOUND ===
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+          l6                         2    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+             3-0048-iovcc            1                                 0mA     0mV     0mV
+             1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+          3-0048-vdda                1                                 0mA     0mV     0mV
+restore check: driver=Himax-hx83112b-TS

@@ -1,0 +1,38 @@
+touchscreen 3-0048, driver Himax-hx83112b-TS, BOUND
+=== screen ON (dpms=On) ===
+         1a94000.dsi-vddio             1                               100mA     0mV     0mV
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+            1a94000.dsi-vdda           1                               100mA     0mV     0mV
+          l6                         2    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+               3-0048-iovcc            1                                 0mA     0mV     0mV
+               1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+            3-0048-vdda                1                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsp             1                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsn             1                                 0mA     0mV     0mV
+=== screen OFF (dpms=Off) ===
+         1a94000.dsi-vddio             0                               100mA*    0mV     0mV
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+            1a94000.dsi-vdda           0                               100mA*    0mV     0mV
+          l6                         1    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+               3-0048-iovcc            1                                 0mA     0mV     0mV
+               1a94000.dsi.0-iovcc     0                                 0mA     0mV     0mV
+       l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+            3-0048-vdda                1                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsp             0                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsn             0                                 0mA     0mV     0mV
+=== screen ON (dpms=On) ===
+         1a94000.dsi-vddio             1                               100mA     0mV     0mV
+       l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+       l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+            1a94000.dsi-vdda           1                               100mA     0mV     0mV
+          l6                         2    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+               3-0048-iovcc            1                                 0mA     0mV     0mV
+               1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+            3-0048-vdda                1                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsp             1                                 0mA     0mV     0mV
+         1a94000.dsi.0-vsn             1                                 0mA     0mV     0mV
+=== restored, dpms=On ===

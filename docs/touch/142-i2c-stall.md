@@ -429,3 +429,31 @@ idle"* (refuted by the operator tapping continuously), *"the fault scales with
 transactions"* (wrong denominator - it was fitted on interrupt counts mislabelled
 as transactions, and off by 4x besides), and *"the unused-address probe is not a
 valid instrument"* (it is; it had been moved out of its working idle range).
+
+## 9. The fix is on the device, and what that does and does not prove
+
+2026-09-05, `linux-fp3-7.1.3-r81` (`3f843d0534e3`). Full write-up and raw
+output: [`../power/bringup/captures/2026-09-05_155-supplies-on-device/`](../power/bringup/captures/2026-09-05_155-supplies-on-device/).
+
+Measured with the driver **bound**, against the pre-fix reading of 2026-09-04:
+
+| | pre-fix | r81 |
+|---|---|---|
+| screen ON, `l6` use | 1 (panel only) | **2** (panel + `3-0048-iovcc`) |
+| screen OFF, `l6` use | **0** | **1** (`3-0048-iovcc` holds it) |
+| `l10` use | 0, no consumer | **1** (`3-0048-vdda`) |
+
+So the chain in section 7 is cut at its first link: the touch controller's I/O
+rail no longer goes unvoted when the display powers down.
+
+☠️ **`142-trigger.sh` was NOT re-run, deliberately.** It unbinds the driver, and
+unbind releases the supplies the fix takes — measured: `l6` 2 → 1, `l10` 1 → 0.
+On a fixed kernel it therefore reproduces the *pre-fix* rail state, so a stall
+there would say nothing. The step #155 named is not a valid test of #155.
+
+**Still outstanding:** the operator-visible fault (`Failed to read input event:
+-110` during ordinary bound use). Its rate is per vulnerable moment and the
+measured gaps run to 726 s, so only a real session — ~36 min of use with pauses,
+as `tests/checks/59-touch-i2c-stall-test.sh` argues — can speak to it. That
+check reports it on every later selftest run and distinguishes "no stalls" from
+"nobody touched the screen".
