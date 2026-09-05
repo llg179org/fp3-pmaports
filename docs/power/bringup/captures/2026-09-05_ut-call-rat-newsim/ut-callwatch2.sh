@@ -5,7 +5,7 @@
 #   tech    NetworkRegistration.Technology     - what the call actually runs on
 #   reg     NetworkRegistration.Status
 #   imsreg  IpMultimediaSystem.Registered      - the REAL IMS state.  Run #1 did
-#           IpMultimediaSystem.VoiceCapable      not have this column; it counted
+#           (VoiceCapable is NOT sampled - see the header note)  not have this column; it counted
 #   imsdev  imsradio* netdevs                    netdevs instead, which is what the
 #           (kept only so the column named "ims" in run #1 stays comparable)
 #   states  VoiceCallManager call states
@@ -31,18 +31,20 @@ imsdev() { ls /sys/class/net 2>/dev/null | grep -c imsradio; }
   # which is the only thing a reader of this file actually needs.
   echo "== card:    iccid=...$(prop SimManager CardIdentifier | tail -c5) mcc=$(prop SimManager MobileCountryCode) mnc=$(prop SimManager MobileNetworkCode)"
   echo "== network: name=$(prop NetworkRegistration Name) mcc=$(prop NetworkRegistration MobileCountryCode) mnc=$(prop NetworkRegistration MobileNetworkCode)"
-  echo "== ims:     Registered=$(prop IpMultimediaSystem Registered) VoiceCapable=$(prop IpMultimediaSystem VoiceCapable) SmsCapable=$(prop IpMultimediaSystem SmsCapable)"
+  # ☠️ VoiceCapable/SmsCapable are NOT measurements: ofono-binder-plugin-ext-qti
+  # sets both flags unconditionally in qti_ims_iface_init(), so they read true on
+  # every device that loads the plugin. Recorded once here, labelled, never sampled.
+  echo "== ims:     Registered=$(prop IpMultimediaSystem Registered)   (VoiceCapable/SmsCapable omitted: compile-time constants)"
   echo "== rat pref: $(prop RadioSettings TechnologyPreference)   imsradio netdevs: $(imsdev)"
 } > "$OUT"
 
 END=$(( $(date +%s) + DUR ))
 while [ "$(date +%s)" -lt "$END" ]; do
-    printf '%s tech=%s reg=%s imsreg=%s imsvoice=%s imsdev=%s states=%s\n' \
+    printf '%s tech=%s reg=%s imsreg=%s imsdev=%s states=%s\n' \
         "$(date '+%T')" \
         "$(prop NetworkRegistration Technology)" \
         "$(prop NetworkRegistration Status)" \
         "$(prop IpMultimediaSystem Registered)" \
-        "$(prop IpMultimediaSystem VoiceCapable)" \
         "$(imsdev)" \
         "$(callstates)" >> "$OUT"
     sleep 1

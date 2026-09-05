@@ -504,3 +504,80 @@ that absence matters on a binder/QTI port, where the vendor stack holds the carr
 configuration, is not established either way - do not read it as a cause.
 
 #163 chooses between 1 and 2, and nothing else here will.
+
+---
+
+# ☠️ CORRECTION — `imsvoice` is a compile-time constant, not a measurement
+
+Every capture on this page carries an `imsvoice=` column, and the prose above
+repeatedly reads it as "IMS is registered **and voice-capable**", offered as
+evidence that the network was willing to carry voice over IMS. **That reading is
+wrong.** Read from the source of the plugin actually installed on this device:
+
+`ofono-binder-plugin-ext-qti`, `src/qti_ims.c`:
+
+```c
+static void qti_ims_iface_init(BinderExtImsInterface* iface)
+{
+    iface->version = BINDER_EXT_IMS_INTERFACE_VERSION;
+    iface->flags = BINDER_EXT_IMS_INTERFACE_FLAG_VOICE_SUPPORT |
+                   BINDER_EXT_IMS_INTERFACE_FLAG_SMS_SUPPORT;
+    ...
+```
+
+`ofono-binder-plugin`, `src/binder_ims_reg.c`, reads exactly that flag:
+
+```c
+BINDER_EXT_IMS_INTERFACE_FLAGS flags = binder_ext_ims_get_interface_flags(self->ext);
+if (flags & BINDER_EXT_IMS_INTERFACE_FLAG_VOICE_SUPPORT)
+    ims->caps |= OFONO_IMS_VOICE_CAPABLE;
+```
+
+So `IpMultimediaSystem.VoiceCapable` is **`true` on every device that loads this
+plugin**, unconditionally, whatever the network, the SIM or the subscription say.
+It reports that the *plugin implements IMS voice*. It says nothing about whether
+IMS voice is available. The plugin's `qti_ims_get_registrations()` returns no
+capability flags at all - it only triggers a state refresh - so there is no path
+by which network capability could reach that property.
+
+**What each column is actually worth:**
+
+| column | worth |
+|---|---|
+| `tech`, `reg` | real - from `NetworkRegistration` |
+| `states` | real - from `VoiceCallManager` |
+| `imsreg` | **real** - `BINDER_EXT_IMS_STATE_REGISTERED` from the modem's own IMS registration state |
+| `imsvoice` | **constant `true`.** Carries no information |
+| `imsdev` | meaningless, as established in Part 1 |
+
+**And the same constant explains the dial path.** `binder_voicecall.c`:
+
+```c
+static gboolean binder_voicecall_can_ext_dial(BinderVoiceCall* self)
+{
+    return self->ext && (!(binder_ext_call_get_interface_flags(self->ext) &
+        BINDER_EXT_CALL_INTERFACE_FLAG_IMS_REQUIRED) ||
+        (self->ims_reg && self->ims_reg->registered &&
+        (self->ims_reg->caps & OFONO_IMS_VOICE_CAPABLE)));
+}
+```
+
+With `VoiceCapable` always set and `registered` true, ofono routes **every** dial
+through the IMS extension. So "ofono routes the dial through the IMS HAL and the
+HAL accepts it", repeated in Parts 2, 3 and 4 as though it showed the stack trying
+VoLTE and being overruled, is **also not evidence**: it is what this code does
+unconditionally.
+
+**What survives.** `imsreg=true` is a genuine modem-reported IMS registration, so
+the phone really is IMS-registered while its calls go to GERAN - that remains
+interesting and unexplained. And every measurement of `tech` stands: both
+directions, both legs, the fallback preceding the call. The claims that fall are
+only the ones that leaned on `imsvoice` or on the dial path.
+
+☠️ **How this got through.** The rule is that a new instrument produces no
+reportable number until it has answered a question whose answer is already known.
+`imsreg` and `imsvoice` were added to the sampler mid-session, gated once against
+an idle regime - where they read `true`/`true`, which is what a constant does too -
+and then quoted in four write-ups. A constant passes an agreement check perfectly.
+The gate has to vary the thing being measured, and there was no regime here in
+which `imsvoice` was expected to be false.

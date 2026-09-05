@@ -10230,3 +10230,30 @@ states.
 
 ☠️ It still says nothing about the FP3, whose card is a third one whose VoLTE
 status has never been measured in a device that could use it.
+
+## 2026-09-05 (correction) — `imsvoice` was a compile-time constant all along
+
+Read from the source of the plugin installed on the device,
+`ofono-binder-plugin-ext-qti`: `qti_ims_iface_init()` sets
+`iface->flags = VOICE_SUPPORT | SMS_SUPPORT` unconditionally, and
+`ofono-binder-plugin`'s `binder_ims_reg.c` turns exactly that flag into
+`OFONO_IMS_VOICE_CAPABLE`. So `IpMultimediaSystem.VoiceCapable` reads **true on
+every device that loads this plugin**, whatever the network or the SIM. It reports
+that the plugin implements IMS voice, not that IMS voice is available.
+
+Everything written today that read `imsvoice=true` as "the network is willing to
+carry voice over IMS" is withdrawn. So is "ofono routes the dial through the IMS
+HAL and the HAL accepts it, so the stack tries VoLTE and is overruled":
+`binder_voicecall_can_ext_dial()` gates on that same constant plus `registered`,
+so every dial goes through the IMS extension unconditionally.
+
+What survives: `imsreg` is genuine - it comes from the modem's own IMS registration
+state - so the phone really is IMS-registered while its calls go to GERAN. And every
+`tech` measurement stands, in both directions and on both legs.
+
+☠️ Method failure, not a data failure. The columns were added mid-session and gated
+once against an idle regime, where they read true - which is also what a constant
+reads. **A constant passes an agreement check perfectly.** A gate has to include a
+regime where the value is expected to differ, and there was none.
+
+The sampler no longer emits the column.
