@@ -1,0 +1,48 @@
+syntax ok
+rc=0
+=== bind (through the proxy), keeping the client ===
+[qrtr://0] IMSA bind successful
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+-- cid=1
+---- --imsa-get-ims-registration-status ----
+[qrtr://0] IMS registration:
+	    Status: 'not-registered'
+	Technology: 'wwan'
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=0
+---- --imsa-get-ims-services-status ----
+[qrtr://0] IMS services:
+	SMS service
+	Voice service
+	Video Telephony service
+	UE to TAS service
+		    Status: 'unavailable'
+		Technology: 'wwan'
+	Video Share service
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=0
+=== the IMS settings service, same pattern ===
+[qrtr://0] IMS Settings bind successful
+[qrtr://0] Client ID not released:
+	Service: 'ims'
+	    CID: '1'
+---- --ims-get-ims-services-enabled-setting ----
+[qrtr://0] IMS services:
+	          Voice service enabled: no
+	Video Telephony service enabled: no
+	     Voice WiFi service enabled: no
+	      UE to TAS service enabled: no
+	            SMS service enabled: no
+	           USSD service enabled: no
+[qrtr://0] Client ID not released:
+	Service: 'ims'
+	    CID: '1'
+     rc=0
+
+[exited with code 0]

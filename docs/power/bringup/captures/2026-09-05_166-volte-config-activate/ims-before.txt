@@ -1,0 +1,100 @@
+=== 2026-09-05T13:46:24+02:00  kernel 7.1.3-postmarketos-qcom-msm8953 #82-fp3 SMP PREEMPT Sat Sep  5 11:15:06 UTC 2026 ===
+----- qmicli --nas-get-system-info -----
+[qrtr://0] Successfully got system info:
+	GSM service:
+		Status: 'none'
+		True Status: 'none'
+		Preferred data path: 'no'
+	WCDMA service:
+		Status: 'none'
+		True Status: 'none'
+		Preferred data path: 'no'
+	LTE service:
+		Status: 'available'
+		True Status: 'available'
+		Preferred data path: 'no'
+		Domain: 'cs-ps'
+		Service capability: 'cs-ps'
+		Roaming status: 'off'
+		Forbidden: 'no'
+		Cell ID: '1470762'
+		MCC: '216'
+		MNC: '70'
+		Tracking Area Code: '5300'
+		Voice support: 'yes'
+		IMS voice support: 'yes'
+		eMBMS coverage info support: 'no'
+		eMBMS coverage info trace ID: '65535'
+		Cell access: 'all-calls'
+		Registration restriction: 'unrestricted'
+		Registration domain: 'not-applicable'
+	SIM reject info: 'available'
+   rc=0
+----- qmicli --nas-get-serving-system -----
+[qrtr://0] Successfully got serving system:
+	Registration state: 'registered'
+	CS: 'attached'
+	PS: 'attached'
+	Selected network: '3gpp'
+	Radio interfaces: '1'
+		[0]: 'lte'
+	Roaming status: 'off'
+	Data service capabilities: '1'
+		[0]: 'lte'
+	Current PLMN:
+		MCC: '216'
+		MNC: '70'
+		Description: 'One HU'
+	Roaming indicators: '1'
+		[0]: 'off' (lte)
+	3GPP time zone offset: '120' minutes
+	3GPP daylight saving time adjustment: '1' hours
+	3GPP location area code: '65534'
+	3GPP cell ID: '1470762'
+	Detailed status:
+		Status: 'available'
+		Capability: 'cs-ps'
+		HDR Status: 'none'
+		HDR Hybrid: 'no'
+		Forbidden: 'no'
+	LTE tracking area code: '5300'
+	Full operator code info:
+		MCC: '216'
+		MNC: '70'
+		MNC with PCS digit: 'no'
+   rc=0
+----- qmicli --imsa-get-ims-registration-status -----
+error: couldn't get IMS registration status: QMI protocol error (70): 'InvalidOperation'
+   rc=1
+----- qmicli --imsa-get-ims-services-status -----
+error: couldn't get IMS services status: QMI protocol error (70): 'InvalidOperation'
+   rc=1
+----- qmicli --ims-get-ims-services-enabled-setting -----
+error: couldn't get IMS services enabled setting: QMI protocol error (70): 'InvalidOperation'
+   rc=1
+----- qmicli --imsp-get-enabler-state -----
+error: couldn't create client for the 'imsp' service: QMI protocol error (3): 'Internal'
+   rc=1
+----- qmicli --voice-get-config -----
+[qrtr://0] Successfully retrieved Voice configuration:
+Current TTY mode: 'off'AMR Status:
+	GSM: 'disabled'
+	WCDMA: 'not-supported, wcdma-amr-wb, gsm-hr-amr, gsm-amr-wb' (0x000F)
+Current Voice Domain Preference: 'ps-preferred'
+   rc=0
+----- active PDC config -----
+Configuration 1:
+	Description: ROW_Commercial
+	Type:        software
+	Size:        43484
+	Status:      Active
+----- ModemManager -----
+           |                  state: registered
+           |            power state: on
+           |            access tech: lte
+  3GPP     |                   imei: <redacted>
+           |            operator id: 21670
+           |          operator name: vodafone HU
+           |           registration: home
+           |   packet service state: attached
+  3GPP EPS |   ue mode of operation: csps-1

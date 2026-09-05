@@ -2657,3 +2657,9 @@ so that `after:` and `continues:` references still resolve.
       ours declares NO supply at all and the driver requests no regulator, so the chip is powered only by whatever the panel happens to hold. Measured 2026-09-04: during the hang the controller is in RUN state, owns the bus (BUS_ACTIVE+BUS_MASTER), has a byte stuck in its output FIFO, reports no error, and BOTH i2c lines read low for the full 15 s having been high one second earlier — the picture an unpowered slave clamping the bus gives. ☠️ PRE-REGISTERED DECISION RULE, written before the measurement: 142-trigger.sh currently gives screen-off 5/5 and screen-on 0/5. If the supplies take screen-off to 0/5 across at least 5 interleaved rounds, the root cause is confirmed and the symptom patches below are not needed. If it stays 5/5, the supplies are not it and this task records that as a measured negative. Full case: docs/touch/142-i2c-stall.md sections 5a and 6
       after: 151
       prio: 10
+
+- [x] **169.** Capture an LTE attach and read the IMS-voice-over-PS bit the network sends this UE  — closed 2026-09-05 11:52
+      lane: phone
+      why: ☠️ ANSWERED 2026-09-05 WITHOUT DIAG. The IMS-voice-over-PS indicator is a decoded field of qmicli --nas-get-system-info, not something that needs an attach capture: the LTE block reads 'IMS voice support: yes' for MCC 216 MNC 70. Stable over three reads, and the decoder discriminates (the adjacent eMBMS boolean reads 'no', GSM/WCDMA read 'none' where LTE reads 'available'); corroborated by the UT-side SIP REGISTER that returned a P-Associated-URI for this same SIM. ☠️ The same command was already in use on this phone for its 'Domain: cs-ps' line (leads/csfb-is-a-dependency.md) - the answer was four lines further down the same output. Full write-up: captures/2026-09-05_166-volte-config-activate/
+      until: a UT-side DIAG_CNTL log-mask path exists, or the capture is retried on pmOS
+      prio: 20

@@ -1,0 +1,42 @@
+syntax ok
+rc=0
+########## binding=0 ##########
+[qrtr://0] IMSA bind successful
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+-- cid=1
+---- --imsa-get-ims-registration-status ----
+error: operation failed: Unknown client 1 for service imsa
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=1
+---- --imsa-get-ims-services-status ----
+error: operation failed: Unknown client 1 for service imsa
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=1
+-- client released
+########## binding=1 ##########
+[qrtr://0] IMSA bind successful
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+-- cid=1
+---- --imsa-get-ims-registration-status ----
+error: operation failed: Unknown client 1 for service imsa
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=1
+---- --imsa-get-ims-services-status ----
+error: operation failed: Unknown client 1 for service imsa
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+     rc=1
+-- client released
+
+[exited with code 0]
