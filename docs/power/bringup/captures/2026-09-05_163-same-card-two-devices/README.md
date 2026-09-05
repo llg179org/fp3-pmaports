@@ -102,8 +102,7 @@ Read on the device (as root, UT slot), the vendor MBN store confirms the shape:
   dt/commerci/     ->  austria croatia cz greece hungary nl pl slovakia
 ```
 
-So there is **no Vodafone-Hungary VoLTE MBN**, but there is a
-`vodafone/volte/global` one — and One HU is the former Vodafone Hungary
+~~So there is no Vodafone-Hungary VoLTE MBN, but there is a `vodafone/volte/global` one~~ **- WRONG, see the next section: that listing was truncated and a `vodafone/commerci/hungary` MBN does exist.** There is also a `vodafone/volte/global` one — and One HU is the former Vodafone Hungary
 (MCC 216 / MNC 070).
 
 **The hypothesis, stated as a hypothesis:** the modem runs the generic
@@ -128,3 +127,56 @@ CS-pages instead.
 
 The check that settles (1) is a PDC config query, which the pmOS side can already
 do — that is where the 2026-08-29 capture came from.
+
+## #165 — there is a Hungarian carrier config, and the modem has not loaded it
+
+☠️ **Correction to the section above.** It said no Vodafone-Hungary MBN exists. It
+does; the listing that produced that claim was truncated by `head` and showed only
+the `volte/` subtree. `mbn_sw.txt`, the vendor store's own index, is unambiguous:
+
+```
+mcfg_sw/generic/eu/vodafone/commerci/hungary/mcfg_sw.mbn
+mcfg_sw/generic/eu/dt/commerci/hungary/mcfg_sw.mbn
+mcfg_sw/generic/eu/vodafone/volte/{cz,germany,global,ie,italy,netherla,
+                                   portugal,safrica,spain,turkey,uk}
+```
+
+**134 MBNs ship in the vendor store** on the device. The modem has **25 loaded**,
+and the whole loaded set is:
+
+| | |
+|---|---|
+| **Active** | `ROW_Commercial` |
+| Inactive | UK / Spain / Netherlands / Italy / IE / **Global** / Germany VoLTE-Vodafone, `Non_VoLTE-Vodafone`, four Taiwan, MTS Russia, NOS PT, Sky UK, Telia ×2, Telenor ×3, TEF Germany, Tele2 ×2, TIM Italy |
+
+**No Hungarian config is loaded at all** — neither the Vodafone one nor the DT one,
+though both sit on disk. The modem therefore has nothing operator-specific to
+select for MCC 216 / MNC 070 and falls back to the generic `ROW_Commercial`.
+
+That is a coherent account of everything measured: under a generic config the IMS
+stack still registers — which we see, with the operator returning a
+P-Associated-URI — while MMTEL voice is not enabled, so the network has no PS
+domain to terminate to and CS-pages instead.
+
+The firmware is `SDM632.LA.2.1-00015-STD.PROD-1.325768.0.329896.1`, built
+2021-10-25, i.e. before the Vodafone HU → One rebrand, so its Hungarian config
+would have been written against this same MCC/MNC.
+
+### Still not established
+
+1. **The loaded-config list is from the pmOS side, 2026-08-29.** PDC configs live in
+   the modem's own storage and so should be common to both slots, but Android's
+   `pdc` service can load and select configs at boot, so UT could differ. It could
+   not be read there: no `qmicli`, no `pdc` tool, and no QMI character device,
+   because Halium reaches the modem over binder.
+2. **Whether loading the Hungarian MBN would enable VoLTE.** It sits under
+   `commerci`, not under `volte`, and what it enables has not been inspected.
+3. **Whether the MBN is the gate at all.** Operator IMEI/TAC gating remains a live
+   alternative with the same symptom.
+
+### The next step, and why it is not this one
+
+Loading `vodafone/commerci/hungary` into the modem and activating it is the obvious
+experiment. It is also a change to modem configuration rather than to anything in
+our tree, so it belongs behind a deliberate decision and a recorded before-state -
+`pdc` can deactivate and restore, but the before-state has to exist first.

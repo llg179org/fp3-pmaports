@@ -10278,3 +10278,27 @@ Remaining, and now device-side: the media feature tags the UE offers in its SIP
 REGISTER, and operator gating on IMEI/TAC.
 
 Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.
+
+## 2026-09-05 (#165) — no Hungarian carrier config is loaded; the modem runs the generic one
+
+The vendor store ships **134 MBNs**, including `vodafone/commerci/hungary` and
+`dt/commerci/hungary`. The modem has **25 loaded**, and **none of them is
+Hungarian**: the active one is `ROW_Commercial`, the generic fallback, and the
+Vodafone entries loaded cover UK, Spain, Netherlands, Italy, IE, Global and
+Germany.
+
+That accounts for everything measured. Under a generic config the IMS stack still
+registers - the operator returns a P-Associated-URI - while MMTEL voice is not
+enabled, so the network has no PS domain to terminate to and CS-pages instead.
+
+☠️ Not established: the loaded-config list is from the pmOS side in August and
+could not be read on UT (no qmicli, no pdc, no QMI char device - Halium reaches the
+modem over binder); whether the Hungarian MBN, which sits under `commerci` rather
+than `volte`, would enable VoLTE; and whether the MBN is the gate at all, since
+operator IMEI/TAC gating produces the same symptom.
+
+☠️ Also corrected here: an earlier claim in the same capture that no
+Vodafone-Hungary MBN exists. It does - the listing behind that claim had been
+truncated by `head` and showed only the volte/ subtree.
+
+Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.
