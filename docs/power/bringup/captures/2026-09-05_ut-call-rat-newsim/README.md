@@ -627,3 +627,48 @@ operator's IMS core and an empty one means it did not; `error_code` /
 registration sits on.
 
 Queued as #164, independent of #163: **#163 says which side, #164 says why.**
+
+## #164, partly answered from captures we already had
+
+☠️ **Correction to the previous section.** It said the plugin reads only `state`.
+It does read only `state` to derive the IMS state, but it already **DBG-prints
+three of the five fields**, and those lines were sitting in
+`../2026-09-05_ut-call-rat/calls-journal.txt` the whole time:
+
+```
+04:14:04  ims:imsradio0 ims_state=0
+04:14:05  ims:imsradio0: QtiRadioRegInfo state:1 radiotech:21 error_code:0
+04:14:06  ims:imsradio0: QtiRadioRegInfo state:2 radiotech:15 error_code:2147483647
+04:14:06  ims:imsradio0: QtiRadioRegInfo state:0 radiotech:15 error_code:2147483647
+04:14:06  ims:imsradio0 ims_state=3
+```
+
+☠️ **The enum inverts the naive reading** — `qti_radio_ext_types.h`:
+
+```c
+QTI_RADIO_REG_STATE_REGISTERED     = 0,
+QTI_RADIO_REG_STATE_NOT_REGISTERED = 1,
+QTI_RADIO_REG_STATE_REGISTERING    = 2,
+QTI_RADIO_REG_STATE_INVALID        = 3,
+```
+
+so the sequence is UNKNOWN → **NOT_REGISTERED** → **REGISTERING** → **REGISTERED**,
+completed two seconds after ofono starts, with no error
+(`error_code:2147483647` is `INT32_MAX`, the unset marker; the one `0` appears
+while not registered).
+
+**So `Registered=true` is genuine**, unlike `VoiceCapable`. `binder_ims_reg.c`
+computes it as `registered = (state == BINDER_EXT_IMS_STATE_REGISTERED)`, and the
+modem reported that state. The phone really does complete an IMS registration and
+then takes its calls on GERAN anyway.
+
+**What is still missing, and it is the whole point.** `QtiRadioRegInfo` also carries
+`error_message` and `pAssociatedUris`, and neither is printed. The URI is the
+discriminator: populated means the device registered with the **operator's IMS
+core** rather than merely reaching a modem-internal state, which is what separates
+"the subscription has no VoLTE" from "the stack does not finish IMS voice".
+
+**Also undecoded:** `radiotech` 21 while not registered, 15 while registering and
+registered. That enum is not in the plugin source - it comes from the vendor HIDL,
+whose libraries are on the device at
+`/vendor/lib64/vendor.qti.hardware.radio.ims@1.{3,4,5,6}.so`.
