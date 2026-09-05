@@ -150,3 +150,38 @@ that.
 
 - <https://codeberg.org/flamingradian/imsd> — `IMS-QUALCOMM.md` (GPLv3, Dylan Van Assche, 2024)
 - `libqmi` 1.39.1, `data/qmi-service-ims.json`, `-imsa`, `-imsdcm`, `-imsp`
+
+## The state of the art, checked 2026-09-05: nobody has mainline VoLTE working
+
+Searched for prior art before treating this as our problem to solve. Three sources,
+and they agree:
+
+- **`imsd`** (`codeberg.org/flamingradian/imsd`), the project this repo already
+  cites, is **documentation and reverse engineering only — the repository contains
+  markdown, diagrams and a licence, no functional code.** It describes how
+  Android's `imsdatadaemon` drives the modem's IMS, for someone to implement later.
+  It is not a stack that can be installed.
+- **ModemManager** treats CSFB and VoLTE identically at its voice API, and the
+  pieces that would make VoLTE work are the ones explicitly absent: IMS
+  bearer/context configuration and enabling, and VoLTE check/enable/disable on the
+  modem.
+- **postmarketOS**' own VoLTE issue for the **OnePlus 6** — mainline, Qualcomm, the
+  closest analogue to the FP3 — is exploratory. **No working VoLTE call is
+  reported.** It is blocked on developer time (*"I plan to look into it
+  eventually"*), and names as prerequisites exactly the two mechanisms this
+  investigation independently arrived at: the modem's **PDC carrier profiles**, and
+  **reverse-engineering the IMS QMI service**.
+
+☠️ **That convergence is the useful part.** Two separate lines of work, ours from
+measurement and theirs from planning, land on the same two gates — which raises
+confidence that the gates are real, and lowers any hope that a step was simply
+missed here.
+
+☠️ **And that thread carries a warning that bears directly on #166**: *"PDC profiles
+may cause issues when done wrong."* An independent voice saying what the task
+already says about writing a carrier config into the modem.
+
+**So the reframing matters more than the estimate.** pmOS is not behind on VoLTE;
+**mainline Linux does not have VoLTE**, anywhere, on any device. Our oracle does not
+have it either, despite carrying the full vendor IMS stack. Building it here would
+not be catching up — it would be doing it first.

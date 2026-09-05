@@ -10372,3 +10372,24 @@ restored `registered / lte / One HU` immediately. A detach/attach trigger is not
 self-restoring on this stack.
 
 Capture: `docs/power/bringup/captures/2026-09-05_attach-capture-attempt/`.
+
+## 2026-09-05 — prior art: nobody has mainline VoLTE working, anywhere
+
+Checked before treating this as our problem. `imsd`, the project this repo cites,
+is **documentation only** - the repository holds markdown, diagrams and a licence,
+no functional code. ModemManager's voice API treats CSFB and VoLTE alike and is
+explicitly missing IMS bearer configuration and the modem-side VoLTE enable.
+postmarketOS' own VoLTE issue for the OnePlus 6 - mainline, Qualcomm, the nearest
+analogue to the FP3 - reports **no working VoLTE call** and is blocked on developer
+time.
+
+☠️ That issue names as prerequisites the same two mechanisms this investigation
+reached from measurement: the modem's **PDC carrier profiles** and
+**reverse-engineering the IMS QMI service**. Two independent lines landing on the
+same two gates raises confidence that the gates are real.
+
+☠️ It also warns that *"PDC profiles may cause issues when done wrong"* - an
+independent voice for the caution already on #166.
+
+So the reframing: pmOS is not behind on VoLTE. **Mainline Linux does not have
+VoLTE on any device.** Building it here would be doing it first, not catching up.
