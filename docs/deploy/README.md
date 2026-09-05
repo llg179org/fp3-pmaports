@@ -111,6 +111,27 @@ place regardless of what `abuild.conf` says, and `ccache -s` shows six hundred
 thousand hits to prove it. **Two instruments, one of them blind, and the blind
 one was the one that agreed with the hypothesis.**
 
+☠️ **GitHub rate-limits the archive endpoint, and a 429 is a FILE.** Measured
+2026-09-05 after four ~250 MB kernel tarballs in one day: `pmb checksum` failed
+with `wget: server returned error: HTTP/1.1 429 Too Many Requests`. Two things
+that cost time if you do not know them:
+
+* **Authenticating does not help.** `curl -H "Authorization: Bearer $(gh auth
+  token)" .../tarball/<sha>` returns 429 as well, so the limit is on the archive
+  generator, not on the API quota.
+* ☠️ **The 429 body downloads successfully.** That same curl reported
+  `http=429 bytes=313` and wrote a 313-byte error page to the output file. Drop
+  that into `work/cache_distfiles` under the tarball's name and `pmb checksum`
+  will happily record the sha512 of an error page as the kernel's checksum. Check
+  the status **and** the size before believing a download - `curl -f` refuses to
+  write a body on an HTTP error and is the right flag here.
+
+The fix is to wait; there is no local substitute, because a `git archive` tarball
+is not byte-identical to GitHub's and a checksum computed over it would be wrong
+for everyone else. `./pmb build --src <tree>` builds without any download at all,
+but stamps a `_pYYYYMMDDHHMMSS` version, so the phone then runs a package that
+does not match the APKBUILD pin.
+
 ⚠️ **Push `debug-int/<base>` before you bump `_commit`.** The package fetches
 the tarball from GitHub, so a commit that only exists locally gives a 404 during
 `./pmb checksum`. If you skip the checksum step, the build fails one step
