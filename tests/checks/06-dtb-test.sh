@@ -41,6 +41,19 @@ fi
 booted="/boot${fdt}"
 board=$(basename "$fdt")
 
+# ☠️ The deploy convention keeps several kernels in /boot at once by suffixing
+# each DTB with the package release it belongs to (….dtb-r81) or with a role
+# (….dtb-fallback). The PACKAGE ships the unsuffixed name, so the lookup below
+# has to strip the suffix - without this the check reports "installs no
+# <name>.dtb-r81" on every correctly deployed phone, which reads like a missing
+# DTB and is a naming mismatch in the check itself. Measured 2026-09-05.
+# The md5 comparison is unaffected: the deployed copy must still be byte-for-
+# byte the package's file, which is exactly what it is copied from.
+pkg_board=$board
+case "$board" in
+*.dtb-*) pkg_board="${board%%.dtb-*}.dtb" ;;
+esac
+
 if [ ! -r "$booted" ]; then
 	echo "FAIL: extlinux boots $fdt but /boot$fdt does not exist"
 	exit 1
@@ -51,10 +64,12 @@ fi
 # The package path is taken from the package itself, never hardcoded: apk is
 # the only authority on which file it installed, and it is also the thing that
 # names the version in the failure message.
-pkg=$(apk info -L "${KERNEL_PKG:-linux-fp3}" 2>/dev/null | grep "/${board}\$" | head -1)
+pkg=$(apk info -L "${KERNEL_PKG:-linux-fp3}" 2>/dev/null | grep "/${pkg_board}\$" | head -1)
 if [ -z "$pkg" ]; then
-	echo "FAIL: ${KERNEL_PKG:-linux-fp3} installs no $board - cannot tell what the DTB should be"
-	echo "      cmd: apk info -L ${KERNEL_PKG:-linux-fp3} | grep /$board\$"
+	echo "FAIL: ${KERNEL_PKG:-linux-fp3} installs no $pkg_board - cannot tell what the DTB should be"
+	[ "$pkg_board" = "$board" ] || \
+		echo "      (extlinux boots $board; the deploy suffix was stripped to ask the package)"
+	echo "      cmd: apk info -L ${KERNEL_PKG:-linux-fp3} | grep /$pkg_board\$"
 	fail=1
 else
 	pkg="/$pkg"
