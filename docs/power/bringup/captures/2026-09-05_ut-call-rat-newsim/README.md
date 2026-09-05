@@ -581,3 +581,49 @@ an idle regime - where they read `true`/`true`, which is what a constant does to
 and then quoted in four write-ups. A constant passes an agreement check perfectly.
 The gate has to vary the thing being measured, and there was no regime here in
 which `imsvoice` was expected to be false.
+
+## Why there is no 4G on the UT side — what is eliminated, and what is not
+
+**Eliminated by measurement today:** the network's general capability (it carried
+VoLTE for another subscription in the same second), a missing IMS on the port (the
+QTI extension is installed, configured and genuinely registered), an unset switch
+(4G calling on, technology preference at its most permissive), and the caller, the
+direction and the moment (four legs, same result).
+
+**Two mechanisms remain, and from outside they are indistinguishable:**
+
+1. the `…3899` subscription is not provisioned for VoLTE;
+2. it is, but the device's IMS registration does not carry voice (MMTEL) - either
+   the stack does not complete it, or the operator gates on IMEI/TAC.
+
+An argument leans toward (1) without settling it. On a terminating call the
+**network** picks the domain: it CS-pages over LTE, which is what drags the phone
+to GERAN, and we measured that paging arriving 2 s before the call. A phone cannot
+make a network CS-page it. But the network makes that choice (T-ADS) from what the
+HSS says about whether the subscriber is IMS-*voice*-registered - so a device that
+registers IMS without MMTEL voice would be CS-paged correctly. The two causes
+collapse into the same network behaviour.
+
+### The measurement that separates them is already on the wire
+
+The modem returns, for `getImsRegistrationState`:
+
+```c
+typedef struct qti_radio_reg_info {
+    QTI_RADIO_REG_STATE state;
+    guint32             error_code;
+    GBinderHidlString   error_message;
+    guint32             radio_tech;
+    GBinderHidlString   uri;        /* pAssociatedUris */
+} QtiRadioRegInfo;
+```
+
+and `ofono-binder-plugin-ext-qti` reads **only `state`**
+(`qti_ims_reg_status_response`: `state = info->state;`). The discarded fields are
+exactly what is needed: `pAssociatedUris` is the P-Associated-URI from the SIP
+REGISTER 200 OK, so a populated value means the device really did register with the
+operator's IMS core and an empty one means it did not; `error_code` /
+`error_message` give the reason on failure; `radio_tech` says which RAT the
+registration sits on.
+
+Queued as #164, independent of #163: **#163 says which side, #164 says why.**
