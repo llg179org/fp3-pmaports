@@ -10321,3 +10321,27 @@ read as evidence.
 Before-state recorded, restored and verified.
 
 Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.
+
+## 2026-09-05 (#168) — the IMS HAL version gap is real but does not contain the missing piece
+
+`lshal --debug` inside the Android container shows the IMS service registering
+`vendor.qti.hardware.radio.ims@1.0` through **1.5**, and the vendor VINTF manifest
+declares 1.5. ofono's ext-qti connects at **1.2**, so the gap is live rather than a
+matter of libraries sitting unused on disk.
+
+Extracting each version's proxy method set and checking it symbol by symbol shows
+what the gap contains: `hangup_1_3`, `setColr_1_3`, `onVoiceInfoChanged` (1.3);
+`dial_1_4`, `addParticipant_1_4`, `queryVirtualLineInfo`,
+`registerMultiIdentityLines` (1.4); `emergencyDial`, `acknowledgeSms_1_5`,
+`setConfig_1_5` (1.5). **`getImsRegistrationState` and `requestRegistrationChange`
+are identical from 1.2 to 1.5.**
+
+So the additions are call features and messaging, not registration, MMTEL or media
+feature tags. Extending the plugin would not obviously change what the network
+decides about voice, and the lead is closed rather than pursued.
+
+☠️ The method comparison was verified directly rather than from a `comm` diff,
+which warned about sort order - the same warning that produced two false results
+earlier the same day.
+
+Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.

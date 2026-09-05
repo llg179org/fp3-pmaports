@@ -356,3 +356,49 @@ registration or the media feature tags need anything that appeared after 1.2 has
 not been checked, and the ext does register IMS successfully at 1.2. But this is
 device-side, it is in code that can be read and changed, and it is the kind of gap
 #163 pointed at.
+
+## #168 — the IMS HAL version gap is real, and it is almost certainly not the cause
+
+**Step 1: the newer interfaces are live, not just libraries.** `lshal --debug`
+inside the Android container shows the running service registering
+`vendor.qti.hardware.radio.ims@1.0` through **`@1.5`** on `imsradio0` and
+`imsradio1`, and `/vendor/etc/vintf/manifest.xml` declares:
+
+```xml
+<name>vendor.qti.hardware.radio.ims</name>
+<version>1.5</version>
+<fqname>@1.5::IImsRadio/imsradio0</fqname>
+```
+
+ofono connects at **1.2**. So the gap is real at runtime, three versions wide.
+(For completeness, `android.hardware.radio::IRadio` is registered up to **1.4**
+while our `qti.conf` asks for `1.3`.)
+
+**Step 2: what the newer versions add.** Method sets extracted from the four
+interface libraries and checked **directly, symbol by symbol**, because a `comm`
+diff warned about sort order — the same warning that produced a false result twice
+earlier today:
+
+| method | 1.2 | 1.3 | 1.4 | 1.5 |
+|---|:-:|:-:|:-:|:-:|
+| `getImsRegistrationState` | ✓ | ✓ | ✓ | ✓ |
+| `requestRegistrationChange` | ✓ | ✓ | ✓ | ✓ |
+| `dial` | ✓ | ✓ | ✓ | ✓ |
+| `hangup_1_3`, `setColr_1_3`, `onVoiceInfoChanged`, `onCallStateChanged_1_3` | · | ✓ | ✓ | ✓ |
+| `dial_1_4`, `addParticipant_1_4`, `queryVirtualLineInfo`, `registerMultiIdentityLines` | · | · | ✓ | ✓ |
+| `emergencyDial`, `acknowledgeSms_1_5`, `setConfig_1_5`, `onCallStateChanged_1_5` | · | · | · | ✓ |
+
+**The registration path is unchanged across all four versions.** Everything added
+is call features and messaging: calling-line restriction, multi-identity and
+virtual lines, emergency dial, SMS acknowledgement, USSD failure reporting, WFC
+roaming configuration. Nothing touches IMS registration, MMTEL, or media feature
+tags — the things that would decide whether the network grants this UE voice.
+
+**So this lead is closed rather than pursued.** Extending the plugin to 1.5 would
+buy COLR, multi-identity and emergency dial; it would not obviously change what the
+network decides about voice. `dial_1_4` is the only arguably relevant addition, and
+domain selection does not happen in the dial.
+
+☠️ Recorded as a **negative result that cost an hour of desk work and no risk**,
+which is the point: two leads have now been de-prioritised this way — this one and
+the MBN parse — before anything was written to the phone or the modem.
