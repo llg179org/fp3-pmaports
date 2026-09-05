@@ -1,4 +1,15 @@
-> ☠️ **NOT CLOSED - the 2026-09-05 closure is RETRACTED.** It rested on a stock
+> ☠️ **OPEN, and the ground has moved. 2026-09-05, measured:** the dev subscription
+> **does** carry VoLTE - the card holds 4G through a call in a stock Android with only
+> the handset's per-SIM "4G hívás" switch on. So the network is not the limit, and the
+> earlier closure ("no software work on our side can help") is withdrawn in full.
+> ☠️ But nothing here is decided yet either: the FP3 has never been tested with this
+> card. The one that CSFBs on the FP3 is a different card, so the two measurements are
+> not a comparison. Decisive next test: put the dev card back in the FP3 and call it.
+> See `../captures/2026-09-05_ut-call-rat-newsim/` ("Re-test (#162)").
+>
+> Superseded notes below, kept for the record:
+>
+> ~~NOT CLOSED - the 2026-09-05 closure is RETRACTED.~~ It rested on a stock
 > Android showing GSM for the dev card; that handset's "4G hívás" switch is off by
 > default per SIM slot and was off for that slot, which explains the GSM on its own.
 > Re-test pending (queue #160). The paragraph below is kept for the record but does

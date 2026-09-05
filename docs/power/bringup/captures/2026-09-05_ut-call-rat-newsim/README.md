@@ -273,3 +273,48 @@ Android:**
 therefore whether an IMS stack could ever help. The re-test is the same experiment
 with the switch on — and with mobile data enabled for that SIM, so a second
 unknown is not introduced.
+
+## Re-test (#162): the dev subscription DOES carry VoLTE
+
+With the handset's per-SIM **"4G hívás" (VoLTE) switch turned on** - and with mobile
+data and "data during calls" both left **off** for that slot - the dev card in the
+stock Android **held 4G through the call**, read live from *Settings -> About phone
+-> SIM status -> Mobile network type*, for calls from **both** of the calling
+handset's SIMs.
+
+Three things follow:
+
+1. **The subscription is provisioned for VoLTE.** The claim that it is not, and the
+   claim built on it that no software work on our side could ever give this phone a
+   4G call, are **wrong**. Both were stated here earlier today; neither survives.
+2. **The IMS PDN comes up without user data.** VoLTE registered with mobile data
+   off and "data during calls" off, so the IMS APN is raised independently of the
+   subscriber's data service - worth knowing, because the absence of a data plan
+   had been offered as a possible confounder and is not one.
+3. **The variable is above the subscription.** The card that CSFBs on our FP3 is
+   the *other* one, so the direct comparison has not been made yet - see below.
+
+### What is still missing: the FP3 has never been tested with a known-VoLTE card
+
+Today's measurements do not form a comparison, because the card moved:
+
+| card | daily Android (stock) | FP3 (UT oracle) |
+|---|---|---|
+| dev card | **4G** (measured, #162) | not tested |
+| ex-SIM2 (now in the FP3) | not tested | **EDGE** (measured, Parts 1-2) |
+
+Two different cards in two different devices decide nothing about either. The
+decisive test is the diagonal that is missing: **put the dev card - now proven
+VoLTE-capable on this network - back into the FP3 and call it.** If it still lands
+on EDGE, the difference is the device or the stack and nothing else, and that is
+the first result in this whole thread that would actually license a software
+conclusion.
+
+☠️ And the earlier "tariff" explanation for why two SIMs in the daily handset
+behaved differently is now suspect for the same reason the #160 answer was: the
+per-SIM VoLTE switch is off by default, so that observation may have been two
+switch states rather than two tariffs. It should not be relied on until re-read.
+
+If the FP3 does get VoLTE with this card, the next gate is device whitelisting -
+operators commonly gate VoLTE on the IMEI/TAC, which is a known wall for custom
+ROMs and Linux phones, and the FP3's status with this operator is unknown.

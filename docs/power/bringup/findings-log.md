@@ -10193,3 +10193,23 @@ precedes the call, IMS is registered and voice-capable throughout, and ofono's d
 goes through the IMS HAL, which accepts it.
 
 Re-test: same experiment with the switch on and mobile data enabled for that SIM.
+
+## 2026-09-05 (#162) — the dev subscription HAS VoLTE; the closure was wrong
+
+With only the handset's per-SIM "4G hívás" switch on - mobile data and "data during
+calls" both left off - the dev card in a stock Android held **4G through the call**,
+for calls from both of the calling handset's SIMs.
+
+So the subscription is provisioned, the IMS PDN comes up without any user data
+service, and today's earlier conclusion - that the card has no VoLTE and therefore
+no software work on our side could ever matter - is **withdrawn in full**. It had
+already been retracted once on the same day for resting on an unread switch; this
+is the measurement that settles it in the opposite direction.
+
+☠️ What today's numbers still do NOT establish: the FP3 has never been tested with
+a known-VoLTE card. The card that CSFBs on the FP3 is a different one, so the two
+measurements are not a comparison. The decisive test is to put this card back in
+the FP3 and call it.
+
+☠️ Also suspect for the same reason: the older "the two daily-handset SIMs differ
+by tariff" explanation may have been two switch states, not two tariffs.
