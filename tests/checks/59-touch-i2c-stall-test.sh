@@ -1,5 +1,9 @@
 #!/bin/sh
-# Category: power
+# Category: touch
+# ☠️ Was "power" until 2026-09-05, and correctly so: the #142 i2c stall was
+# investigated under the power work before it had a category. It now has its own
+# topic branch (wip/<base>/touch), and the coverage guard - rightly - refused to
+# run anything until the branch and this check agreed on where it belongs.
 # Description: the touchscreen's i2c controller does not hang on the first access after an idle
 #
 # The fault this exists to catch, measured 2026-09-04: a transaction on the
