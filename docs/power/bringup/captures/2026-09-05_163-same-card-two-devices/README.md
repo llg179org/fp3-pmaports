@@ -69,3 +69,62 @@ Two conclusions were published earlier today and are now settled against:
   stands, but its conclusion does not follow: the oracle's IMS **registers and is
   still refused voice**, which is a solvable, device-side problem rather than a
   property of the network.
+
+## The strongest device-side candidate: the modem is on a generic carrier config
+
+Having established that the device is the variable, the obvious place to look is
+the **modem carrier configuration (MBN)**, because on Qualcomm that is largely what
+enables VoLTE — the IMS stack registers under a generic config, but MMTEL voice is
+gated by the carrier MBN.
+
+From `../2026-08-29_pdc-configs/pmos-software.txt`, 25 configs are present in the
+modem and the **active** one is:
+
+```
+Configuration 1:
+    Description: ROW_Commercial      <- generic "Rest Of World", not a VoLTE config
+    Status:      Active
+```
+
+while the same list contains, among others, `Global-VoLTE-Vodafone`,
+`Germany-VoLTE-Vodafone`, `IE-VoLTE-Vodafone`, `Italy-VoLTE-Vodafone`,
+`Netherlands-VoLTE-Vodafone` and `Non_VoLTE-Vodafone`.
+
+Read on the device (as root, UT slot), the vendor MBN store confirms the shape:
+
+```
+/android/data/vendor/modem_config/mcfg_sw/generic/eu/
+  bouygues dt ee elisa h3g kpn nos orange proximus sfr sky swisscom
+  tdc tele2 telefoni telenor telia tim vodafone
+
+  vodafone/volte/  ->  cz germany global ie italy netherla portugal
+                       safrica spain turkey uk        <- NO hungary
+  dt/commerci/     ->  austria croatia cz greece hungary nl pl slovakia
+```
+
+So there is **no Vodafone-Hungary VoLTE MBN**, but there is a
+`vodafone/volte/global` one — and One HU is the former Vodafone Hungary
+(MCC 216 / MNC 070).
+
+**The hypothesis, stated as a hypothesis:** the modem runs the generic
+`ROW_Commercial` config, under which IMS still registers (which is exactly what we
+measure — registration succeeds, the operator returns a P-Associated-URI) but MMTEL
+voice is not enabled, so the network has nothing to route a terminating call to and
+CS-pages instead.
+
+☠️ **Three things this does not yet establish, and each could sink it:**
+
+1. **The `ROW_Commercial` Active reading is from a pmOS capture dated 2026-08-29,
+   not from UT and not from today.** The active MBN lives in the modem, so it is
+   in principle shared between the two OSes — but Android's `pdc` service
+   re-selects a config at boot from the SIM's MCC/MNC, and UT may therefore differ.
+   Nothing has been read on the UT side: there is no `qmicli` or `pdc` tool there
+   and no QMI character device, because on Halium the modem is reached over binder.
+2. **Whether `Global-VoLTE-Vodafone` matches this operator at all** is unknown -
+   the rebrand from Vodafone HU to One HU may or may not be reflected in that
+   config's carrier policy.
+3. **Whether the MBN is the gate here at all.** Operator IMEI/TAC gating remains a
+   live alternative and would produce the same symptom.
+
+The check that settles (1) is a PDC config query, which the pmOS side can already
+do — that is where the 2026-08-29 capture came from.
