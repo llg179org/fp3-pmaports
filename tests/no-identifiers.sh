@@ -16,6 +16,16 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 
 # Patterns are deliberately narrow: broad ones match device-tree hex and battery
 # tables, and a check that cries wolf gets ignored, which is the same as absent.
+#
+# ☠️ The last pattern is not an identifier at all - it is the DEVICE PASSWORD.
+# fp3-ssh gets root by `echo <pw> | sudo -S ...`, so the password sits in the
+# command line of every privileged process, and any capture that includes a
+# process listing (`ps -o args`, `ps aux`, a `pgrep -a`) carries it in clear.
+# Found 2026-09-05 while hunting a stray script with `ps -o pid,args`. The
+# password is never written into this file, so the pattern matches the SHAPE:
+# a quoted echo piped into `sudo -S`, with a LITERAL inside the quotes -
+# `echo '$pw' | sudo -S` in a script is the correct way to write it and is
+# not a leak, so a leading `$` inside the quotes is excluded.
 scan() {
     dir=$1
     rc=0
@@ -28,7 +38,8 @@ scan() {
         '\b216[0-9]{12}\b' \
         '\b89[0-9]{17,18}\b' \
         '(^|[^0-9])(\+|00)[[:space:]]?36([[:space:]]?[0-9]){9}([^0-9]|$)' \
-        '\b([0-9a-f]{2}:){5}[0-9a-f]{2}\b'
+        '\b([0-9a-f]{2}:){5}[0-9a-f]{2}\b' \
+        "echo[[:space:]]+'[^'\$][^']*'[[:space:]]*\\|[[:space:]]*sudo[[:space:]]+-S"
     do
         hits=$(grep -raEn "$pat" "$dir" \
                  --exclude-dir=.git \
@@ -49,9 +60,21 @@ if [ "${1:-}" = "--self-test" ]; then
     # A checker that has never been shown failing has proved nothing.
     tmp=$(mktemp -d) || exit 2
     trap 'rm -rf "$tmp"' EXIT
-    printf 'equipment id: <imei>\n' > "$tmp/planted.txt"
+    # ☠️ THE PLANTED VALUE MUST LOOK REAL, OR NOTHING IS PROVED. Until
+    # 2026-09-05 the first case below planted the *redaction marker* `<imei>`
+    # and expected it to be caught, which cannot happen - so --self-test failed
+    # on its first assertion every time it was run, and the guard's own proof
+    # that it still works had never once passed. The scan itself was fine; the
+    # thing that was supposed to vouch for it was not. A safety net whose test
+    # is broken is a safety net nobody has checked.
+    #
+    # The values here are SYNTHETIC and assembled from parts so this file never
+    # contains a plausible identifier of its own: 35 + zeros is IMEI-shaped and
+    # belongs to no device.
+    fake_imei="35$(printf '0%.0s' 1 2 3 4 5 6 7 8 9 10 11 12)6"
+    printf 'equipment id: %s\n' "$fake_imei" > "$tmp/planted.txt"
     if scan "$tmp" >/dev/null; then
-        echo "SELF-TEST FAIL: a planted IMEI was not caught"; exit 2
+        echo "SELF-TEST FAIL: a planted IMEI-shaped number was not caught"; exit 2
     fi
     printf 'equipment id: <imei>\n' > "$tmp/planted.txt"
     if scan "$tmp" >/dev/null; then :; else
@@ -61,9 +84,17 @@ if [ "${1:-}" = "--self-test" ]; then
     # it. On 2026-09-05 this check reported clean while a phone number sat in
     # such a file in the tree - the -a above is what fixes it, and this is the
     # case that proves it stays fixed.
-    printf 'number: <msisdn-own>\n\0\0trailing\n' > "$tmp/planted.txt"
+    fake_msisdn="+36$(printf '0%.0s' 1 2 3 4 5 6 7 8 9)"
+    printf 'number: %s\n\0\0trailing\n' "$fake_msisdn" > "$tmp/planted.txt"
     if scan "$tmp" >/dev/null; then
-        echo "SELF-TEST FAIL: an MSISDN hidden behind a NUL byte was not caught"; exit 2
+        echo "SELF-TEST FAIL: an MSISDN-shaped number hidden behind a NUL byte was not caught"; exit 2
+    fi
+
+    # A pasted process listing carrying the device password, shape only.
+    printf "%s\n" "1234 sudo -S sh -c ..." > "$tmp/planted.txt"
+    printf "%s\n" "1234 ash -c echo 'REDACTED-SHAPE' | sudo -S sh -c ls" >> "$tmp/planted.txt"
+    if scan "$tmp" >/dev/null; then
+        echo "SELF-TEST FAIL: a pasted process listing leaking the sudo password was not caught"; exit 2
     fi
 
     # Known negatives: a modem PDC config ID (20 colon-separated hex bytes, so
