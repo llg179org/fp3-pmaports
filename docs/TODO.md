@@ -319,8 +319,7 @@ Three decisions the table does not show on its face:
       prio: 10
       lane: phone
       when: the operator uses the phone for a normal session on r81
-- [ ] 176. Turn on the kernel's IPsec/ESP options so an IMS security association is even possible: CONFIG_XFRM_USER, CONFIG_INET_ESP, CONFIG_INET6_ESP, CONFIG_XFRM_ALGO (+ CONFIG_NET_KEY if wanted) in config-fp3.aarch64 - all currently 'is not set', and 'ip xfrm state' fails on the device. Verify after the flash with 'ip xfrm state' returning success. ☠️ Needs no radio, no test call and no operator: it either works after the flash or it does not. Everything about the imsd path is blocked behind it (docs/power/bringup/leads/imsd-is-code-now.md)
-      prio: 20 lane: phone
+
 - [ ] 177. Package imsd for pmOS (aarch64) and get it to REGISTER - not yet to call. Source: forgejo.catcrafts.net/Catcrafts/imsd, GPL-3.0, Makefile route (clang++ + libc++ + lld + gio-2.0 headers; libc++ 22.1.8 is packaged for Alpine edge aarch64). Then configure it from what this repo already measured: PCSCF from the two P-CSCF addresses in leads/volte-is-provisioned.md (its own P-CSCF discovery from the PDN PCO is NOT implemented, so this value must be given by hand), DEV = the IMS PDN device raised with mmcli --simple-connect apn=ims, LOCAL auto from a global IPv6 - CHECK that the IMS PDN actually gets one, it is listed as auto-detected and may not exist here. Success for this task is a completed SIP REGISTER, nothing more. ☠️ Needs no test call: registration either happens or it does not
       prio: 20 lane: phone
       after: 176

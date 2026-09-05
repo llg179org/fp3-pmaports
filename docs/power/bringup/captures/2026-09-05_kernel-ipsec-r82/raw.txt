@@ -1,0 +1,17 @@
+#83-fp3 SMP PREEMPT Sat Sep  5 13:37:29 UTC 2026
+3f843d0534e3c6f4ae25c3fef09b62fc9d39462f
+--- ip xfrm as root ---
+rc=0
+rc=0
+--- add a real ESP SA, count it, delete it ---
+src 10.0.0.1 dst 10.0.0.2
+	proto esp spi 0x00001000 reqid 0 mode transport
+	replay-window 0 
+	auth-trunc hmac(sha1) 0x0123456789abcdef0123456789abcdef01234567 96
+	enc cbc(aes) 0x0123456789abcdef0123456789abcdef
+	anti-replay context: seq 0x0, oseq 0x0, bitmap 0x00000000
+	sel src 0.0.0.0/0 dst 0.0.0.0/0 
+after deleteall:
+--- modules autoloaded ---
+authenc                12288  1
+esp4                   28672  1

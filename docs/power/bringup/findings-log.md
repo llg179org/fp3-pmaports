@@ -10418,3 +10418,19 @@ Unblocking it means a different libqmi build, and the crash is worth reporting
 upstream with a backtrace.
 
 Capture: `docs/power/bringup/captures/2026-09-05_mbn-hungary-experiment/`.
+
+## 2026-09-05 — the kernel can build an IPsec SA (r82), so imsd's hard requirement is met
+
+`CONFIG_XFRM_USER=y`, `CONFIG_INET_ESP=m`, `CONFIG_INET6_ESP=m` in
+`config-fp3.aarch64`; `_commit` unchanged at `3f843d0534e3`, so this is a config
+change and nothing else. Verified in the shipped package, then on the device:
+a real ESP SA with `hmac(sha1)` and `cbc(aes)` was added, counted, and deleted,
+and `esp4`/`authenc` autoloaded.
+
+☠️ The first reading looked like a failure and was not. As the unprivileged user
+`ip xfrm state` still errors — but with `RTNETLINK answers: Operation not
+permitted` where r81 said `Cannot open netlink socket: Protocol not supported`.
+The socket now opens; the operation needs `CAP_NET_ADMIN`. **The command failed
+in both cases and the difference between the two errors is the entire finding.**
+
+Full write-up: `captures/2026-09-05_kernel-ipsec-r82/`.
