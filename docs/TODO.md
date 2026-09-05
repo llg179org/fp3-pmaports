@@ -296,10 +296,10 @@ Three decisions the table does not show on its face:
       when: you authorise writing a carrier config into the modem's persistent storage - but note the measurements now point AWAY from it
 
       when: the operator decides to spend days on an AP-side IMS daemon - both gates now pass, and passing them WEAKENED the case
-- [@] 172. Supply the AP half of the IMS handshake, from the imsd document
+- [~] 172. Supply the AP half of the IMS handshake, from the imsd document
       lane: phone
-      after: 169
-      why: ☠️ BOTH GATES NOW PASS (2026-09-05) AND THAT MADE THE CASE WORSE, NOT BETTER. Gate 1 (#171, closed 09:53): stopping the loop does move the duty - about 44 pp. Gate 2 (#169, closed today): the network DOES grant this UE IMS voice - nas-get-system-info reports 'IMS voice support: yes' for MCC 216 MNC 70, corroborated by the UT-side P-Associated-URI. So neither gate blocks it any more. But the two motivations both weakened: (a) VoLTE - #163 stands, the UT oracle carries the FULL vendor IMS stack, registers against One HU's core, and STILL takes every call on EDGE, so a complete AP half is measured NOT to produce a 4G call here; (b) power - the thrash is already stopped, far more cheaply, by fp3-ims-reconcile holding the IMS switches off, which is installed, timed and checked. What is left is a multi-day daemon against documentation with no code to port, whose one measured precedent does not deliver the thing it is for. That is a decision about spending days, not a reversible experiment, so it needs a person. ☠️ Its own note already said: do not start this because it is the interesting task
+      after: 176
+      why: ☠️ ITS CASE-AGAINST RESTED ON A FALSE PREMISE, CORRECTED 2026-09-05: the note said the imsd work is 'documentation only, there is NO code to port'. True of codeberg.org/flamingradian/imsd; FALSE of forgejo.catcrafts.net/Catcrafts/imsd, which is a working GPL-3.0 userspace IMS daemon with inbound AND outbound VoLTE calls on a Fairphone 6 running postmarketOS, across four carriers, emergency calling end-to-end tested 2026-08-18. ☠️ And it is a DIFFERENT architecture from this task: imsd REPLACES the modem's IMS stack (SIP + USIM AKA + AMR-WB over PipeWire in userspace) rather than supplying the missing half of the modem's own handshake. So the #163 objection - the UT oracle runs the full vendor stack, registers, and still gets EDGE - does not carry across: it argues against helping the modem's stack, not against building our own registration whose media feature tags we control. Full reasoning and the measured FP3 feasibility: docs/power/bringup/leads/imsd-is-code-now.md. First blocker is #176, our own kernel config
       (2) #169 - does the network even grant IMS voice to this UE, since a 'not supported' there makes the VoLTE half of the case worthless. ☠️ Do not start this because it is the interesting task
       prio: 20
 - [ ] 173. Stop the IMS PDN thrash the cheap way: turn IMS off, and find out what it actually costs
@@ -319,6 +319,8 @@ Three decisions the table does not show on its face:
       prio: 10
       lane: phone
       when: the operator uses the phone for a normal session on r81
+- [ ] 176. Turn on the kernel's IPsec/ESP options so an IMS security association is even possible: CONFIG_XFRM_USER, CONFIG_INET_ESP, CONFIG_INET6_ESP, CONFIG_XFRM_ALGO (+ CONFIG_NET_KEY if wanted) in config-fp3.aarch64 - all currently 'is not set', and 'ip xfrm state' fails on the device. Verify after the flash with 'ip xfrm state' returning success. ☠️ Needs no radio, no test call and no operator: it either works after the flash or it does not. Everything about the imsd path is blocked behind it (docs/power/bringup/leads/imsd-is-code-now.md)
+      prio: 20 lane: phone
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap

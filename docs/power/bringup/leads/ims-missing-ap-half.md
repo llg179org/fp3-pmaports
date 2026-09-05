@@ -17,6 +17,15 @@ too fast for anything network-dependent, so a *local* precondition fails between
 
 ## The counterpart, from the reverse-engineering literature
 
+> ☠️ **SUPERSEDED IN PART, 2026-09-05.** This page and the queue item built on
+> it say the `imsd` work is documentation with no code. That is true of the
+> Codeberg write-up cited below and **false of the project that now carries the
+> name**: `forgejo.catcrafts.net/Catcrafts/imsd` is a working GPL-3.0 userspace
+> IMS daemon with VoLTE calls on a Fairphone 6 running postmarketOS. It also
+> *replaces* the modem's IMS stack rather than supplying its missing half, so
+> the #163 objection does not carry across. See
+> [`imsd-is-code-now.md`](imsd-is-code-now.md).
+
 [`flamingradian/imsd`](https://codeberg.org/flamingradian/imsd) documents the
 Android side by `strace`ing `imsdatadaemon` (GPLv3, `IMS-QUALCOMM.md`). Three
 statements from it bear directly on our loop:
