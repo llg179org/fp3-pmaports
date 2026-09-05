@@ -1,0 +1,47 @@
+2026-09-05T21:25:03+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+2026-09-05T21:25:05+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+2026-09-05T21:25:07+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+2026-09-05T21:25:13+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+2026-09-05T21:25:16+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+2026-09-05T21:25:20+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+2026-09-05T21:25:25+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+2026-09-05T21:25:25+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+2026-09-05T21:25:26+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+2026-09-05T21:25:28+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+2026-09-05T21:26:19+02:00 fp3 kernel: i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active, master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+2026-09-05T21:26:19+02:00 fp3 kernel: i2c_qup 78b7000.i2c: bus still held after 10 bus-clear attempts
+2026-09-05T21:26:24+02:00 fp3 kernel: himax_handle_input: 43449 callbacks suppressed
+2026-09-05T21:26:29+02:00 fp3 kernel: himax_handle_input: 42426 callbacks suppressed
+2026-09-05T21:26:31+02:00 fp3 kernel: irq 127: nobody cared (try booting with the "irqpoll" option)
+2026-09-05T21:26:31+02:00 fp3 kernel: CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Not tainted 7.1.3-postmarketos-qcom-msm8953 #85-fp3 PREEMPT 
+2026-09-05T21:26:31+02:00 fp3 kernel: Hardware name: Fairphone 3 (DT)
+2026-09-05T21:26:31+02:00 fp3 kernel: Call trace:
+2026-09-05T21:26:31+02:00 fp3 kernel:  show_stack+0x20/0x38 (C)
+2026-09-05T21:26:31+02:00 fp3 kernel:  dump_stack_lvl+0x5c/0x80
+2026-09-05T21:26:31+02:00 fp3 kernel:  dump_stack+0x18/0x24
+2026-09-05T21:26:31+02:00 fp3 kernel:  __report_bad_irq+0x54/0xf0
+2026-09-05T21:26:31+02:00 fp3 kernel:  note_interrupt+0x338/0x390
+2026-09-05T21:26:31+02:00 fp3 kernel:  handle_irq_event+0x9c/0x100
+2026-09-05T21:26:31+02:00 fp3 kernel:  handle_level_irq+0xe0/0x180
+2026-09-05T21:26:31+02:00 fp3 kernel:  handle_irq_desc+0x3c/0x68
+2026-09-05T21:26:31+02:00 fp3 kernel:  generic_handle_domain_irq+0x20/0x40
+2026-09-05T21:26:31+02:00 fp3 kernel:  msm_gpio_irq_handler+0x128/0x180
+2026-09-05T21:26:31+02:00 fp3 kernel:  handle_irq_desc+0x3c/0x68
+2026-09-05T21:26:31+02:00 fp3 kernel:  generic_handle_domain_irq+0x20/0x40
+2026-09-05T21:26:31+02:00 fp3 kernel:  gic_handle_irq+0x48/0xe0
+2026-09-05T21:26:31+02:00 fp3 kernel:  call_on_irq_stack+0x30/0x78
+2026-09-05T21:26:31+02:00 fp3 kernel:  do_interrupt_handler+0x88/0x98
+2026-09-05T21:26:31+02:00 fp3 kernel:  el1_interrupt+0x38/0x58
+2026-09-05T21:26:31+02:00 fp3 kernel:  el1h_64_irq_handler+0x18/0x30
+2026-09-05T21:26:31+02:00 fp3 kernel:  el1h_64_irq+0x6c/0x70
+2026-09-05T21:26:31+02:00 fp3 kernel:  cpuidle_enter_state+0xb8/0x740 (P)
+2026-09-05T21:26:31+02:00 fp3 kernel:  cpuidle_enter+0x3c/0x60
+2026-09-05T21:26:31+02:00 fp3 kernel:  do_idle+0x158/0x2c8
+2026-09-05T21:26:31+02:00 fp3 kernel:  cpu_startup_entry+0x40/0x50
+2026-09-05T21:26:31+02:00 fp3 kernel:  rest_init+0xe4/0xf0
+2026-09-05T21:26:31+02:00 fp3 kernel:  start_kernel+0x7ec/0x7f8
+2026-09-05T21:26:31+02:00 fp3 kernel:  __primary_switched+0x88/0x98
+2026-09-05T21:26:31+02:00 fp3 kernel: handlers:
+2026-09-05T21:26:31+02:00 fp3 kernel: [<00000000004216e7>] irq_default_primary_handler threaded [<000000002757f81f>] himax_irq_handler [himax_hx83112b]
+2026-09-05T21:26:31+02:00 fp3 kernel: Disabling IRQ #127
+2026-09-05T21:26:32+02:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...

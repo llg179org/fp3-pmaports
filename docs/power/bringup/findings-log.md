@@ -10493,3 +10493,37 @@ the r82 rate above.
 
 Write-ups: `captures/2026-09-05_157-fault-rate-on-r82/` and
 `captures/2026-09-05_157-timeout-fixed-on-r83/`.
+
+## 2026-09-05 — ☠️ the kernel disabled the touchscreen's IRQ, and our own log rate limit is why it got that far
+
+Operator: *"21:26 durva fagyás"*. On r84: **85 905 failed `-EIO` reads in eleven
+seconds (~7800/s)**, then `irq 127: nobody cared` and `Disabling IRQ #127`. Dead
+panel until rebound by hand.
+
+**The cause is in the driver and has been there all along**: `himax_irq_handler`
+returned `IRQ_NONE` when the read failed. The interrupt *was* ours; the line is
+level triggered, so it re-asserts at once and every pass counts as unhandled.
+100 000 of those and `note_interrupt()` kills the line. `c59812386d99` returns
+`IRQ_HANDLED`, resets the controller once the failures look like a wedge, and
+sleeps between passes if that does not help.
+
+☠️ **Why r82 never tripped it.** Its rate was 156/s because every failure printed
+and `console=ttyMSM0,115200` paced them: 72 chars/line, 11 520 chars/s → **160
+lines/s theoretical against 156 measured**, a 2.5 % match. The serial console was
+the brake. `dev_err_ratelimited` removed it. The rate limit did not create the
+bug, it released the rate that trips it — and the operator's experience got worse:
+a dead panel in eleven seconds instead of a log flood in three minutes.
+
+The lesson is not to keep the flood (28 608 lines to flash and an overwritten
+dmesg ring are faults too). It is that **removing an accidental throttle exposes
+whatever it was hiding, and that must be looked for deliberately.**
+
+☠️ Two things this fault also settles: the r84 bus-clear **cannot help here** -
+there is no `-110` and no timeout in the whole window, it is the `-EIO` path; and
+the 2026-09-04 reproducer cannot reach this regime at all.
+
+A bounded band-aid (`fp3-touch-guard`, max 6 rebinds/hour, proved against a
+known positive) runs until r85 ships. r85 is blocked on GitHub 429-ing the
+archive endpoint after four kernel tarballs today.
+
+Write-up: `captures/2026-09-05_2126-irq-disabled-on-r84/`.
