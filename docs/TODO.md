@@ -143,15 +143,15 @@ more than one is.
 - [~] 72. Threshold-time method (a current ratio needing no calibration)
       after: 158
       why: Conditional fallback: alive only if the |e| bound from a rested OCV pair is not tight enough. ☠️ THAT CONDITION CANNOT BE EVALUATED YET, and the dispatcher offered this as ready on 2026-09-05 because its blocker was recorded as #85, which is closed. #85 closed, but #118's evaluation of it reads: the 09-03 night FAILED its own gates and produced nothing usable - all three legs dropped, median sleep 13/18/9 s against a 90 s alarm. So no OCV pair exists, no bound was computed, and docs/power/README.md still lists the calibration offset as unbounded. This waits on a night that actually completes, which is #158. If that night lands and the bound comes out tight, this task is dead and should be closed as unnecessary rather than done
-- [ ] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
-      after: 85
-      why: one reboot, zero risk — but AFTER the next reboot we are having anyway, because debug logging would contaminate tonight's legs
+- [~] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
+      after: 158
+      why: One reboot, zero risk - but it must not be in place during a measurement night: #158 separately requires REMOVING a ModemManager debug drop-in before its run, so adding one now would break the night this whole category waits on. Also needs pmOS and the phone is on UT. Do it on the first reboot after #158 lands
       lane: phone
 - [ ] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
       after: 85
       why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
-- [ ] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
-      after: 85
+- [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
+      after: 158
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
       lane: phone
 
@@ -163,21 +163,22 @@ more than one is.
       after: 116
       why: ☠️ NOT simply 'do it on the oracle slot' any more. Attempted from the other end on 2026-09-05 (#169) and the whole path was stood up on UT with no slot switch - /dev/diag exists there, QCSuper's prebuilt aarch64 adb_bridge runs in the Android container and reports 'Connection to Diag established', QCSuper reaches it over TCP - and it then died on 'DIAG_LOG_CONFIG_F timed out' with a 24-byte pcap holding zero packets. That is the wall leads/diag-bringup.md describes, and it holds on the stock downstream stack too, not only on mainline. The route that works is the DIAG_CNTL log-mask path tools/diag-log-capture.py uses, and that tool needs pmOS's rpmsg control device. So this task now inherits #169's blocker: it needs a UT-side control-channel implementation, or it runs on pmOS. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
-- [ ] 41. The next slot switch: a band-matched oracle measurement, not a preference read
+- [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
-      why: line 4 of the 116 oracle session
+      why: A band-matched oracle measurement rather than a preference read - it was line 4 of the #116 oracle session, which is now archived. It needs a slot switch, so it should ride along with the next one rather than cause its own
       lane: phone
+      until: the phone is back on pmOS and a slot switch is being made anyway
 - [ ] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
       why: since the P-CSCF finding this decides nothing until 116 has said whether the `imsd` path is alive at all; ☠️ the silent DIAG stream is a separate obstacle
       lane: phone
-- [ ] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
-      after: 116
-      why: pricing the `imsd` future
+- [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
+      after: 158
+      why: The A' control for the bearer arm. ☠️ ITS PURPOSE IS WORTH LESS THAN WHEN IT WAS QUEUED: it exists to price the imsd future, and on 2026-09-05 (#163) the UT oracle - full vendor IMS stack, IMS registered against the operator core - still took every call on EDGE, while a survey the same day found mainline Linux has no working VoLTE anywhere and imsd itself is documentation with no code. So the future being priced may not exist. Re-read that before spending a night on it. Needs pmOS and a completed replication either way
       lane: phone
-- [ ] 30. Re-measure the bearer arm with a band lock
-      after: 116
-      why: pricing the `imsd` future; the earlier measurement never recorded its band
+- [~] 30. Re-measure the bearer arm with a band lock
+      after: 158
+      why: Re-measure the bearer arm with a band lock; the earlier measurement never recorded its band. ☠️ Same devaluation as #19: this prices the imsd future, and 2026-09-05 found the oracle gets no VoLTE despite a complete vendor IMS stack, and that mainline has none anywhere. Needs pmOS and a completed replication
       lane: phone
 - [~] 31. Band preference as a shippable lever
       after: 30
