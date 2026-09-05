@@ -121,12 +121,35 @@ it. So if a registration completes, it completes as a voice-capable contact.
 
 Not established — the Warning code is operator-internal and we cannot decode it:
 
-- ☠️ **The IMPU is derived from the IMSI.** This card is a **USIM with no ISIM**,
-  so there is no provisioned IMPU and the temporary public identity
-  `sip:<IMSI>@ims.mnc…` is used. If the HSS has no such temporary IMPU, an
-  S-CSCF lookup can fail internally — which fits a 500 better than a 403.
-- The requested `Expires: 600000` is large; some cores object.
-- Something in the header set their P-CSCF cannot process.
+- ☠️ **The IMSI-derived IMPU — WEAKENED within the hour, by reading further.**
+  It was first written here as the strongest candidate. But `main.cpp` line 987
+  carries the comment *"(the temporary IMPU is barred for anything but
+  REGISTER)"*, so `imsd` is using the temporary public identity **deliberately
+  and correctly**: that is exactly what 3GPP specifies for a USIM-only card, and
+  it is what every stock phone with such a card does. There is nothing anomalous
+  here to blame, and this candidate is demoted rather than deleted.
+- The requested `Expires: 600000` is large — though GSMA IR.92 asks for exactly
+  that, so it is unremarkable.
+- Something in the header set their core cannot process. `Security-Verify` must
+  echo the 401's `Security-Server` exactly; a reconstruction that differs is a
+  candidate, though that usually draws a 494 rather than a 500.
+
+**Honestly: the cause is not known**, and none of the candidates above is
+supported by evidence rather than plausibility.
+
+## ★ The method that would settle it, and upstream names it
+
+`DumpRaw`'s own comment describes the dumps as *"for offline diffing against the
+stock-modem oracle (rung-5b registration-parity work)"*. That is the answer here
+too, and this project already has the oracle: **on Ubuntu Touch the vendor stack
+registers successfully against this same core with this same card** (#163, with a
+P-Associated-URI returned). Capturing what *that* REGISTER looks like and
+diffing it header by header against ours turns "a 500 for unknown reasons" into
+a named difference.
+
+☠️ It is not cheap: it needs a DIAG or SIP capture on the UT side, which is the
+wall #54, #64 and the old #169 all stood at. But it is the *right* instrument,
+and it is the one upstream built the dump facility for.
 
 ## ☠️ A masking gap this found, in our own guard
 
