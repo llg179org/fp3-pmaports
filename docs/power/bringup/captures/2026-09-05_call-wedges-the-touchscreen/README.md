@@ -96,3 +96,63 @@ The operator's standing question — does a call come in on EDGE or on VoLTE —
 answered by the same capture, from the modem's own report rather than from a UI:
 **`3gpp-geran` / `edge`**. With the IMS switches held off, the call arrives by CS
 fallback, as designed.
+
+## ★★ The second call reproduced it — as the CLASSIC #142 signature
+
+A second incoming call was placed deliberately, with a watcher sampling the RAT,
+the call state and the touch-error count together (`call2-watch.log`):
+
+```
+18:19:13  tech=lte        calls=0  touch_err=0
+18:23:39  tech=gsm,gprs   calls=0  touch_err=0    <- the RAT drops to 2G THREE SECONDS BEFORE the call is signalled
+18:23:42  tech=gsm,gprs   calls=1  touch_err=0
+18:23:56  tech=gsm,gprs   calls=1  touch_err=2    <- errors, during the call
+18:24:13  tech=lte        calls=0  touch_err=2    <- call over, back to LTE
+18:24:39  tech=lte        calls=0  touch_err=2    <- stable; no storm this time
+```
+
+and the two errors are:
+
+```
+18:23:54  Himax-hx83112b-TS 3-0048: Failed to read input event: -110
+18:23:54  Himax-hx83112b-TS 3-0048: Failed to read input event: -6
+```
+
+**That is #142 exactly** — `-110` then `-6` — and the timing closes the argument:
+the call was signalled at **18:23:39** and the log line appears at **18:23:54**,
+**fifteen seconds later**, which is the i2c-qup transfer timeout constant. The
+transfer hung at the moment of the fallback; the message is simply when the
+timeout expired.
+
+### ☠️ So the supply fix does NOT eliminate the operator-visible fault
+
+r82 carries all three touchscreen-supply commits, and both rails had consumers
+throughout (`3-0048-iovcc`, `3-0048-vdda`). The `-110`/`-6` pair happened anyway.
+
+The mechanism the fix addressed is real and was measured — before it, `l6` fell
+to **zero** voters when the display powered down; after it, the touch node keeps
+one. That measurement stands. What falls is the **inference** that it was the
+whole cause of #142. It was not.
+
+### And the trigger is sharper than the one on record
+
+`docs/touch/142-i2c-stall.md` characterises the fault as *first access after
+≥10 s idle, with the screen off*. Neither held here: the screen was **on**, the
+phone was **in use**, and the trigger was an **incoming CS call** — twice in
+fifteen minutes, once as the `-5` wedge and once as the `-110` stall.
+
+### Whole-boot tally
+
+| code | count |
+|---|---|
+| `-110` | 1 |
+| `-6` | 1 |
+| `-5` | 28 608 |
+
+Two distinct failures, one shared trigger.
+
+### Also settled, twice now
+
+The call arrives on **2G** — `tech=gsm,gprs`, and the modem's own call record says
+`mode = 'gsm'`, `direction = 'mt'`. The RAT drops **before** the phone rings, so a
+sampler started at the ring has already missed the transition.
