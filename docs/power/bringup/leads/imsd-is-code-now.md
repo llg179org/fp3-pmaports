@@ -109,7 +109,7 @@ we measured weeks ago for another reason.
 |---|---|
 | `PCSCF` (required) | **measured**, two addresses from the PCO |
 | `DEV` — the IMS PDN network device | the modem raises an IMS PDN by itself every 8.4 s; holding one up with `mmcli --simple-connect apn=ims` was already exercised |
-| `LOCAL` — UE address, auto-detected from a global IPv6 | the initial bearer is `ipv4v6`; unverified whether the IMS PDN gets a global v6 |
+| `LOCAL` — UE address, auto-detected from a global IPv6 | ☠️ **MEASURED 2026-09-05: there is none.** The `ims` APN bearer comes up IPv4-only (`10.12.230.131/29` on `qmapmux0.0`), with zero IPv6 lines in the capture, even though `ipv4v6` was requested. Coherent with the P-CSCF addresses being IPv4. So `LOCAL` must be given explicitly — and the real question becomes whether `imsd` works over IPv4 at all. [`captures/2026-09-05_ims-pdn-address/`](../captures/2026-09-05_ims-pdn-address/) |
 | kernel ESP + `ip xfrm` | ❌ the blocker — see above |
 | `qmicli` over QRTR for USIM AKA on a UIM logical channel | QMI works; the card is a plain USIM, which is what it uses |
 | PipeWire, AMR-WB RTP | PipeWire runs; AMR-WB support unverified |

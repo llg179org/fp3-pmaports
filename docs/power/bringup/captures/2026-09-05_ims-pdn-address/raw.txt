@@ -1,0 +1,26 @@
+=== before ===
+           |                  state: registered
+           |            power state: on
+           |   packet service state: attached
+           |    initial bearer path: /org/freedesktop/ModemManager1/Bearer/0
+           | initial bearer ip type: ipv4v6
+=== raise the ims APN ===
+Successfully created new bearer in modem:
+	/org/freedesktop/ModemManager1/Bearer/1
+bearer: /org/freedesktop/ModemManager1/Bearer/1
+successfully connected the bearer
+=== what it got ===
+                     |          interface: qmapmux0.0
+                     |            ip type: ipv4v6
+  IPv4 configuration |             method: static
+                     |            address: 10.12.230.131
+                     |             prefix: 29
+=== kernel view of that interface ===
+iface: qmapmux0.0
+=== tear down ===
+successfully disconnected the bearer
+successfully deleted bearer from modem
+=== after ===
+           |                  state: registered
+           |            power state: on
+           |   packet service state: attached

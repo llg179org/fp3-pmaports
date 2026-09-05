@@ -323,7 +323,8 @@ Three decisions the table does not show on its face:
       prio: 20 lane: phone
 - [ ] 177. Package imsd for pmOS (aarch64) and get it to REGISTER - not yet to call. Source: forgejo.catcrafts.net/Catcrafts/imsd, GPL-3.0, Makefile route (clang++ + libc++ + lld + gio-2.0 headers; libc++ 22.1.8 is packaged for Alpine edge aarch64). Then configure it from what this repo already measured: PCSCF from the two P-CSCF addresses in leads/volte-is-provisioned.md (its own P-CSCF discovery from the PDN PCO is NOT implemented, so this value must be given by hand), DEV = the IMS PDN device raised with mmcli --simple-connect apn=ims, LOCAL auto from a global IPv6 - CHECK that the IMS PDN actually gets one, it is listed as auto-detected and may not exist here. Success for this task is a completed SIP REGISTER, nothing more. ☠️ Needs no test call: registration either happens or it does not
       prio: 20 lane: phone
-      after: 176<!-- FP3-QUEUE:END -->
+      after: 176
+      why: ☠️ TOP RISK IDENTIFIED 2026-09-05 BEFORE ANY BUILD: the IMS PDN on this network is IPv4-ONLY (measured: 10.12.230.131/29 on qmapmux0.0, zero IPv6 lines, though ipv4v6 was requested), and the two P-CSCF addresses are IPv4 too. imsd auto-detects LOCAL from a global IPv6, so that detection cannot work here and LOCAL must be given explicitly - but the real question is whether imsd works over IPv4 at all, in its SIP transport and its IPsec SA setup. It was developed against four carriers on a Fairphone 6 and many operator IMS cores are IPv6-only. ☠️ CHECK THIS IN THE SOURCE BEFORE SPENDING TIME ON PACKAGING - it is a read of someone else's code, not a build, and it can kill or confirm the whole path in an hour. captures/2026-09-05_ims-pdn-address/<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
