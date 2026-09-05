@@ -10302,3 +10302,22 @@ Vodafone-Hungary MBN exists. It does - the listing behind that claim had been
 truncated by `head` and showed only the volte/ subtree.
 
 Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.
+
+## 2026-09-05 — no UT-side lever turns VoLTE on, and an LTE-only test proved nothing
+
+Asked to enable 4G calling on UT. There is no unset switch: the toggle is on, IMS
+is registered with a valid P-Associated-URI, and ofono dials through the IMS HAL.
+`IpMultimediaSystem.SetProperty("Registration","on")` is rejected as invalid
+arguments, and IMS is already registered under `auto` anyway.
+
+Setting `RadioSettings.TechnologyPreference` to `lte` did not stop the fallback:
+the call still arrived on EDGE, was answered there, and returned to LTE afterwards.
+☠️ That is not a negative result, it is a void one - the experiment could not
+discriminate. `lte` is a preference rather than an LTE-only lock, and more
+fundamentally **CSFB is network-directed**: a CS paging with a fallback indication
+is obeyed regardless of camping preference. Recorded so the EDGE line is not later
+read as evidence.
+
+Before-state recorded, restored and verified.
+
+Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.

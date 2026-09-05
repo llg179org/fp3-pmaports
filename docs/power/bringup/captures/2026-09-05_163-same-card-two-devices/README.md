@@ -270,3 +270,54 @@ was perfectly plausible and equally unfounded.
 **Consequence for #166.** Writing the Hungarian config into the modem was to be
 justified by this parse. It is not justified by it. #166 stays behind a real parse
 or an independent reason.
+
+## An attempt to force VoLTE from the UT side, and why it proved nothing
+
+Asked to make 4G calling work on UT, the honest starting point is that there is no
+switch left unset: "4G calling (VoLTE)" is on, `IpMultimediaSystem.Registration` is
+`auto` and `Registered` is true with a valid P-Associated-URI, and ofono routes
+dials through the IMS HAL. Two runtime experiments were available.
+
+**Experiment 1 — force IMS registration explicitly.**
+`IpMultimediaSystem.SetProperty("Registration", "on")` returns
+`org.ofono.Error.InvalidArguments`. No loss: IMS is already registered under
+`auto`, so there was nothing to switch on.
+
+**Experiment 2 — LTE only, to take the fallback away.**
+`RadioSettings.TechnologyPreference` set from `nr` to `lte`. The phone stayed
+registered on LTE, IMS stayed registered. A call was then placed to it:
+
+```
+10:24:45  tech=edge                    <- fell back anyway
+10:24:47  tech=edge  states=incoming
+10:25:05  tech=edge  states=active     <- answered
+10:25:20  tech=edge  call ends
+10:25:21  tech=lte
+```
+
+Raw: `ut-lteonly.txt`. The before-state (`nr` / `auto` / registered on lte) was
+recorded first and has been restored and verified.
+
+☠️ **The experiment did not test what it was set up to test, and the measurement is
+what showed it.** The premise was "remove 2G/3G and the network has nowhere to fall
+back to, so the call either arrives over IMS or not at all". The phone fell back to
+EDGE regardless, so 2G was plainly still reachable. Two errors, and the second is
+the one that matters:
+
+1. ofono's `TechnologyPreference = lte` is a **preference**, not an LTE-only lock —
+   the modem still had GERAN available.
+2. **CSFB is network-directed.** Even under a genuine LTE-only camping preference,
+   a CS paging carrying a fallback indication makes the modem perform the fallback
+   to complete the call. The RAT preference constrains where the UE *camps*, not
+   whether it obeys a network-ordered fallback. That should have been reasoned
+   through before the setting was touched.
+
+So the EDGE result here is **not** evidence that VoLTE is unavailable. It is not
+evidence of anything: the experiment had no discriminating power. It is recorded
+because a reader finding "we set LTE-only and it still went to 2G" would otherwise
+be entitled to read it as a result.
+
+**What this leaves.** There is no user-settable lever on the UT side that turns
+VoLTE on. The device-side difference established by #163 sits below ofono — in the
+modem's configuration or in what the operator grants this UE — and neither is
+reachable from a D-Bus property.
