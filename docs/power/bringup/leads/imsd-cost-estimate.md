@@ -1,3 +1,10 @@
+> **2026-09-05, second SIM, direct IMS instrument:** the oracle is IMS
+> registered and voice-capable (`IpMultimediaSystem.Registered=true`,
+> `VoiceCapable=true`) and *still* takes terminating calls on EDGE - the RAT
+> drops 2-3 s before the call is even signalled, and a 21 s answered call ran
+> entirely on 2G. An IMS stack is therefore not the lever for the 2G
+> dependency. See `../captures/2026-09-05_ut-call-rat-newsim/`.
+
 <!-- AI-generated (Claude Opus 5) under the direction of Lajosházi, László Gergely. -->
 
 # ★★ What would the `imsd` path cost? — the estimate is itself a gate

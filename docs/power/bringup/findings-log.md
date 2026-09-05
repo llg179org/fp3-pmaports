@@ -10129,3 +10129,24 @@ no flashing.
 
 Capture, including the three instrument failures that cost two of the operator's
 calls: `captures/2026-09-05_ut-call-rat/README.md`.
+
+## 2026-09-05 — the oracle CSFBs a terminating call with IMS registered, on a second SIM
+
+A second SIM (One HU, MCC 216/MNC 70) in the dev FP3 on the UT slot, two
+terminating calls, 1 Hz ofono sampling. Both calls dropped LTE->EDGE **2-3 s
+before** ofono was told there was an incoming call, and call B was answered and
+held for 21 s entirely on EDGE, returning to LTE one second after teardown.
+`IpMultimediaSystem.Registered=true` and `VoiceCapable=true` in every sample.
+
+So the oracle - which carries the full vendor Qualcomm IMS HAL - receives its
+calls over CS on GERAN anyway. **Writing an IMS stack for pmOS is not the lever
+for the 2G dependency.** The low-duty sleep work must not be justified by "IMS
+will replace 2G paging later".
+
+Call A failed with 3GPP cause 44 (requested circuit/channel not available) after
+the callee had already alerted, with no ringback ever reaching the caller - a
+flaky 2G traffic channel, not a device fault. Call B ended with cause 16.
+
+Capture: `docs/power/bringup/captures/2026-09-05_ut-call-rat-newsim/`.
+Still open: whether stock Android on the same card holds LTE (queue #160) - now
+the single remaining discriminator.
