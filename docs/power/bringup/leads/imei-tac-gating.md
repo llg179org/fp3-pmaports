@@ -53,10 +53,21 @@ window, so no Accept was ever sent.
 
 ## What it needs
 
-A new diag capture **spanning an attach** — airplane mode off, or a modem restart,
-with QCSuper running (`/mnt/1TB/Fp3-Sailfish/QCSuper`, already used for the
-2026-09-02 captures). On **pmOS**, where the diag port is reachable; the UT/Halium
-side has not been shown to expose it.
+A diag capture **spanning an attach**. ☠️ **An earlier version of this section said
+this needs pmOS "where the diag port is reachable", implying UT does not expose it.
+That was an assumption written as fact and it is wrong** — `/dev/diag` exists on UT
+(char 235,0), QCSuper's prebuilt aarch64 bridge runs in the Android container, and
+the whole path was stood up there on 2026-09-05 without a slot switch.
+
+What actually blocks it is one layer further in: QCSuper's `DIAG_LOG_CONFIG_F`
+**times out**, because this modem answers control messages and never answers a
+command — the wall [`diag-bringup.md`](diag-bringup.md) describes, now shown to
+hold on **Ubuntu Touch too**, not just on mainline. The route that works is the
+`DIAG_CNTL` log-mask path `tools/diag-log-capture.py` uses, and that tool targets
+pmOS's rpmsg control device, so it needs a UT-side equivalent.
+
+Attempt and evidence: [`../captures/2026-09-05_attach-capture-attempt/`](../captures/2026-09-05_attach-capture-attempt/),
+which also carries the decoder (`vops-scan.py`) ready for the day a capture exists.
 
 ☠️ Then decode the Accept and walk to IE `0x64`, reading bit 0 of its first octet —
 and **do not trust a byte-scan for `0x64`**: `volte-is-provisioned.md` records that

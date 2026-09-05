@@ -10345,3 +10345,30 @@ which warned about sort order - the same warning that produced two false results
 earlier the same day.
 
 Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.
+
+## 2026-09-05 (#169 attempt) — the DIAG command wall holds on Ubuntu Touch too
+
+Set out to capture an LTE attach and read the IMS-voice-over-PS bit. The path was
+stood up on UT with no slot switch: `/dev/diag` exists there (char 235,0),
+QCSuper's prebuilt aarch64 `adb_bridge` runs inside the Android container and
+reports `Connection to Diag established`, and QCSuper reaches it over TCP.
+
+It stopped at `DIAG_LOG_CONFIG_F ... timed out`, and the pcap is 24 bytes - header,
+zero packets. ☠️ **That is the wall `leads/diag-bringup.md` describes, and the new
+fact is that it holds on the stock downstream stack as well**, not only on
+mainline, where it was reasonable to suspect our port. It is not our port.
+
+It also explains why the 2026-09-02 captures worked: `tools/diag-log-capture.py`
+sets the log mask over DIAG_CNTL rather than sending a command. That tool targets
+pmOS's rpmsg control device and reports `no modem rpmsg control device` on UT, so
+the working route needs a UT-side implementation.
+
+☠️ Corrected: `leads/imei-tac-gating.md` claimed this measurement needs pmOS
+"where the diag port is reachable". That was an assumption written as fact.
+
+☠️ Operational: toggling ofono's `Modem.Online` left the modem in
+`Status = searching` and it did not recover on its own; `NetworkRegistration.Register()`
+restored `registered / lte / One HU` immediately. A detach/attach trigger is not
+self-restoring on this stack.
+
+Capture: `docs/power/bringup/captures/2026-09-05_attach-capture-attempt/`.

@@ -1,0 +1,2 @@
+[10:52:18 | ERROR @ _base_input.py:274 ] Error: Diag request DIAG_LOG_CONFIG_F with payload b'\x00\x00\x00\x00\x00\x00\x00' timed out
+stty: standard input: Inappropriate ioctl for device
