@@ -444,3 +444,63 @@ is what pulls this subscription down to GERAN.
 
 **Still unseparated:** card and stack. The FP3 has never held a card known to get
 VoLTE. #163 is unchanged and is the only measurement that resolves it.
+
+## The UT side is fully enabled — nothing here was left switched off
+
+Checked on the device, 2026-09-05, after the calls above:
+
+| what | state | how it was read |
+|---|---|---|
+| `ofono-binder-plugin-ext-qti` | **installed**, 0.0.1 | `dpkg -l \| grep ofono` |
+| `org.ofono.IpMultimediaSystem` | present on `/ril_0` | D-Bus introspection |
+| `IpMultimediaSystem.Registration` | `auto` | `GetProperties` |
+| `IpMultimediaSystem.Registered` / `VoiceCapable` | `true` / `true` | `GetProperties` |
+| `RadioSettings.TechnologyPreference` | `nr` (everything permitted) | `GetProperties` |
+| Settings → Cellular → **Carrier & APN** → "4G calling (VoLTE)" | **enabled**, confirmed by the operator | the UI |
+
+So this port is **not** one of the "UT has no IMS" cases. The Qualcomm IMS
+extension for the ofono binder plugin is installed and live, which is where
+`imsradio0` and the `IpMultimediaSystem` interface come from, and ofono routes
+dials through that HAL (`ims:Dialing (ext) …` → `imsradio0< … dial` →
+`qti_ims_call_result_response 0`, seen in Parts 2 and 3).
+
+☠️ **Correct an out-of-date claim before it is repeated:** UBports material states
+that "in Ubuntu Touch, IMS is so far not implemented". That is not true of this
+port today - measured above. The UBports *documentation* is narrower and accurate:
+VoLTE depends on the chipset, the Android base, and whether the port enabled it,
+and it lists Volla X23 and Volla Phone 22 as the devices where it is enabled. The
+FP3 is not on that list, yet the machinery is present and running here.
+
+The QML that draws the toggle shows what it actually gates on:
+
+```qml
+text: "4G calling (VoLTE)"
+enabled: Connectivity.imsSupported && sim.ims !== null
+         && (technologyPreference == 'lte' || technologyPreference == 'nr')
+checked: sim.ims.registration == RegistrationAuto || RegistrationOn
+```
+
+- `/usr/share/lomiri-system-settings/qml-plugins/cellular/PageCarrierAndApn.qml`
+
+Its `checked` state is *derived* from `registration`, so the switch being on tells
+you IMS registration is `auto` - which we already knew from D-Bus. It is a readout,
+not an independent lever.
+
+**What this narrows the problem to.** Every enabling condition on our side is
+satisfied and the calls still go to GERAN. Two possibilities remain and this
+capture cannot choose between them:
+
+1. the `…3899` subscription is not provisioned for VoLTE, in which case the CSFB is
+   correct behaviour and there is nothing to fix here;
+2. it is provisioned, and the FP3 cannot complete IMS voice - a missing per-carrier
+   VoLTE/IMS configuration, an IMS APN or MBN/PDC issue, or the operator gating on
+   IMEI/TAC.
+
+☠️ The third factor the UBports documentation names - *"Ubuntu Touch contains a
+VoLTE configuration for your carrier"* - has **not** been checked, and no
+carrier-specific VoLTE or IMS key was found under `/etc/ofono/`
+(`ril_subscription.conf` carries only transport and radio-power settings). Whether
+that absence matters on a binder/QTI port, where the vendor stack holds the carrier
+configuration, is not established either way - do not read it as a cause.
+
+#163 chooses between 1 and 2, and nothing else here will.
