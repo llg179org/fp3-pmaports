@@ -26,18 +26,34 @@ repeated.
 
 ## Priority order, set by the operator 2026-09-05
 
-Categories, highest first. Within a category the queue's own `after:` and `until:`
-still decide what is startable; this says which category to reach into first when
-more than one is.
+☠️ **This is enforced, not advisory.** `queue.cjs` gained a `prio:` field the same
+day: ready work is dispatched lowest number first, unset means 50. Before that the
+dispatcher handed out ready tasks in id order, which meant offering energy
+measurements while the stated first priority was a touchscreen fix, and the only
+way to hold the order was to park tasks by hand as they surfaced. Priority does
+**not** override `after:` or `until:` — a blocked task stays blocked however high
+it sits, because this is about choosing among things that can actually run.
 
-| | category | what it is | ids |
-|---|---|---|---|
-| 1 | **touchscreen fix** | the #142 15 s i2c stall — root cause found, fix not yet proven on device | 151 → 155 → 157 |
-| 2 | **VoLTE** | why this phone has no 4G calling, and the cheap IMS win | 169, 166, 173, 172, 64 |
-| 3 | **energy / duty** | finishing the ~50 mA IMS result: replication, calibration, band lock | 158, 79, 19, 30, 31, 41, 50, 53, 72, 75, 81, 124 |
-| 4 | **reachability** | ☠️ only when there is a policy change to validate — see the task | 63 |
-| 5 | **baseline** | linux-next boot, pure mainline | 135 |
-| 6 | **upstreaming** | Bert's thread, DTS hygiene, the idle series | 152, 154, 140, 149, 157 |
+| prio | category | what it is |
+|---:|---|---|
+| **10** | **touchscreen** | the #142 15 s i2c stall — root cause found, fix not yet proven on device (151 → 155 → 157) |
+| **20** | **VoLTE** | why this phone has no 4G calling (166, 169, 172, 173, 64, 54) |
+| **30** | **energy / duty** | finishing the ~50 mA IMS result (158, 174, 19, 30, 31, 41, 50, 72, 75, 124, **63**) |
+| **50** | **baseline** | linux-next boot (135) |
+| **60** | **upstreaming** | Bert's thread, DTS hygiene, the idle series (152, 154, 140, 149) |
+
+Three decisions the table does not show on its face:
+
+- **Reachability is not a category.** #63 is the safety check on a duty policy
+  change and has no meaning without one, so it carries energy's priority. That
+  also puts it behind every VoLTE task **including ones added later** — which is
+  why the ordering is a priority and not an `after:` chain.
+- **Upstream-facing work waits on open kernel fixes.** Fix first, test, upstream
+  once it is stably tested. #135 is that kind of work, so it rides along with a
+  slot switch and never causes one.
+- **#166 carries a standing authorisation**: anything *reversible* that
+  contributes to 4G calling may be done without asking. The bound is the word
+  reversible — and a before-state that was actually recorded.
 
 ## The queue — what is next
 
@@ -126,32 +142,32 @@ more than one is.
       why: the ONLY open item that yields an LKML patch. ☠️ The patch exists and is pinned (r80, `_commit` b8023520, checkpatch-clean), BUT the phone runs r78 and the live device tree has no `proc-awake` property, so the measurement needs a flash and a reboot — which would swap the kernel out from under tonight's replication. ☠️ The pre-registered reading is NOT MPSS duty (that is the modem variant, dead since 2026-09-01: the modem's mask is bit 23); it is the LPASS counter across suspend — the ADSP is the bit's only subscriber
       lane: phone
       until: the phone is on pmOS and a flash to r80 is agreed - the same flash the touchscreen fix needs
+      prio: 30
 - [@] 63. Reachability test: one call an hour during the day
       when: hourly during the day; the morning corner sample ONLY after a night with no measurement
       they-do: ☠️ READ THIS BEFORE RUNNING ANOTHER ROUND - the value of hourly daytime calls is lower than this task implied. docs/power/README.md records 14/14 incoming calls ringing with IMS off, device-side latency 375.5 +/- 34.7 ms, and states plainly that 14/14 is a 95 % lower bound of 0.806 and NOT yet a rate, and that THE DANGEROUS CORNER IS UNSAMPLED: hourly calls never test a phone that has idled eight hours. More hourly samples do not reach that corner - they are the wrong instrument for it, not too few of it. So: run this only when there is an actual policy change to validate, and when you do, the sample that counts is the FIRST call after a long idle, not the hourly ones. ☠️ NOT on a night the phone measures from 19:00 - in the radio-off windows it rightly does not ring. ☠️ SIM history 2026-09-05: the card was swapped out and back the same day, so the phone holds the card it had before (dev card, ICCID ...6542, One HU / MCC 216 MNC 070); samples from before that day and after the swap-back are comparable, only roughly 04:30-07:10 that day used a different card
-      why: ringing is the ONLY acceptable gate; CS attach / SGs is a predictor only
+      why: Part of the energy/duty work, not a category of its own: it is the safety check on a duty policy change, so it has no meaning without one. Priority 30 with the rest of energy, which puts it behind every VoLTE task including ones added later - that ordering is enforced by prio, not by an after: chain, so it keeps working as new VoLTE tasks arrive
+      prio: 30
 - [x] 112. Glance at the daily factory-Android FP3's status bar during a call
       when: at the next daytime call
       they-do: on the CALLING handset, DURING the call: turn WiFi off and try to load a page over mobile data. Data works = VoLTE on LTE; data stalls for the whole call and returns when it ends = CSFB (2G/3G). Cross-check without menus-guessing: Settings -> About phone -> SIM status -> 'Mobile network type', which updates live during the call. One word is the answer. ☠️ The STATUS BAR does not answer it — measured 2026-09-03: during a call Android shows only the handset icon, the network-type indicator is gone. ☠️ Otherwise we do not touch the daily phone
       why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
 
-- [@] 79. Shunt calibration — the only witness that does not pass through the PMI632
-      until: 09-04 10:24
-      why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
-      lane: phone
-      they-do: Needs physical hardware: a shunt resistor wired in series with the battery plus a meter. That is the whole point of the task - it is the only current witness that does not pass through the PMI632 ADC, so no software route can substitute for it. ☠️ It does NOT block: the calibration offset can be bounded without a shunt by |e| <= 1.49 (delta + I*|g|) from a rested, radio-off OCV block, and tonight's #85 produces that pair (#118 evaluates it). So this is a strengthening measurement to do when the hardware is at hand, not a gate on anything.
 - [~] 72. Threshold-time method (a current ratio needing no calibration)
       after: 158
       why: Conditional fallback: alive only if the |e| bound from a rested OCV pair is not tight enough. ☠️ THAT CONDITION CANNOT BE EVALUATED YET, and the dispatcher offered this as ready on 2026-09-05 because its blocker was recorded as #85, which is closed. #85 closed, but #118's evaluation of it reads: the 09-03 night FAILED its own gates and produced nothing usable - all three legs dropped, median sleep 13/18/9 s against a 90 s alarm. So no OCV pair exists, no bound was computed, and docs/power/README.md still lists the calibration offset as unbounded. This waits on a night that actually completes, which is #158. If that night lands and the bound comes out tight, this task is dead and should be closed as unnecessary rather than done
+      prio: 30
 - [~] 75. Who writes it back: a ModemManager --log-level=DEBUG drop-in
       after: 158
       why: One reboot, zero risk - but it must not be in place during a measurement night: #158 separately requires REMOVING a ModemManager debug drop-in before its run, so adding one now would break the night this whole category waits on. Also needs pmOS and the phone is on UT. Do it on the first reboot after #158 lands
       lane: phone
+      prio: 30
 
 - [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
       after: 158
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
       lane: phone
+      prio: 30
 
 - [x] 55. Attach-PDN list on both slots
       after: 116
@@ -162,32 +178,34 @@ more than one is.
       why: ☠️ NOT simply 'do it on the oracle slot' any more. Attempted from the other end on 2026-09-05 (#169) and the whole path was stood up on UT with no slot switch - /dev/diag exists there, QCSuper's prebuilt aarch64 adb_bridge runs in the Android container and reports 'Connection to Diag established', QCSuper reaches it over TCP - and it then died on 'DIAG_LOG_CONFIG_F timed out' with a 24-byte pcap holding zero packets. That is the wall leads/diag-bringup.md describes, and it holds on the stock downstream stack too, not only on mainline. The route that works is the DIAG_CNTL log-mask path tools/diag-log-capture.py uses, and that tool needs pmOS's rpmsg control device. So this task now inherits #169's blocker: it needs a UT-side control-channel implementation, or it runs on pmOS. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
       until: a UT-side DIAG_CNTL log-mask path exists, or the phone is on pmOS - the same blocker as 169
+      prio: 20
 - [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
       why: A band-matched oracle measurement rather than a preference read - it was line 4 of the #116 oracle session, which is now archived. It needs a slot switch, so it should ride along with the next one rather than cause its own
       lane: phone
       until: the phone is back on pmOS and a slot switch is being made anyway
+      prio: 30
 - [~] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
       why: The bounded ~30 min IMS/QIPCALL capture that would answer why the modem tears the bearer down ~30 ms after it was granted. ☠️ It needs the DIAG stream, and that is exactly what is not available: leads/ims-missing-ap-half.md already called it 'the question the currently silent DIAG stream is in the way of', and 2026-09-05 confirmed the wall holds on UT as well as on mainline - QCSuper connects, the modem never answers DIAG_LOG_CONFIG_F, the pcap comes back with zero packets. Same blocker as 54 and 169. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
       until: a working DIAG capture path exists - the same blocker as 54 and 169
+      prio: 20
 - [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
       after: 158
       why: The A' control for the bearer arm. ☠️ ITS PURPOSE IS WORTH LESS THAN WHEN IT WAS QUEUED: it exists to price the imsd future, and on 2026-09-05 (#163) the UT oracle - full vendor IMS stack, IMS registered against the operator core - still took every call on EDGE, while a survey the same day found mainline Linux has no working VoLTE anywhere and imsd itself is documentation with no code. So the future being priced may not exist. Re-read that before spending a night on it. Needs pmOS and a completed replication either way
       lane: phone
+      prio: 30
 - [~] 30. Re-measure the bearer arm with a band lock
       after: 158
       why: Re-measure the bearer arm with a band lock; the earlier measurement never recorded its band. ☠️ Same devaluation as #19: this prices the imsd future, and 2026-09-05 found the oracle gets no VoLTE despite a complete vendor IMS stack, and that mainline has none anywhere. Needs pmOS and a completed replication
       lane: phone
+      prio: 30
 - [~] 31. Band preference as a shippable lever
       after: 30
       why: a post-closure item — the goal is closing the 2× gap, not finding the minimum
-- [@] 53. The modem's own story (modem-story infrastructure)
-      after: 85
-      why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
-      when: when the operator decides keep or drop
-      they-do: DECISION, not work. This task's own note says the rewritten objective does not pay for it and to revisit after closure or drop it. It has no dependency left and keeps surfacing as ready, so it needs an answer rather than another pass: keep it as infrastructure worth building later, or close it as not worth doing. Nothing is blocked on it either way
+      prio: 30
+
 
 
 - [x] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
@@ -202,14 +220,15 @@ more than one is.
       if it is a private one, the network side is fully open and what remains is device policy alone
       lane: phone
 
-- [@] 135. Baseline kernel from linux-next + the debug layer, no FP3 work: boot it and record what the phone does on pure mainline
+- [~] 135. Baseline kernel from linux-next + the debug layer, no FP3 work: boot it and record what the phone does on pure mainline
       after: 85
-      why: The Test block is empty for all eight series and there is no control — without a boot from the submission base every failure is ours by default. Also the first measurement of which of msm8953-pmOS 232 commits the FP3 actually needs. ☠️ READY TO RUN, DELIBERATELY NOT RUN NOW (2026-09-05 03:52): the kernel is already built — fp3-next-wt on test/linux-next-next-20260902+debug, arch/arm64/boot/Image.gz from 09-03 16:16, debug layer on top — so what remains is flash, boot, record, flash back. The reason to wait is the phone, not the work: it has been undisturbed since 23:32 and that is the ONE condition the reachability census (#63) has never had in 27 calls — all 26 daytime samples were 08:00-18:54 on a phone up 5-7 hours and in use. A baseline-kernel boot would take the morning corner sample on a foreign stack, which is not a sample of our configuration at all. Run it after the morning call, not before. ☠️ Also read #151 first if the flash touches the device package dtb.
+      why: Baseline boot of pure linux-next plus the debug layer. ☠️ DEPRIORITISED 2026-09-05 by the operator's rule: while there are open kernel fixes, upstream-facing work goes to the background - fix first, test, and upstream once it is stably tested. This is that kind of work: it establishes a reference point for upstreaming rather than fixing anything the phone does today. The kernel is already built in fp3-next-wt, so it costs a boot whenever the phone is on pmOS anyway; it should ride along with a slot switch, never cause one
       expected working: display, touch, GPU, WiFi/BT, USB, modem). Branch test/linux-next-<tag>+debug, never under integration/ or debug-int/. ☠️ olddefconfig drops unknown symbols silently — diff the config before and after
       lane: phone
-      until: 09-05 10:00
+      until: a slot switch is happening for higher-priority work
       when: as soon as the phone is back on pmOS (slot b)
       they-do: Blocked only by which slot the phone is on. It has been on UT (slot a) since 2026-09-05 04:47 for the VoLTE investigation, and this needs pmOS. The kernel is already built in fp3-next-wt. Say when the phone can leave UT and this window does the rest: fastboot set_active b, boot, and record what pure mainline plus the debug layer does. ☠️ Its until: expired at 10:00 while the phone was in use - re-armed as a person decision rather than left parked, since nothing keeps a moment on its own
+      prio: 50
 
 - [x] 137. B2+B6: drop Assisted-by from Joel Selvaraj's byte-identical import commit; cite Fairphone's downstream msm8953-audio.dtsi in the mic-bias/DMIC patch ON wip/7.1.3/audio; fix Assisted-by: Claude:claude-fable-5 -> claude-fable-5-1; then regenerate the touched series
       why: review B2/B6 — a tool trailer on somebody else's unchanged commit is a false disclosure
@@ -225,6 +244,7 @@ more than one is.
       why: review B7 and section 3 — every item here changes the phone's DT or a driver's runtime behaviour, so it needs a build and a boot on the device; the phone is in the night measurement until 79 releases it. The host-only half (comments) is 146
       lane: upstreaming
       after: 79
+      prio: 60
 
 - [~] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
       why: Reproducer found and documented: docs/touch/142-i2c-stall.md. The 15 s is the QUP xfer_timeout constant (2 s + 131072 x 99 us at the 100 kHz default), not a property of the fault, so it is not a fingerprint. Three measured gates: idle >= ~10 s before the transaction (0/54420 below 3 s vs 3/142 above 10 s), screen OFF (5/5 vs 0/5 at an identical 12 s idle, interleaved), and not a fresh boot (weak, 3 observations). Eliminated by measurement: regulators, controller runtime-PM state, pinmux, reset GPIO - nothing readable from the AP differs between a stalling and a non-stalling run. Strongest root-cause candidate, still an inference: the mainline touchscreen@48 declares NO supplies where the vendor sdm450-pmi632.dtsi declares vcc_i2c=pm8953_l6 and vdd-ana=pm8953_l10, and our driver requests no regulator at all. Two fixes are specified and independent of the root cause: proportional i2c-qup timeout (downstream gives a 4-byte read 0.504 s where we give 14.976 s) and a himax retry (precedent: ak7375 retry the first transfer of a resume, same phone, same -110). HOLD stands on the msm8953.dtsi idle-state patch: 0314fee3ce35 is not the cause (stalls occur with no suspend) but whether it raises the rate is unmeasured.
@@ -238,27 +258,32 @@ more than one is.
       lane: upstreaming
       after: 142
       why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
+      prio: 60
 
 - [~] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
       lane: phone
       why: ☠️ CORRECTION 2026-09-04 13:30: the earlier note said 'device unreachable' - that was true at 09:00 and false by 11:30; the phone has been in use all day. The real reason to wait is different: #85 (the overnight replication) starts 19:00 on this phone, and flashing a new _commit would swap the kernel out from under it. So this waits until after tonight's run, not for the device. Host-side groundwork stands (docs/deploy/README.md): the linux-fp3 APKBUILD needs no change, and the deviceinfo_dtb rename must land in the SAME change as the _commit bump - the pinned b8023520cddb predates the overlay split, so renaming first breaks the next build. Order on the day: fp3-selftest --only boot-fallback first, then bump+rename+checksum+build, then flash, then the camera/focus checks.
       they-do: -
       until: 09-05
+      prio: 10
 - [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
       lane: upstreaming
       until: when/he-replies
       why: asked in the 2026-09-03 mail; nothing to do until he answers
+      prio: 60
 
 - [~] 154. Next mail to Bert (person sends): tell him port 52 is DSD on our firmware (measured 2026-08-30), i.e. the qrtr-lookup numbers are per-firmware, which confirms his own caveat; say our qcom-smd-wake keeps the filter in user space and uses a wake IRQ instead of IRQF_NO_SUSPEND; ask whether he wants to be CC'd / co-credited (Reported-by or a Link: to his note) on the series
       lane: upstreaming
       until: when/he-replies
       why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
+      prio: 60
 - [ ] 155. #142 ROOT CAUSE: give the touchscreen the two supplies it is missing — add vcc_i2c-supply = <&pm8953_l6> and vdd-ana-supply = <&pm8953_l10> to touchscreen@48 in sdm632-fairphone-fp3.dts, teach himax_hx83112b to devm_regulator_get and enable them (and disable on remove), then re-run 142-trigger.sh
       continues: 142
       lane: phone
       why: CODE DONE AND PUSHED 2026-09-04; what remains is the confirming run, which needs a flash. Root cause MEASURED, not inferred: pm8953_l6 has exactly one consumer (1a94000.dsi.0-iovcc, the panel) and it drops its vote when the display powers down; l10 has no consumer at all. The bindings are the bug — himax,hx83112b is one TDDI die described twice, a panel binding that REQUIRES iovcc-supply and trivial-touch.yaml for the touch half which (unevaluatedProperties: false) cannot carry a supply — so the touch controller runs on a rail it holds no reference to. Three commits on the new category wip/7.1.3/touch (a316c7edd163 binding, 71e8b167175c driver, 18483b7410a7 board DTS), cherry-picked to integration/7.1.3 and debug-int/7.1.3, all three pushed and verified against the remote, base 7.1.3/main untouched. Verified: DTB compiles and iovcc/vdda resolve to the l6 and l10 nodes in the built blob; checkpatch --strict clean bar the deliberate local Co-authored-by trailer; git cherry shows every wip commit has its integration twin. ☠️ NOT verified: that it fixes the phone. Pre-registered rule: 142-trigger.sh screen-off must go 5/5 -> 0/5 over five interleaved rounds. Blocked on #151 because the confirming flash IS the next _commit bump, which must switch the device dtb to the composite and check the boot-fallback net first — that verification belongs to 151, not here. Docs: docs/touch/142-i2c-stall.md section 6, captures/2026-09-04_142-touch-after-resume/ROOTCAUSE-the-panel-owns-the-rail.md, findings-log 2026-09-04
       ours declares NO supply at all and the driver requests no regulator, so the chip is powered only by whatever the panel happens to hold. Measured 2026-09-04: during the hang the controller is in RUN state, owns the bus (BUS_ACTIVE+BUS_MASTER), has a byte stuck in its output FIFO, reports no error, and BOTH i2c lines read low for the full 15 s having been high one second earlier — the picture an unpowered slave clamping the bus gives. ☠️ PRE-REGISTERED DECISION RULE, written before the measurement: 142-trigger.sh currently gives screen-off 5/5 and screen-on 0/5. If the supplies take screen-off to 0/5 across at least 5 interleaved rounds, the root cause is confirmed and the symptom patches below are not needed. If it stays 5/5, the supplies are not it and this task records that as a measured negative. Full case: docs/touch/142-i2c-stall.md sections 5a and 6
       after: 151
+      prio: 10
 
 - [ ] 157. #142 FALLBACK, only if the supply fix fails: size the i2c-qup transfer timeout from the transfer, and add a retry to himax_hx83112b
       continues: 142
@@ -266,33 +291,44 @@ more than one is.
       why: ☠️ LAST RESORT BY THE OPERATOR DECISION 2026-09-04 — fix the cause, not the 15 seconds. Do NOT start this while the supply task is open or unmeasured. Both are real defects and both are upstreamable on their own: i2c-qup computes xfer_timeout ONCE at probe from MX_DMA_TX_RX_LEN (128 KB) and hands the same 14.976 s to a 4-byte touch read, where the downstream i2c-msm-v2 on this same hardware computes it per transfer and gives 0.504 s
       and himax_hx83112b retries nowhere, where the vendor driver retries every read and write 5x (HIMAX_REG_RETRY_TIMES) and ak7375 on this very phone was already fixed the same way (media: i2c: ak7375: retry the first transfer of a resume, same -110 signature). They remove the user-visible symptom without explaining it, which is why they are second
       after: 155
+      prio: 10
 - [@] 158. Night replication, third attempt: record WHAT WAKES THE AP before running another night — add a per-leg /sys/kernel/debug/wakeup_sources (or wake-reason) snapshot to night-run.sh, then re-run the three-boot replication
       lane: phone
       why: ☠️ SHARPENED 2026-09-05 04:00 from the 09-03 journal — three separate problems, not one. (1) THE KNOWN WAKE SOURCE WAS ALREADY FIXED AND THE NIGHT STILL FAILED: the 09-02 night named NetworkManager retrying a DHCP lease 197 times in a 77-minute leg, night-run.sh carries the nmcli unmanage fix, and on 09-03 it WORKED — leg 1 holds zero NM/DHCP lines and ONE journal line in 76 minutes — yet its median sleep was still 13 s against a 90 s alarm. Whatever ends these sleeps is BELOW the journal, so only a wakeup_sources / wake-reason snapshot can name it. (2) LEGS 2 AND 3 RAN WITH ModemManager --log-level=DEBUG, 12387 and 10419 journal lines of QMI traffic at ~2.7 lines/s, from the persistent drop-in /etc/systemd/system/ModemManager.service.d/zz-fp3-debug.conf created 2026-09-02 06:41 and STILL ACTIVE — both a plausible wake source and a contaminant in a sleeping measurement; see #75 on who writes it back. (3) ☠️ THE THREE LEGS WERE NOT COMPARABLE: ModemManager started at 22:00:11, at the boot for leg 2, so leg 1 ran with no modem daemon at all and legs 2-3 with one in debug. The design requires the legs to differ ONLY by the boot; these differ by the largest userspace variable on the device, so even fully-slept legs would not have given a boot-to-boot spread. So the task is now three requirements: record the wake source per leg; assert and log each leg userspace configuration (at minimum whether ModemManager runs and at what level); and remove the debug drop-in before any sleeping measurement. Evidence: captures/2026-09-05_118-night-triage/WHY-THE-LEGS-FAIL.md
       until: 09-05 10:00
       they-do: Same blocker as 135: this is a night run on pmOS and the phone has been on UT since 04:47 for the VoLTE work. ☠️ Nothing arms itself - if it is to run tonight, the phone has to be back on slot b and the run armed on the device before 19:00. Say the word and this window arms it, and the three things the task already requires still stand: record WHAT WAKES THE AP before the run, log each leg's userspace config, and remove the ModemManager debug drop-in
       when: when the phone is back on pmOS, in time to arm before 19:00
-- [@] 166. Load the Hungarian carrier MBN into the modem and see whether VoLTE appears
+      prio: 30
+- [ ] 166. Load the Hungarian carrier MBN into the modem and see whether VoLTE appears
       lane: phone
-      why: ☠️ NOT JUSTIFIED RIGHT NOW - it was to rest on #167, which came back inconclusive. Loading vodafone/commerci/hungary into the modem writes to the modem's own persistent storage, shared by both slots and surviving reflashes of either OS, and the reason for believing it would help has not survived: the parse that was to show the Hungarian config prefers PS voice used a scanner that misreads at least one item, so whether that config differs from ROW_Commercial in any voice-relevant value is unknown. Unblock it by finishing the parse with a real mcfg parser (the three files are already copied off the device, see the capture), or by an independent reason. The rest of the setup stands: the modem runs the generic ROW_Commercial, no Hungarian config is loaded though two ship on disk, and under a generic config IMS registers while MMTEL voice may not be enabled - which fits the measured symptom. If it does get run: record the before-state FIRST, do it on pmOS where pdc works, and note that a negative result would not clear the MBN theory since the Hungarian config sits under commerci rather than volte
+      why: ☠️ AUTHORISED 2026-09-05: the operator gave this window a free hand on making 4G calling work - anything REVERSIBLE that contributes may be done without asking. Loading and activating a carrier MBN qualifies, because pdc can restore the previous configuration, BUT only against a before-state that was recorded first, so record it before touching anything. The setup: the modem runs the generic ROW_Commercial config and no Hungarian MBN is loaded, though vodafone/commerci/hungary and dt/commerci/hungary both ship on the device (134 MBNs on disk, 25 loaded). Under a generic config IMS registers - measured, with a valid P-Associated-URI - while MMTEL voice may not be enabled, which fits every symptom. ☠️ THE GRANT HAS A BOUND: reversible. Anything that cannot be put back, or whose before-state cannot be captured, is outside it and still needs asking. ☠️ Needs pmOS: pdc works there and UT has no qmicli, no pdc and no QMI character device. ☠️ A negative result does not clear the MBN theory - the Hungarian config sits under commerci rather than volte and may not enable VoLTE either. Sequence: record the full config list with statuses, load vodafone/commerci/hungary, activate, re-run the call measurement that gave EDGE in captures/2026-09-05_163-same-card-two-devices
       they-do: Two things this window cannot decide or do. (1) AUTHORISE: loading and activating a carrier MBN writes into the modem's own persistent storage, which is shared by both slots and survives reboots and reflashes of either OS - it is not a change to our tree and not something to take on a hunch, so it needs your go-ahead. (2) The phone must be on pmOS for it: pdc queries work there and UT has no qmicli, no pdc and no QMI character device. Say the word and this window will do it in order - record the full before-state (config list with statuses) so the current ROW_Commercial can be restored, load vodafone/commerci/hungary, activate, then re-run the same call measurement that gave EDGE. You would place the call
       after: 167
+      prio: 20
 - [~] 169. Capture an LTE attach and read the IMS-voice-over-PS bit the network sends this UE
       lane: phone
       why: ☠️ BLOCKED ON THE DIAG COMMAND WALL, not on access. Attempted 2026-09-05 and everything up to the last step worked ON UT with no slot switch: /dev/diag exists there (char 235,0), QCSuper's prebuilt aarch64 adb_bridge runs in the Android container and reports 'Connection to Diag established', QCSuper reaches it with --tcp <ip>:43555 in a venv with crcmod pyserial pyusb pycrate. It then died on 'DIAG_LOG_CONFIG_F timed out' and produced a 24-byte pcap with zero packets - the wall leads/diag-bringup.md describes, now shown to hold on the stock downstream stack too and not only on mainline. The working route is the DIAG_CNTL log-mask path tools/diag-log-capture.py uses (enable 0xB0EC/0xB0ED, LTE NAS EMM plain OTA); that tool targets pmOS's rpmsg control device and says 'no modem rpmsg control device' on UT, so it needs a UT-side equivalent - or retry the whole thing on pmOS where it already works. THE DECODER IS WRITTEN AND WAITING: captures/2026-09-05_attach-capture-attempt/vops-scan.py walks the mandatory fields by length, walks optional IEs by IEI+length, requires the walk to close on the message boundary, discards messages where it does not, and says so when a capture holds no ACCEPT. It has never been run on real data. ☠️ Toggling ofono Modem.Online leaves the modem in Status=searching and it does not recover on its own - call NetworkRegistration.Register() afterwards
       until: a UT-side DIAG_CNTL log-mask path exists, or the capture is retried on pmOS
+      prio: 20
 
 - [ ] 172. Supply the AP half of the IMS handshake, from the imsd document
       lane: phone
       after: 169
       why: ☠️ QUEUED WITH ITS OWN CASE AGAINST IT STATED FIRST, because the evidence for doing it is weak and the evidence against is today's strongest measurement. AGAINST: on 2026-09-05 (#163) the Ubuntu Touch oracle - carrying the FULL vendor Qualcomm IMS stack, IMS-registered against One HU's core with a valid P-Associated-URI, ofono dialling through the IMS HAL - still took every call on EDGE. A complete, working AP-side IMS implementation does NOT produce a 4G call on this device. Writing this would at best reproduce what UT already has and UT does not get VoLTE. FOR: leads/ims-missing-ap-half.md establishes the modem is playing one half of a two-party protocol and the imsd document (codeberg.org/DylanVanAssche/imsd, IMS-QUALCOMM.md, 31 KB - documentation only, there is NO code to port) describes the missing half, including that the modem issues a QMI request to the AP (msg id 0x0023) and expects an answer. Stopping the thrash has value independent of VoLTE IF it costs power. GATES, both of which must pass first: (1) #171 - does stopping the loop move the duty at all
       (2) #169 - does the network even grant IMS voice to this UE, since a 'not supported' there makes the VoLTE half of the case worthless. ☠️ Do not start this because it is the interesting task
+      prio: 20
 - [ ] 173. Stop the IMS PDN thrash the cheap way: turn IMS off, and find out what it actually costs
       lane: phone
       after: 158
       why: ☠️ THE ROUTE THAT IS ALREADY MEASURED TO WORK and was missing from the queue. leads/ims-missing-ap-half.md records that disabling IMS stops the loop dead - 220 ESM messages to 0 - against 22 PDN up/down cycles in 120 s, 8.3-8.7 s apart, each needing an RRC connection. Unlike 172 this needs no new code. ☠️ TODAY MADE THE PRICE LOOK LOWER, not higher: the stated cost was 'no VoLTE, no IMS-routed SMS', and #163 established on 2026-09-05 that this device does not get VoLTE anyway - the Ubuntu Touch oracle, with the full vendor IMS stack and a registered IMS session, still takes every call on EDGE. So the VoLTE half of the cost is currently zero on this hardware. WHAT IS STILL UNPRICED and must be measured before shipping it: (1) IMS-routed SMS - does anything still deliver, untested to this day
       (2) whether the phone still RINGS - leads/csfb-is-a-dependency.md is the page that matters, and turning IMS off is only safe while the network offers a CS domain to fall back to, which it does today and will not forever. GATE: #171 first - if stopping the loop does not move the duty, this buys nothing and should not ship at all. ☠️ Do not treat 'the loop stops' as the result
       the result is a duty number and a phone that still rings and still receives SMS
+      prio: 20
+- [ ] 174. Full-charge to power-off discharge time - the calibration-free witness that replaces the shunt
+      lane: phone
+      prio: 30
+      why: Replaces #79, withdrawn 2026-09-05 because the shunt hardware does not exist here. ☠️ WHY IT IS WORTH ANYTHING: every current number in this project comes through the PMI632 gauge, and docs/power/README.md lists the calibration offset as unbounded - an offset decides between '40 mA, goal met' and something else. A discharge from 100 % to power-off uses only the clock and the two endpoints, so it does not inherit that offset: total energy divided by measured time gives a mean current that the gauge cannot bias the same way. WHAT TO RECORD, or it is just a number: the pack's rated capacity and how it was established, the exact start condition (charger removed at 100 %, screen state, radios), every configuration change during the run (there should be none), the wall-clock endpoints, and what the phone was doing - a single mean current is only comparable against another run in the same regime. ☠️ It is a LONG run and it ends with a flat phone, so it cannot share the device with anything else
+      it also cannot be band-pinned or repeated cheaply, which is exactly why the gauge-based ladders exist alongside it rather than being replaced by it
 <!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap

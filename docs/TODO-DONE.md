@@ -2630,3 +2630,15 @@ so that `after:` and `continues:` references still resolve.
 - [x] **81.** A measurement-launcher wrapper (fp3-measure) with a machine-wide lock  — closed 2026-09-05 10:35
       after: 85
       why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
+
+- [x] **79.** Shunt calibration — the only witness that does not pass through the PMI632  — closed 2026-09-05 10:49
+      until: 09-04 10:24
+      why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
+      lane: phone
+      they-do: Needs physical hardware: a shunt resistor wired in series with the battery plus a meter. That is the whole point of the task - it is the only current witness that does not pass through the PMI632 ADC, so no software route can substitute for it. ☠️ It does NOT block: the calibration offset can be bounded without a shunt by |e| <= 1.49 (delta + I*|g|) from a rested, radio-off OCV block, and tonight's #85 produces that pair (#118 evaluates it). So this is a strengthening measurement to do when the hardware is at hand, not a gate on anything.
+
+- [x] **53.** The modem's own story (modem-story infrastructure)  — closed 2026-09-05 10:49
+      after: 85
+      why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
+      when: when the operator decides keep or drop
+      they-do: DECISION, not work. This task's own note says the rewritten objective does not pay for it and to revisit after closure or drop it. It has no dependency left and keeps surfacing as ready, so it needs an answer rather than another pass: keep it as infrastructure worth building later, or close it as not worth doing. Nothing is blocked on it either way
