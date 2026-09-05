@@ -1,114 +1,134 @@
-# The VoLTE switch is in the modem, it is off, and pmOS can read it
+# What the network grants, what this phone deliberately switches off, and one thing that is genuinely new
 
 2026-09-05, pmOS on slot_b, `linux-fp3-7.1.3-r81` (`3f843d0534e3`), qmicli
 1.39.0, SIM on One HU (MCC 216 / MNC 70), camped LTE, registered home.
 
 > ⚠️ **AI-generated.** Written by Claude (Opus 5) under the direction of
-> Lajosházi, László Gergely, who reviewed the change and the measurements.
-> No subscriber identifiers are reproduced here; the raw captures were scrubbed
-> on the way off the device and `tests/no-identifiers.sh` is clean.
+> Lajosházi, László Gergely. No subscriber identifiers are reproduced; the raw
+> captures were scrubbed on the way off the device and `tests/no-identifiers.sh`
+> is clean.
 
-## What was measured, in one table
+☠️ **This page was rewritten within the hour.** Its first version presented three
+findings, and two of them were wrong in a way that mattered. What they were and
+why they fell is at the bottom, kept rather than deleted.
 
-Every row is a `qmicli -d qrtr://0` query against the live modem. Raw output in
-`ims-before.txt` and `imsa-ims-through-proxy.txt`; the scripts are beside them.
+## The one finding that stands: the network grants this UE IMS voice
 
-| question | verb | answer |
-|---|---|---|
-| does the network offer this UE IMS voice over PS? | `--nas-get-system-info` | **`IMS voice support: 'yes'`** (LTE block, MCC 216 MNC 70) |
-| does the modem prefer PS for voice? | `--voice-get-config` | **`Current Voice Domain Preference: 'ps-preferred'`** |
-| is the modem's IMS registered? | `--imsa-get-ims-registration-status` | **`Status: 'not-registered'`** |
-| are the modem's IMS services enabled? | `--ims-get-ims-services-enabled-setting` | **every one `no`** — voice, video, VoWiFi, UE-to-TAS, SMS, USSD |
-| which carrier config is active? | `--pdc-list-configs=software` | `ROW_Commercial`, generic, unchanged |
+```
+$ qmicli -d qrtr://0 --nas-get-system-info
+	LTE service:
+		...
+		Voice support: 'yes'
+		IMS voice support: 'yes'
+		MCC: '216'   MNC: '70'   Tracking Area Code: '5300'
+```
 
-So the chain reads: the network says yes, the modem wants PS, **and every IMS
-service inside the modem is switched off**, so nothing ever registers.
+`IMS voice support` is the *IMS voice over PS session indicator* — the per-UE bit
+the network sends in the EPS network feature support IE. Queue item #169 spent
+weeks trying to read it out of a DIAG capture of an LTE attach that never worked.
+It is a decoded field of one qmicli call.
 
-## ☠️ Two instruments that were there all along
+☠️ **And that call was already in use on this phone**, for a different line of the
+same output: `leads/csfb-is-a-dependency.md` quotes its `Domain: 'cs-ps'`. The
+answer to #169 was four lines further down, in output that had already been
+printed.
 
-**1. `IMS voice support`.** Queue item #169 — *"capture an LTE attach and read
-the IMS-voice-over-PS bit the network sends this UE"* — has been blocked for
-weeks behind a DIAG capture that never worked. That bit is the *IMS voice over
-PS session indicator* in the EPS network feature support IE, and the modem
-reports it as a decoded field of `--nas-get-system-info`. No DIAG, no pcap, one
-command.
-
-The same command was already being run on this phone: `leads/csfb-is-a-dependency.md`
-quotes its `Domain: 'cs-ps'` line. The answer to #169 was four lines further
-down the same output and nobody read it.
-
-**2. `-p`.** Without qmi-proxy, `--imsa-*` and `--ims-*` return
-`QMI protocol error (70): 'InvalidOperation'`, and with an explicit `--client-cid`
-they return `Unknown client N for service imsa`. Both look like a modem that has
-no IMS. They mean the client identity does not survive between two qmicli
-processes. With `-p` every one of those queries answers, first try. The failing
-and succeeding runs are both kept here (`imsa-without-proxy-fails.txt` against
-`imsa-ims-through-proxy.txt`) because the difference is one character.
-
-## How far to trust `IMS voice support: 'yes'`
-
-Stated with its basis, not with confidence:
+**How far to trust it**, stated as its basis rather than as confidence:
 
 * **Stable** — identical across three consecutive reads.
 * **Not a constant** — the adjacent boolean `eMBMS coverage info support` decodes
   as `'no'` from the same message, and GSM/WCDMA report `'none'` where LTE
-  reports `'available'`. The decoder discriminates rather than returning yes.
-* **Right structure** — MCC 216, MNC 70, TAC and Cell ID in the same block match
-  the operator the phone is actually on, so the fields are being read at the
-  right offsets.
+  reports `'available'`. The decoder discriminates.
+* **Right structure** — MCC, MNC, TAC and Cell ID in the same block match the
+  operator the phone is on.
 * **Corroborated independently** — on Ubuntu Touch this same SIM completed a real
-  SIP REGISTER with One HU's core and the network returned a P-Associated-URI.
-  A different instrument, a different OS, the same conclusion: this subscriber is
-  entitled to IMS voice.
-* ☠️ **Not established** — that this field tracks the network's *per-UE grant*
+  SIP REGISTER with One HU's core and got a P-Associated-URI back. Different
+  instrument, different OS, same conclusion about this subscriber.
+* ☠️ **Not established** — that the field tracks the network's *per-UE grant*
   rather than a UE-side capability. Settling that needs a network known to
-  withhold VoLTE, which is not available here. The corroboration above is what
-  the claim rests on, and it is evidence about the subscriber, not proof about
-  the field.
+  withhold VoLTE, which is not available here.
 
-## What this does to the MBN hypothesis (#166)
+Also read, and also unremarkable: `--voice-get-config` reports
+`Current Voice Domain Preference: 'ps-preferred'`. The modem already prefers PS
+for voice.
 
-It undercuts it. #166 proposed loading a Hungarian carrier config on the theory
-that the generic `ROW_Commercial` withholds VoLTE. But the two things such a
-config would be expected to fix — the network's IMS-voice grant and the voice
-domain preference — **both already read correctly**. The measurement says the
-carrier config is not what is stopping VoLTE here.
+## What "every IMS service reads no" actually is
 
-The modem holds 25 software configs and none is Hungarian; the nearest is
+Not a fault, not a modem default, and not a discovery: it is **this phone's
+deliberate configuration**, and it is re-asserted every five minutes.
+
+`userspace-power/fp3-ims-reconcile.py`, installed as
+`fp3-ims-reconcile.service` + `.timer` since 2026-09-02, holds every IMS switch
+off because the modem otherwise raises and tears down an IMS PDN every 8.4 s
+forever, holding the UE in RRC_CONNECTED at a cost of about **44 percentage
+points of modem duty** (measured three times). `tests/checks/56-ims-config-test.sh`
+checks it.
+
+So the reading `voice: no, video: no, VoWiFi: no, UE-to-TAS: no, SMS: no,
+USSD: no` is the intended state of this phone, correctly maintained.
+
+## Why the MBN hypothesis (#166) is weakened, not supported
+
+#166 proposed loading a Hungarian carrier config on the theory that the generic
+`ROW_Commercial` withholds VoLTE. The two things such a config would fix — the
+network's IMS-voice grant and the voice domain preference — **already read
+correctly**. The measurement points away from the carrier config.
+
+The modem holds 25 software configs, none Hungarian; the nearest is
 `Global-VoLTE-Vodafone` (One HU is the former Vodafone Hungary). Activating it
-remains cheap and reversible — the restore is unchanged, activate
-`software,5C:F9:CA:DA:5C:35:85:17:BA:3B:B8:88:D0:34:2B:79:BD:5F:AD:ED` — but it
-is now a *second* hypothesis, not the leading one, and it was **not** done on
-this pass: changing a config to fix a symptom the measurements attribute
+stays cheap and reversible (restore: activate
+`software,5C:F9:CA:DA:5C:35:85:17:BA:3B:B8:88:D0:34:2B:79:BD:5F:AD:ED`), but it
+was **not** done: changing a config to fix a symptom the measurements attribute
 elsewhere is how a coincidence gets recorded as a cause.
 
-## The actual blocker, and it is a small one
+## ☠️ The two claims that fell, and why
 
-`Set IMS Services Enabled Setting` **exists** — QMI service IMS, message
-`0x008f`, defined in libqmi's own `data/qmi-service-ims.json` since 1.38, with
-`0x10 = IMS Voice Over LTE Enable` as a boolean, plus TLVs for the video, VoWiFi,
-SMS, USSD and UT services and a call-mode preference.
+**1. "No tool can write the IMS switches, so I wrote one."** The CLI gap is real
+— `qmicli` exposes `--ims-get-ims-services-enabled-setting` and no setter, in
+1.39.0 and in the 1.39.1 checkout, though libqmi has defined
+*Set IMS Services Enabled Setting* (IMS `0x008f`, `0x10` = IMS Voice Over LTE
+Enable) since 1.38 and the installed library exports the API.
 
-What is missing is only the **CLI option**. `qmicli` exposes
-`--ims-get-ims-services-enabled-setting` and no setter — checked in 1.39.0 on the
-phone and in the 1.39.1 checkout at `/mnt/1TB/pmos/libqmi`. The library API is
-generated from that JSON at build time, so the call exists in the built library
-and nothing reaches it.
+But the **capability was never missing**. `fp3-ims-reconcile.py` has been writing
+exactly those switches since 2026-09-02, through the same introspection API, from
+this repository, on this phone. A new tool was written without looking for the
+existing one; it has been deleted.
 
-So the unblock for #166 is not a carrier config and not DIAG: it is a patched
-`qmicli` (or any small client) that sends IMS `0x008f` with `0x10 = 1`. That is
-also the shape of a genuinely upstreamable libqmi patch.
+**2. "IMS stays not-registered after enabling it."** Void. The reconciler's timer
+reverted the write inside the observation window — the journal shows it, in
+those words:
 
-☠️ **What it will not do by itself.** Enabling the services tells the modem's IMS
-stack it may register. Whether it then registers without an AP-side IMS client is
-the open question — on Ubuntu Touch the vendor stack drives that handshake, and
-mainline has nothing equivalent. Expect this to move `not-registered` or to
-prove that it cannot; either outcome is worth more than the current blank.
+```
+fp3-ims-reconcile: ☠️ want=off but ut,voice disagree  {'voice': True, ..., 'ut': True}
+fp3-ims-reconcile: ☠️ HAD DRIFTED, corrected on attempt 2
+```
+
+Two minutes of `not-registered` measured the reconciler doing its job, not the
+modem declining to register. It was **not** evidence for the missing-AP-half
+theory and was briefly reported as if it were.
+
+**3. A correction the mistake did produce.** The first version said the IMS
+queries need qmi-proxy, because they answer `InvalidOperation` without `-p`.
+That is wrong: `fp3-ims-reconcile.py` opens the device with
+`DeviceOpenFlags.NONE` and works. The real shape is two separate things —
+
+| symptom | actual cause | fix |
+|---|---|---|
+| `QMI protocol error (70): InvalidOperation` | the IMS/IMSA client was never **bound** | send `--ims-bind` / `--imsa-bind` first |
+| `Unknown client N for service imsa` | a CID does not survive between two `qmicli` **processes** | `-p`, so both go through qmi-proxy |
+
+Only the second is about the proxy. Conflating them turns a client-lifetime
+detail into a false claim about the modem.
 
 ## Commands
 
 ```sh
-qmicli -p -d qrtr://0 --nas-get-system-info | grep -A3 'Voice support'
-sh ims-state.sh          # the whole snapshot
-sh imsa-proxy.sh         # the bind-then-query pattern that actually works
+qmicli -d qrtr://0 --nas-get-system-info | grep -A6 'LTE service'   # the grant
+qmicli -d qrtr://0 --voice-get-config | grep Domain                 # ps-preferred
+/usr/local/bin/fp3-ims-reconcile.py off                             # the switches
+systemctl status fp3-ims-reconcile.timer
 ```
+
+☠️ Any experiment that needs the IMS switches ON must **stop
+`fp3-ims-reconcile.timer` first and start it again afterwards**, or the
+reconciler will silently undo it mid-measurement.
