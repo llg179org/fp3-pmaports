@@ -321,3 +321,38 @@ be entitled to read it as a result.
 VoLTE on. The device-side difference established by #163 sits below ofono — in the
 modem's configuration or in what the operator grants this UE — and neither is
 reachable from a D-Bus property.
+
+## Is there an existing Ubuntu Touch solution? Yes — and this device already has it
+
+The published UBports recipe for VoLTE on a Qualcomm port is: install
+`ofono-binder-plugin-ext-qti` and put `extPlugin = qti` in
+`/etc/ofono/binder.d/qti.conf`. **That is already the state of this device** — the
+package is installed and the config carries `extPlugin = qti`, which is why IMS
+registers here at all. There is no unapplied recipe to apply.
+
+The forum's example config differs from ours in one line, `radioInterface = 1.5`
+against our `1.3`. ☠️ That is **not** the VoLTE lever: `radioInterface` selects the
+**IRadio** HIDL version — data profiles, network scan, device monitoring — while the
+IMS extension talks a separate `vendor.qti.hardware.radio.ims` interface. Raising it
+would change data-path behaviour, not voice. (For the record, ofono negotiated
+`android.hardware.radio@1.3::IRadio` on this boot, as configured.)
+
+Officially, UBports lists VoLTE as enabled on the Volla Phone X23 and Volla Phone
+22, and it shipped for the Fairphone 4 in OTA-1.1 — a Halium 11 / Android 11 /
+kernel 4.19 port. The FP3 is not on that list.
+
+### A concrete gap, found while checking this
+
+ofono connected to **`vendor.qti.hardware.radio.ims@1.2::IImsRadio`**, and the
+plugin cannot do better: `qti_radio_ext.c` implements exactly the 1.0, 1.1 and 1.2
+request sets and its version table tries 1.2, then 1.1, then 1.0.
+
+The device's vendor HAL ships **1.3, 1.4, 1.5 and 1.6**
+(`/vendor/lib64/vendor.qti.hardware.radio.ims@1.{3,4,5,6}.so`).
+
+So the open-source extension speaks a four-version-older IMS interface than the
+firmware offers. ☠️ Stated as a gap, not as the cause: whether MMTEL voice
+registration or the media feature tags need anything that appeared after 1.2 has
+not been checked, and the ext does register IMS successfully at 1.2. But this is
+device-side, it is in code that can be read and changed, and it is the kind of gap
+#163 pointed at.
