@@ -1,3 +1,10 @@
+> ☠️ **CLOSED 2026-09-05.** The dev card was put into a certified stock-Android
+> handset and took a terminating call on **GSM** (4G only after teardown), while a
+> different card in that same handset holds 4G through a call. The subscription is
+> the variable, so no software work on our side - IMS stack included - can give this
+> phone a 4G call on this card. See `../captures/2026-09-05_ut-call-rat-newsim/`
+> Part 2. Reopening requires a VoLTE-provisioned card in the FP3, not more analysis.
+
 > **2026-09-05, second SIM, direct IMS instrument:** the oracle is IMS
 > registered and voice-capable (`IpMultimediaSystem.Registered=true`,
 > `VoiceCapable=true`) and *still* takes terminating calls on EDGE - the RAT

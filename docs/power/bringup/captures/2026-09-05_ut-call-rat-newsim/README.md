@@ -161,3 +161,84 @@ observation is recorded as what it is.
 - **No `cause` was recorded for run #1's call.** Its journal capture ends at
   04:34:34, the same second the call tore down, so the line was cut. Cause 44 is
   therefore *not* known to be new — run #1 simply has no data there.
+
+---
+
+# Part 2 — outgoing calls, and the answer to #160
+
+**Raw:** `ut-mo.txt`, `mo-journal.txt` (same instrument, 1 Hz). MSISDNs redacted.
+
+## Outgoing from the FP3 on UT: CSFB as well
+
+Two dial attempts, 05:15:54 and 05:16:19:
+
+```
+05:15:54  tech=lte   states=dialing     <- the dial starts on LTE
+05:15:56  tech=edge  states=dialing     <- fallback, 2 s in
+05:15:58  tech=edge  states=alerting
+05:15:59  tech=edge  (call gone)
+05:16:00  tech=lte
+
+05:16:19  tech=lte   states=dialing
+05:16:20  tech=edge  states=dialing
+05:16:24  tech=edge  (call gone)
+05:16:25  tech=lte
+```
+
+ofono routes the dial through the IMS HAL and the HAL accepts it:
+
+```
+ims:Dialing (ext) <msisdn>
+imsradio0< [00000003] 2 dial
+ims:qti_ims_call_result_response 0      <- accepted
+                                        then: LTE -> EDGE
+```
+
+So the stack does not decline to try VoLTE - it tries, the request is accepted,
+and the call still lands on GERAN. Mobile-originated behaves like
+mobile-terminated, which closes the MO/MT caveat raised in Part 1.
+
+☠️ **Both of these attempts were to the operator's own number** and were therefore
+rejected by the network; they are *not* evidence about call reliability. They
+remain valid as RAT evidence only because the fallback to EDGE **precedes** the
+failure in both, by 2 s and 1 s respectively. An earlier draft of this page read
+3 of 4 calls as failures and inferred an unreliable 2G leg - that inference is
+**withdrawn**. The honest count is two valid calls: one completed (21 s), one
+failed with cause 44.
+
+## #160 is answered: the dev card has no VoLTE
+
+The two phones had their cards swapped before this session: the daily
+factory-Android handset's SIM2 went into the FP3 (it is the One HU card measured
+in Part 1), and **the card that had been in the FP3 went into the daily Android
+handset**. That is exactly the experiment queue #160 asked for, and it ran.
+
+Operator's reading from that handset's *Settings -> SIM status -> Mobile network
+type*, which updates live:
+
+> GSM while ringing, GSM after answering, 4G after the call ended.
+
+**The dev card, in a certified stock-Android handset, takes a terminating call on
+GSM.** The 2026-09-03 note records that a *different* card in that same handset
+holds 4G through a call, so the handset is demonstrably capable and the network
+demonstrably offers VoLTE. The variable is the subscription.
+
+### What this settles
+
+- **No software work on our side can give this phone a 4G call on this card.**
+  Not an IMS stack for pmOS, not a change to UT. The lever does not exist above
+  the subscription.
+- The `imsd` cost estimate and the "CSFB is a dependency" lead are both answered:
+  the dependency is real, and it is not ours to remove.
+- The low-duty sleep work must not be justified by "IMS will replace 2G paging
+  later". On this card it will not.
+
+### What it does not settle
+
+- Whether a VoLTE-provisioned card would work on **pmOS** - the oracle shows the
+  vendor stack manages it only where the subscription allows, and pmOS has no IMS
+  at all. Reopening that needs a provisioned card in the FP3, not more analysis.
+- ⚠️ One residual assumption: the operator read one SIM's status page on a
+  dual-SIM handset. It is taken to be the ringing line's. If it was the other
+  slot's, this section's conclusion does not follow - re-reading it with only the
+  dev card inserted would remove the assumption.

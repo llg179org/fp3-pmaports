@@ -10150,3 +10150,28 @@ flaky 2G traffic channel, not a device fault. Call B ended with cause 16.
 Capture: `docs/power/bringup/captures/2026-09-05_ut-call-rat-newsim/`.
 Still open: whether stock Android on the same card holds LTE (queue #160) - now
 the single remaining discriminator.
+
+## 2026-09-05 (later) — #160 answered: the dev card has no VoLTE, and the lever is not ours
+
+The two phones' cards were swapped. The card that had been in the dev FP3 went
+into the daily **factory-Android** handset, and there - read live from Settings ->
+SIM status -> Mobile network type - it showed **GSM while ringing, GSM after
+answering, and 4G only after the call ended**. A different card in that same
+handset is on record holding 4G through a call, so both the handset and the
+network are capable. The variable is the subscription.
+
+**Consequence: no software work on our side can give this phone a 4G call on this
+card** - not an IMS stack for pmOS, not a change to UT. The `imsd` lead is closed
+on those grounds rather than on cost.
+
+Outgoing calls from the FP3 on UT also CSFB (LTE -> EDGE two seconds into
+`dialing`, before any failure), and ofono routes the dial through the IMS HAL,
+which accepts it - so the stack tries VoLTE and is overruled. That closes the
+MO/MT caveat.
+
+☠️ Withdrawn in the same session: an inference that 3 of 4 calls failed and the
+2G leg is unreliable. Two of those were dialled to the operator's own number and
+are invalid as reliability evidence. Honest count: two valid calls, one completed,
+one failed with cause 44.
+
+Capture: `docs/power/bringup/captures/2026-09-05_ut-call-rat-newsim/` (Part 2).
