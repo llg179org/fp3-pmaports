@@ -112,7 +112,7 @@ repeated.
       lane: phone
 - [@] 63. Reachability test: one call an hour during the day
       when: hourly during the day; the morning corner sample ONLY after a night with no measurement
-      they-do: One call an hour, let it ring, do not answer - nothing to report back. ☠️ NOT tonight: the phone measures from 19:00, and in the radio-off windows it rightly does not ring. ☠️ REGIME BREAK 2026-09-05: the FP3's SIM was swapped (it now holds what was the daily handset's SIM2, One HU / MCC 216 MNC 70). Reachability samples taken before and after that swap are NOT comparable - a miss on the new card may be the subscription, not the sleep policy. Any run mixing the two must say which card each sample used, or be discarded
+      they-do: One call an hour, let it ring, do not answer - nothing to report back. ☠️ NOT tonight: the phone measures from 19:00, and in the radio-off windows it rightly does not ring. ☠️ SIM HISTORY 2026-09-05, and the earlier warning on this task is now OUT OF DATE: the FP3's card was swapped out in the morning and swapped BACK the same day, so the phone again holds the card it had before (dev card, ICCID ...6542, One HU / MCC 216 MNC 070). Samples from before 2026-09-05 and from after the swap-back ARE comparable. Only samples taken between roughly 04:30 and 07:10 on 2026-09-05 used a different card and must be labelled or discarded
       why: ringing is the ONLY acceptable gate; CS attach / SGs is a predictor only
 - [x] 112. Glance at the daily factory-Android FP3's status bar during a call
       when: at the next daytime call
