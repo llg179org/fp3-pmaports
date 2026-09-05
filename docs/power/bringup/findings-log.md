@@ -10051,3 +10051,40 @@ written before either night existed; every predicted band sits downstream of the
 gates that failed, so the honest form is that the data never became eligible for
 comparison. Full triage:
 `captures/2026-09-05_118-night-triage/README.md`.
+
+## 2026-09-05 — why the replication nights fail: three problems, and a correction
+
+Same evening as the triage above, from the 2026-09-03 journal.
+
+**Correction.** That entry said neither night can name what woke the AP. Too
+strong: the 09-02 night *did* name it — NetworkManager retrying a DHCP lease 197
+times inside a 77-minute leg — and `night-run.sh` carries the `nmcli … managed
+no` fix. On 09-03 the fix **worked**, and the leg failed anyway.
+
+**1. Leg 1 failed with a silent userspace.** Journal lines strictly inside each
+leg's window:
+
+```
+leg1  NM/DHCP = 0    TOTAL = 1 line in 76 minutes   median sleep 13 s
+leg2  NM/DHCP = 71   total = 12387                  median sleep 18 s
+leg3  NM/DHCP = 26   total = 10419                  median sleep  9 s
+```
+
+One line in seventy-six minutes, and still 13 s against a 90 s alarm. Whatever
+ends these sleeps is **below the journal** — which is why only a wake-source
+snapshot can name it, and why no amount of userspace tidying will.
+
+**2. Legs 2–3 ran with `ModemManager --log-level=DEBUG`** — those 12k/10k lines
+are QMI traffic at ~2.7/s, from
+`/etc/systemd/system/ModemManager.service.d/zz-fp3-debug.conf`, created
+2026-09-02 06:41 and still active now. A wake source and a contaminant, in a
+sleeping-current measurement. (#75 is about who keeps writing it back.)
+
+**3. ☠️ The three legs were not comparable.** ModemManager started at 22:00:11,
+at the boot for leg 2 — so leg 1 ran with **no modem daemon at all** and legs 2–3
+with one in debug. The replication's design requires the legs to differ *only* by
+the boot; these differ by the largest userspace variable on the device. Even
+fully-slept legs would not have yielded a boot-to-boot spread.
+
+#158 now carries all three as requirements.
+Capture: `captures/2026-09-05_118-night-triage/WHY-THE-LEGS-FAIL.md`.

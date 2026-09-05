@@ -73,9 +73,18 @@ ends them within seconds.
 
 ## What blocks the next attempt, concretely
 
-**Neither night can name what woke the AP.** The legs record `log.txt`,
-`mpss-B.txt`, `samples-B.txt` and nothing else - no `wakeup_sources` snapshot, no
-wake-reason capture. The triage says "naming the source buys the next run, not
+☠️ **Corrected the same evening — see
+[`WHY-THE-LEGS-FAIL.md`](WHY-THE-LEGS-FAIL.md).** This was too strong. The
+2026-09-02 night *did* name its wake source (NetworkManager retrying a DHCP lease
+197 times in a 77-minute leg) and `night-run.sh` carries the fix; on 2026-09-03
+that fix worked and leg 1's window holds **zero** NM/DHCP lines - one journal
+line in seventy-six minutes - and the leg failed anyway. The accurate statement
+is narrower and worse: the known wake source was found, mitigated, and the night
+still failed, so whatever ends these sleeps is below the journal. That page also
+finds that legs 2 and 3 ran with `ModemManager --log-level=DEBUG` while leg 1 had
+no ModemManager at all, so the three legs were not comparable to each other
+either. The legs record `log.txt`, `mpss-B.txt`, `samples-B.txt` and nothing else
+- no `wakeup_sources` snapshot, no wake-reason capture. The triage says "naming the source buys the next run, not
 this leg", and the next run cannot name it either unless the instrument is
 changed to record it.
 
