@@ -14,7 +14,8 @@ different /16s, how many distinct addresses a capture contained), and the host
 part is dropped. This covers operator-assigned addresses (P-CSCF, DNS, the
 bearer's own address) and the owner's LAN.
 
-Also never committed: IMSI, ICCID, MSISDN (phone numbers), and the IMEI.
+Also never committed: IMSI, ICCID, MSISDN (phone numbers), the IMEI, and the
+MAC address of any access point or of the phone's own wlan interface.
 
 ## What is NOT masked, and why
 
@@ -27,6 +28,26 @@ Also never committed: IMSI, ICCID, MSISDN (phone numbers), and the IMEI.
   that reason. ☠️ A first pass on 2026-09-03 did rewrite those; it was caught and
   reverted from git before it was committed. A masking rule that matches on shape
   alone will corrupt data — match on shape **and** location.
+
+## The check that enforces this
+
+```sh
+sh tests/no-identifiers.sh              # scan the working tree, before committing a capture
+sh tests/no-identifiers.sh --self-test  # prove it still catches a planted identifier
+```
+
+☠️ **The rule above was written on 2026-09-03 and was already being broken when it
+was written.** An audit on 2026-09-05 found the IMEI in four files, both SIM cards'
+IMSI and ICCID, a caller's number in two capture journals, and - not covered by
+this page at all - the home access point's BSSID together with the phone's own
+wlan MAC, pasted in with a dmesg block where nobody would look. A BSSID is a
+premises identifier: public databases map it to a location.
+
+☠️ **And the first version of the check reported clean while a phone number sat in
+the tree.** The file holding it has two NUL bytes, so `grep` treated it as binary
+and skipped it silently. `grep -a` is the fix and the self-test now plants an
+MSISDN behind a NUL byte. A checking tool that has only ever been seen saying
+"clean" has proved nothing.
 
 ## Where the real values are
 

@@ -30,7 +30,7 @@ scan() {
         '(^|[^0-9])(\+|00)[[:space:]]?36([[:space:]]?[0-9]){9}([^0-9]|$)' \
         '\b([0-9a-f]{2}:){5}[0-9a-f]{2}\b'
     do
-        hits=$(grep -rEn "$pat" "$dir" \
+        hits=$(grep -raEn "$pat" "$dir" \
                  --exclude-dir=.git \
                  --exclude-dir=device_tree \
                  --exclude='*.dtsi' --exclude='*.dts' \
@@ -57,6 +57,15 @@ if [ "${1:-}" = "--self-test" ]; then
     if scan "$tmp" >/dev/null; then :; else
         echo "SELF-TEST FAIL: a redacted IMEI was reported as a leak"; exit 2
     fi
+    # ☠️ A file with a stray NUL byte is "binary" to grep, which silently skips
+    # it. On 2026-09-05 this check reported clean while a phone number sat in
+    # such a file in the tree - the -a above is what fixes it, and this is the
+    # case that proves it stays fixed.
+    printf 'number: <msisdn-own>\n\0\0trailing\n' > "$tmp/planted.txt"
+    if scan "$tmp" >/dev/null; then
+        echo "SELF-TEST FAIL: an MSISDN hidden behind a NUL byte was not caught"; exit 2
+    fi
+
     # Known negatives: a modem PDC config ID (20 colon-separated hex bytes, so
     # its first six look exactly like a MAC) and a power log whose columns run
     # together into something the MSISDN pattern used to match.
@@ -65,8 +74,9 @@ if [ "${1:-}" = "--self-test" ]; then
     if scan "$tmp" >/dev/null; then :; else
         echo "SELF-TEST FAIL: a PDC config ID or a power log was reported as a leak"; exit 2
     fi
-    echo "SELF-TEST OK: catches a planted IMEI, accepts the redacted form,"
-    echo "              and does not fire on a PDC config ID or a power log"
+    echo "SELF-TEST OK: catches a planted IMEI and one behind a NUL byte,"
+    echo "              accepts the redacted form, and does not fire on a"
+    echo "              PDC config ID or a power log"
     exit 0
 fi
 
