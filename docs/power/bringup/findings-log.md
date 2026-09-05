@@ -10011,3 +10011,43 @@ pooled null; the per-arm comparison was never going to rank 0 against 0 anyway.
 and does not test the #155 fix — that needs a flash.
 
 Capture: `captures/2026-09-04_142-touch-after-resume/ANSWER-nothing-re-arms-it.md`.
+
+## 2026-09-05 — #118: the replication night failed its own gates, and so did the one before
+
+The 2026-09-03 night ran to completion and produced nothing usable. Its
+interference gates were clean — zero ssh logins, zero unexpected units, zero
+incoming calls, service vector verified off, `eutran-1 / 1470762` throughout —
+and then everything downstream failed:
+
+```
+leg1  median sleep 13 s   47.9 mA   DROPPED
+leg2  median sleep 18 s   47.7 mA   DROPPED     against a 90 s alarm
+leg3  median sleep  9 s   45.7 mA   DROPPED
+boot-to-boot:  means 0.0 0.0 0.0    — no leg survived to be averaged
+OCV start: 90 min ceiling, -2.02 mV/min · OCV end: 30 min ceiling, -0.83 mV/min
+```
+
+Both halves of #85 are therefore unmeasured: there is no boot-to-boot band for
+the 40.3 mA figure, and no calibration-offset bound.
+
+☠️ **The three dropped legs agree to within 2.2 mA, and that must not be read as
+the band.** They describe an AP that woke every 9–18 s, so they are not a
+sleeping floor; the tightness says the *wake pattern* is reproducible.
+
+☠️ **Second night in a row, same failure.** 2026-09-02: both OCV endpoints on
+their ceilings (−0.91 / −0.78 mV/min) and a leg dropped at "median sleep 11 s
+against a 90 s alarm". The measurement as designed cannot produce its number on
+this device — which fits `leads/opportunistic-sleep-missing.md`: nothing here
+asks for a suspend, so the only sleeps are forced, and something ends them
+within seconds.
+
+**The concrete blocker is an instrument gap, not another night.** Neither night
+recorded what woke the AP — the legs keep `log.txt`, `mpss-B.txt`,
+`samples-B.txt` and no wake-source snapshot. Repeating the run unchanged would
+produce a third identical failure. Capture `wakeup_sources` per leg first.
+
+Evaluated against `captures/2026-09-02_night-replication/PREREGISTERED.md`,
+written before either night existed; every predicted band sits downstream of the
+gates that failed, so the honest form is that the data never became eligible for
+comparison. Full triage:
+`captures/2026-09-05_118-night-triage/README.md`.

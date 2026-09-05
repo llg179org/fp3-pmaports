@@ -1,0 +1,63 @@
+=== 1. INTERFERENCE AUDIT ============================================
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+
+=== 2. VECTOR GATES ==================================================
+2026-09-03 20:43:44 [+26s 678bd9a9] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 20:44:09 [+51s 678bd9a9] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+2026-09-03 22:00:17 [+26s 1f201b1e] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 22:00:41 [+50s 1f201b1e] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+2026-09-03 23:17:05 [+36s 3d204b72] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 23:17:29 [+60s 3d204b72] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+
+=== 3. BAND / CELL ===================================================
+# band/cell: eutran-1 / 1470762
+# band/cell at end: eutran-1 / 1470762
+# band/cell: eutran-1 / 1470762
+# band/cell at end: eutran-1 / 1470762
+# band/cell: eutran-1 / 1470762
+# band/cell at end: eutran-1 / 1470762
+
+=== 4. OCV ENDPOINTS =================================================
+2026-09-03 20:32:06 [+27806s d5c8f402]   ☠️ rest start hit its 90 min ceiling without settling - this endpoint is suspect
+2026-09-03 20:42:26 [+28426s d5c8f402]   ☠️ OCV start: 1 sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest
+2026-09-03 20:42:26 [+28426s d5c8f402] OCV start slope over the last 5 min: -2.02 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-03 20:42:26 [+28426s d5c8f402] OCV start done: 4227905uV, drift over the last 80 s: -26 mV
+2026-09-04 01:04:32 [+6483s 3d204b72]   ☠️ rest end hit its 30 min ceiling without settling - this endpoint is suspect
+2026-09-04 01:14:52 [+7103s 3d204b72]   ☠️ OCV end: 1 sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest
+2026-09-04 01:14:52 [+7103s 3d204b72] OCV end slope over the last 5 min: -0.83 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-04 01:14:52 [+7103s 3d204b72] OCV end done: 4155500uV, drift over the last 80 s: 1 mV
+
+=== 5. THE NUMBERS (validity first - read 1-4 before believing these) =
+--- leg1
+B        13s     302  143/151     47.9 mA   [46.8, 49.1]  +-1.1  (weighted, df=142)
+       ☠️☠️ THIS LEG IS DROPPED FROM THE AGGREGATE: median sleep 13 s against a 90 s alarm.
+       Something woke the AP. The number above is not the sleeping floor of
+       anything, and no attribution of the wake changes that - naming the
+       source buys the next run, not this leg.
+--- leg2
+B        18s     302  120/135     47.7 mA   [46.4, 48.9]  +-1.3  (weighted, df=119)
+       ☠️☠️ THIS LEG IS DROPPED FROM THE AGGREGATE: median sleep 18 s against a 90 s alarm.
+       Something woke the AP. The number above is not the sleeping floor of
+       anything, and no attribution of the wake changes that - naming the
+       source buys the next run, not this leg.
+--- leg3
+B         9s     302  149/166     45.7 mA   [43.6, 47.8]  +-2.1  (weighted, df=148)
+       ☠️☠️ THIS LEG IS DROPPED FROM THE AGGREGATE: median sleep 9 s against a 90 s alarm.
+       Something woke the AP. The number above is not the sleeping floor of
+       anything, and no attribution of the wake changes that - naming the
+       source buys the next run, not this leg.
+
+=== 6. BOOT-TO-BOOT SPREAD (from the LEG MEANS, never the pooled windows)
+  3 legs, means: 0.0 0.0 0.0
+  mean of leg means = 0.0 mA, boot-to-boot sd = 0.0 mA, sem = 0.0 mA
+  ☠️ THIS sd is the number the night was run for. The within-leg band
+     (~1 mA) was never the dominant error, and pooling the windows
+     would have hidden this one entirely.

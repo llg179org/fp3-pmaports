@@ -119,10 +119,6 @@ repeated.
       they-do: on the CALLING handset, DURING the call: turn WiFi off and try to load a page over mobile data. Data works = VoLTE on LTE; data stalls for the whole call and returns when it ends = CSFB (2G/3G). Cross-check without menus-guessing: Settings -> About phone -> SIM status -> 'Mobile network type', which updates live during the call. One word is the answer. ☠️ The STATUS BAR does not answer it — measured 2026-09-03: during a call Android shows only the handset icon, the network-type indicator is gone. ☠️ Otherwise we do not touch the daily phone
       why: the cheapest pre-filter for the second gate — if a certified handset also falls back, the `imsd` path is pointless on this network
 
-- [ ] 118. Evaluate the night's balance against the pre-registered bands
-      after: 85
-      why: the morning triage; night-budget.py and the bands are ready
-      continues: 85
 - [@] 79. Shunt calibration — the only witness that does not pass through the PMI632
       until: 09-04 10:24
       why: does not block, it strengthens: the closure can also be stated with the |ε| ≤ 1.49 (δ + I·|g|) bound
@@ -254,7 +250,11 @@ repeated.
       lane: upstreaming
       why: ☠️ LAST RESORT BY THE OPERATOR DECISION 2026-09-04 — fix the cause, not the 15 seconds. Do NOT start this while the supply task is open or unmeasured. Both are real defects and both are upstreamable on their own: i2c-qup computes xfer_timeout ONCE at probe from MX_DMA_TX_RX_LEN (128 KB) and hands the same 14.976 s to a 4-byte touch read, where the downstream i2c-msm-v2 on this same hardware computes it per transfer and gives 0.504 s
       and himax_hx83112b retries nowhere, where the vendor driver retries every read and write 5x (HIMAX_REG_RETRY_TIMES) and ak7375 on this very phone was already fixed the same way (media: i2c: ak7375: retry the first transfer of a resume, same -110 signature). They remove the user-visible symptom without explaining it, which is why they are second
-      after: 155<!-- FP3-QUEUE:END -->
+      after: 155
+- [ ] 158. Night replication, third attempt: record WHAT WAKES THE AP before running another night — add a per-leg /sys/kernel/debug/wakeup_sources (or wake-reason) snapshot to night-run.sh, then re-run the three-boot replication
+      lane: phone
+      why: ☠️ Two nights (2026-09-02, 2026-09-03) both failed the same way and NEITHER can say why: every leg dropped for a median sleep of 9-18 s against a 90 s alarm, both OCV endpoints unrested on their ceilings, and the legs record only log.txt/mpss-B.txt/samples-B.txt — no wake-source capture at all. The triage says "naming the source buys the next run, not this leg", and the next run cannot name it either unless the instrument changes. Running the night unchanged a third time would produce a third identical failure. This is what still blocks the boot-to-boot band on 40.3 mA and the calibration-offset bound, i.e. the whole of what #85 was for. Evidence: captures/2026-09-05_118-night-triage/README.md
+<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 

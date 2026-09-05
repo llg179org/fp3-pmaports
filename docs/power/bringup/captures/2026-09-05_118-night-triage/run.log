@@ -1,0 +1,118 @@
+2026-09-03 19:00:10 [+22290s d5c8f402] === step 0  (boots=3 leg=75min rest=30min alarm=90s) ===
+2026-09-03 19:00:10 [+22290s d5c8f402] battery 100% 4362983uV Full
+2026-09-03 19:00:10 [+22290s d5c8f402] OCV start: radio off, USB input suspended, resting 30 min
+2026-09-03 19:07:18 [+22718s d5c8f402]   rest start: 420s, 21 mV over the last 2 min
+2026-09-03 19:14:22 [+23142s d5c8f402]   rest start: 840s, -8 mV over the last 2 min
+2026-09-03 19:21:26 [+23566s d5c8f402]   rest start: 1260s, 43 mV over the last 2 min
+2026-09-03 19:28:30 [+23990s d5c8f402]   rest start: 1680s, -10 mV over the last 2 min
+2026-09-03 19:35:34 [+24414s d5c8f402]   rest start: 2100s, -9 mV over the last 2 min
+2026-09-03 19:42:38 [+24838s d5c8f402]   rest start: 2520s, -7 mV over the last 2 min
+2026-09-03 19:49:42 [+25262s d5c8f402]   rest start: 2940s, 18 mV over the last 2 min
+2026-09-03 19:56:46 [+25686s d5c8f402]   rest start: 3360s, -4 mV over the last 2 min
+2026-09-03 20:03:50 [+26110s d5c8f402]   rest start: 3780s, -11 mV over the last 2 min
+2026-09-03 20:10:54 [+26534s d5c8f402]   rest start: 4200s, 38 mV over the last 2 min
+2026-09-03 20:17:58 [+26958s d5c8f402]   rest start: 4620s, 7 mV over the last 2 min
+2026-09-03 20:25:02 [+27382s d5c8f402]   rest start: 5040s, -6 mV over the last 2 min
+2026-09-03 20:32:06 [+27806s d5c8f402]   rest start: 5460s, 42 mV over the last 2 min
+2026-09-03 20:32:06 [+27806s d5c8f402]   ☠️ rest start hit its 90 min ceiling without settling - this endpoint is suspect
+2026-09-03 20:42:26 [+28426s d5c8f402]   ☠️ OCV start: 1 sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest
+2026-09-03 20:42:26 [+28426s d5c8f402] OCV start slope over the last 5 min: -2.02 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-03 20:42:26 [+28426s d5c8f402] OCV start done: 4227905uV, drift over the last 80 s: -26 mV
+2026-09-03 20:42:57 [+28457s d5c8f402] rebooting (next step 1)
+2026-09-03 20:43:43 [+25s 678bd9a9] === step 1  (boots=3 leg=75min rest=30min alarm=90s) ===
+2026-09-03 20:43:43 [+25s 678bd9a9] battery 94% 4329895uV Charging
+2026-09-03 20:43:43 [+25s 678bd9a9] --- leg 1 of 3, after boot 25s ago ---
+2026-09-03 20:43:44 [+26s 678bd9a9] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 20:44:09 [+51s 678bd9a9] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 20:44:22  75 min  alarm=90s
+# battery 94% v=4275396uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# 151 samples, battery 94% v=4168541uV
+2026-09-03 21:59:32 [+4575s 678bd9a9] --- leg 1 done ---
+2026-09-03 21:59:32 [+4575s 678bd9a9] rebooting (next step 3)
+2026-09-03 22:00:16 [+25s 1f201b1e] === step 3  (boots=3 leg=75min rest=30min alarm=90s) ===
+2026-09-03 22:00:16 [+25s 1f201b1e] battery 95% 4258852uV Charging
+2026-09-03 22:00:16 [+25s 1f201b1e] --- leg 2 of 3, after boot 25s ago ---
+2026-09-03 22:00:17 [+26s 1f201b1e] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 22:00:41 [+50s 1f201b1e] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 22:00:54  75 min  alarm=90s
+# battery 95% v=4152580uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# 135 samples, battery 88% v=4148104uV
+2026-09-03 23:16:10 [+4579s 1f201b1e] --- leg 2 done ---
+2026-09-03 23:16:10 [+4579s 1f201b1e] rebooting (next step 5)
+2026-09-03 23:17:04 [+35s 3d204b72] === step 5  (boots=3 leg=75min rest=30min alarm=90s) ===
+2026-09-03 23:17:04 [+35s 3d204b72] battery 88% 4270141uV Charging
+2026-09-03 23:17:04 [+35s 3d204b72] --- leg 3 of 3, after boot 35s ago ---
+2026-09-03 23:17:05 [+36s 3d204b72] vector NOT off yet (attempt 0) - starting the reconciler
+2026-09-03 23:17:29 [+60s 3d204b72] vector verified off: voice=False VoWiFi=False video=telephony SMS=False UT=False 
+  bound to IMS
+  IMS services enabled setting:
+    registration     <not reported> (qmi_core_error_quark: Field 'IMS Registration Service Enabled' was not found in the message (5))
+    voice            False
+    VoWiFi           False
+    video telephony  False
+    SMS              False
+    UT               False
+    USSD             False
+# leg 2026-09-03 23:17:42  75 min  alarm=90s
+# battery 88% v=4226348uV status=Discharging
+# IMS at start: voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell: eutran-1 / 1470762
+# mm=1.25.95 qmicli=1.39.0
+# modem fw: 
+# subscription: 
+# IMS at end:   voice=False VoWiFi=False video=telephony SMS=False UT=False USSD=False 
+# band/cell at end: eutran-1 / 1470762
+# audit: ssh logins during the leg = 0
+# audit: unexpected units started = none
+# audit: incoming calls during the leg = 0
+# 166 samples, battery 84% v=4127667uV
+2026-09-04 00:32:46 [+4577s 3d204b72] --- leg 3 done ---
+2026-09-04 00:32:46 [+4577s 3d204b72] OCV end: radio off, USB input suspended, resting 30 min
+2026-09-04 00:36:16 [+4787s 3d204b72]   rest end: 420s, 4 mV over the last 2 min
+2026-09-04 00:43:20 [+5211s 3d204b72]   rest end: 840s, 65 mV over the last 2 min
+2026-09-04 00:50:24 [+5635s 3d204b72]   rest end: 1260s, 2 mV over the last 2 min
+2026-09-04 00:57:28 [+6059s 3d204b72]   rest end: 1680s, -20 mV over the last 2 min
+2026-09-04 01:04:32 [+6483s 3d204b72]   rest end: 2100s, -13 mV over the last 2 min
+2026-09-04 01:04:32 [+6483s 3d204b72]   ☠️ rest end hit its 30 min ceiling without settling - this endpoint is suspect
+2026-09-04 01:14:52 [+7103s 3d204b72]   ☠️ OCV end: 1 sample(s) dropped as outliers - a load spike landed in the rest window; the slope below is fitted on the rest
+2026-09-04 01:14:52 [+7103s 3d204b72] OCV end slope over the last 5 min: -0.83 mV/min ☠️ NOT RESTED - treat this endpoint as suspect
+2026-09-04 01:14:52 [+7103s 3d204b72] OCV end done: 4155500uV, drift over the last 80 s: 1 mV
+2026-09-04 01:15:23 [+7134s 3d204b72] === NIGHT COMPLETE ===
