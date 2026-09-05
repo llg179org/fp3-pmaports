@@ -241,7 +241,7 @@ Three decisions the table does not show on its face:
       lane: upstreaming
 
 - [ ] 140. B7 + DTS hygiene before fp3-dts is cut: imx363 leftovers (// NOT SURE HOW TO FIND THIS VALUE, //0c40, C++ comments), vdig 1.175 V hardcode -> board l2 constraints, FP3-named delays; audio DTS: drop DMIC4/DMIC5/AMIC5 routes (measured silent 2026-08-02), move slimbam/slim_msm to msm8953.dtsi, interrupts-extended, no output-high in pinctrl; charger DTSI: 48 interrupt-names vs 4 in the binding; XCLR reset polarity ACTIVE_LOW
-      why: review B7 and section 3 — every item here changes the phone's DT or a driver's runtime behaviour, so it needs a build and a boot on the device; the phone is in the night measurement until 79 releases it. The host-only half (comments) is 146
+      why: review B7 and section 3 - every item here changes the phone's DT or a driver's runtime behaviour, so it needs a build and a boot on the device. The host-only half (comments) is 146. ☠️ CORRECTED 2026-09-05: the old note said this waits for #79 to release the phone. That is stale - the operator removed #79 ('nincs eszkozom'), the phone is free and running r81 (3f843d05), and a full build+flash+verify cycle was exercised today, so the DEVICE is not the blocker any more. What holds it is the operator's stated order: upstreaming goes to the background while there are open kernel-fix needs, and #175 (the #142 field confirmation) with #157 behind it is exactly that. ☠️ Note also that several items here - the XCLR reset polarity above all - change hardware behaviour and each needs its own build+boot proof; this is not a comment pass. Start it when the touchscreen chain is closed, or in a window explicitly given the upstreaming lane
       lane: upstreaming
       after: 79
       prio: 60
