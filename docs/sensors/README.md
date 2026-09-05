@@ -592,3 +592,38 @@ is in place and it is not.
 
 [`bringup/README.md`](bringup/README.md) — how all of this was found, in
 order, with the wrong turns left in.
+
+## libssc is not a source to borrow from — checked 2026-09-05
+
+[`codeberg.org/DylanVanAssche/libssc`](https://codeberg.org/DylanVanAssche/libssc)
+(C, GPLv3, meson, active — updated 2026-07-27) exposes Qualcomm Sensor Core
+sensors to Linux, and its file list reads like ours: accelerometer, compass,
+gyroscope, light, magnetometer, proximity. It was assessed as a possible source of
+reusable transport or test code. **It is not one**, and the reason is precise.
+
+| | this port | libssc |
+|---|---|---|
+| hardware block | SSC (ADSP protection domain) | the same |
+| QMI service | **SMGR**, service 256 on QRTR node 5, plus `snsregd` on 0x10F | the **SSC client service**, sensors discovered by SUID (`0xABABABABABABABAB` lookup sentinel) |
+| payload encoding | **TLV** | **protobuf** (`qmi_indication_ssc_report_*_output_get_data (output, &protobuf, …)`) |
+| message ids | SMGR's | 513/514 enable report, 768 response, 769/1025 measurement |
+| QMI client | **in-kernel**, `drivers/iio/common/qcom_smgr` | **userspace libqmi** — `QmiClientSsc`, `qmi_client_ssc_control()` |
+| output | kernel **IIO** | a **GLib library** |
+| consumer | `iio-sensor-proxy` | `iio-sensor-proxy` |
+
+Two things follow, and the second is the useful one:
+
+1. **Nothing transfers.** The protocol generation differs (SMGR versus the
+   SUID/protobuf client service), so every per-sensor file is inapplicable. And
+   there is no plumbing to borrow either: libssc's transport **is libqmi**, an
+   upstream shared library, not code it carries. There was never anything to
+   reinvent here.
+2. **The architectures are a genuine fork, and ours is the one upstream takes.**
+   A kernel IIO driver gives the sensors to everything on the system with no
+   library dependency; a GLib library gives them to whoever links it. Both end at
+   `iio-sensor-proxy`, from opposite sides.
+
+☠️ Recorded as a **negative result** so the next session does not re-open it. The
+similarity is real at the level of *"Qualcomm Sensor Core sensors on Linux"* and
+disappears one layer down, which is exactly the kind of resemblance that costs an
+afternoon if nobody writes down that it was checked.
