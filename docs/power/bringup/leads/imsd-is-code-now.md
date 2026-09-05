@@ -76,3 +76,47 @@ project makes no claim about msm8953/sdm632, and T-ADS may still choose CS for
 reasons a userspace registration cannot reach. This lead establishes that the
 **premise** under which we filed the work as not-worth-doing is false, and that
 the first blocker is one line of our own kernel config.
+
+## The README's own limitations, and what they change
+
+Read 2026-09-05. Two of them bear directly on this device, and one reverses an
+expectation stated earlier the same day.
+
+☠️ **"T-ADS may route incoming calls to CS domain regardless of IMS
+registration."** The project names our exact failure mode as a known open issue.
+So `imsd` is **not** a promise that an incoming call will arrive on LTE — the
+network still decides the terminating domain, and a userspace registration may
+not move it.
+
+What it does reach directly is the **originating** side: a call the phone places
+goes out over IMS. **So the first test to run is an OUTGOING call, not an
+incoming one.** An earlier note in this session said the opposite — that one
+incoming call would settle it — and that was wrong: an incoming call landing on
+EDGE would be consistent with `imsd` working perfectly.
+
+★ **"P-CSCF discovery from PDN Protocol Configuration Options not yet
+implemented"** — and `PCSCF` is the one setting the daemon *requires*, failing
+registration with a clear error without it. This repository already has the
+answer: [`volte-is-provisioned.md`](volte-is-provisioned.md) extracted **two
+P-CSCF addresses** from the PCO of `ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST`
+with a length-validated TLV walk, 21/21 and 18/18 closed, against a clean
+negative control. The single hand-configured value the daemon needs is a number
+we measured weeks ago for another reason.
+
+## The rest of its configuration, against what we have
+
+| `imsd` needs | our state |
+|---|---|
+| `PCSCF` (required) | **measured**, two addresses from the PCO |
+| `DEV` — the IMS PDN network device | the modem raises an IMS PDN by itself every 8.4 s; holding one up with `mmcli --simple-connect apn=ims` was already exercised |
+| `LOCAL` — UE address, auto-detected from a global IPv6 | the initial bearer is `ipv4v6`; unverified whether the IMS PDN gets a global v6 |
+| kernel ESP + `ip xfrm` | ❌ the blocker — see above |
+| `qmicli` over QRTR for USIM AKA on a UIM logical channel | QMI works; the card is a plain USIM, which is what it uses |
+| PipeWire, AMR-WB RTP | PipeWire runs; AMR-WB support unverified |
+| build: clang++/libc++, and it advertises `--target=aarch64-alpine-linux-musl` | Alpine aarch64 is exactly our target |
+
+Tested by the project on **postmarketOS, Linux 7.1.2** — we are on 7.1.3, the
+same series.
+
+☠️ Still not a claim that it will work here: the Fairphone 6's modem is several
+generations newer than msm8953/sdm632, and nothing in the project speaks to ours.
