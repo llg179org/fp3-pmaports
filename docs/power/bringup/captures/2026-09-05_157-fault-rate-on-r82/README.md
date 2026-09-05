@@ -70,3 +70,16 @@ Both halves of #157 are justified by this capture and by different lines of it:
 The journal lines that date the call carry the calling **MSISDN**. They are not
 reproduced here; only the timestamps and the state names are. `tests/no-identifiers.sh`
 was run over this directory before it was committed.
+
+## What code this measurement produced
+
+The return direction, so the chain can be walked from either end. Verify a hash
+resolves before trusting it (`git -C linux-fp3 rev-parse --verify <hash>^{commit}`);
+a list like this rots silently when a branch is rewritten.
+
+| commit | what this capture contributed to it |
+|---|---|
+| `e79375c44e2f` i2c: qup: size the transfer timeout from the transfer | the 14.976 s each `-110` cost, five times in eleven minutes |
+| `c3111d25d687` Input: himax_hx83112b - retry a failed event read, and rate-limit | the 28 608 lines in 183 s, and the lost release that held a calculator key down |
+| `e30042e95f60` i2c: qup: report the bus state when a transfer times out | the `-110`/`-6` pairing that made "who held the bus" the unanswered question |
+| `3f9efbef5e13` i2c: qup: clear the bus when a transfer times out with it held | the same pairing, once the vendor driver showed the mechanism |

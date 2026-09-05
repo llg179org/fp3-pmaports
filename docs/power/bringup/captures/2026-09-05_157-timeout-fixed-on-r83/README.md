@@ -54,3 +54,13 @@ path and did not slow or alter a healthy transaction.
   the caveat is stated in full in `TRIGGER-screen-gates-it.md` and has not
   changed. What it establishes is the QUP timeout constant, which is exactly
   what was modified.
+
+## What code this measurement judged
+
+`e79375c44e2f` — *i2c: qup: size the transfer timeout from the transfer, not from
+the maximum*, shipped in linux-fp3 r83 (`_commit=9af3de4d21f2`). This page is the
+only measurement of that commit's effect, and it judges the **cost** of a stall,
+not whether one happens. Verify the hash resolves before trusting it.
+
+☠️ It does **not** judge `c3111d25d687` (the himax retry), and it cannot: the
+probe is a raw i2c transaction to an unused address, not the driver's event read.
