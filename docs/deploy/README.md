@@ -618,3 +618,75 @@ sha — so the bump is unblocked whenever the device is back.
 ☠️ And a live demonstration of why the sha comes from `rev-parse`: the first run
 of that check here used a 12-character hash extended to 40 by hand. It returned
 **404**, which said nothing about anything — a padded hash is a hash of nothing.
+
+## ☠️ `fp3-commit` describes the INSTALLED package; `uname -v` describes the BOOTED image
+
+Measured 2026-09-05, on a phone that had been treated all week as "running r80".
+It was not. Three instruments were asked the same question and gave three
+answers, and each was telling the truth about a different thing:
+
+| instrument | answer | what it actually describes |
+|---|---|---|
+| `uname -v` | `#80-fp3` | the **booted boot.img** — `KBUILD_BUILD_VERSION` is `pkgrel + 1`, so `#80` is pkgrel **79** |
+| `/usr/share/kernel/fp3/fp3-commit` | `5aafd59e553a` | the **installed apk in the rootfs**, i.e. r78's source |
+| `apk` (via `fp3-selftest --only identity`) | `linux-fp3-7.1.3-r78` | the same installed apk |
+
+So the rootfs held r78 while the boot partition held a kernel built from r79.
+The two are flashed by separate steps, so nothing keeps them together — and on
+**this device's slot_b, between 2026-08-29 and 2026-09-05, r79 and r80 were
+never flashed at all**. That is one install on one phone, read off its own
+`extlinux.conf` (`default` pointed at `/vmlinuz-r79`) and its own apk database;
+it says nothing about any other install, and it is not a claim that the deploy
+procedure generally loses releases. Every conclusion drawn in that window
+which assumed an r79 or r80 feature was present was drawn on a kernel that did
+not have it; the SMSM processor-awake pair (`3b6498ac`, `b8023520`) is the
+concrete example, which is why the #50 A/B was correctly still blocked.
+
+Two things follow, and only the second one is new:
+
+- **Read `fp3-commit`, not `uname -v`, to answer "what source is this?"** — that
+  is what the marker was added for. But it answers for the *rootfs*, so it is
+  silent about a boot partition flashed separately.
+- **Run `fp3-selftest --only identity` after every flash, before believing
+  anything else.** It compares all three against the pinned `_commit` in one go
+  and prints the disagreement:
+
+  ```
+  FAIL: build stamp:   expected '#82-fp3', running '#80-fp3 …'
+  FAIL: package:       expected 'linux-fp3-7.1.3-r81', installed 'linux-fp3-7.1.3-r78'
+  FAIL: source commit: expected 3f843d05…, built from 5aafd59e…
+  ```
+
+  The check already existed and already worked. It had simply not been run, and
+  a check that is not run is worth exactly as much as one that does not exist.
+
+☠️ **The `#N` off-by-one is a trap in its own right.** In *this* APKBUILD —
+`linux-fp3`, which passes `KBUILD_BUILD_VERSION="$((pkgrel + 1))-$_flavor"`, and
+has done so since at least r78 (checked against the mirror history) — the
+`uname -v` number is the package release **plus one**, so reading `#80` as "r80"
+is wrong by construction. Other kernel packages set that variable differently or
+not at all; the rule to carry away is "check what the APKBUILD passes", not the
+constant 1.
+
+## ☠️ Piping `pmb build` into `tail` reports the pipe's exit status, not the build's
+
+Measured 2026-09-05, in the same session. `./pmb build --arch aarch64 linux-fp3
+device-fairphone-fp3 2>&1 | tail -60` finished and the harness recorded **exit
+code 0**. It had not succeeded: `linux-fp3` built, and `device-fairphone-fp3`
+failed with `ERROR: Use 'abuild checksum' to generate/update the checksum(s)`
+— the `deviceinfo` edit needed its own `pmbootstrap checksum`. The zero came
+from `tail`.
+
+It was caught only because the next step went looking for the `.apk` and it was
+not there. Had the deploy not needed that package, the run would have been
+recorded as a clean two-package build.
+
+```sh
+./pmb build --arch aarch64 <pkgs> > build.log 2>&1; echo "exit=$?"   # right
+./pmb build --arch aarch64 <pkgs> | tail -60                         # reports tail
+```
+
+☠️ **And `pmbootstrap checksum` is per package.** Bumping `_commit` in
+`linux-fp3` and editing `deviceinfo` in `device-fairphone-fp3` is two source
+changes in two packages, so it is two `checksum` calls. Running one and
+assuming it covered the change is what produced the failure above.

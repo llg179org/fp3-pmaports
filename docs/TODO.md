@@ -264,7 +264,7 @@ Three decisions the table does not show on its face:
       lane: phone
       why: ☠️ CORRECTION 2026-09-04 13:30: the earlier note said 'device unreachable' - that was true at 09:00 and false by 11:30; the phone has been in use all day. The real reason to wait is different: #85 (the overnight replication) starts 19:00 on this phone, and flashing a new _commit would swap the kernel out from under it. So this waits until after tonight's run, not for the device. Host-side groundwork stands (docs/deploy/README.md): the linux-fp3 APKBUILD needs no change, and the deviceinfo_dtb rename must land in the SAME change as the _commit bump - the pinned b8023520cddb predates the overlay split, so renaming first breaks the next build. Order on the day: fp3-selftest --only boot-fallback first, then bump+rename+checksum+build, then flash, then the camera/focus checks.
       they-do: -
-      until: 09-05
+      until: in progress in this window: built r81 ok, deploying now
       prio: 10
 - [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
       lane: upstreaming
