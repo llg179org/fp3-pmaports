@@ -185,3 +185,33 @@ already says about writing a carrier config into the modem.
 **mainline Linux does not have VoLTE**, anywhere, on any device. Our oracle does not
 have it either, despite carrying the full vendor IMS stack. Building it here would
 not be catching up — it would be doing it first.
+
+### There are no imsd-based implementations — checked repo by repo
+
+Codeberg's API answers this exactly. Two `imsd` repositories exist:
+`DylanVanAssche/imsd` (upstream) and `flamingradian/imsd` (a fork adding
+kernel-side QMI interception results). **Both are `Markdown`, and both were last
+touched on 2024-12-03.**
+
+The upstream's entire contents:
+
+```
+IMS-QUALCOMM.md    31338 B    <- the only substantial file
+IMS-MEDIATEK.md       71 B    <- a stub
+IMS-SAMSUNG.md        70 B    <- a stub
+LICENSE, README.md, two architecture diagrams
+```
+
+So there is **no code to build on**, and even the documentation is Qualcomm-only —
+the MediaTek and Samsung files are placeholders. `ims-missing-ap-half.md` already
+draws on `IMS-QUALCOMM.md`, which means **this repo has already extracted what
+exists.**
+
+☠️ The author is not gone: `usb-signaller` (Rust) and `libssc` (C, Qualcomm Sensor
+Core) were both updated in July 2026. `imsd` specifically has stood still for
+nearly two years. Read that as the state of the field rather than as one person
+losing interest.
+
+**Consequence for the estimate:** "port imsd" is not an option that exists. Any
+work here starts from a 31 KB reverse-engineering document and the QMI traces we
+can take ourselves.
