@@ -1,4 +1,16 @@
-> ☠️ **OPEN, and the ground has moved. 2026-09-05, measured:** the dev subscription
+> ☠️ **LIVE, and the target is device-side. 2026-09-05, #163:** the same card that
+> holds 4G through a whole call in a stock Android lands on EDGE in the FP3. Same
+> subscription, same network, minutes apart - the device is the variable. The FP3
+> completes a real IMS registration against the operator's core (it returns a
+> P-Associated-URI) and is CS-paged anyway, so the network is answering "this
+> device, no voice over IMS". That is solvable in software, unlike everything this
+> lead was closed for earlier today. Next: the media feature tags the UE offers in
+> its SIP REGISTER, and operator IMEI/TAC gating. See
+> `../captures/2026-09-05_163-same-card-two-devices/`.
+>
+> Superseded notes below:
+>
+> ~~OPEN, and the ground has moved. 2026-09-05, measured:** the dev subscription
 > **does** carry VoLTE - the card holds 4G through a call in a stock Android with only
 > the handset's per-SIM "4G hívás" switch on. So the network is not the limit, and the
 > earlier closure ("no software work on our side can help") is withdrawn in full.

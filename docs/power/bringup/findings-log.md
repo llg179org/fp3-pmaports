@@ -10257,3 +10257,24 @@ reads. **A constant passes an agreement check perfectly.** A gate has to include
 regime where the value is expected to differ, and there was none.
 
 The sampler no longer emits the column.
+
+## 2026-09-05 (#163) — same card, two devices: the FP3 is the variable
+
+The dev card, known to hold 4G through a whole call in a stock Android, was moved
+back into the FP3 and called. It landed on **EDGE** from paging to teardown, with
+the fallback again two seconds ahead of the call. Same card, same subscription,
+same network, minutes apart - only the device changed.
+
+So the subscription has VoLTE, and the FP3 does not get it. That is the first
+result in this thread that licenses a software conclusion, and it settles against
+both closures attempted earlier today.
+
+The FP3 completes a real IMS registration against One HU's core - the operator
+returns a P-Associated-URI - and is then CS-paged anyway, so the network is
+answering "this device, no voice over IMS". Both cards register identically on the
+FP3, so the difference is not visible at the registration layer.
+
+Remaining, and now device-side: the media feature tags the UE offers in its SIP
+REGISTER, and operator gating on IMEI/TAC.
+
+Capture: `docs/power/bringup/captures/2026-09-05_163-same-card-two-devices/`.

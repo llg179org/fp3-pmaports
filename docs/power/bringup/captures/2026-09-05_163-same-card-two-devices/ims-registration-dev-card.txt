@@ -1,0 +1,8 @@
+ims:imsradio0: QtiRadioRegInfo state:1 radiotech:21 error_code:0
+ uri: error_msg:
+--
+ims:imsradio0: QtiRadioRegInfo state:2 radiotech:15 error_code:2147483647
+ uri: error_msg:
+--
+ims:imsradio0: QtiRadioRegInfo state:0 radiotech:15 error_code:2147483647
+ uri:sip:<msisdn-dev-card>@ims.mnc070.mcc216.3gppnetwork.org|tel:<msisdn-dev-card> error_msg:
