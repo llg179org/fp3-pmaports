@@ -120,3 +120,65 @@ same series.
 
 ☠️ Still not a claim that it will work here: the Fairphone 6's modem is several
 generations newer than msm8953/sdm632, and nothing in the project speaks to ours.
+
+## ★ What the upstream packaging says, read from a clone (2026-09-05)
+
+`git clone https://forgejo.catcrafts.net/Catcrafts/imsd.git` at `1987275`
+(2026-09-02). There is a `packaging/` directory with an `APKBUILD`, a systemd
+unit, a D-Bus policy and a bring-up script — and reading them answers three of
+our open questions and hands us one cause for our headline symptom.
+
+### ☠️ 1. pmOS's own firewall makes terminating calls fall back to CS
+
+Verbatim from `packaging/ims-pdn-up.sh`:
+
+> *"pmOS's default nftables INPUT chain is policy-drop and explicitly drops all
+> inbound on `qmapmux*`, which silently killed every network-initiated request
+> (reg-event NOTIFY, MT INVITE) after ESP decap — the P-CSCF's TCP SYNs to the
+> protected server port never reached the listener, so terminating delivery
+> failed and **MT calls fell back to CS**."*
+
+That is our symptom, named, with a cause and a fix: insert accept rules for
+tcp/udp 45061–45062 on `qmapmux*`. It does **not** explain the Ubuntu Touch
+result (#163 CSFBs on a Halium stack with no such firewall), so it is not *the*
+answer — but it is a concrete mechanism by which a working IMS registration
+still yields a CS-paged call, and it would have bitten us silently.
+
+### ☠️ 2. The modem's own IMS-PDN service races an AP-side one
+
+The APKBUILD carries `provides="81voltd=$pkgver-r$pkgrel"` with the reason:
+
+> *"81voltd serves the modem's own ims-PDN requests, which races imsd for the PDN
+> and flaps it with a new prefix every ~2.5 min — the two IMS stacks cannot share
+> one PDN."*
+
+Ours flaps faster — 22 up/down cycles in 120 s, ~8.4 s apart
+([`../captures/2026-09-02_diag-ota-pmos/`](../captures/2026-09-02_diag-ota-pmos/)) —
+but it is the same class of conflict, and it says plainly that **the modem's IMS
+stack has to be kept out of the way**. `fp3-ims-reconcile` already does exactly
+that, for power reasons. The two requirements coincide.
+
+### 3. AMR-WB is a packaging question, and it is answered
+
+`depends="modemmanager opencore-amr vo-amrwbenc pipewire-tools"` — the media leg
+`dlopen`s the AMR-WB codecs. **`opencore-amr`, `vo-amrwbenc` and
+`pipewire-tools` all exist for Alpine edge aarch64.** That unknown is closed.
+
+### ☠️ 4. The bring-up script IS IPv6-only, even though the daemon is not
+
+`ims-pdn-up.sh` defaults `IMS_IP_TYPE=ipv6`, reads `bearer.ipv6-config.address`,
+and configures the netdev with `ip -6 addr replace`. On our IPv4-only IMS PDN it
+would stop at *"bearer up but no interface/address in mmcli output"*.
+
+This **refines** the earlier finding rather than contradicting it: the *daemon*
+threads the address family through as data, and the *bring-up script* does not.
+Adapting it to read `bearer.ipv4-config.*` is small and local.
+
+### Packaging notes for #177
+
+- **There is no release tag yet.** `packaging/APKBUILD` fetches
+  `archive/v0.3.0.tar.gz`, which returns **404** — and so does a bogus version,
+  so the check discriminates. The package has to be built from a git checkout.
+- **`makedepends` names are upstream's, not Alpine's.** Alpine edge aarch64 has
+  versioned toolchains — `clang20`, `clang21`, `clang22` and `libc++` 22.1.8 —
+  with no unversioned `clang`. The list needs translating.
