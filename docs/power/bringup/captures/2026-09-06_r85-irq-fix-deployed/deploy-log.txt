@@ -1,0 +1,23 @@
+=== megőrzött append vége: ...defaults panic=10
+=== 1. simulate ===
+(1/1) Upgrading linux-fp3 (7.1.3-r84 -> 7.1.3-r85)
+=== 2. install ===
+* 00:45:51.303851 mkinitfs completed in: 11.75s
+1 error; 1837.3 MiB in 1232 packages
+=== 3. deploy a csomagból, kiadás-utótaggal ===
+
+  4bae8eb06fa6468dc12553854c500650  /boot/dtbs/qcom/sdm632-fairphone-fp3-rear-camera-ak7374.dtb
+  4bae8eb06fa6468dc12553854c500650  /boot/sdm632-fairphone-fp3-rear-camera-ak7374.dtb-r85
+=== 4. depmod ===
+  depmod 7.1.3-postmarketos-qcom-msm8953 ok
+=== 5. extlinux ===
+  telepítve, 3 bejegyzés panic=-kal
+=== 6. ☠️ a tapasz eltávolítása - r85 javítja, amit elfedett ===
+Removed '/etc/systemd/system/multi-user.target.wants/fp3-touch-guard.service'.
+  guard aktív: 
+  guard aktív: inactive
+=== 7. hely felszabadítása: a már nem hivatkozott r82 ===
+  r82 fájljai törölve (az extlinux nem hivatkozik rá)
+  Filesystem                Size      Used Available Use% Mounted on
+  /dev/loop0p1            456.5M    354.3M     77.9M  82% /boot
+  /dev/loop0p2              2.4G      2.0G    195.1M  91% /
