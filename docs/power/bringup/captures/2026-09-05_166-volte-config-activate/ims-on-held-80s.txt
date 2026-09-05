@@ -1,0 +1,9 @@
+=== before: the phone's intended (cheap) state ===
+fp3-ims-reconcile: already want=off, nothing to do  {'voice': False, 'vowifi': False, 'video': False, 'sms': False, 'ut': False}
+timer stopped: inactive
+=== enabling every IMS switch and holding it ===
+fp3-ims-reconcile: ☠️ want=on but sms,ut,video,voice,vowifi disagree  {'voice': False, 'vowifi': False, 'video': False, 'sms': False, 'ut': False}
+fp3-ims-reconcile: ☠️ HAD DRIFTED, corrected on attempt 2  {'voice': True, 'vowifi': True, 'video': True, 'sms': True, 'ut': True}
+14:04:36  t=  0s  ims-reg=not-registered    fp3-ims-reconcile: already want=on, nothing to do  {'voice': True, 'vowifi': True, 'video': True, 'sms': True, 'ut': True}
+14:04:57  t= 20s  ims-reg=not-registered    fp3-ims-reconcile: already want=on, nothing to do  {'voice': True, 'vowifi': True, 'video': True, 'sms': True, 'ut': True}
+14:05:17  t= 40s  ims-reg=not-registered    fp3-ims-reconcile: already want=on, nothing to do  {'voice': True, 'vowifi': True, 'video': True, 'sms': True, 'ut': True}

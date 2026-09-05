@@ -132,3 +132,36 @@ systemctl status fp3-ims-reconcile.timer
 ☠️ Any experiment that needs the IMS switches ON must **stop
 `fp3-ims-reconcile.timer` first and start it again afterwards**, or the
 reconciler will silently undo it mid-measurement.
+
+## The valid version of the enable experiment: 80 s, and what it is worth
+
+Re-run with `fp3-ims-reconcile.timer` **stopped** for the duration, so the
+switches stayed where they were put. Raw output in `ims-on-held-80s.txt`.
+
+```
+=== enabling every IMS switch and holding it ===
+fp3-ims-reconcile: ☠️ HAD DRIFTED, corrected on attempt 2  {'voice': True, 'vowifi': True, 'video': True, 'sms': True, 'ut': True}
+14:00:00  t=  0s  ims-reg=not-registered   already want=on, nothing to do  {all True}
+14:00:20  t= 20s  ims-reg=not-registered   already want=on, nothing to do  {all True}
+14:00:41  t= 40s  ims-reg=not-registered   already want=on, nothing to do  {all True}
+14:01:01  t= 60s  ims-reg=not-registered   already want=on, nothing to do  {all True}
+14:01:22  t= 80s  ims-reg=not-registered   already want=on, nothing to do  {all True}
+```
+
+So: **with all five IMS switches confirmed on at every tick, the modem's IMS did
+not register within 80 s.** Each line carries its own proof that the switches
+were still on when the registration was read, which is what the first attempt
+lacked.
+
+☠️ **80 s of a planned 300 s, and the run was aborted, not completed.** The ssh
+wrapper's retry started a *second* copy of the script; both then fought over the
+timer and the switches, and the run was killed during cleanup. The phone was
+returned to its intended state and `fp3-selftest --only ims-config` confirms it
+(every switch off, timer enabled and running). Treat 80 s as a floor, not as a
+negative result: nothing here says the modem would not have registered at 120 s.
+
+☠️ **And do not read it as evidence for the missing-AP-half theory either.** That
+theory may well be right — `leads/ims-missing-ap-half.md` has the argument — but
+80 s of `not-registered` is consistent with a slow registration, a missing IMS
+PDN, and half a dozen other things. It is a measurement waiting for a longer run,
+which needs a script that does not mutate state through the retrying wrapper.
