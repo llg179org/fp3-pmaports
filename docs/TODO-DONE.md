@@ -2626,3 +2626,7 @@ so that `after:` and `continues:` references still resolve.
 - [x] **116.** The deciding witness for the device-policy gate: the UT oracle slot, same IMEI  — closed 2026-09-05 10:24
       why: THIS IS THE ANCHOR — one oracle session, one checklist; six tasks stand behind it
       lane: phone
+
+- [x] **81.** A measurement-launcher wrapper (fp3-measure) with a machine-wide lock  — closed 2026-09-05 10:35
+      after: 85
+      why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together

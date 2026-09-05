@@ -147,9 +147,7 @@ more than one is.
       after: 158
       why: One reboot, zero risk - but it must not be in place during a measurement night: #158 separately requires REMOVING a ModemManager debug drop-in before its run, so adding one now would break the night this whole category waits on. Also needs pmOS and the phone is on UT. Do it on the first reboot after #158 lands
       lane: phone
-- [ ] 81. A measurement-launcher wrapper (fp3-measure) with a machine-wide lock
-      after: 85
-      why: today's PreToolUse gate runs only inside my own session; a single entry point would close the multi-machine and the manual-ssh hole together
+
 - [~] 124. Expose the raw QG counter to mainline (CHARGE_COUNTER)
       after: 158
       why: TODO.md states it as an open question but nothing carried it as a task; the driver is part of the measured system, so only after the replication
@@ -159,10 +157,11 @@ more than one is.
       after: 116
       why: the oracle half is DONE (2026-09-03 capture 2026-09-03_ut-oracle-ims/contexts-and-operators.txt: internet APN active with a real address, mms, and an ims-type context, APN 'ims', protocol dual). What remains is the pmOS half on slot b and the comparison
       lane: phone
-- [ ] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
+- [~] 54. DIAG OTA capture on the oracle slot (RRC cause + NAS/ESM message types)
       after: 116
       why: ☠️ NOT simply 'do it on the oracle slot' any more. Attempted from the other end on 2026-09-05 (#169) and the whole path was stood up on UT with no slot switch - /dev/diag exists there, QCSuper's prebuilt aarch64 adb_bridge runs in the Android container and reports 'Connection to Diag established', QCSuper reaches it over TCP - and it then died on 'DIAG_LOG_CONFIG_F timed out' with a 24-byte pcap holding zero packets. That is the wall leads/diag-bringup.md describes, and it holds on the stock downstream stack too, not only on mainline. The route that works is the DIAG_CNTL log-mask path tools/diag-log-capture.py uses, and that tool needs pmOS's rpmsg control device. So this task now inherits #169's blocker: it needs a UT-side control-channel implementation, or it runs on pmOS. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
+      until: a UT-side DIAG_CNTL log-mask path exists, or the phone is on pmOS - the same blocker as 169
 - [~] 41. The next slot switch: a band-matched oracle measurement, not a preference read
       after: 116
       why: A band-matched oracle measurement rather than a preference read - it was line 4 of the #116 oracle session, which is now archived. It needs a slot switch, so it should ride along with the next one rather than cause its own
