@@ -10175,3 +10175,21 @@ are invalid as reliability evidence. Honest count: two valid calls, one complete
 one failed with cause 44.
 
 Capture: `docs/power/bringup/captures/2026-09-05_ut-call-rat-newsim/` (Part 2).
+
+## 2026-09-05 (retraction) — #160's answer was a device setting, not a subscription
+
+The stock-Android result that closed #160 is withdrawn. That handset's "4G hívás"
+(VoLTE) switch is **off by default and per SIM slot**, and it was off for the slot
+holding the dev card. A device-side switch in the off position fully explains a GSM
+call, so nothing about the subscription follows.
+
+The page had carried a caveat about reading the wrong slot's status on a dual-SIM
+handset - the right shape of doubt aimed at the wrong mechanism. The real
+confounder was one setting away and was not checked before concluding.
+
+Unaffected, because measured on the FP3 rather than inferred from the Android: the
+oracle falls back to EDGE for both terminating and originating calls, the fallback
+precedes the call, IMS is registered and voice-capable throughout, and ofono's dial
+goes through the IMS HAL, which accepts it.
+
+Re-test: same experiment with the switch on and mobile data enabled for that SIM.

@@ -242,3 +242,34 @@ demonstrably offers VoLTE. The variable is the subscription.
   dual-SIM handset. It is taken to be the ringing line's. If it was the other
   slot's, this section's conclusion does not follow - re-reading it with only the
   dev card inserted would remove the assumption.
+
+---
+
+# RETRACTION, same day — the Android's own VoLTE switch was off
+
+The #160 conclusion above is **withdrawn**. It rested on a stock-Android handset
+showing GSM for a terminating call on the dev card, read as evidence that the
+subscription is not provisioned for VoLTE.
+
+The operator then checked the handset itself: **"4G hívás" (VoLTE) is off by
+default on that Android, per SIM slot, and it was off for the slot holding the dev
+card** — the phone labels it "ajánlott" (recommended) but does not enable it.
+
+A device-side switch in the off position fully explains a GSM call. Nothing about
+the subscription follows from that measurement. The caveat this page already
+carried - that a dual-SIM status page might have been read for the wrong slot -
+was the right shape of doubt aimed at the wrong mechanism; the actual confounder
+was one setting away and neither of us looked at it before concluding.
+
+**What still stands, because it was measured on the FP3 and not inferred from the
+Android:**
+
+- Both terminating calls and both originating attempts on the UT oracle fell back
+  to EDGE, with the fallback *preceding* the call in every case.
+- `IpMultimediaSystem.Registered=true` and `VoiceCapable=true` throughout.
+- ofono routes the dial through the IMS HAL and the HAL accepts it.
+
+**What is now open again:** whether the dev subscription carries VoLTE at all, and
+therefore whether an IMS stack could ever help. The re-test is the same experiment
+with the switch on — and with mobile data enabled for that SIM, so a second
+unknown is not introduced.

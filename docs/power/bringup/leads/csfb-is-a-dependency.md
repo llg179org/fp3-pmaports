@@ -1,4 +1,10 @@
-> ☠️ **CLOSED 2026-09-05.** The dev card was put into a certified stock-Android
+> ☠️ **NOT CLOSED - the 2026-09-05 closure is RETRACTED.** It rested on a stock
+> Android showing GSM for the dev card; that handset's "4G hívás" switch is off by
+> default per SIM slot and was off for that slot, which explains the GSM on its own.
+> Re-test pending (queue #160). The paragraph below is kept for the record but does
+> not hold:
+>
+> ~~**CLOSED 2026-09-05.**~~ The dev card was put into a certified stock-Android
 > handset and took a terminating call on **GSM** (4G only after teardown), while a
 > different card in that same handset holds 4G through a call. The subscription is
 > the variable, so no software work on our side - IMS stack included - can give this
