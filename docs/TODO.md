@@ -167,10 +167,11 @@ more than one is.
       why: A band-matched oracle measurement rather than a preference read - it was line 4 of the #116 oracle session, which is now archived. It needs a slot switch, so it should ride along with the next one rather than cause its own
       lane: phone
       until: the phone is back on pmOS and a slot switch is being made anyway
-- [ ] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
+- [~] 64. The "why does it tear down" — one bounded ~30 minute IMS/QIPCALL capture
       after: 116
-      why: since the P-CSCF finding this decides nothing until 116 has said whether the `imsd` path is alive at all; ☠️ the silent DIAG stream is a separate obstacle
+      why: The bounded ~30 min IMS/QIPCALL capture that would answer why the modem tears the bearer down ~30 ms after it was granted. ☠️ It needs the DIAG stream, and that is exactly what is not available: leads/ims-missing-ap-half.md already called it 'the question the currently silent DIAG stream is in the way of', and 2026-09-05 confirmed the wall holds on UT as well as on mainline - QCSuper connects, the modem never answers DIAG_LOG_CONFIG_F, the pcap comes back with zero packets. Same blocker as 54 and 169. Evidence: captures/2026-09-05_attach-capture-attempt/
       lane: phone
+      until: a working DIAG capture path exists - the same blocker as 54 and 169
 - [~] 19. The A′ control for the bearer arm (bearer torn down, everything else identical)
       after: 158
       why: The A' control for the bearer arm. ☠️ ITS PURPOSE IS WORTH LESS THAN WHEN IT WAS QUEUED: it exists to price the imsd future, and on 2026-09-05 (#163) the UT oracle - full vendor IMS stack, IMS registered against the operator core - still took every call on EDGE, while a survey the same day found mainline Linux has no working VoLTE anywhere and imsd itself is documentation with no code. So the future being priced may not exist. Re-read that before spending a night on it. Needs pmOS and a completed replication either way
@@ -182,9 +183,11 @@ more than one is.
 - [~] 31. Band preference as a shippable lever
       after: 30
       why: a post-closure item — the goal is closing the 2× gap, not finding the minimum
-- [ ] 53. The modem's own story (modem-story infrastructure)
+- [@] 53. The modem's own story (modem-story infrastructure)
       after: 85
       why: understanding infrastructure; the rewritten objective does not pay for it — revisit after closure, or drop it
+      when: when the operator decides keep or drop
+      they-do: DECISION, not work. This task's own note says the rewritten objective does not pay for it and to revisit after closure or drop it. It has no dependency left and keeps surfacing as ready, so it needs an answer rather than another pass: keep it as infrastructure worth building later, or close it as not worth doing. Nothing is blocked on it either way
 
 
 - [x] 132. Which operator is each SIM in the daily dual-SIM handset (the 4G-during-call one especially)
