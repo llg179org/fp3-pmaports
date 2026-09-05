@@ -113,7 +113,7 @@ we measured weeks ago for another reason.
 | kernel ESP + `ip xfrm` | ❌ the blocker — see above |
 | `qmicli` over QRTR for USIM AKA on a UIM logical channel | QMI works; the card is a plain USIM, which is what it uses |
 | PipeWire, AMR-WB RTP | PipeWire runs; AMR-WB support unverified |
-| build: clang++/libc++, and it advertises `--target=aarch64-alpine-linux-musl` | Alpine aarch64 is exactly our target |
+| build: clang++/libc++, and it advertises `--target=aarch64-alpine-linux-musl` | Alpine aarch64 is exactly our target, and **`libc++`, `libc++-dev` and `libc++-static` 22.1.8 are packaged for Alpine edge aarch64** (checked 2026-09-05). ☠️ Unverified: whether the *libc++ std module sources* the Makefile route asks for are in `libc++-dev` |
 
 Tested by the project on **postmarketOS, Linux 7.1.2** — we are on 7.1.3, the
 same series.
