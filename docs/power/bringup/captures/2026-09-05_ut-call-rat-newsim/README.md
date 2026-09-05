@@ -120,6 +120,36 @@ replace 2G paging later".
   GSM for a terminating call, the network settles it; if it holds LTE, the
   difference is above the modem and in the stack.
 
+## Operator observation on the calling handset, same session
+
+While placing these two calls the operator watched *Settings -> SIM status ->
+Mobile network type* on the daily **factory Android** handset. Its **SIM2 shows
+4G while idle and switches to GSM when a call is placed**. A note from
+2026-09-03 records that the *other* SIM in that same handset keeps 4G through a
+call.
+
+Same handset, same Android, same modem, two cards, two behaviours. The variable
+is therefore the **card / subscription VoLTE provisioning**, not the device and
+not the software. Two consequences:
+
+- Stock Android does not protect against CSFB either, when the card is not
+  provisioned for VoLTE. So the FP3 landing on EDGE is not by itself evidence of
+  a fault in this port.
+- VoLTE *is* available on this network - the other card demonstrates it on the
+  same handset. The question is decided at the subscription, not at the RAN.
+
+This makes queue #160 the decisive and now well-controlled test: put the dev card
+into that handset, where a different card is known to hold 4G. GSM there means the
+dev subscription has no VoLTE and no amount of software work on pmOS or UT will
+change it; 4G there means the stack is the difference after all and the conclusion
+above must be narrowed.
+
+**Caveat, stated because the two are easy to conflate.** What the operator saw is
+a **mobile-originated** call on the calling handset; everything else in this
+capture is **mobile-terminated** on the FP3. Both are CS domain selection, but
+MO-CSFB and MT-CSFB are different procedures and may in principle differ. The
+observation is recorded as what it is.
+
 ## Corrections this run forced
 
 - **Run #1's `ims=` column is of unknown provenance.** Its sampler script was not
