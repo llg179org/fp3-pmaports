@@ -260,12 +260,6 @@ Three decisions the table does not show on its face:
       why: the DT consumer of the three driver series; Bert reports 0314fee3ce35 breaks hx83112b touch after resume
       prio: 60
 
-- [ ] 151. ☠️ Switch the flashed dtb to the composite: from debug-int/7.1.3 at or after c6996a7c79c3812c9942f119392defc396268177 the plain sdm632-fairphone-fp3.dtb has NO rear camera; the next _commit bump must set the device package's dtb to qcom/sdm632-fairphone-fp3-rear-camera-ak7374 (pmaports device-fairphone-fp3 deviceinfo_dtb / linux-fp3 dtb install) and the boot-fallback net must be checked first (fp3-selftest --only boot-fallback); then verify camera + focus (fp3-selftest camera checks)
-      lane: phone
-      why: ☠️ CORRECTION 2026-09-04 13:30: the earlier note said 'device unreachable' - that was true at 09:00 and false by 11:30; the phone has been in use all day. The real reason to wait is different: #85 (the overnight replication) starts 19:00 on this phone, and flashing a new _commit would swap the kernel out from under it. So this waits until after tonight's run, not for the device. Host-side groundwork stands (docs/deploy/README.md): the linux-fp3 APKBUILD needs no change, and the deviceinfo_dtb rename must land in the SAME change as the _commit bump - the pinned b8023520cddb predates the overlay split, so renaming first breaks the next build. Order on the day: fp3-selftest --only boot-fallback first, then bump+rename+checksum+build, then flash, then the camera/focus checks.
-      they-do: -
-      until: in progress in this window: built r81 ok, deploying now
-      prio: 10
 - [~] 152. Bert Karwatzki's answer: when it arrives, put his Tested-by on the wcd9335-audio cover + the patches he exercised (integration/7.1.3 @ 5bc4d5ebb7c0), take his module label / EEPROM@0x50 contents into the overlay naming (#144), and fold any wording change he wants on 78a9e301a72f
       lane: upstreaming
       until: when/he-replies
@@ -277,20 +271,13 @@ Three decisions the table does not show on its face:
       until: when/he-replies
       why: goes together with his answer to the 2026-09-03 mail (#152); one mail, not two
       prio: 60
-- [ ] 155. #142 ROOT CAUSE: give the touchscreen the two supplies it is missing — add vcc_i2c-supply = <&pm8953_l6> and vdd-ana-supply = <&pm8953_l10> to touchscreen@48 in sdm632-fairphone-fp3.dts, teach himax_hx83112b to devm_regulator_get and enable them (and disable on remove), then re-run 142-trigger.sh
-      continues: 142
-      lane: phone
-      why: CODE DONE AND PUSHED 2026-09-04; what remains is the confirming run, which needs a flash. Root cause MEASURED, not inferred: pm8953_l6 has exactly one consumer (1a94000.dsi.0-iovcc, the panel) and it drops its vote when the display powers down; l10 has no consumer at all. The bindings are the bug — himax,hx83112b is one TDDI die described twice, a panel binding that REQUIRES iovcc-supply and trivial-touch.yaml for the touch half which (unevaluatedProperties: false) cannot carry a supply — so the touch controller runs on a rail it holds no reference to. Three commits on the new category wip/7.1.3/touch (a316c7edd163 binding, 71e8b167175c driver, 18483b7410a7 board DTS), cherry-picked to integration/7.1.3 and debug-int/7.1.3, all three pushed and verified against the remote, base 7.1.3/main untouched. Verified: DTB compiles and iovcc/vdda resolve to the l6 and l10 nodes in the built blob; checkpatch --strict clean bar the deliberate local Co-authored-by trailer; git cherry shows every wip commit has its integration twin. ☠️ NOT verified: that it fixes the phone. Pre-registered rule: 142-trigger.sh screen-off must go 5/5 -> 0/5 over five interleaved rounds. Blocked on #151 because the confirming flash IS the next _commit bump, which must switch the device dtb to the composite and check the boot-fallback net first — that verification belongs to 151, not here. Docs: docs/touch/142-i2c-stall.md section 6, captures/2026-09-04_142-touch-after-resume/ROOTCAUSE-the-panel-owns-the-rail.md, findings-log 2026-09-04
-      ours declares NO supply at all and the driver requests no regulator, so the chip is powered only by whatever the panel happens to hold. Measured 2026-09-04: during the hang the controller is in RUN state, owns the bus (BUS_ACTIVE+BUS_MASTER), has a byte stuck in its output FIFO, reports no error, and BOTH i2c lines read low for the full 15 s having been high one second earlier — the picture an unpowered slave clamping the bus gives. ☠️ PRE-REGISTERED DECISION RULE, written before the measurement: 142-trigger.sh currently gives screen-off 5/5 and screen-on 0/5. If the supplies take screen-off to 0/5 across at least 5 interleaved rounds, the root cause is confirmed and the symptom patches below are not needed. If it stays 5/5, the supplies are not it and this task records that as a measured negative. Full case: docs/touch/142-i2c-stall.md sections 5a and 6
-      after: 151
-      prio: 10
 
 - [ ] 157. #142 FALLBACK, only if the supply fix fails: size the i2c-qup transfer timeout from the transfer, and add a retry to himax_hx83112b
       continues: 142
       lane: upstreaming
       why: ☠️ LAST RESORT BY THE OPERATOR DECISION 2026-09-04 — fix the cause, not the 15 seconds. Do NOT start this while the supply task is open or unmeasured. Both are real defects and both are upstreamable on their own: i2c-qup computes xfer_timeout ONCE at probe from MX_DMA_TX_RX_LEN (128 KB) and hands the same 14.976 s to a 4-byte touch read, where the downstream i2c-msm-v2 on this same hardware computes it per transfer and gives 0.504 s
       and himax_hx83112b retries nowhere, where the vendor driver retries every read and write 5x (HIMAX_REG_RETRY_TIMES) and ak7375 on this very phone was already fixed the same way (media: i2c: ak7375: retry the first transfer of a resume, same -110 signature). They remove the user-visible symptom without explaining it, which is why they are second
-      after: 155
+      after: 175
       prio: 10
 - [@] 158. Night replication, third attempt: record WHAT WAKES THE AP before running another night — add a per-leg /sys/kernel/debug/wakeup_sources (or wake-reason) snapshot to night-run.sh, then re-run the three-boot replication
       lane: phone
@@ -330,7 +317,12 @@ Three decisions the table does not show on its face:
       prio: 30
       why: Replaces #79, withdrawn 2026-09-05 for want of shunt hardware. ☠️ WHY IT IS WORTH ANYTHING: every current number in this project comes through the PMI632 gauge and docs/power/README.md lists the calibration offset as unbounded - an offset decides between '40 mA, goal met' and something else. A discharge from 100 % to power-off uses only the clock and the two endpoints, so it does not inherit that offset. ☠️ WHY IT IS NOT STARTABLE ON DEMAND: it takes the phone exclusively for many hours and ENDS WITH A FLAT PHONE, so it cannot share the device with the night replication (#158) or with the priority-1 touchscreen flash (#155), and it needs a full charge first. It is a scheduling decision, not a queue-order one. WHAT TO RECORD, or it is just a number: the pack's rated capacity and how it was established, the exact start condition (charger removed at 100 %, screen state, radios), every configuration change during the run (there should be none), the wall-clock endpoints, and what the phone was doing - a mean current is only comparable against another run in the same regime
       it also cannot be band-pinned or repeated cheaply, which is exactly why the gauge-based ladders exist alongside it rather than being replaced by it
-      until: the phone can be given up for a multi-hour exclusive run, charged to 100 %, with nothing else queued on it<!-- FP3-QUEUE:END -->
+      until: the phone can be given up for a multi-hour exclusive run, charged to 100 %, with nothing else queued on it
+- [@] 175. #142/#155 FIELD CONFIRMATION: use the phone normally for a session with pauses (>= ~36 min of real tapping - the measured gaps between stalls run to 726 s, so anything shorter can come back clean while the fault is fully present), then run fp3-selftest --only touch. The mechanism is already fixed and measured on r81 (l6 keeps a voter across display-off, l10 has a consumer); this is the only thing that can speak to the operator-visible 'Failed to read input event: -110'.
+      prio: 10
+      lane: phone
+      when: the operator uses the phone for a normal session on r81
+<!-- FP3-QUEUE:END -->
 
 ## Where this stopped, 2026-08-25 — read this first after a long gap
 
