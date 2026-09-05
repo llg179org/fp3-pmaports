@@ -180,3 +180,40 @@ Loading `vodafone/commerci/hungary` into the modem and activating it is the obvi
 experiment. It is also a change to modem configuration rather than to anything in
 our tree, so it belongs behind a deliberate decision and a recorded before-state -
 `pdc` can deactivate and restore, but the before-state has to exist first.
+
+## What the Hungarian config actually differs in — and what could not be read
+
+The three relevant MBNs were copied off the device and compared (md5-verified on
+both sides; `row.mbn` is 43484 bytes, exactly the size the PDC listing reports for
+the Active `ROW_Commercial`, which independently confirms which file is running).
+
+| | `common/row/commerci` | `eu/vodafone/commerci/hungary` | `eu/vodafone/volte/global` |
+|---|---|---|---|
+| identity string | `ROW default Policy` | **`VDF_Hungary`, `Vodafone_Hungary_Commercial`** | `Global-VoLTE-Vodafone` |
+| APN | — | **`internet.vodafone.net`** | `ims52.testnetz-vd2.de` |
+| build id | `FP3.8901.3.A.0136.20211025` | same | same |
+| size | 43484 | 36480 | 43620 |
+| `suppress_gsm_on_srvcc_csfb` | absent | **present** | absent |
+
+All three are built specifically for this device - they carry the FP3 firmware
+build id - so the Hungarian config is the vendor's own configuration for this
+handset on this network, not a foreign blob.
+
+☠️ **A near-miss worth recording.** A `comm` diff of the two configs' string sets
+appeared to show that the Hungarian one sets `voice_domain_pref`,
+`qp_ims_service_enablement_config`, `IMSVoiceDynamicConfig`,
+`RegistrationConfiguration` and `lte_nas_ignore_mt_csfb_during_volte_call` while
+the generic one does not - which would have been a complete and satisfying
+explanation. `comm` had warned "input is not in sorted order". Checking each item
+directly against each file shows **all three configs contain all of them**. The
+diff was wrong and the conclusion it invited was false.
+
+**So the difference is in the item VALUES, not in which items are present**, and
+those are binary. Reading them needs an MBN parser (QPST, `mbn_tools`), which has
+not been done. In particular **it is not established that the Hungarian config sets
+`voice_domain_pref` to a PS-preferring value** - that is the load-bearing step of
+the whole MBN hypothesis and it remains unverified.
+
+☠️ **And do not reach for `Global-VoLTE-Vodafone`:** it carries
+`ims52.testnetz-vd2.de`, a Vodafone Germany *test network* APN. Whatever it is
+for, it is not a live-network config for this operator.
