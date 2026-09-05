@@ -2,6 +2,16 @@
 
 # ☠️ The cheap configuration rests on a network service: CSFB
 
+> ☠️ **2026-09-05 — and it is not our stack's fault.** The UT oracle, with a full
+> vendor IMS stack and `ims=1` throughout, was measured taking an incoming call
+> on **EDGE** and returning to LTE a second after it ended. So the CS dependency
+> this page describes is **not** removable by implementing IMS on pmOS: the
+> system that has IMS depends on CS just the same. The variable is most likely
+> the subscription — the daily handset's two SIMs differ by tariff, one keeping
+> 4G through a call and one not, and the dev phone carries a third card never
+> characterised alone.
+> [`../captures/2026-09-05_ut-call-rat/README.md`](../captures/2026-09-05_ut-call-rat/README.md)
+
 **CS** = *Circuit Switched*, the classic 2G/3G voice path. **CSFB** = *Circuit
 Switched FallBack*: the UE camps on LTE, but when a CS call arrives the network
 moves it to 2G/3G for the duration of the call.

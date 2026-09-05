@@ -10088,3 +10088,44 @@ fully-slept legs would not have yielded a boot-to-boot spread.
 
 #158 now carries all three as requirements.
 Capture: `captures/2026-09-05_118-night-triage/WHY-THE-LEGS-FAIL.md`.
+
+## 2026-09-05 — the UT oracle falls back to 2G too, and a same-night retraction
+
+Directly sampled on the oracle slot, same device, same IMEI, same card:
+
+```
+04:34:21   tech=edge  ims=1        <- 2G, before the ring
+04:34:22   playIncomingCallSound
+04:34:21…33  tech=edge throughout
+04:34:34   call channel closed
+04:34:35   tech=lte                <- back on LTE one second later
+```
+
+CSFB, measured, on the system that has a complete vendor IMS stack. ☠️ And
+`ims=1` holds through the whole EDGE window: **IMS registration does not imply
+VoLTE for an incoming call on this subscription.**
+
+☠️ **RETRACTED, same night.** Two earlier calls (04:20, 04:29) were read as
+VoLTE because `imsradio0` service-status changes bracketed them. The 04:34 call
+shows the identical bracketing while running on EDGE start to finish — so that
+signal is equally consistent with IMS being suspended and resumed *around* a
+CSFB. **A signal that brackets an event does not tell you what carried it.**
+
+The conclusion built on it is therefore backwards. "The 2G dependency is ours,
+not the network's — our missing IMS stack forces CSFB" is wrong: the oracle has
+the stack, is registered, and still falls back.
+
+Consequence for `leads/imsd-cost-estimate.md`, which prices imsd as the
+contingency for 2G retirement: that premise is not supported. imsd would give
+pmOS what UT already has, and UT falls back anyway. Its value against the modem's
+8.5 s PDN retry loop is untouched; its **insurance value against 2G going away is
+not demonstrated**.
+
+Open, and the cheap test: the variable is most likely the **card**. The daily
+handset's two vodafone HU SIMs differ by tariff, one keeping 4G through a call
+and one not; the dev phone carries a third card never characterised on its own.
+Put the dev SIM in the daily factory-Android handset and call it — one variable,
+no flashing.
+
+Capture, including the three instrument failures that cost two of the operator's
+calls: `captures/2026-09-05_ut-call-rat/README.md`.

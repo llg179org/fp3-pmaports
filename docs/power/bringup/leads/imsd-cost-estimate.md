@@ -2,6 +2,16 @@
 
 # ★★ What would the `imsd` path cost? — the estimate is itself a gate
 
+> ☠️ **2026-09-05: THE PREMISE OF THIS PAGE IS NOT SUPPORTED.** It prices `imsd`
+> as the contingency for 2G retirement — *"if 2G goes, it is what is left"*. That
+> night the UT oracle, which runs a complete vendor IMS stack and reports
+> `ims=1` throughout, was measured **falling back to EDGE for an incoming call**
+> and returning to LTE one second after it ended. So `imsd` would give pmOS what
+> UT already has, and UT falls back anyway. The estimate below (days, not weeks)
+> and everything it says about libqmi and the missing policy still stand; what
+> does not stand is the reason for urgency. See
+> [`../captures/2026-09-05_ut-call-rat/README.md`](../captures/2026-09-05_ut-call-rat/README.md).
+
 Because of the [CSFB dependency](csfb-is-a-dependency.md), `imsd` is not an
 ambitious alternative but a **contingency**: if 2G goes, it is what is left. The
 [network gate is open](volte-is-provisioned.md). So the question is not whether

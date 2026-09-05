@@ -1,0 +1,130 @@
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:Connected to vendor.qti.hardware.radio.ims@1.2::IImsRadio/imsradio0
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0< 1 ???
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 7 radioStateChanged
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0 ims_state=0
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:Connected to vendor.qti.hardware.radio.ims@1.2::IImsRadio/imsradio1
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio1< 1 ???
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio1
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio1 > 7 radioStateChanged
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio1 ims_state=0
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio1
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 7 radioStateChanged
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio1 > 7 radioStateChanged
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0< [00000001] 4 getImsRegistrationState
+2026-09-05T04:14:04+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0< [00000002] 7 requestRegistrationChange
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0 on
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0> [00000002] 4 requestRegistrationChange
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0> [00000001] 11 getImsRegistrationState
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0: QtiRadioRegInfo state:1 radiotech:21 error_code:0
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0 ims_state=1
+2026-09-05T04:14:05+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 4 onRegistrationChanged
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0: QtiRadioRegInfo state:2 radiotech:15 error_code:2147483647
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0 ims_state=2
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 4 onRegistrationChanged
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0: QtiRadioRegInfo state:0 radiotech:15 error_code:2147483647
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: ims:imsradio0 ims_state=3
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:06+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:35+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:35+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:35+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:35+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:37+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:37+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:37+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:37+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:37+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:43+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:43+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:43+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:45+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:45+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:45+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:45+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:45+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:51+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:51+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:51+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:54+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:54+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:14:54+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:54+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:14:54+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:01+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:01+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:01+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:03+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:03+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:03+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:03+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:03+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:10+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:10+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:10+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:12+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:12+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:12+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:12+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:12+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:19+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:19+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:19+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:21+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:21+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:15:21+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:21+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:15:21+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:36+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: new call "/ril_0/voicecall01" QMap(("Emergency", QVariant(bool, false))("LineIdentification", QVariant(QString, "<msisdn-A>"))("Multiparty", QVariant(bool, false))("Name", QVariant(QString, ""))("RemoteHeld", QVariant(bool, false))("RemoteMultiparty", QVariant(bool, false))("State", QVariant(QString, "incoming")))
+2026-09-05T04:20:37+02:00 ubuntu-phablet lomiri-telephony-service-approver[3873]: playIncomingCallSound "/usr/share/sounds/lomiri/ringtones/Ubuntu.ogg"
+2026-09-05T04:20:46+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:20:46+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:20:46+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:46+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:46+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:20:47+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed
+2026-09-05T04:20:47+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed for number  "/ril_0/voicecall01"
+2026-09-05T04:29:11+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:11+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:11+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:13+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: new call "/ril_0/voicecall01" QMap(("Emergency", QVariant(bool, false))("LineIdentification", QVariant(QString, "<msisdn-A>"))("Multiparty", QVariant(bool, false))("Name", QVariant(QString, ""))("RemoteHeld", QVariant(bool, false))("RemoteMultiparty", QVariant(bool, false))("State", QVariant(QString, "incoming")))
+2026-09-05T04:29:13+02:00 ubuntu-phablet lomiri-telephony-service-approver[3873]: playIncomingCallSound "/usr/share/sounds/lomiri/ringtones/Ubuntu.ogg"
+2026-09-05T04:29:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:29:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:29:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:29:27+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed
+2026-09-05T04:29:27+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed for number  "/ril_0/voicecall01"
+2026-09-05T04:33:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:27+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:30+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: new call "/ril_0/voicecall01" QMap(("Emergency", QVariant(bool, false))("LineIdentification", QVariant(QString, "<msisdn-A>"))("Multiparty", QVariant(bool, false))("Name", QVariant(QString, ""))("RemoteHeld", QVariant(bool, false))("RemoteMultiparty", QVariant(bool, false))("State", QVariant(QString, "incoming")))
+2026-09-05T04:33:30+02:00 ubuntu-phablet lomiri-telephony-service-approver[3873]: playIncomingCallSound "/usr/share/sounds/lomiri/ringtones/Ubuntu.ogg"
+2026-09-05T04:33:49+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:33:49+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:33:49+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:49+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:49+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:33:49+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed
+2026-09-05T04:33:49+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed for number  "/ril_0/voicecall01"
+2026-09-05T04:34:20+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:20+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:20+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:22+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: new call "/ril_0/voicecall01" QMap(("Emergency", QVariant(bool, false))("LineIdentification", QVariant(QString, "<msisdn-A>"))("Multiparty", QVariant(bool, false))("Name", QVariant(QString, ""))("RemoteHeld", QVariant(bool, false))("RemoteMultiparty", QVariant(bool, false))("State", QVariant(QString, "incoming")))
+2026-09-05T04:34:22+02:00 ubuntu-phablet lomiri-telephony-service-approver[3873]: playIncomingCallSound "/usr/share/sounds/lomiri/ringtones/Ubuntu.ogg"
+2026-09-05T04:34:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:34:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 27 ???
+2026-09-05T04:34:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:34+02:00 ubuntu-phablet ofonod-wrapper[2682]: imsradio0 > 6 onServiceStatusChanged
+2026-09-05T04:34:34+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed
+2026-09-05T04:34:34+02:00 ubuntu-phablet org.freedesktop.Telepathy.ConnectionManager.ofono[4020]: call channel closed for number  "/ril_0/voicecall01"
