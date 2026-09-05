@@ -61,3 +61,49 @@ rate of one stall per ~200 s of active use:
 **Ten minutes is the first row.** The measurement needs the operator to use the
 phone normally for at least an hour, which is why #178 is marked as needing a
 person rather than left running as if it were finished.
+
+---
+
+# ☠️ Correction, 21:00: the r83 run measured nobody touching the phone
+
+The boot ran 19:10–20:54 and logged **2002 touch interrupts, zero errors of any
+code**. Read as a result that looks strong. It is not one.
+
+`touch-exposure.py r83.tsv` on the same file:
+
+```
+boot 2fc31e47  19:10-20:54  wall    104 min   ACTIVE      4 min   irqs   2002
+    -110=0  -6=0  -5=0
+    ☠️ 4 min active is BELOW the ~36 min floor
+```
+
+The panel was touched in **2 of 52 two-minute intervals**, one of them carrying
+1590 of the 2002 interrupts:
+
+```
+19:12 ............X...X................................... 20:54
+```
+
+So 100 of the 104 minutes are a measurement of the operator's absence. The
+earlier draft of this page called this window "10 minutes clean, which only
+rules out worse than r82"; the honest figure is **four minutes of exposure**,
+which by check 59's own arithmetic rules out nothing at all.
+
+## What this corrects in the instrument, not just in the reading
+
+☠️ **check 59's gate is the wrong quantity.** It accepts a clean result once the
+boot has `>= 500` touch interrupts, and this boot passed it with 2002 while
+sitting untouched for an hour and forty minutes: a single four-minute burst
+clears that bar. The #142 fault is per *first access after an idle*, so what
+bounds a clean run is **active time**, never interrupt count - a phone nobody
+touches generates no vulnerable moments and its clean log says only that.
+
+`touch-exposure.py` is added here and reports active minutes as the denominator,
+refusing to call a run meaningful below the ~36 minute floor that check 59
+derives from the r82 inter-stall gaps (23-726 s).
+
+☠️ It also groups by `boot_id` before differencing anything. The first run of
+this analysis differenced across the r83 -> r84 reboot and reported "delta
+-2670" touch interrupts, because /proc/interrupts resets at boot. The boot_id
+column caught it; without that column the number would have looked merely odd
+rather than impossible.
