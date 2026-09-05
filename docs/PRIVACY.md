@@ -49,6 +49,33 @@ and skipped it silently. `grep -a` is the fix and the self-test now plants an
 MSISDN behind a NUL byte. A checking tool that has only ever been seen saying
 "clean" has proved nothing.
 
+## The 2026-09-05 history rewrite
+
+The identifiers listed above had been committed since 2026-08-20, so masking the
+working tree was not enough and the published history was rewritten with
+`git-filter-repo`. All 1262 commits keep their content and order; every hash from
+the first affected commit onward changed. A fresh clone from GitHub was then
+scanned blob by blob and is clean.
+
+Three things worth keeping from how it went:
+
+- ☠️ **`--replace-text` silently skips blobs it considers binary** — the same
+  blind spot as `grep` without `-a`, and it left exactly the file that had hidden
+  a phone number from the first scan. A second pass with `--blob-callback`, which
+  makes no such distinction, was needed. Verify after filtering; do not assume.
+- **The verifier was run against the pre-rewrite backup first**, where it found
+  all ten identifier classes, before being trusted on the rewritten repo where it
+  found none. A check only seen saying "clean" has proved nothing.
+- **The old tip was deliberately NOT tagged and pushed.** The project's usual rule
+  is to tag before a force-push so the previous tip stays reachable; here that
+  would have kept alive precisely what was being removed. The backup is a
+  `git bundle` on the owner's machine under `/mnt/1TB/pmos/fp3-backups/`, outside
+  every repository — which is where this page already says the real values belong.
+
+⚠️ **A rewrite does not scrub the forge immediately.** GitHub can still serve an
+orphaned commit by its full SHA until it garbage-collects, and forks or caches may
+retain it. If that matters, ask GitHub Support to run gc on the repository.
+
 ## Where the real values are
 
 On the owner's machine, outside every repository. The masking pass of 2026-09-03
