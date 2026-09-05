@@ -1,0 +1,38 @@
+=== 1. the modem's own IMS stack must stay out of the way ===
+fp3-ims-reconcile: already want=off, nothing to do  {'voice': False, 'vowifi': False, 'video': False, 'sms': False, 'ut': False}
+=== 2. raise the ims PDN (IPv4) ===
+modem 0
+created /org/freedesktop/ModemManager1/Bearer/1
+iface=qmapmux0.0  addr-len=13  prefix=28
+netdev configured
+=== 3. open the protected ports (upstream says a policy-drop INPUT kills MT delivery) ===
+nftables: rules inserted
+=== 4. configuration ===
+wrote /etc/imsd.env (5 lines; values not echoed)
+=== 5. ONE foreground run, 90 s ===
+imsd: LOCAL=<addr> P-CSCF=[<addr>]:5060
+imsd: starting on the system bus
+imsd: object registered at /net/catcrafts/IMS1
+imsd: owning net.catcrafts.IMS1
+imsd: SIM slot=1 IMSI=<redacted> domain=ims.mnc070.mcc216.3gppnetwork.org
+imsd: FRESH registration
+imsd: contact user-part: 28d0e2c9-14be-4819-9ec7-d5ce7941fe74
+imsd: bring-up FAILED: no 401 to unprotected REGISTER
+imsd: engine fatal: no 401 to unprotected REGISTER — exiting for systemd restart
+--- imsd exited rc=0 ---
+iface=qmapmux0.0 gw-len=13 addr-len=13
+=== host routes to the P-CSCF via the ims PDN ===
+  primary route added
+  secondary route added
+  verify: <addr> via <addr> dev qmapmux0.0 src <addr> uid 0 
+=== one run, 90 s ===
+imsd: LOCAL=<addr> P-CSCF=[<addr>]:5060
+imsd: starting on the system bus
+imsd: object registered at /net/catcrafts/IMS1
+imsd: owning net.catcrafts.IMS1
+imsd: SIM slot=1 IMSI=<redacted> domain=ims.mnc070.mcc216.3gppnetwork.org
+imsd: FRESH registration
+imsd: contact user-part: e9f761ac-1056-4051-8bff-735bc5645c30
+imsd: bring-up FAILED: REGISTER failed 500
+imsd: engine fatal: REGISTER failed 500 — exiting for systemd restart
+--- exited ---

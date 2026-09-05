@@ -10434,3 +10434,28 @@ The socket now opens; the operation needs `CAP_NET_ADMIN`. **The command failed
 in both cases and the difference between the two errors is the entire finding.**
 
 Full write-up: `captures/2026-09-05_kernel-ipsec-r82/`.
+
+## 2026-09-05 — ★ the FP3 exchanged SIP with One HU's IMS core, and failed at the last step
+
+`imsd` cross-built, packaged and installed on r82. Sequence reached, each step
+proved by the fact that the code throws earlier on failure and did not:
+D-Bus up, **USIM readable through QMI/UIM**, unprotected REGISTER answered with a
+**401 challenge**, **USIM AKA succeeded**, **IPsec SAs installed** (the r82
+kernel work in real use), **protected TCP connect to the P-CSCF succeeded**, and
+then the protected REGISTER got **`500`** — a SIP response from the operator.
+
+Two unknowns closed positively: USIM AKA works on an msm8953-generation modem,
+and r82's IPsec is sufficient for the SA pair imsd installs.
+
+☠️ The first attempt got `no 401` — silence — because `ip route get <P-CSCF>`
+resolved **via wlan0**: the REGISTER left over Wi-Fi to a private address on the
+home LAN. `ims-pdn-up.sh` never had to solve this because an IPv6 PDN reaches the
+P-CSCF through its own /64; an IPv4 /28 with an off-subnet P-CSCF needs an
+explicit host route via the bearer gateway. Adding it turned silence into a
+server response.
+
+Why 500 is not yet known: `DumpRaw` runs only on success paths, so the failing
+response is discarded and `DUMP_SIP=1` wrote nothing. Next step is a one-line
+change to dump it. Not looped — the README warns of a fresh-SA throttle.
+
+Full write-up: `captures/2026-09-05_imsd-first-register/`.
