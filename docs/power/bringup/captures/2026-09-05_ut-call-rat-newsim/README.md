@@ -404,3 +404,43 @@ because `tests/no-identifiers.sh` had been written earlier the same day. The scr
 now prints the last four ICCID digits and the MCC/MNC, which is all a reader needs
 to tell the cards apart, and nothing that identifies a subscriber. Fix the
 instrument, not the output.
+
+## Part 4 — the other direction, same asymmetry, both legs again
+
+The same window carries a second call, this time **Android → FP3**, with the caller
+(dev card) watched throughout:
+
+```
+FP3 / UT / card ...3899                  daily Android / dev card (caller)
+06:35:35  tech=edge                      <- fallback, 2 s BEFORE the call is signalled
+06:35:37  tech=edge  states=incoming                         4G  while ringing
+06:35:57  tech=edge  states=active       <- answered         4G  while speaking
+06:36:08  tech=edge  call ends           <- 11 s of speech
+06:36:09  tech=lte
+imsreg=true imsvoice=true throughout
+```
+
+With Part 3 the matrix is now complete in both directions, with both legs of each
+call read at the same time:
+
+| call | FP3 leg (card ...3899) | Android leg (dev card) |
+|---|---|---|
+| FP3 → Android (06:29) | EDGE, dialing to teardown | 4G |
+| Android → FP3 (06:35) | EDGE, paging to teardown | 4G, ringing **and** speech |
+
+Two calls, opposite directions, four legs, one network, minutes apart: the dev
+subscription is carried over IMS every time and the `…3899` subscription over CS
+every time. The caller is not the variable, the direction is not the variable, and
+the moment is not the variable.
+
+☠️ **A caller on VoLTE talking to a callee on CS is normal, not a contradiction.**
+Each leg is negotiated independently and the IMS core interworks to the circuit
+domain, so "the caller saw 4G the whole time" says nothing about what reached the
+other phone. It is only informative here because both ends were instrumented.
+
+And the fallback again precedes the call: 2 s before ofono is told there is an
+incoming call, exactly as in Parts 1 and 2, so the CS paging - not the call setup -
+is what pulls this subscription down to GERAN.
+
+**Still unseparated:** card and stack. The FP3 has never held a card known to get
+VoLTE. #163 is unchanged and is the only measurement that resolves it.
