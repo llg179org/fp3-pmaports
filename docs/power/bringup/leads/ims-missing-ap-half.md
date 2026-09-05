@@ -90,10 +90,19 @@ Nothing here says when that happens; operator schedules are not this repo's
 business. What it changes today is the PRICE of the unanswered question, not its
 urgency.
 
-☠️ **What is still not measured** is whether stopping the loop moves the duty.
-The one window taken with IMS off is unusable (DIAG log masks still armed
-modem-side, and the band moved inside the window); the band-pinned A/B/A' ladder
-`../tools/ims-ab.sh` is what answers it.
+☠️ **SUPERSEDED 2026-09-02, and this paragraph was left standing until 2026-09-05.**
+It said stopping the loop had not been shown to move the duty. **It has** - the
+band-pinned ladder was then run three times (`../captures/2026-09-02_ims-ladder/`,
+`_ims-ma2/`, `_ims-ma3/`): modem duty **44.5-48.0 % with IMS on against 4.4-4.8 %
+with it off**, AP median sleep **16 s against 62 s**, and a sleeping-phone current
+of **90.3 mA against 40.3 mA**. `../../README.md` carries the tables and the three
+caveats that still gate the headline. The superseded text, kept so the correction
+is visible to anyone who read it:
+
+> ~~What is still not measured is whether stopping the loop moves the duty. The one
+> window taken with IMS off is unusable (DIAG log masks still armed modem-side, and
+> the band moved inside the window); the band-pinned A/B/A' ladder
+> `../tools/ims-ab.sh` is what answers it.~~
 
 ## Sources
 
