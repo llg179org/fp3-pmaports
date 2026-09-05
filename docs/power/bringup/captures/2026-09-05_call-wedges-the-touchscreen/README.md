@@ -156,3 +156,32 @@ Two distinct failures, one shared trigger.
 The call arrives on **2G** — `tech=gsm,gprs`, and the modem's own call record says
 `mode = 'gsm'`, `direction = 'mt'`. The RAT drops **before** the phone rings, so a
 sampler started at the ring has already missed the transition.
+
+## A third occurrence, 90 seconds after the second — and no call this time
+
+```
+18:25:23  Himax-hx83112b-TS 3-0048: Failed to read input event: -110
+18:25:23  Himax-hx83112b-TS 3-0048: Failed to read input event: -6
+```
+
+The phone was back on LTE at 18:24:13 and idle of calls. So this one is **not**
+call-triggered, and it fits the fault's original characterisation — a first
+access after a pause — rather than the new one.
+
+**Three events in fifteen minutes**, two of them `-110`/`-6` **ninety seconds
+apart**, while the operator was using the phone normally:
+
+| time | signature | duration | context |
+|---|---|---|---|
+| 18:11:06–18:14:07 | `-5` × ~28 600 | 3 min, needed a rebind | 9 s after an incoming call ended |
+| 18:23:54 | `-110` + `-6` | 15 s, self-recovered | 15 s after the second call was signalled |
+| 18:25:23 | `-110` + `-6` | 15 s, self-recovered | 70 s after that call ended, on LTE, no call |
+
+☠️ For scale: `tests/checks/59-touch-i2c-stall-test.sh` records the pre-fix rate
+as **15 stalls in a 50-minute session** — roughly one per 200 s of active use.
+Two in 90 s is worse than that, though a single short window is not a rate and
+the operator was tapping continuously, which manufactures vulnerable moments.
+
+**This is the field confirmation #175 asked for, and it is negative.** The
+supply fix is on the device, both rails are consumed, and the operator-visible
+fault is present and frequent.
