@@ -11059,3 +11059,34 @@ Service was restored (drop-in removed, `IdleAction` back to `ignore`, lock
 cleared, ModemManager restarted, modem `registered` on LTE).
 
 Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
+
+### ☠️☠️ Overnight: "duration is the only variable" WITHDRAWN — it is an interaction
+
+Three unattended `rtcwake` cycles: 110 s, 4 s and **665 s** of real suspend, and
+in all three the modem **survived** with QMI answering at +0 s. Cycle 3 slept
+longer than the 10 min 23 s suspend that lost the modem two hours earlier, so
+duration alone is not the cause.
+
+The full design is a 2×2 and **both factors are needed**:
+
+| suspend | woken by | modem |
+|---|---|---|
+| 24 s | incoming call | survived |
+| 665 s | RTC alarm | survived |
+| 623 s | incoming call | **LOST** |
+| 1176 s | incoming call | **LOST** |
+
+Only a **long** suspend ended by an **incoming call** loses it. ☠️ The earlier
+step that "eliminated the wake source" did so on the 24 s call-wake alone — the
+short arm of the design, not a control for the long one. **One cell of a 2×2
+cannot rule out an interaction.**
+
+Candidate, untested: an RTC wake is local, a call wake arrives *through the
+modem* after it has been in low power for minutes, so the QRTR services may need
+re-announcing and MM probes into that window. Testing it means a QRTR service
+dump at +0 s in both arms, and the call arm needs a person.
+
+☠️ The number the run was meant to produce — how late the port is — is still
+missing: every cycle survived, so the transport never went away. And cycles 1–2
+asked for 720 s and got 110 s and 4 s, for a reason still unidentified; a run
+needing a guaranteed sleep duration cannot assume it gets one.

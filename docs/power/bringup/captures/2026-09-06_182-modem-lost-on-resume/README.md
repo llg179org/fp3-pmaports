@@ -143,3 +143,65 @@ failing point, and would have added nothing to a result already known at 19 min.
 
 ☠️ **#181 stays blocked behind this.** Its morning sample would be a guaranteed
 "did not ring", and would read as a reachability result.
+
+## ☠️☠️ WITHDRAWN: "the only remaining variable is the duration"
+
+Three unattended `rtcwake` cycles ran overnight to bracket how late the QMI port
+is (`rtcwake-three-cycles.log`). They answered a different question, and they
+overturn the section above.
+
+```
+cycle 1  resumed after  110 s   QMI at +0 s   modem survived
+cycle 2  resumed after    4 s   QMI at +0 s   modem survived
+cycle 3  resumed after  665 s   QMI at +0 s   modem survived
+```
+
+**Cycle 3 slept for 11 minutes and the modem survived** — longer than the
+10 min 23 s suspend that lost it two hours earlier. So duration alone does not
+cause it, and the claim that it was "the only remaining variable" is wrong.
+
+With every run on the table, the design is a clean 2×2 and **both factors are
+needed**:
+
+| suspend | woken by | modem after |
+|---|---|---|
+| 24 s | **incoming call** | survived |
+| 665 s | RTC alarm | survived |
+| 623 s (10 min 23 s) | **incoming call** | **LOST** |
+| 1176 s (19 min 36 s) | **incoming call** | **LOST** |
+
+A short suspend woken by a call is fine. A long suspend woken by an RTC alarm is
+fine. **Only a long suspend ended by an incoming call loses the modem.**
+
+☠️ That also retires the earlier reasoning that eliminated the wake source: it
+was eliminated on the strength of the 24 s call-wake alone, which is now visible
+as the *short* arm of the design, not a control for the long one. **One cell of a
+2×2 cannot rule out an interaction.**
+
+### What this points at, and what would test it
+
+An RTC wake is a local alarm; a call wake comes **through the modem**, which
+raises it over QRTR/glink after the modem itself has been in a low-power state
+for minutes. The candidate is therefore that a *long* modem sleep plus a
+*modem-originated* wake leaves the QRTR services needing re-announcement, and
+ModemManager probes into that window.
+
+☠️ Untested. The instrument would be a QRTR service dump taken at +0 s on resume
+in both arms — the same script, one arm woken by RTC and one by a call — which
+needs the operator for the call arm.
+
+### The number this run was supposed to produce is still missing
+
+Every cycle reported `QMI transport answered at +0 s`, because in every cycle the
+modem had survived and the transport never went away. **How late the port is in
+the failing case is still unmeasured**, and it cannot be measured in the
+surviving arm.
+
+### ☠️ And a loose end that is still not explained
+
+Cycles 1 and 2 asked for 720 s and slept 110 s and **4 s**. Cycle 3, asking the
+same, got 665 s. Something wakes this phone unpredictably during an rtcwake
+suspend and it has not been identified; `wakeup_sources` named nothing earlier.
+It does not affect the 2×2 — the surviving long arm is cycle 3's real 665 s —
+but any future run that needs a guaranteed sleep duration cannot assume it gets
+one.
