@@ -10945,3 +10945,27 @@ log, of which two are `qcom,slim-ngd` (SLIMbus audio). Splitting by subsystem
 took the i2c number from 3 to 1.
 
 Capture: [`captures/2026-09-06_179-no-cascade-on-r88/`](captures/2026-09-06_179-no-cascade-on-r88/)
+
+## 2026-09-06 — #181 armed: idle-suspend on, and two things measured on the way
+
+`IdleAction` was unset with no drop-in directory, `suspend_stats/success = 0`,
+and **no `block`-mode sleep inhibitor** — nothing prevented sleep, nothing asked
+for it. Armed with one deletable drop-in (`IdleAction=suspend`,
+`IdleActionSec=5min`), read back from logind rather than from the file.
+
+★ **The three `fp3-*` timers do not wake a suspended phone.** All are
+`WakeSystem=no`, so their elapse is deferred rather than waking the system. The
+reflex was to stop them — which would have taken out `fp3-usbnet-watchdog`, the
+thing that brings the USB link back, for no gain.
+
+★ **"DO NOT SSH IN" is a mechanism, not a superstition.** With a session open:
+the phosh seat reports `IdleHint=yes`, the ssh session `IdleHint=no`, and the
+manager's hint is therefore `false`. `IdleAction` fires on the manager's hint, so
+a login does not merely disturb the measurement — **it makes suspend impossible
+for as long as it is connected.**
+
+The `~/.fp3-measure.lock` was set and then *shown refusing* the next login. ☠️
+Not yet established: that the phone actually suspends. Until
+`suspend_stats/success` is non-zero, the record says only that it was told to.
+
+Capture: [`captures/2026-09-06_181-idle-suspend-night/`](captures/2026-09-06_181-idle-suspend-night/)

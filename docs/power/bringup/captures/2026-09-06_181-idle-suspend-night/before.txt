@@ -1,0 +1,25 @@
+=== logind.conf IdleAction sorok ===
+=== drop-in konyvtar ===
+nincs logind.conf.d
+=== effektiv ertek ===
+=== suspend_stats ===
+0
+0
+=== inhibitorok ===
+WHO            UID   USER PID    COMM           WHAT                                                     WHY                                         MODE
+ModemManager   0     root 190181 ModemManager   sleep                                                    ModemManager needs to reset devices         delay
+NetworkManager 0     root 777    NetworkManager sleep                                                    NetworkManager needs to turn off networks   delay
+Realtime Kit   0     root 779    rtkit-daemon   sleep                                                    Demote realtime scheduling and stop canary. delay
+UPower         0     root 970    upowerd        sleep                                                    Pause device polling                        delay
+fp3            10000 fp3  1170   phosh          handle-power-key                                         Phosh handling power key                    block
+fp3            10000 fp3  2226   gsd-media-keys handle-power-key:handle-suspend-key:handle-hibernate-key GNOME handling keypresses                   block
+fp3            10000 fp3  2226   gsd-media-keys sleep                                                    GNOME handling keypresses                   delay
+fp3            10000 fp3  2229   gsd-power      sleep                                                    GNOME needs to lock the screen              delay
+
+8 inhibitors listed.
+=== idozitok amik ejjel ebresztenenek ===
+NEXT                             LEFT LAST                               PASSED UNIT                         ACTIVATES
+Sun 2026-09-06 22:57:52 CEST      14s Sun 2026-09-06 22:57:22 CEST      15s ago fp3-usbnet-watchdog.timer    fp3-usbnet-watchdog.service
+Sun 2026-09-06 22:58:00 CEST      22s Sun 2026-09-06 22:56:04 CEST 1min 32s ago fp3-touch-sample.timer       fp3-touch-sample.service
+Sun 2026-09-06 23:01:16 CEST 3min 38s Sun 2026-09-06 22:56:16 CEST 1min 21s ago fp3-ims-reconcile.timer      fp3-ims-reconcile.service
+Mon 2026-09-07 18:00:31 CEST      19h Sun 2026-09-06 18:00:31 CEST 4h 57min ago systemd-tmpfiles-clean.timer systemd-tmpfiles-clean.service
