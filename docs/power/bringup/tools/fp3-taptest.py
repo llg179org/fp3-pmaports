@@ -83,6 +83,11 @@ Counting rules that have each cost a wrong conclusion here:
     in, and do not compare it against the prediction - 0 == 0 read as agreement
     once and nearly retracted a good measurement.
 """
+import atexit
+import os
+import signal
+import subprocess
+
 import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gdk, GLib
@@ -119,6 +124,91 @@ INSTRUCTIONS = [
     "Tap this text area to CLEAR the record.",
     "The counters above it keep running.",
 ]
+
+
+
+KCONTACTS_UNIT = "fp3-kcontacts"
+KCONTACTS_LOG = "/var/log/kernel-contacts.log"
+
+
+def _touch_event_node():
+    """Find the touchscreen's /dev/input/eventN, rather than hardcoding it.
+
+    ☠️ The number is not stable: it depends on probe order, and a run pointed at
+    the wrong node would log an empty kernel side that reads exactly like a
+    panel that reported nothing.
+    """
+    try:
+        block = ""
+        for para in open("/proc/bus/input/devices").read().split("\n\n"):
+            if "imax" in para or "hx83" in para:
+                block = para
+                break
+        for line in block.splitlines():
+            if line.startswith("H: Handlers"):
+                for tok in line.split("=", 1)[1].split():
+                    if tok.startswith("event"):
+                        return "/dev/input/" + tok
+    except OSError:
+        pass
+    return None
+
+
+def _unit_state(unit):
+    try:
+        return subprocess.run(["systemctl", "show", "-p", "ActiveState",
+                               "--value", unit], capture_output=True,
+                              text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def start_kcontacts(log):
+    """Start the kernel-side contact reader unless something already runs it.
+
+    Returns True only if WE started it - the caller must not stop a unit it did
+    not start, because a longer measurement may be using it.
+    """
+    if _unit_state(KCONTACTS_UNIT) in ("active", "activating"):
+        log("kernel-contacts: already running, left alone")
+        return False
+    node = _touch_event_node()
+    if not node:
+        log("kernel-contacts: NOT started - no touchscreen event node found. "
+            "The kernel side of this run is MISSING, not empty.")
+        return False
+    here = os.path.dirname(os.path.abspath(__file__))
+    reader = os.path.join(here, "kernel-contacts.py")
+    if not os.path.exists(reader):
+        reader = "/tmp/kernel-contacts.py"
+    if not os.path.exists(reader):
+        log("kernel-contacts: NOT started - %s missing. The kernel side of "
+            "this run is MISSING, not empty." % reader)
+        return False
+    cmd = ["sudo", "-n", "systemd-run", "--unit=" + KCONTACTS_UNIT, "--collect",
+           "/usr/bin/python3", reader, node, KCONTACTS_LOG]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError) as e:
+        log("kernel-contacts: NOT started (%s). The kernel side of this run "
+            "is MISSING, not empty." % e)
+        return False
+    if r.returncode != 0:
+        log("kernel-contacts: NOT started, rc=%d %s. The kernel side of this "
+            "run is MISSING, not empty."
+            % (r.returncode, (r.stderr or "").strip()[:120]))
+        return False
+    log("kernel-contacts: started on %s -> %s" % (node, KCONTACTS_LOG))
+    return True
+
+
+def stop_kcontacts(log):
+    try:
+        subprocess.run(["sudo", "-n", "systemctl", "stop", KCONTACTS_UNIT],
+                       capture_output=True, timeout=20)
+        log("kernel-contacts: stopped (we started it)")
+    except (OSError, subprocess.SubprocessError) as e:
+        log("kernel-contacts: stop FAILED (%s) - it may still be running" % e)
 
 
 def _ms(v):
@@ -177,6 +267,16 @@ class TapTest(Gtk.ApplicationWindow):
         self.log = open(LOG, "a", buffering=1)
         self._log("== taptest start %s" % time.strftime("%F %H:%M:%S"))
 
+        # ☠️ This app is blind below the compositor, so the kernel-side reader
+        # is not optional - a run without it cannot tell "the finger did not
+        # land" from "the panel never reported it". Start it here rather than
+        # relying on the operator remembering, and stop it on the way out ONLY
+        # if we were the ones who started it: another measurement may own it.
+        self.owns_kcontacts = start_kcontacts(self._logline)
+        atexit.register(self._cleanup)
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            signal.signal(sig, self._on_signal)
+
         self.area = Gtk.DrawingArea()
         self.area.set_draw_func(self._draw)
         self.set_child(self.area)
@@ -213,6 +313,25 @@ class TapTest(Gtk.ApplicationWindow):
     # ── logging ────────────────────────────────────────────────────────────
     def _log(self, line):
         self.log.write(line + "\n")
+
+    def _logline(self, msg):
+        self._log("%s  %s" % (self._stamp(), msg))
+
+    def _cleanup(self):
+        if getattr(self, "owns_kcontacts", False):
+            self.owns_kcontacts = False
+            stop_kcontacts(self._logline)
+        self._log("== taptest stop %s" % time.strftime("%F %H:%M:%S"))
+        try:
+            self.log.flush()
+        except ValueError:
+            pass
+
+    def _on_signal(self, _sig, _frm):
+        # systemctl stop sends SIGTERM; without a handler the process dies
+        # before atexit runs and the reader is left behind.
+        self._cleanup()
+        os._exit(0)
 
     @staticmethod
     def _mono():

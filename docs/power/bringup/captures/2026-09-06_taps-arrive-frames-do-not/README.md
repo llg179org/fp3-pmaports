@@ -662,3 +662,29 @@ there by construction.**
 "the panel or driver never reported it" produce identical logs. The kernel-side
 reader was armed at 20:32:41, *after* this window, so **this occurrence has no
 kernel-side evidence and cannot be attributed.** The next one will.
+
+## The app now owns the kernel-side reader
+
+Because a run without `kernel-contacts.py` cannot tell "the finger did not land"
+from "the panel never reported it", the app starts it itself and stops it on the
+way out. Three behaviours, each tested against a known answer rather than
+assumed:
+
+| case | measured |
+|---|---|
+| reader stopped, app starts | started it, found `/dev/input/event4` by itself, logged it |
+| app stopped | stopped the reader, logged `stopped (we started it)` |
+| reader **already running** (someone else's) | `already running, left alone` — and it was **still active after the app exited** |
+
+☠️ **It must not kill a reader it did not start**: another measurement may own
+it, and a taptest exit is no reason to cut that short.
+
+☠️ **The event node is discovered, not hardcoded.** The number depends on probe
+order, and a run pointed at the wrong node logs an *empty* kernel side that
+reads exactly like a panel which reported nothing. When it cannot be found the
+app says so in those words — *the kernel side of this run is MISSING, not
+empty*.
+
+☠️ **A `SIGTERM` handler was required.** `systemctl stop` kills with SIGTERM, so
+`atexit` never ran and the reader would have been left behind — which the test
+above would have shown as case B failing.
