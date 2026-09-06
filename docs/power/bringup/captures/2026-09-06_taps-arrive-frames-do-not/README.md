@@ -345,3 +345,82 @@ Everything in the block above. The hop costs from the input side (`evt->raw`,
 `raw->ges`, `ges->draw`) are much less exposed to this — they are all upstream of
 the paint — but they were taken in the same contaminated runs and get no free
 pass.
+
+## ★★ LOCALISED: GTK's gesture recogniser swallows the lost taps
+
+990 taps in one run (`taptest-run7-990-taps.log`), with the raw counter finally
+working:
+
+| | |
+|---|---:|
+| raw `touch-begin` events delivered to the client | **1030** |
+| taps the gesture recogniser produced | **990** |
+| **raw events that produced no tap** | **40** |
+| alternation BREAKs the app logged by itself | **61 (6.2 %)** |
+
+And the 40 are not scattered — **every BREAK has one sitting immediately before
+it**:
+
+```
+TAP   19:50:12.132  .  #5
+RAW   19:50:12.241  RAW touch-begin #6   ->  TAP  o  #6      delivered
+RAW   19:50:12.321  RAW touch-begin #7   ->  (no tap)        SWALLOWED
+RAW   19:50:12.430  RAW touch-begin #8   ->  BREAK + TAP o #7
+```
+
+The same shape at 19:50:14.489 and 19:50:15.019, and so on.
+
+**So the touch is not lost in the panel, the driver, libinput or the
+compositor — all of those delivered it, and the app's raw controller counted it.
+It is lost inside GTK, between the `GdkEvent` and `GestureClick::pressed`.**
+
+This is precisely the split the raw counter was added for, written into the
+source months of debugging ago:
+
+```
+kernel CONTACT  ->  RAW  : lost in libinput or phoc
+RAW  ->  tap           : lost in GTK's gesture recognition
+```
+
+☠️ **And it could not be measured until an hour before this run**, because the
+controller was in the default BUBBLE phase and saw nothing at all. Every earlier
+run on this page printed `raw 0` and that was read as a fact about the
+transport. **The instrument that would have answered the question was present
+and silently disabled the whole time.**
+
+### The leading cause, not yet confirmed
+
+`Gtk.GestureClick` handles **one touch sequence at a time**. The operator taps
+with two fingers alternately, so a second finger landing before the first lifts
+is exactly the case a single-sequence recogniser rejects. The build after this
+run logs `fingers-down` and the raw touch position with every event, and tracks
+`TOUCH_END`/`TOUCH_CANCEL`, which decides it.
+
+If that is the cause then it is **an artefact of this instrument**, not a device
+fault — but the same GTK arbitration runs under every GTK app on the phone, so
+"the calculator dropped a digit" would have the same explanation and the same
+fix, and neither is in the kernel.
+
+## ☠️ I over-corrected the withdrawal an hour earlier
+
+The presentation numbers were withdrawn as contaminated by the forced repaint.
+The repaint is gone, and in this run, over 484 samples:
+
+| stage | median | p90 | max |
+|---|---:|---:|---:|
+| `evt->raw` | 3.1 ms | 14.0 | 39.8 |
+| `raw->ges` | 0.5 ms | 0.7 | 25.0 |
+| `ges->draw` | 5.0 ms | 21.2 | 87.6 |
+| **`draw->present`** | **59.0 ms** | **76.9** | **347.6** |
+
+**The effect survives removing the perturbation**, so the perturbation was not
+its cause. The withdrawal was right to be cautious and wrong in what it
+concluded; both are kept. What the forced repaint did cause is the *operator's*
+report that the display had got slower — that observation stands and was the
+reason the repaint was removed, which was worth doing on its own.
+
+☠️ **59 ms is still not quotable**, for the reason named when it was first
+measured and still not settled: `get_presentation_time()` may be the frame
+clock's own prediction. The next build logs it against
+`get_predicted_presentation_time()`; if they are equal every time, the
+"measurement" is a model.

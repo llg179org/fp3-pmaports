@@ -216,6 +216,12 @@ class TapTest(Gtk.ApplicationWindow):
         t = fc.get_timings(counter) if fc is not None else None
         if t is not None and t.get_complete():
             pres = t.get_presentation_time()          # microseconds, or 0
+            # ☠️ Is this the compositor's feedback or the frame clock's own
+            # guess? GDK exposes the prediction separately, so log both: if they
+            # are equal every time, the "measurement" is a model and must not be
+            # quoted as one.
+            pred = t.get_predicted_presentation_time()
+            st["pres_us"], st["pred_us"] = pres, pred
             if pres:
                 st["drw_prs"] = pres / 1000.0 - st["t_drw"]
             else:
@@ -229,7 +235,10 @@ class TapTest(Gtk.ApplicationWindow):
                   "draw->present %s  (refresh %s)"
                   % (self._stamp(), _ms(st.get("evt_lat")), _ms(st.get("raw_ges")),
                      _ms(st.get("ges_drw")), _ms(st.get("drw_prs")),
-                     _ms(st.get("refresh"))))
+                     _ms(st.get("refresh")))
+                  + ("  pres=%d pred=%d delta=%.1f ms"
+                     % (st.get("pres_us", 0), st.get("pred_us", 0),
+                        (st.get("pres_us", 0) - st.get("pred_us", 0)) / 1000.0)))
         # Deliberately NO queue_draw() here - see the comment where this is
         # armed. The log is the measurement; the screen is a convenience.
         return False
@@ -250,6 +259,21 @@ class TapTest(Gtk.ApplicationWindow):
         if event is None:
             return False
         et = event.get_event_type()
+        # ☠️ TOUCH_END is tracked so a swallowed TOUCH_BEGIN can be attributed.
+        # Measured 2026-09-06: 40 of 1030 touch-begins produced no tap, every
+        # one of them next to a BREAK - the kernel and the compositor delivered
+        # them and GTK's gesture recogniser dropped them. GestureClick handles
+        # ONE sequence at a time, so a second finger landing before the first
+        # lifts is the leading suspect, and only the overlap tells them apart.
+        if et == Gdk.EventType.TOUCH_END:
+            self.n_down = max(0, getattr(self, "n_down", 0) - 1)
+            return False
+        if et == Gdk.EventType.TOUCH_CANCEL:
+            self.n_cancel = getattr(self, "n_cancel", 0) + 1
+            self._log("%s  RAW touch-cancel #%d  (fingers down %d)"
+                      % (self._stamp(), self.n_cancel, getattr(self, "n_down", 0)))
+            self.n_down = max(0, getattr(self, "n_down", 0) - 1)
+            return False
         if et in (Gdk.EventType.TOUCH_BEGIN, Gdk.EventType.BUTTON_PRESS):
             now = self._mono()
             evt = float(event.get_time())          # milliseconds, compositor clock
@@ -270,11 +294,15 @@ class TapTest(Gtk.ApplicationWindow):
             lat = d if usable else None
             if et == Gdk.EventType.TOUCH_BEGIN:
                 self.n_raw += 1
+                self.n_down = getattr(self, "n_down", 0) + 1
             self.stage = {"t_raw": now, "evt_lat": lat, "touch":
                           et == Gdk.EventType.TOUCH_BEGIN}
-            self._log("%s  RAW %s #%d  evt->raw %s"
+            ok, ex, ey = event.get_position()
+            self._log("%s  RAW %s #%d  evt->raw %s  at %s  fingers-down %d"
                       % (self._stamp(), et.value_nick, self.n_raw,
-                         ("%.1f ms" % lat) if lat is not None else "n/a"))
+                         ("%.1f ms" % lat) if lat is not None else "n/a",
+                         ("%.0f,%.0f" % (ex, ey)) if ok else "?",
+                         getattr(self, "n_down", 0)))
         return False
 
     # ── drawing ────────────────────────────────────────────────────────────

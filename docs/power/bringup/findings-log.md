@@ -10825,3 +10825,31 @@ natural paint. Nothing in the measurement path schedules a frame. ★ This is th
 second time today the operator's own observation overturned a conclusion the
 source code could not have yielded; the first was their rejection of the
 "you could not see the glyph change" explanation.
+
+### ★★ LOCALISED: GTK's gesture recogniser is where the taps are lost
+
+990 taps, **1030 raw `touch-begin` events**, **40 that produced no tap**, 61
+alternation BREAKs (6.2 %) — and every BREAK has a swallowed raw event
+immediately before it. The panel, the driver, libinput and phoc all delivered
+those touches and the app's raw controller counted them; they die between the
+`GdkEvent` and `GestureClick::pressed`.
+
+That is exactly the split the raw counter exists to make, and ☠️ **it could not
+be measured until an hour before this run** because the controller sat in the
+default BUBBLE phase and saw nothing — every earlier run printed `raw 0` and it
+was read as a fact about the transport. The instrument that answers the question
+was present and silently disabled throughout.
+
+Leading cause, not yet confirmed: `Gtk.GestureClick` handles one touch sequence
+at a time and the operator alternates two fingers, so a second finger landing
+before the first lifts is the case it rejects. If so it is an artefact of this
+instrument — but the same arbitration runs under every GTK app on the phone, so
+the calculator complaint would have the same explanation, and neither is in the
+kernel.
+
+☠️ Correction to the withdrawal an hour earlier: with the forced repaint gone,
+`draw->present` is still median **59.0 ms** (p90 76.9, max 347.6, n=484). The
+effect survives removing the perturbation, so the perturbation was not its
+cause — the withdrawal was right to be cautious and wrong in what it concluded.
+Still not quotable until `get_presentation_time()` is shown to be compositor
+feedback rather than the frame clock's prediction.
