@@ -10693,7 +10693,7 @@ that no longer exists and is corrected there.
 
 Capture: [`captures/2026-09-06_hungarian-mbn-load/`](captures/2026-09-06_hungarian-mbn-load/)
 
-## 2026-09-06 — the taps arrive, the frames do not
+## 2026-09-06 — the taps arrive, and so do the frames
 
 `fp3-taptest.py` against phoc: **118 taps, perfect `. o . o` alternation, zero
 BREAKs** — every tap reached the client and was logged to the millisecond. Yet
@@ -10716,3 +10716,26 @@ frames are withheld until the next event, a perceived lost tap is the expected
 observation even on a perfect input path.
 
 Capture: [`captures/2026-09-06_taps-arrive-frames-do-not/`](captures/2026-09-06_taps-arrive-frames-do-not/)
+
+### Corrected the same evening: the client draws within 1 ms
+
+The entry above proposed that `queue_draw()` ran and no frame was produced.
+`fp3-taptest.py` was given a `DRAW #n` line inside its draw function and re-run:
+**122 presses with a draw timestamp, median 1.0 ms, worst 25 ms, zero BREAKs**,
+including six taps each followed by 3.1–11.0 s of silence and drawn within
+1–4 ms. The operator still saw nothing until the next tap. So the client renders
+promptly and the proposed mechanism is **wrong**; it is kept in the capture with
+why it fell.
+
+`grim` two seconds after an isolated tap returned a **current** composited image
+(`167` marks, ending in the symbol of tap #167, at 19:16:11 for a tap at
+19:16:08.392). ☠️ That does not convict the panel: `wlr-screencopy` may schedule
+the composite it then hands back, and during that same round the operator
+reported the display updating with a delay — so the samples may contain no
+failure. **What is now unlocalised is everything between the drawn frame and the
+light off the panel**, and the only instrument tried against it is confounded.
+
+☠️ Method note: the first arming of the screenshot probe caught **zero** shots
+and looked broken. It was not — the operator was tapping every 0.28 s and the
+probe wanted isolated taps. Checking the log before rewriting the tool cost
+thirty seconds.

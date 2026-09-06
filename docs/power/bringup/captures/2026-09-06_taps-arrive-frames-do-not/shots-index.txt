@@ -1,0 +1,4 @@
+shot1  19:15:50  marks_at_tap=163  marks_now=163  contaminated=no  line: 19:15:47.573  .  #163  x=86/360
+shot2  19:15:59  marks_at_tap=165  marks_now=165  contaminated=no  line: 19:15:56.925  .  #165  x=98/360
+shot3  19:16:06  marks_at_tap=166  marks_now=166  contaminated=no  line: 19:16:03.311  o  #166  x=249/360
+shot4  19:16:11  marks_at_tap=167  marks_now=167  contaminated=no  line: 19:16:08.392  .  #167  x=103/360
