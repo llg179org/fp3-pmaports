@@ -86,6 +86,52 @@ What remains true is that no run here stayed down long enough. Reaching a
 worth noting that the successful long suspend happened with nothing connected —
 whether that matters is now **untested**, not suspected.
 
+## ★★★ REPRODUCED, and the mechanism is a race — 2026-09-07 00:06
+
+The untested cell was filled by the operator, who chose to call at ~10 minutes
+rather than wait for morning:
+
+```
+00:06:08  [sleep-monitor-systemd] ready to sleep; dropping inhibitor
+00:16:31  [sleep-monitor-systemd] system is resuming     <- 10 min 23 s, woken by the call
+00:16:35  [device qcom-soc] creating modem with plugin 'qcom-soc' and '2' ports
+00:16:35  [base-manager] couldn't create modem for device 'qcom-soc':
+          Unsupported device: at least a QMI port is required
+```
+
+`suspend_stats/success` went 2 → 3, `mmcli -L` reported **no modems**, and the
+operator saw exactly the earlier symptom: the backlight flashed, the screen
+stayed black, **the phone did not ring**.
+
+| suspend | woken by | modem after | rang? |
+|---|---|---|---|
+| 24 s | incoming call | survived | **yes** |
+| **10 min 23 s** | incoming call | **lost** | **no** |
+| 19 min 36 s | incoming call | **lost** | **no** |
+
+★ **The QMI port is LATE, not absent.** ModemManager probed **4 seconds** after
+resume and found none — and `qmicli -d qrtr://0 --dms-get-model` answered
+normally when asked **~30 seconds** later, from the same shell, with nothing
+restarted in between. So the transport comes back on its own and MM has already
+given up by then: it concludes *unsupported* and never re-probes.
+
+That settles fix candidate (1) from the task: the port is not missing, MM is
+early. Candidate (3) — **MM should retry rather than conclude unsupported** — is
+therefore the real fix, and candidate (2), restarting MM after resume, is a
+workaround whose cost is exactly the first-call latency #181 exists to measure.
+
+☠️ **What is still not known: how late is late.** The gap was measured only as
+"failed at +4 s, worked at +30 s". Bracketing it is what tells anyone writing the
+retry how long to wait, and it is one more suspend/resume with a poll loop from
++0 s.
+
+## Why the threshold matters, and where it is
+
+24 s survives and 10 min 23 s does not, so the boundary sits between them. The
+operator's choice to call at ~10 minutes instead of in the morning is what
+produced that bracket: a morning call would have been ~8 hours, far past the
+failing point, and would have added nothing to a result already known at 19 min.
+
 ## What would settle it, and what it costs
 
 - **A suspend of 15–20 minutes, undisturbed, then one call.** That is the only

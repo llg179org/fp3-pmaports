@@ -11030,3 +11030,32 @@ waker was the call. And `wakeup_sources` carried no `wakeup_count` for it, so
 that file did not name a waker the modem's own log named plainly.
 
 Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
+
+### ★★★ #182 REPRODUCED: the QMI port is late on resume, and ModemManager does not retry
+
+2026-09-07 00:06:08 → 00:16:31, **10 min 23 s** of suspend ended by an incoming
+call, `suspend_stats/success` 2 → 3. On resume ModemManager probed at **+4 s**,
+found no QMI port, and concluded *"Unsupported device: at least a QMI port is
+required"*. `mmcli -L`: no modems. The operator saw the backlight flash, a black
+screen, and **no ring**.
+
+★ **But `qmicli -d qrtr://0 --dms-get-model` answered normally ~30 s after
+resume, with nothing restarted.** The transport returns on its own; MM is simply
+early and never re-probes. That settles the diagnosis: **a race, not a missing
+port.** The real fix is for MM to retry; restarting MM after resume is a
+workaround that costs exactly the first-call latency #181 measures.
+
+| suspend | modem after | rang? |
+|---|---|---|
+| 24 s | survived | yes |
+| 10 min 23 s | **lost** | **no** |
+| 19 min 36 s | **lost** | **no** |
+
+☠️ Not known: **how late is late** — measured only as "failed at +4 s, worked at
++30 s". One more suspend with a poll loop from +0 s brackets it, and that number
+is what a retry needs.
+
+Service was restored (drop-in removed, `IdleAction` back to `ignore`, lock
+cleared, ModemManager restarted, modem `registered` on LTE).
+
+Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
