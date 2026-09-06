@@ -80,3 +80,57 @@ fp3-ssh 'systemctl is-active fp3-i2c-qup-dyndbg fp3-screen-mark'   # both must b
 `bus cleared after` is a `dev_dbg`: without `fp3-i2c-qup-dyndbg.service` (which
 re-enables the control file each boot) it does not appear, and its absence then
 means nothing.
+
+## Addendum, 10:35 — the operator's power-button marker, and what it pinned
+
+The remaining dropouts are **not** this fault. Between 10:30 and 10:36 there was
+no i2c error of any kind, yet the operator felt taps go missing during
+continuous tapping. Asked to mark the moment by pressing the power button
+straight after — `pm8941_pwrkey` is a separate input device, so the touch path
+cannot swallow it — they did, and the screen transition timestamps it.
+
+Marker at 10:35:27.10. Immediately before it (`marked-dropout-10-35-26.txt`):
+
+```
+10:35:26.268  PRESS   #236
+10:35:26.375  RELEASE #236  held 107 ms
+          ^ lift 209 ms
+10:35:26.584  PRESS   #237
+```
+
+The burst's press-to-press cadence was 192 123 127 157 159 140 143 133 ms,
+median ≈ 147 ms. `#236 → #237` is **316 ms, 2.15x the cadence** — one tap's
+worth of time with nothing recorded, and two independent signals coinciding
+within 430 ms.
+
+☠️ **What could NOT be said about it, and why v6 exists.** It is tempting to
+write "the chip never interrupted". The instrument could not know: v5's
+`SWALLOWED` detector compares interrupts to frames over **one-second windows**,
+and that second held six or seven taps, so one interrupt without a frame hides
+among its neighbours. Established: no `PRESS` reached the input layer.
+Unknown: whether the chip reported at all.
+
+`fp3-touch-gaps-v6.py` closes that. A sampler thread keeps the interrupt count
+at 20 ms while the panel is in use (0.40 ms per read of an 18 681-byte
+`/proc/interrupts`, ~2 % of one core while tapping, idling at 500 ms), and every
+lift long enough to hide a whole tap prints what the counter did inside it:
+
+| evidence | verdict | where the fault is |
+|---|---|---|
+| interrupts > 0, frames = 0 | `CHIP REPORTED, NO FRAME` | driver or input layer |
+| interrupts = 0 | `CHIP NEVER REPORTED` | the controller did not sense it |
+
+☠️ **The gate is inside the instrument.** The first 30 presses print their
+evidence line unconditionally, labelled `GATE`, because an ordinary delivered
+tap has a known answer — interrupts > 0 **and** frames > 0. If those lines read
+`+0`, the sampler or the `/proc/interrupts` parser is broken and nothing below
+may be quoted. Only then do the thresholds apply.
+
+Validated before deployment: the decision logic 5/5 on synthetic rings covering
+both failure directions and the too-few-samples guard; the sampler thread
+predicted to give ~6 samples in 3 s at the idle rate and measured 6 at 503 ms
+mean interval, with the counter stable while nobody touched the panel.
+
+☠️ `pgrep -f` reported the wrong pid for this service — the third time in one
+day it matched something other than what was asked. The instrument that answers
+"which process is this unit" is `systemctl show -p MainPID --value <unit>`.
