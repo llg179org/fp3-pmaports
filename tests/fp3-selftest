@@ -310,8 +310,27 @@ wanted() {
 	return 0
 }
 
+# Does sudo on the device grant root without a password? Exits 0 only on a
+# definite yes: an unreachable device answers neither yes nor no, and must not
+# be read as "no password needed".
+fp3_sudo_is_passwordless() {
+	_probe=$(fp3-ssh 'sudo -n true 2>/dev/null && echo YES' 2>/dev/null | tail -1)
+	[ "$_probe" = YES ]
+}
+
 main() {
-	[ -n "$FP3_PW" ] || die "no device password: pass --pw or export FP3_PW"
+	# A NOPASSWD sudoers drop-in on the device (scripts/setup-nopasswd.sh in the
+	# fp3-porting-debug skill) makes the password unnecessary: `sudo -S` under
+	# NOPASSWD never reads stdin. Ask the device rather than demanding a secret
+	# it no longer needs -- the old unconditional guard stalled every run whose
+	# window had lost the password.
+	if [ -z "$FP3_PW" ]; then
+		if fp3_sudo_is_passwordless; then
+			FP3_PW=unused-nopasswd
+		else
+			die "no device password: pass --pw or export FP3_PW (and sudo on the device still asks for one)"
+		fi
+	fi
 
 	mkdir -p "$TESTS_DIR/../.selftest-runs" 2>/dev/null || true
 	RUN_LOG="${TMPDIR:-/tmp}/fp3-selftest-$RUN_ID.log"
