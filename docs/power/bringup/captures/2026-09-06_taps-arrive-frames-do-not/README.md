@@ -424,3 +424,70 @@ measured and still not settled: `get_presentation_time()` may be the frame
 clock's own prediction. The next build logs it against
 `get_predicted_presentation_time()`; if they are equal every time, the
 "measurement" is a model.
+
+## ★★★ CONFIRMED: every lost tap had a second finger already down
+
+The build that logs `fingers-down` with each raw touch, 542 taps:
+
+| | |
+|---|---:|
+| raw `touch-begin` delivered | **560** |
+| taps `GestureClick` produced | **542** |
+| **raw touches that produced no tap** | **18** |
+| of those, with **1** finger down | **0** |
+| of those, with **2** fingers down | **18** |
+| taps with 1 finger down | 542, none lost |
+| `touch-cancel` events | 0 |
+
+**100 % of the losses happened while a second finger was still down, and none
+happened otherwise.** `Gtk.GestureClick` handles one touch sequence at a time;
+alternating two fingers means the next touch regularly lands before the previous
+one lifts, and the recogniser rejects it.
+
+The swallowed touches are logged with their positions — `71,561`, `72,562`,
+`83,548` — all in the **left** half, which is why the BREAKs read `o repeated`:
+the `.` between two `o`s is the one that disappeared.
+
+So the chain is now complete, and nothing in it is a device fault:
+
+```
+panel -> himax driver -> libinput -> phoc -> GdkEvent      all deliver (560/560)
+GdkEvent -> GestureClick::pressed                          18 dropped, all on overlap
+```
+
+### The fix, and why it is the right one
+
+`fp3-taptest.py` now drives a tap from the **raw touch**, and keeps
+`GestureClick` only for the `raw->ges` timing and as a control. The header shows
+`raw` and `gest` side by side, so the gap between them stays visible instead of
+being something a future run has to rediscover.
+
+☠️ **Note what this does and does not say about the original complaint.** It
+fully explains the losses *in this instrument*, which used a single-sequence
+recogniser and an operator alternating two fingers. Whether the calculator
+drops digits for the same reason is **not** established here — but it is now a
+concrete, cheap thing to test, and it is in GTK, not in the kernel.
+
+## ★ The presentation time is real feedback, not a prediction
+
+The check named twice on this page, run over 237 samples:
+
+| | |
+|---|---:|
+| `get_presentation_time() == get_predicted_presentation_time()` | **0 / 237 (0 %)** |
+| difference between them | median **24.5 ms**, min 7.9, max 77.1 |
+
+They never coincide, so the number is the compositor's own feedback about a
+frame that was presented, not the frame clock's model of when it expected to
+present one. **`draw->present` is a measurement and may be quoted as one:**
+
+```
+median 49.3 ms   p10 44.3   p90 67.9      (refresh 16.7 ms)
+```
+
+About three refresh intervals from the app finishing its paint to the frame
+being on the screen, on a phone whose whole input path costs under 5 ms.
+
+☠️ **What causes those three frames is still unknown** — compositor pipeline
+depth, the DRM page-flip path and the panel's own latency are all untested. What
+has changed is that the number is now trustworthy enough to be worth explaining.

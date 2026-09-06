@@ -45,6 +45,19 @@ INSTRUCTIONS = [
     "to spot it.",
     "",
     "Press MARK when you feel a tap was lost.",
+    "",
+    "THE FOUR BLOCKS time one tap, hop by hop:",
+    "  evt->raw    panel -> driver -> phoc -> app",
+    "  raw->ges    GTK gesture recognition",
+    "  ges->draw   render scheduling",
+    "  draw->shown when the frame REACHED the screen",
+    "Green fast, amber slow, red very slow.",
+    "GREY = could not be measured. It is not green.",
+    "",
+    "The bar row under them is the last 12",
+    "draw->shown samples, capped at 200 ms.",
+    "The square top right changes colour on EVERY",
+    "paint - if it stops, the screen stopped.",
 ]
 
 
@@ -72,6 +85,9 @@ class TapTest(Gtk.ApplicationWindow):
         self.last = None
         self.started = False
         self.n_draw = 0
+        self.n_gesture = 0
+        self.touch_seen = False
+        self.n_down = 0
         self.mark_flash_until = 0.0
         # ☠️ The halves had NO feedback of their own: a tap changed one 16 px
         # character at the end of a dense block of identical .o.o.o and nothing
@@ -156,14 +172,30 @@ class TapTest(Gtk.ApplicationWindow):
 
     # ── input ──────────────────────────────────────────────────────────────
     def _pressed(self, _g, _n, x, y):
+        """GestureClick path. Kept for the raw->ges timing and as a control."""
         t = self._mono()
-        # ☠️ Start a new record unless _raw_event just opened one for THIS tap.
-        # Without this the dict kept the previous tap's t_drw, the resolve was
-        # never re-armed, and a whole run produced exactly one STAGES line.
+        self.n_gesture += 1
+        if self.touch_seen:
+            # ☠️ The raw touch already handled this tap. GestureClick is NOT the
+            # tap source any more: measured 2026-09-06, 18 of 560 touches were
+            # dropped by it and ALL 18 had a second finger already down - it
+            # handles one sequence at a time, so alternating two fingers loses
+            # every touch that lands before the previous one lifts. 542 taps
+            # with one finger down, zero lost. The recogniser was the fault, not
+            # the panel, the driver, libinput or the compositor.
+            self.stage["raw_ges"] = (t - self.stage["t_raw"]
+                                     if "t_raw" in self.stage else None)
+            self.stage["t_ges"] = t
+            return
         if "t_ges" in self.stage or "t_drw" in self.stage:
             self.stage = {}
         self.stage["t_ges"] = t
         self.stage["raw_ges"] = t - self.stage["t_raw"] if "t_raw" in self.stage else None
+        self._handle_tap(x, y)
+
+    def _handle_tap(self, x, y):
+        """One tap, from whichever source saw it first. The stage record has
+        already been opened by the caller."""
         w, h = self.area.get_width(), self.area.get_height()
         if not h:
             return
@@ -298,11 +330,16 @@ class TapTest(Gtk.ApplicationWindow):
             self.stage = {"t_raw": now, "evt_lat": lat, "touch":
                           et == Gdk.EventType.TOUCH_BEGIN}
             ok, ex, ey = event.get_position()
+            self.touch_seen = True
             self._log("%s  RAW %s #%d  evt->raw %s  at %s  fingers-down %d"
                       % (self._stamp(), et.value_nick, self.n_raw,
                          ("%.1f ms" % lat) if lat is not None else "n/a",
                          ("%.0f,%.0f" % (ex, ey)) if ok else "?",
                          getattr(self, "n_down", 0)))
+            if ok:
+                self.stage["t_ges"] = self.stage["t_raw"]
+                self.stage["raw_ges"] = 0.0
+                self._handle_tap(ex, ey)
         return False
 
     # ── drawing ────────────────────────────────────────────────────────────
@@ -412,9 +449,12 @@ class TapTest(Gtk.ApplicationWindow):
         cr.set_source_rgb(0.55, 0.9, 0.85)
         cr.set_font_size(17)
         cr.move_to(10, 26)
-        cr.show_text("%d  (. %d / o %d)  raw %d  breaks %d  marks %d"
+        # raw vs gest is the whole diagnosis in two numbers: raw is what the
+        # compositor delivered, gest is what GestureClick turned into a click.
+        # A gap between them IS the lost taps, and it must stay on screen.
+        cr.show_text("%d  (. %d / o %d)  raw %d  gest %d  breaks %d  marks %d"
                      % (self.n_dot + self.n_o, self.n_dot, self.n_o,
-                        self.n_raw, self.breaks, self.n_mark))
+                        self.n_raw, self.n_gesture, self.breaks, self.n_mark))
 
         # ── the four stages of the last tap, at FIXED coordinates ──────────
         # One block per hop, coloured by its own threshold, so a slow hop is a

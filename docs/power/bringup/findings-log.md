@@ -10853,3 +10853,28 @@ effect survives removing the perturbation, so the perturbation was not its
 cause — the withdrawal was right to be cautious and wrong in what it concluded.
 Still not quotable until `get_presentation_time()` is shown to be compositor
 feedback rather than the frame clock's prediction.
+
+### ★★★ CONFIRMED: every lost tap had a second finger already down
+
+542 taps, 560 raw `touch-begin`, **18 that produced no tap — all 18 with two
+fingers down, none with one**. `Gtk.GestureClick` handles one touch sequence at
+a time, so alternating two fingers loses every touch landing before the previous
+lifts. The swallowed touches log at x≈71-83, the left half, which is why the
+BREAKs all read `o repeated`. Zero `touch-cancel`.
+
+The chain is complete and no part of it is a device fault: panel → himax →
+libinput → phoc → GdkEvent delivered 560 of 560; GdkEvent → GestureClick dropped
+18. `fp3-taptest.py` now takes its taps from the raw touch and shows `raw` and
+`gest` side by side so the gap cannot hide again.
+
+☠️ This explains the losses **in this instrument**. Whether the calculator drops
+digits for the same reason is not established — but it is now cheap to test, and
+it is in GTK, not the kernel.
+
+### ★ `draw->present` is real compositor feedback
+
+`get_presentation_time()` equalled `get_predicted_presentation_time()` in **0 of
+237** samples (median difference 24.5 ms), so it is not the frame clock's model.
+**`draw->present` median 49.3 ms, p10 44.3, p90 67.9, refresh 16.7 ms** — about
+three refresh intervals, on a phone whose whole input path costs under 5 ms. ☠️
+What causes those three frames is untested.
