@@ -562,3 +562,39 @@ only the verification can, and now is.
 unbinds the driver, which destroys the input node, which kills `fp3-touch-gaps`;
 systemd restarted it **12 times** between 06:31 and 06:34 and its counters reset
 each time. Stop the logger, or skip the unbind, before running the probe.
+
+## 11. r86: reset the core before asking it to clear the bus — deployed, not yet measured
+
+The four-line trail (`fp3-kernel-test` reporting rule 6) for this release. The
+fourth line is deliberately empty; see below.
+
+- **Symptom.** A tap is swallowed with no `himax` log line at all, because a
+  retry absorbed it — the fault is a powered controller stretching the clock
+  (`SDA 1 SCL 0`), not the unpowered clamp the reproducer makes.
+- **How to provoke.** Ordinary use. It has never been produced on demand: the
+  06:36:55 capture of 2026-09-06 caught it during a real PIN entry, and the
+  automated resume probe went 0/8 because it probes an empty address, which a
+  healthy chip answers instantly.
+- **The change.** `i2c: qup: reset the core before asking it to clear the bus`
+  (`wip/7.1.3/touch` `af2628ca18d2` ≡ `debug-int/7.1.3` `585a3423b76f`, same
+  patch-id). r84's bus-clear was not ineffective but **refused**:
+  `QUP_I2C_MASTER_BUS_CLR` still read back `0x1` after ten attempts, i.e. the
+  hardware never accepted the command. The vendor driver resets the core first,
+  so this does the same — `QUP_SW_RESET`, poll `QUP_RESET_STATE`, restore the
+  cached `QUP_CONFIG` and `QUP_I2C_MASTER_GEN`, back to `QUP_RUN_STATE`,
+  rewrite `QUP_I2C_CLK_CTL`, and only then write the clear.
+- **The measured effect.** **None yet.** Deployed 2026-09-06 08:00 and running
+  (`fp3-commit 585a3423b76f`, package `linux-fp3-7.1.3-r86`), but the fault
+  needs a finger and the sampler shows 0 ACTIVE minutes since boot.
+
+☠️ **The success criterion is a log line, not a fault count.** If the clear now
+takes effect, `bus still held … clear not accepted` must be replaced by
+`bus cleared after N attempt(s)`. A run with no faults at all proves nothing
+about this change — it only means nobody touched the phone.
+
+That message is a `dev_dbg`, so it needs dynamic debug on, and the control file
+is reset by every boot. From r86 the unit `fp3-i2c-qup-dyndbg.service`
+(`After=multi-user.target`, per brick-safety rule 14) re-enables it — verify
+with `systemctl is-active fp3-i2c-qup-dyndbg` and
+`sudo grep -c 'i2c-qup.c.*=p' /sys/kernel/debug/dynamic_debug/control`, which
+should read 5.
