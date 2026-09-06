@@ -103,26 +103,26 @@ MAX_MARKS = 600
 # there is room for about 20 lines. Check a screenshot after editing them.
 INSTRUCTIONS = [
     "Tap the two lower halves ALTERNATELY.",
-    "BREAK is logged by the app. Press MARK",
-    "when you feel a tap was lost.",
+    "Press MARK when a tap felt lost.",
     "",
-    "THE SIX ROWS follow one tap, top down:",
+    "EACH ROW IS A COUNTER for one layer:",
     " irq      the CHIP raised its interrupt",
     " contact  the DRIVER delivered a touch",
-    " cont->raw  evdev -> this app (via phoc)",
-    " raw->ges   GTK gesture recognition",
-    " ges->draw  render scheduling",
-    " draw->shown  frame REACHED the screen",
-    "irq and contact are COUNTS, not times.",
+    " raw      it reached THIS APP (via phoc)",
+    " gest     GTK turned it into a click",
+    " tap      the app recorded it",
+    " shown    a frame reached the screen",
     "",
-    "Green fast, amber slow, red very slow.",
-    "GREY = not measured. It is NOT green.",
-    "0 in the record = a touch that landed",
-    "while another finger was still down.",
-    "Each row: bars = last 12 samples, and a",
-    "running light that steps only when THAT",
-    "hop fires - a stalled hop freezes while",
-    "the others keep running.",
+    "The six cells are the last six SECONDS.",
+    "A cell is GREEN when that layer saw the",
+    "SAME number as the layer it comes from,",
+    "RED when it saw FEWER - that cell is the",
+    "hop that dropped them, and when.",
+    "irq and shown are NOT one per touch, so",
+    "they are counts only, never judged red -",
+    "except contact, which goes RED if irq",
+    "moved and no touch came out of it.",
+    "0 in the record = a 2-finger overlap.",
     "Tap this text to CLEAR the record.",
 ]
 
@@ -309,11 +309,22 @@ class TapTest(Gtk.ApplicationWindow):
         self.n_contact = self.n_syn_dropped = 0
         self.contact_mono = None
         self.mt_slot = 0
+        # ── the per-layer counters and their one-second windows ───────────
+        # ☠️ THE CHAIN THAT MUST MATCH IS contact -> raw -> gest -> tap, and
+        # ONLY that. Those are one event each per touch. The interrupt count is
+        # NOT: a press, its moves and its release are many, so comparing it
+        # would paint red in every window and teach the operator to ignore the
+        # colour. It is shown as a count and never judged.
+        self.win = []                 # list of dicts: one closed 1 s window
+        self.win_prev = None          # counter snapshot at the window start
+        self.n_tap = 0
+        self.n_shown = 0
         self.irq0 = _irq_count()
         self.irq_now = self.irq0
         self.n_irq_step = 0
         self._open_evdev()
         GLib.timeout_add(500, self._poll_irq)
+        GLib.timeout_add(1000, self._close_window)
         atexit.register(self._cleanup)
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, self._on_signal)
@@ -392,6 +403,32 @@ class TapTest(Gtk.ApplicationWindow):
                 self.contact_mono = self._mono()
                 self._logline("CONTACT #%d  slot=%d  kernel-ts %d.%06d"
                               % (self.n_contact, self.mt_slot, sec, usec))
+        return True
+
+    def _counters(self):
+        return {"irq": (self.irq_now or 0) - (self.irq0 or 0),
+                "contact": self.n_contact,
+                "raw": self.n_raw,
+                "gest": self.n_gesture,
+                "tap": self.n_tap,
+                "shown": self.n_shown}
+
+    def _close_window(self):
+        # One second of deltas. ☠️ It does NOT repaint: a timer-driven repaint
+        # is the self-perturbation that contaminated the first presentation
+        # numbers. The cells appear at the next natural paint, and while
+        # nothing is being tapped every delta is zero anyway.
+        cur = self._counters()
+        if self.win_prev is not None:
+            d = {k: cur[k] - self.win_prev[k] for k in cur}
+            if any(v for v in d.values()):
+                self._log("%s  WINDOW  " % self._stamp()
+                          + "  ".join("%s %d" % (k, d[k]) for k in
+                                      ("irq", "contact", "raw", "gest", "tap",
+                                       "shown")))
+            self.win.append(d)
+            del self.win[:-6]
+        self.win_prev = cur
         return True
 
     def _poll_irq(self):
@@ -527,6 +564,7 @@ class TapTest(Gtk.ApplicationWindow):
             # that does, checked by rendering it - draws it with a dot in the
             # middle, so it cannot be read as the 'o' of the right half.
             self.marks.append("0" if fingers >= 2 else sym)
+            self.n_tap += 1
             self._log("%s  %s  #%d  x=%.0f/%d"
                       % (self._stamp(), sym, total, x, w))
         self.started = True
@@ -549,6 +587,7 @@ class TapTest(Gtk.ApplicationWindow):
             pred = t.get_predicted_presentation_time()
             st["pres_us"], st["pred_us"] = pres, pred
             if pres:
+                self.n_shown += 1
                 st["drw_prs"] = pres / 1000.0 - st["t_drw"]
             else:
                 st["drw_prs"] = None                  # compositor reports none
@@ -769,84 +808,93 @@ class TapTest(Gtk.ApplicationWindow):
         # before, when a stale stage and a fast one looked identical.
         st = self.stage_hist[-1] if self.stage_hist else {}
         refresh = st.get("refresh") or 16.7
-        # Six rows, kernel first, so the chain reads top to bottom exactly
-        # as the touch travels. The first two are COUNTERS, not times: the chip
-        # raising an interrupt and the driver delivering a contact have no
-        # meaningful "duration" here, only a "did it happen".
-        stages = (("irq", None, 0, 0),
-                  ("contact", None, 0, 0),
-                  ("cont->raw", "cont_raw", 15.0, 45.0),
-                  ("raw->ges", "raw_ges", 5.0, 25.0),
-                  ("ges->draw", "ges_drw", 8.0, 30.0),
-                  ("draw->shown", "drw_prs", refresh * 1.5, refresh * 4.0))
-        rowh = 30
-        y0 = 32
-        for i, (name, key, warn, bad) in enumerate(stages):
+        # ── the layers as COUNTS, and the running light as the DELTA ──────
+        # Each row is a counter, and its six cells are the last six one-second
+        # windows. A cell is GREEN when that layer saw the same number of
+        # events in that second as the layer ABOVE it, and RED when it saw
+        # fewer - that cell is then the transition that dropped them, named and
+        # placed in time without reading a single number.
+        #
+        # ☠️ ONLY contact -> raw -> gest -> tap is one event per touch, so only
+        # those rows are judged. `irq` is many events per touch and `shown` is
+        # frames, not touches; both are shown as counts and never coloured red,
+        # because a row that cries wolf every window teaches the operator to
+        # ignore the colour - which is the failure this whole instrument
+        # exists to avoid.
+        # ☠️ The chain FORKS at raw: both `gest` and `tap` are downstream of
+        # it, because taps come from the raw touch now and GestureClick is only
+        # a control. Chaining tap after gest painted tap amber whenever GTK
+        # dropped one - "more than the layer above", which is true and
+        # meaningless. Each row names its own reference instead.
+        REF = {"raw": "contact", "gest": "raw", "tap": "raw"}
+        rows = (("irq", "irq", False),
+                ("contact", "contact", True),
+                ("raw", "raw", True),
+                ("gest", "gest", True),
+                ("tap", "tap", True),
+                ("shown", "shown", False))
+        counts = self._counters()
+        rowh, y0 = 30, 32
+        cr.set_font_size(10)
+        for i, (name, key, judged) in enumerate(rows):
             ry = y0 + i * rowh
-            counter = key is None
-            if counter:
-                # A counter row shows how many, and its light steps per event.
-                if name == "irq":
-                    n_ev = self.n_irq_step
-                    total = (None if self.irq_now is None or self.irq0 is None
-                             else self.irq_now - self.irq0)
-                else:
-                    n_ev = total = self.n_contact
-                v = None
-                series, live = [], []
-            else:
-                v = st.get(key)
-                n_ev = self.stage_counts.get(key, 0)
-                series = [d.get(key) for d in self.stage_hist[-12:]]
-                live = [x for x in series if x is not None]
-
-            cr.set_source_rgb(0.14, 0.14, 0.17)          # row ground
+            cr.set_source_rgb(0.14, 0.14, 0.17)
             cr.rectangle(10, ry, w - 20, rowh - 4)
             cr.fill()
 
-            if counter:
-                chip = ((0.35, 0.35, 0.38) if total is None
-                        else (0.30, 0.55, 0.75))
-            else:
-                chip = _stage_colour(v, warn, bad)
-            cr.set_source_rgb(*chip)                          # the value chip
+            chip = (0.30, 0.55, 0.75) if not judged else (0.25, 0.45, 0.35)
+            cr.set_source_rgb(*chip)
             cr.rectangle(10, ry, 92, rowh - 4)
             cr.fill()
-            cr.set_source_rgb(0.05, 0.05, 0.05)
+            cr.set_source_rgb(0.03, 0.03, 0.03)
             cr.set_font_size(10)
             cr.move_to(14, ry + 11)
-            cr.show_text(name)
-            cr.set_font_size(12)
-            cr.move_to(14, ry + 23)
-            if counter:
-                cr.show_text("--" if total is None else "%d" % total)
-            else:
-                cr.show_text("--" if v is None else "%.0f ms" % v)
+            cr.show_text(name if judged else name + "  (not 1:1)")
+            cr.set_font_size(13)
+            cr.move_to(14, ry + 24)
+            cr.show_text("%d" % counts.get(key, 0))
 
-            # sparkline of this hop's last 12 samples, scaled to its own worst
-            sx, sw = 108, w - 20 - 108 - 74
-            cap = max(bad * 2.0, max(live) if live else bad * 2.0)
-            for j, sv in enumerate(series):
-                if sv is None:
-                    continue
-                frac = min(sv, cap) / cap
-                bw2 = sw / 12.0
-                cr.set_source_rgb(*_stage_colour(sv, warn, bad))
-                cr.rectangle(sx + j * bw2, ry + (rowh - 6) * (1 - frac),
-                             bw2 - 2, (rowh - 6) * frac)
-                cr.fill()
-
-            # the running light: six cells, the lit one advances per sample
-            n = n_ev
-            lx = w - 10 - 68
-            for c in range(6):
-                on = (c == n % 6)
-                if on:
-                    cr.set_source_rgb(*chip)
+            # six cells = the last six one-second windows
+            cx = 110
+            cw = (w - 20 - 110) / 6.0
+            above = REF.get(key) if judged else None
+            for j in range(6):
+                d = self.win[j] if j < len(self.win) else None
+                if d is None:
+                    col = (0.20, 0.20, 0.24)          # no window yet
+                elif not judged:
+                    col = ((0.30, 0.55, 0.75) if d.get(key)
+                           else (0.20, 0.20, 0.24))
+                elif above is None:
+                    # `contact` has no 1:1 predecessor, but the ASYMMETRY is
+                    # still readable: interrupts moved and no contact came out
+                    # is the driver swallowing it. That is the rule this port
+                    # already uses in fp3-touch-gaps - never a ratio, only
+                    # "one moved and the other did not".
+                    if d.get("irq") and not d.get(key):
+                        col = (0.90, 0.25, 0.25)
+                    elif d.get(key):
+                        col = (0.25, 0.80, 0.40)
+                    else:
+                        col = (0.20, 0.20, 0.24)
                 else:
-                    cr.set_source_rgb(0.24, 0.24, 0.28)
-                cr.rectangle(lx + c * 11, ry + 8, 9, 11)
+                    mine, ref = d.get(key, 0), d.get(above, 0)
+                    if ref == 0 and mine == 0:
+                        col = (0.20, 0.20, 0.24)      # nothing happened
+                    elif mine < ref:
+                        col = (0.90, 0.25, 0.25)      # THIS hop dropped them
+                    elif mine > ref:
+                        col = (0.95, 0.80, 0.25)      # more than above: odd
+                    else:
+                        col = (0.25, 0.80, 0.40)
+                cr.set_source_rgb(*col)
+                cr.rectangle(cx + j * cw, ry + 6, cw - 3, rowh - 15)
                 cr.fill()
+                if d is not None and (d.get(key) or 0) and cw > 22:
+                    cr.set_source_rgb(0.03, 0.03, 0.03)
+                    cr.set_font_size(10)
+                    cr.move_to(cx + j * cw + 4, ry + rowh - 11)
+                    cr.show_text("%d" % d.get(key, 0))
 
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)

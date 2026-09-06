@@ -734,3 +734,45 @@ exactly the sum on the `hx83112b` line of `/proc/interrupts`.
 needs a finger, and the operator had finished for the evening. The plumbing is
 checked; the measurement is not. The first tap of the next session validates
 both rows, and until then no number from them may be quoted.
+
+## The display, redesigned: counts per layer, and the delta as the light
+
+Operator's design, and it is better than timing every hop: **what must match
+between layers is the NUMBER of events, not the latency.** Six rows, each a
+counter for one layer, each with six cells for the last six one-second windows.
+A cell is green when that layer saw the same number of events in that second as
+the layer it comes from, red when it saw fewer — so a red cell names **which hop
+dropped them and when**, with no number to read and no log to open.
+
+The decision rule was tested against five known cases before it was deployed —
+there was no finger available to test it with, and the rule is testable without
+one:
+
+| case | which row goes red |
+|---|---|
+| everything gets through (5 touches) | none, all green |
+| the driver swallows it (`irq` moved, `contact` zero) | **`contact`** |
+| the compositor drops two | **`raw`** |
+| GTK drops one | **`gest`** |
+| nothing happened | all grey — no false alarm |
+
+Two constraints without which it would lie:
+
+- ☠️ **`irq` and `shown` are never judged.** An interrupt is many per touch and
+  `shown` counts frames, not touches; comparing either for equality would paint
+  red in every window and teach the operator that the colour means nothing —
+  the exact failure this instrument exists to avoid. They are shown as counts.
+- ☠️ **The chain forks at `raw`.** Both `gest` and `tap` come from it, because
+  taps are taken from the raw touch now and `GestureClick` is only a control.
+  Chained `tap` after `gest` the first version painted `tap` amber on every GTK
+  drop — "more than the layer above", true and meaningless. Each row names its
+  own reference instead.
+
+`contact` does get one judgement, and it is an **asymmetry, not a ratio**: red
+when `irq` moved and no touch came out of it. That is the same rule
+`fp3-touch-gaps.py` already states in its own docstring — interrupts up, frames
+flat.
+
+☠️ Still unwitnessed: no contact, interrupt or window has yet been observed with
+a real finger. The rule is tested, the plumbing is checked, and **the first tap
+of the next session is what validates the rows**.
