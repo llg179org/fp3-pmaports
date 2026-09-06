@@ -537,3 +537,24 @@ Half a millisecond apart on the number that matters, from separate runs with
 different tap patterns. **The input path costs about 10 ms and the display costs
 about 49 ms — three refresh intervals — and that is now the only unexplained
 thing left on this page.**
+
+## The instrument, as it stands
+
+Four **stacked** rows, one per hop, each carrying its own value chip, its own
+12-sample bar row scaled to that hop's own worst value (not a shared scale,
+which would flatten the fast hops into nothing), and its own **running light**
+that steps only when *that* hop produces a new sample.
+
+★ The per-row light is what makes a silent stage visible: if `draw->shown` stops
+being reported its light freezes while the other three keep stepping, and that
+is legible at a glance without comparing numbers. It is the same idea as the
+global paint tick, applied per stage — and it exists because this page has twice
+been misled by a stage that reported nothing and looked like a stage that was
+fast.
+
+☠️ **The startup text must fit the record area** — the top 4/8 of the window,
+360×180 logical px here. Written once at font 13 it overran onto the MARK bar
+and past the right edge (screenshot taken, layout fixed at font 11: about 44
+characters wide, about 20 lines). The rule is in a comment above the text:
+**screenshot it after editing.** `taptest-instructions-screen.png` beside this
+page is the fitted version.

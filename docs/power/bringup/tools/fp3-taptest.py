@@ -36,28 +36,30 @@ import time
 LOG = "/home/fp3/taptest.log"
 MARK_TOP, HALVES_TOP = 4.0 / 8.0, 5.0 / 8.0
 MAX_MARKS = 600
+# ☠️ These must fit the RECORD AREA - the top 4/8 of the window, 360x180
+# logical px on this phone. Written longer once and they overran onto the MARK
+# bar and past the right edge: at font 11 the width is about 44 characters and
+# there is room for about 20 lines. Check a screenshot after editing them.
 INSTRUCTIONS = [
     "Tap the two lower halves ALTERNATELY:",
-    "   .   o   .   o   .   o",
+    "   .  o  .  o  .  o",
+    "The app logs a BREAK by itself when the",
+    "alternation fails. Press MARK when you",
+    "feel a tap was lost.",
     "",
-    "The app logs a BREAK by itself whenever",
-    "the alternation fails - you do not have",
-    "to spot it.",
+    "THE FOUR ROWS time one tap, hop by hop:",
+    " evt->raw   panel->driver->phoc->app",
+    " raw->ges   GTK gesture recognition",
+    " ges->draw  render scheduling",
+    " draw->shown  frame REACHED the screen",
     "",
-    "Press MARK when you feel a tap was lost.",
-    "",
-    "THE FOUR BLOCKS time one tap, hop by hop:",
-    "  evt->raw    panel -> driver -> phoc -> app",
-    "  raw->ges    GTK gesture recognition",
-    "  ges->draw   render scheduling",
-    "  draw->shown when the frame REACHED the screen",
     "Green fast, amber slow, red very slow.",
-    "GREY = could not be measured. It is not green.",
+    "GREY = not measured. It is NOT green.",
     "",
-    "The bar row under them is the last 12",
-    "draw->shown samples, capped at 200 ms.",
-    "The square top right changes colour on EVERY",
-    "paint - if it stops, the screen stopped.",
+    "Each row has bars (last 12 samples) and",
+    "its own running light, which steps only",
+    "when THAT hop gets a new sample - so a",
+    "stalled hop freezes while others run.",
 ]
 
 
@@ -110,6 +112,7 @@ class TapTest(Gtk.ApplicationWindow):
         #   t_prs   FrameTimings.get_presentation_time()     -> ON THE PANEL
         self.stage = {}
         self.stage_hist = []
+        self.stage_counts = {}
         self.pending_frame = None      # (frame_counter, stage dict)
         self.evt_offset = None         # GdkEvent clock -> CLOCK_MONOTONIC
         self.evt_offset_ok = None
@@ -261,6 +264,9 @@ class TapTest(Gtk.ApplicationWindow):
             st["refresh"] = t.get_refresh_interval() / 1000.0
         else:
             st["drw_prs"] = None
+        for k in ("evt_lat", "raw_ges", "ges_drw", "drw_prs"):
+            if st.get(k) is not None:
+                self.stage_counts[k] = self.stage_counts.get(k, 0) + 1
         self.stage_hist.append(dict(st))
         del self.stage_hist[:-60]          # keep the last 60
         self._log("%s  STAGES  evt->raw %s  raw->ges %s  ges->draw %s  "
@@ -422,9 +428,9 @@ class TapTest(Gtk.ApplicationWindow):
 
         if not self.started:
             cr.set_source_rgb(0.6, 0.68, 0.74)
-            cr.set_font_size(13)
+            cr.set_font_size(11)
             for i, line in enumerate(INSTRUCTIONS):
-                cr.move_to(10, 24 + i * 19)
+                cr.move_to(10, 20 + i * 15)
                 cr.show_text(line)
             return
 
@@ -456,62 +462,78 @@ class TapTest(Gtk.ApplicationWindow):
                      % (self.n_dot + self.n_o, self.n_dot, self.n_o,
                         self.n_raw, self.n_gesture, self.breaks, self.n_mark))
 
-        # ── the four stages of the last tap, at FIXED coordinates ──────────
-        # One block per hop, coloured by its own threshold, so a slow hop is a
-        # colour and not a number to read. Grey means the hop could not be
-        # measured - never the same colour as "fast", because an unmeasured
-        # stage read as green is exactly how this instrument would lie.
+        # ── the four stages, STACKED, each with its own running light ──────
+        # One row per hop. Each row carries, left to right: the hop's name and
+        # its last value, a sparkline of the last 12 samples, and a running
+        # light that steps only when THAT hop produces a new sample. A stage
+        # that stops being measured therefore freezes its own light while the
+        # others keep running - which is visible at a glance and was not
+        # before, when a stale stage and a fast one looked identical.
         st = self.stage_hist[-1] if self.stage_hist else {}
         refresh = st.get("refresh") or 16.7
-        stages = (("evt->raw", st.get("evt_lat"), 12.0, 40.0),
-                  ("raw->ges", st.get("raw_ges"), 5.0, 25.0),
-                  ("ges->draw", st.get("ges_drw"), 8.0, 30.0),
-                  ("draw->shown", st.get("drw_prs"), refresh * 1.5,
-                   refresh * 4.0))
-        bw, bh, y0 = (w - 20) / 4.0, 34, 34
-        cr.set_font_size(11)
-        for i, (name, v, warn, bad) in enumerate(stages):
-            x0 = 10 + i * bw
-            cr.set_source_rgb(*_stage_colour(v, warn, bad))
-            cr.rectangle(x0, y0, bw - 3, bh)
+        stages = (("evt->raw", "evt_lat", 12.0, 40.0),
+                  ("raw->ges", "raw_ges", 5.0, 25.0),
+                  ("ges->draw", "ges_drw", 8.0, 30.0),
+                  ("draw->shown", "drw_prs", refresh * 1.5, refresh * 4.0))
+        rowh = 40
+        y0 = 34
+        for i, (name, key, warn, bad) in enumerate(stages):
+            ry = y0 + i * rowh
+            v = st.get(key)
+            series = [d.get(key) for d in self.stage_hist[-12:]]
+            live = [x for x in series if x is not None]
+
+            cr.set_source_rgb(0.14, 0.14, 0.17)          # row ground
+            cr.rectangle(10, ry, w - 20, rowh - 4)
+            cr.fill()
+
+            cr.set_source_rgb(*_stage_colour(v, warn, bad))   # the value chip
+            cr.rectangle(10, ry, 92, rowh - 4)
             cr.fill()
             cr.set_source_rgb(0.05, 0.05, 0.05)
-            cr.move_to(x0 + 4, y0 + 13)
+            cr.set_font_size(11)
+            cr.move_to(14, ry + 14)
             cr.show_text(name)
-            cr.move_to(x0 + 4, y0 + 27)
+            cr.set_font_size(13)
+            cr.move_to(14, ry + 30)
             cr.show_text("--" if v is None else "%.0f ms" % v)
 
-        # The last 12 draw->shown samples, so a single outlier cannot be read
-        # as a result. Bar height is capped at 200 ms; the cap is drawn as a
-        # line so a clipped bar is visibly clipped and not silently flattened.
-        hist = [d.get("drw_prs") for d in self.stage_hist[-12:]]
-        bx, by, bwid, bhh = 10, y0 + bh + 6, (w - 20) / 12.0, 26
-        cr.set_source_rgb(0.22, 0.22, 0.25)
-        cr.rectangle(bx, by, w - 20, bhh)
-        cr.fill()
-        for i, v in enumerate(hist):
-            if v is None:
-                continue
-            frac = min(v, 200.0) / 200.0
-            cr.set_source_rgb(*_stage_colour(v, refresh * 1.5, refresh * 4.0))
-            cr.rectangle(bx + i * bwid, by + bhh * (1 - frac),
-                         bwid - 2, bhh * frac)
-            cr.fill()
-        cr.set_source_rgb(0.5, 0.5, 0.55)
-        cr.rectangle(bx, by, w - 20, 1)
-        cr.fill()
+            # sparkline of this hop's last 12 samples, scaled to its own worst
+            sx, sw = 108, w - 20 - 108 - 74
+            cap = max(bad * 2.0, max(live) if live else bad * 2.0)
+            for j, sv in enumerate(series):
+                if sv is None:
+                    continue
+                frac = min(sv, cap) / cap
+                bw2 = sw / 12.0
+                cr.set_source_rgb(*_stage_colour(sv, warn, bad))
+                cr.rectangle(sx + j * bw2, ry + (rowh - 8) * (1 - frac),
+                             bw2 - 2, (rowh - 8) * frac)
+                cr.fill()
+
+            # the running light: six cells, the lit one advances per sample
+            n = self.stage_counts.get(key, 0)
+            lx = w - 10 - 68
+            for c in range(6):
+                on = (c == n % 6)
+                if on:
+                    cr.set_source_rgb(*_stage_colour(v, warn, bad))
+                else:
+                    cr.set_source_rgb(0.24, 0.24, 0.28)
+                cr.rectangle(lx + c * 11, ry + 12, 9, 12)
+                cr.fill()
 
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)
         size = 16
         cr.set_font_size(size)
         per_line = max(8, int((w - 20) / (size * 0.72)))
-        rows = int((mark_y - 84) / (size + 4))
+        rows = int((mark_y - 206) / (size + 4))
         text = "".join(self.marks)
         lines = [text[i:i + per_line] for i in range(0, len(text), per_line)]
         shown = lines[-rows:]
         for i, line in enumerate(shown):
-            cr.move_to(10, 92 + i * (size + 4))
+            cr.move_to(10, 214 + i * (size + 4))
             if i == len(shown) - 1 and line:
                 cr.set_source_rgb(0.93, 0.93, 0.93)
                 cr.show_text(line[:-1])
