@@ -619,71 +619,70 @@ with `systemctl is-active fp3-i2c-qup-dyndbg` and
 should read 5.
 
 
-## 12. Where the fault comes from: the pinctrl fix for a different bus
+## 12. REFUTED the same morning: the resume path is not the cause
 
-The 09:00 capture carries more than the success criterion. The three lines
-before it say when the fault happens:
-
-```
-09:00:21.766407  78b7000.i2c: pm_runtime: suspending...
-09:00:21.786452  78b7000.i2c: pm_runtime: resuming...      <- 20 ms later
-09:00:23.817467  78b7000.i2c: transfer to 0x48 timed out
-```
-
-**The transfer that hangs is the first one after a runtime-PM resume.** That
-makes it a consequence of something the resume path does, and the resume path
-on this driver was changed by us:
-
-`1380c70af7b3 "i2c: qup: select the sleep/default pinctrl states across runtime
-PM"` selects the sleep state on runtime suspend and the default state on resume.
-It was written for a **different bus**: on i2c-3 (`7af6000`, the `aw8898`
-speaker amp) the ADSP resets the BLSP6 pads behind Linux's back, and cycling
-through the sleep state is what makes the resume-side select rewrite them.
-
-On the touch bus the same cycling has a cost, and the DT says what it is:
+This section proposed that the fault came from the pinctrl cycling that
+`1380c70af7b3` added to the runtime-PM path for the speaker amp's bus, because
+the hanging transfer in the 09:00 capture was the first one after a runtime-PM
+resume. **It is wrong**, and it was disproved 3.5 minutes after it was written,
+by the experiment it proposed.
 
 ```
-i2c_3_default:  pins gpio10, gpio11   function = "blsp_i2c3"   bias-disable
-i2c_3_sleep:    pins gpio10, gpio11   function = "gpio"        bias-disable
+09:05:05  echo on > /sys/bus/platform/devices/78b7000.i2c/power/control
+09:08:48.810485  transfer to 0x48 timed out, bus active, master is us,
+                 SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+09:08:48.813949  bus cleared after 1 attempt(s)
 ```
 
-Every runtime suspend takes SDA and SCL **out of the I2C function to plain GPIO
-with no pull**, and resume puts them back. Before that commit the driver never
-touched pinctrl, so this sleep state was dead configuration; the commit is what
-made it run. A controller left mid-byte by a pad transition then holds SCL low —
-which is precisely the `SDA 1 SCL 0` signature, and precisely what a bus-clear
-is for.
+With runtime PM off the bus stayed `on/active`: no suspend, no resume, no
+pinctrl state change — and the fault came anyway, with the **same status word**.
+The resume in the first capture was a coincidence of timing. Reverted to `auto`
+at 09:11; the `r86-experiment.log` carries both ends.
 
-**Why it hits touch and not the amp** is asymmetric access, not the pins: the
-driver writes to the amp when it chooses, while the touch controller raises an
-asynchronous interrupt, so a read can begin at any instant — including one that
-lands on a resume.
+The reasoning that produced it is kept here on purpose, because it was a good
+hypothesis that happened to be false, and because the mechanism it describes is
+real even though it is not this fault: the touch bus's sleep state does take
+gpio10/gpio11 out of `blsp_i2c3` to bare GPIO with no pull on every runtime
+suspend, and before `1380c70af7b3` that was dead configuration.
 
-☠️ **This is a hypothesis with a mechanism, not a conclusion.** It explains why
-the fault needs a finger, why the unbind reproducer never made it, and why it
-appeared in ordinary use rather than under load — but nothing here has been
-measured against a control yet.
+### What survives the refutation
 
-### The experiment now running
+Two facts about the operator's fault, both from captures rather than reasoning:
 
-One change, no flash, revertible, and it leaves the amp's fix untouched:
+| | fault 1 | fault 2 |
+|---|---|---|
+| charger unplugged | 09:00:17 | 09:07:54 |
+| timeout | 09:00:23.8 (+6.6 s) | 09:08:48.8 (+54.5 s) |
+| charger back | 09:00:28 | 09:08:55 |
+| status word | `0x0411a700` | `0x0411a700` |
+| bus clear | 1 attempt | 1 attempt |
 
-```sh
-echo on > /sys/bus/platform/devices/78b7000.i2c/power/control   # touch bus only
-```
+Both landed while the phone was on battery, during PIN entry. ☠️ **That
+correlation is probably an artefact of the procedure**, not a finding: the
+operator's reproduction recipe is "unplug, then type the code", so every tap in
+these windows happens on battery by construction. The two delays after the
+unplug differ by a factor of eight, which is not the shape of a supply
+transient.
 
-Runtime PM off on the touch bus stops the suspend/resume cycling, so the pins
-never leave `blsp_i2c3`. Armed 2026-09-06 09:05:05; the baseline for that boot
-is in `/var/log/fp3-touch/r86-experiment.log` (1 timeout, 1 clear, 72 touch
-interrupts — a thin before-window, and it is worth saying so). It reverts on
-reboot, or with `echo auto`.
+Also ruled out, cheaply: the bus is not overclocked. The board DTS sets no
+`clock-frequency` for `&i2c_3`, so i2c-qup runs it at the 100 kHz default.
 
-If the timeouts stop over a comparable window of use, the resume path is
-implicated and the fix belongs in the driver or the DT: give this bus a sleep
-state that keeps the I2C function, or restrict the pinctrl cycling to the bus
-that needs it. If they continue, the resume is a coincidence of timing and this
-section is wrong.
+### The fork in the road, and the instrument that would settle it
 
-☠️ **What this experiment cannot separate**: runtime PM off stops the pinctrl
-cycling *and* the clock gating. It tests whether the resume path is involved at
-all, not which half of it. That is the next question, not this one.
+`SDA 1 SCL 0` with `bus active` and `master is us` is consistent with two very
+different states, and the fix differs completely between them:
+
+- **the slave is stretching** — the himax holds SCL low because it is busy,
+  wedged or mid-byte, and the master is waiting correctly;
+- **the master is wedged** — the QUP core's own state machine is stuck with SCL
+  driven low, and the slave is innocent.
+
+The r86 result is weak evidence for the second: what made the bus-clear start
+working was resetting the **core**, which should not matter if the core were
+healthy and merely waiting on a slave. But that is an inference, not a
+measurement.
+
+The register decode printed on timeout currently reports only `QUP_I2C_STATUS`.
+Adding `QUP_STATE`, `QUP_OPERATIONAL` and `QUP_ERROR_FLAGS` to that same line
+would separate the two directly, costs one `dev_err_ratelimited` argument list,
+and needs no new tooling — the fault already reaches that code path every time.
