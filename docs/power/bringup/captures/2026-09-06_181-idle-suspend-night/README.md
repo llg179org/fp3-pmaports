@@ -91,9 +91,60 @@ night|2026-09-06T22:59:54+02:00|1788760800
 A lock that has not been shown refusing something has proved nothing; this one
 has.
 
+## ★★ The night was run for 20 minutes and it FAILED — for a reason worth more than the night
+
+The operator rang the phone at 23:23 rather than waiting for morning, as a
+pre-test of the instrument. That was the right call and it saved the night.
+
+```
+23:04:02  [sleep-monitor-systemd] ready to sleep; dropping inhibitor
+23:23:38  [sleep-monitor-systemd] system is resuming          <- the CALL woke it
+23:23:40  [plugin-manager] Missing port probe for port (net/usb0)
+23:23:42  [device qcom-soc] creating modem with plugin 'qcom-soc' and '2' ports
+23:23:42  [base-manager] couldn't create modem for device 'qcom-soc':
+          Unsupported device: at least a QMI port is required
+```
+
+**Suspend works and an incoming call wakes the phone** — 19 minutes 36 seconds
+of real suspend, ended by the call, `suspend_stats/success = 1`. That is the
+premise of #181, and it holds.
+
+★ **But the modem does not survive resume.** ModemManager rebuilds its device
+list on wake, finds **no QMI port**, gives up, and never retries — so
+`mmcli -L` reported *"No modems were found"* while the modem firmware was fine
+(all three remoteprocs `running`) and `qmicli -d qrtr://0 --dms-get-model`
+answered normally. The phone had **no cellular service at all** until
+ModemManager was restarted, after which it came straight back: `registered`,
+`lte`, `vodafone HU`, attached, 83 %.
+
+The operator's report matches exactly: the backlight came on after ~3 rings, the
+screen showed no answer button, and **the phone never rang**. There was nothing
+to ring it.
+
+So the morning measurement would have produced a guaranteed "did not ring", and
+would have been read as a reachability result. **The idle-suspend drop-in has
+been removed and the lock cleared** (`IdleAction` is back to `"ignore"`); #181
+cannot run until the modem survives resume.
+
+## ☠️ Two claims made here tonight and withdrawn
+
+1. **"It suspended for 1.15 s and has been awake since."** Wrong. `dmesg`
+   timestamps are `CLOCK_MONOTONIC`, which **does not advance across suspend**,
+   so a 20-minute s2idle shows as `PM: suspend entry` … `PM: suspend exit`
+   1.15 s apart. The wall-clock truth was in ModemManager's own journal. ☠️ Any
+   suspend duration read off `dmesg` is wrong by exactly the time spent asleep —
+   which is the quantity being measured.
+2. **"The phone stopped answering ssh, but a dead USB link looks the same, so
+   suspend may not be claimed."** The caution was right and the doubt is now
+   resolved the other way: it really had suspended.
+
 ## What is left, and what may not be claimed
 
-- ☠️ **Step 3 is HALF done, and the half that is missing is the one that
+- ☠️ ~~**Step 3 is HALF done**~~ — **SETTLED above**: it suspended for 19 min
+  36 s and the call woke it. The paragraph below is kept as it stood, because
+  the doubt it expressed was correct at the time.
+
+  ☠️ **Step 3 is HALF done, and the half that is missing is the one that
   proves it.** Left alone for 7 minutes past the 5-minute timer, the phone
   stopped answering ssh:
 

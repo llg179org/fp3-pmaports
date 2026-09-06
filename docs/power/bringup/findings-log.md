@@ -10974,3 +10974,31 @@ here** — common enough on this device to have its own watchdog. So "the phone
 suspended" may not be claimed on this evidence, and the morning read settles it.
 
 Capture: [`captures/2026-09-06_181-idle-suspend-night/`](captures/2026-09-06_181-idle-suspend-night/)
+
+### ★★ Same evening: suspend and the wake work — the MODEM does not survive resume
+
+The operator rang the phone at 23:23 instead of waiting for morning, as a
+pre-test of the instrument. It suspended at 23:04:02 and resumed at 23:23:38 —
+**19 min 36 s of real suspend, ended by the incoming call**,
+`suspend_stats/success = 1`. #181's premise holds.
+
+★ But on resume ModemManager rebuilds its device list, finds **no QMI port**,
+and gives up without retrying: *"couldn't create modem for device 'qcom-soc':
+Unsupported device: at least a QMI port is required"*. `mmcli -L` then reported
+**no modems** while the firmware was fine (three remoteprocs `running`,
+`qmicli --dms-get-model` answering) — the phone had **no cellular service** until
+ModemManager was restarted, after which it returned immediately. The operator saw
+exactly this: backlight on after ~3 rings, no answer button, **no ring**.
+
+The morning sample would have been a guaranteed "did not ring" and would have
+been read as a reachability result. The drop-in is removed, `IdleAction` is back
+to `ignore`, and the lock is cleared.
+
+☠️ **Withdrawn: "it suspended for 1.15 s and has been awake since."** `dmesg`
+timestamps are `CLOCK_MONOTONIC` and **do not advance across suspend**, so a
+20-minute s2idle appears as a 1.15 s gap between `PM: suspend entry` and
+`PM: suspend exit`. Any suspend duration read off `dmesg` is wrong by exactly the
+time asleep — the quantity being measured. The wall clock was in ModemManager's
+own journal.
+
+Capture: [`captures/2026-09-06_181-idle-suspend-night/`](captures/2026-09-06_181-idle-suspend-night/)
