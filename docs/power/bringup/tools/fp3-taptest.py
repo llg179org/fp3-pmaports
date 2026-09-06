@@ -55,12 +55,12 @@ INSTRUCTIONS = [
     "",
     "Green fast, amber slow, red very slow.",
     "GREY = not measured. It is NOT green.",
-    "",
+    "0 in the record = a touch that landed",
+    "while another finger was still down.",
     "Each row has bars (last 12 samples) and",
     "its own running light, which steps only",
     "when THAT hop gets a new sample - so a",
     "stalled hop freezes while others run.",
-    "",
     "Tap this text area to CLEAR the record.",
     "The counters above it keep running.",
 ]
@@ -250,16 +250,19 @@ class TapTest(Gtk.ApplicationWindow):
             else:
                 self.run_len = 0
             self.last = sym
-            self.marks.append(sym)
-            # ☠️ A touch that landed while another finger was still down. Every
-            # one of these was SILENTLY DROPPED by GestureClick until
-            # 2026-09-06 (18 of 18), so they are marked in the record rather
-            # than left to be inferred. The glyph is a zero because Adwaita
-            # Mono - checked by rendering it, the only mono font here that
-            # does - draws it with a dot in the middle, so it cannot be
-            # confused with the 'o' of the right half.
-            if fingers >= 2:
-                self.marks.append("0")
+            # ☠️ A touch that landed while another finger was still down takes
+            # the place of its side symbol, it does not follow it: the record
+            # stays one glyph per tap, so the sequence can still be read at a
+            # glance and the alternation is still countable by eye. The side is
+            # NOT lost - it is in the log line below, and in the . / o totals
+            # in the header, which keep counting it.
+            #
+            # Every one of these was SILENTLY DROPPED by GestureClick until
+            # 2026-09-06 (18 of 18), which is why they are marked at all. The
+            # glyph is a zero because Adwaita Mono - the only mono font here
+            # that does, checked by rendering it - draws it with a dot in the
+            # middle, so it cannot be read as the 'o' of the right half.
+            self.marks.append("0" if fingers >= 2 else sym)
             self._log("%s  %s  #%d  x=%.0f/%d"
                       % (self._stamp(), sym, total, x, w))
         self.started = True

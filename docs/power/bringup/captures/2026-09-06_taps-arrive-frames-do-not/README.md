@@ -596,10 +596,17 @@ read the instrument need the same scepticism as the instrument.**
 
 ## Marking the overlapping touches, with a dotted zero
 
-A touch that lands while another finger is still down now appends `0` to the
-record: those were exactly the touches `GestureClick` dropped silently, so they
-are marked rather than left to be inferred. The BREAK `!` glyph is gone — a
-repeat is already visible as a repeat.
+A touch that lands while another finger is still down is written as `0` in the
+record **in place of** its side symbol, not after it — one glyph per tap, so the
+sequence stays readable and the alternation still countable by eye. Those were
+exactly the touches `GestureClick` dropped silently, so they are marked rather
+than left to be inferred. The BREAK `!` glyph is gone — a repeat is already
+visible as a repeat.
+
+☠️ **The side is not lost by this**, which is the only reason it is acceptable:
+it stays in the log line for that tap, with its x coordinate, and in the `. n /
+o n` totals in the header. The record on screen is a display; the log is the
+measurement.
 
 ☠️ The glyph has to be readable *against `o`*, so the font matters. Checked by
 rendering `0 o O` in every monospace font on the device
