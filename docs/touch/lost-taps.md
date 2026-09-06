@@ -138,3 +138,74 @@ fp3-touch-gaps` shows only systemd's own lines and looks like a dead instrument.
 
 ☠️ Its process is not what `pgrep -f` finds — that matched the wrong pid three
 times in one day. Use `systemctl show -p MainPID --value fp3-touch-gaps`.
+
+## 2026-09-06, closed for now: the kernel is exonerated, the loss is above it
+
+Three runs with both ends of the chain logged on one clock — the kernel's
+`/dev/input/eventN` (`142-gaps.txt`, contacts counted by `ABS_MT_TRACKING_ID`)
+and a GTK client after the compositor (`taptest.log`).
+
+**The finding that holds across all three, and is the reason to stop here:**
+
+```
+alternation breaks with a kernel CONTACT in the gap:   53/53 · 7/7 · 33/33
+```
+
+Every single time the client's record shows a repeat where the operator was
+alternating, the kernel had delivered a touch in between. **The touch reaches
+`/dev/input` and does not reach the application.** Nothing below that line is
+implicated: not the controller, not the i2c bus, not the himax driver.
+
+That closes the question the morning could not: the i2c stall of
+[`142-i2c-stall.md`](142-i2c-stall.md) was real and was fixed, and it is **not**
+the fault the operator has been feeling.
+
+### What is NOT established, and was nearly reported as if it were
+
+| run | phoc scheduling | swallowed |
+|---|---|---|
+| 1 | `SCHED_OTHER` 0 | 13.7 % |
+| 2 | `SCHED_RR` 5 | 1.0 % |
+| 3 (control) | `SCHED_OTHER` 0 | **2.6 %** |
+
+A 14x improvement from raising the compositor's priority looked decisive. The
+A-B-A control refused it: restoring `SCHED_OTHER` did **not** bring 13.7 % back.
+
+☠️ **Run 1's number is contaminated.** It ran 475 s at 0.86 taps/s with long
+pauses, and every stray contact in a pause — the phone being held, a palm —
+counted as "swallowed" because no tap followed it. Runs 2 and 3 were dense
+(3.7 and 5.5 taps/s) and short. The honest magnitude is **2-4 %**, and the
+scheduling question is **open**, not answered.
+
+The break-anchored count is the one to trust: it sits between two real client
+taps, so a stray contact cannot inflate it.
+
+Two-finger use is not the mechanism either: of 24 swallowed contacts in run 3,
+**2** fell in a tight (<60 ms) pair.
+
+### The remaining segment, and the instrument that will split it
+
+"Between `/dev/input` and the application" is still two places, because the
+client-side probe used `Gtk.GestureClick` — which is itself a gesture
+recogniser and can reject a touch it reads as the start of a drag.
+
+```
+/dev/input → libinput → phoc → Wayland → GDK → GTK gesture → app
+             └─────────── measured as one ───────────┘
+```
+
+`fp3-taptest.py` now carries a second, raw counter on
+`Gtk.EventControllerLegacy`, which sees the `GdkEvent` before any gesture
+arbitration:
+
+* kernel `CONTACT` present, **`RAW touch-begin` absent** → lost in libinput or phoc
+* `RAW` present, **tap absent** → lost in GTK's gesture recognition
+
+One session with the new build answers it. Nothing else here needs a kernel.
+
+### Where the sources are
+
+`docs/power/bringup/tools/` — `fp3-taptest.py` (client side, with the raw
+counter), `fp3-touch-gaps.py` (kernel side), `fp3-screen-mark`. That page also
+lists the six ways these instruments produced confident, wrong output before
+they were trusted; that list is the transferable part of this investigation.

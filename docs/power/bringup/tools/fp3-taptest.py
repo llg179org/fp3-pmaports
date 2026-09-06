@@ -69,6 +69,22 @@ class TapTest(Gtk.ApplicationWindow):
         g.connect("pressed", self._pressed)
         self.area.add_controller(g)
 
+        # ☠️ A SECOND, RAW counter, because GestureClick is itself a gesture
+        # recogniser: it can reject a touch it decides was the start of a drag,
+        # and in the log that is indistinguishable from the compositor never
+        # delivering it. EventControllerLegacy sees the GdkEvent before any
+        # gesture arbitration, so the pair splits the remaining unknown in two:
+        #
+        #   kernel CONTACT  ->  RAW  : lost in libinput or phoc
+        #   RAW  ->  tap          : lost in GTK's gesture recognition
+        #
+        # Without it "the client did not receive it" covers both, and this
+        # investigation spent an afternoon unable to tell them apart.
+        raw = Gtk.EventControllerLegacy()
+        raw.connect("event", self._raw_event)
+        self.area.add_controller(raw)
+        self.n_raw = 0
+
         GLib.timeout_add(3000, self._geom_once)
 
     # ── logging ────────────────────────────────────────────────────────────
@@ -133,6 +149,12 @@ class TapTest(Gtk.ApplicationWindow):
         self.area.queue_draw()
         return False
 
+    def _raw_event(self, _c, event):
+        if event.get_event_type() == Gdk.EventType.TOUCH_BEGIN:
+            self.n_raw += 1
+            self._log("%s  RAW touch-begin #%d" % (self._stamp(), self.n_raw))
+        return False
+
     # ── drawing ────────────────────────────────────────────────────────────
     def _draw(self, _area, cr, w, h, *_):
         mark_y, half_y = h * MARK_TOP, h * HALVES_TOP
@@ -182,9 +204,9 @@ class TapTest(Gtk.ApplicationWindow):
         cr.set_source_rgb(0.55, 0.9, 0.85)
         cr.set_font_size(17)
         cr.move_to(10, 26)
-        cr.show_text("%d  (. %d / o %d)  breaks %d  marks %d"
+        cr.show_text("%d  (. %d / o %d)  raw %d  breaks %d  marks %d"
                      % (self.n_dot + self.n_o, self.n_dot, self.n_o,
-                        self.breaks, self.n_mark))
+                        self.n_raw, self.breaks, self.n_mark))
 
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)
