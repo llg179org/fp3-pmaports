@@ -177,3 +177,33 @@ reach. `/etc/imsd.env` was put back to the primary afterwards.
 That is a negative result and it is worth as much as a positive one here: it
 removes the cheapest remaining explanation and leaves the oracle diff as the
 next real instrument.
+
+## Reproduced 2026-09-06 22:03, on `ROW_Commercial`, with the diagnostic recorded
+
+One run, to give a carrier-support letter a fresh transaction with exact
+timestamps. Same chain, same outcome — and the bearer came up first time, which
+also confirms the revert from the Hungarian carrier config (see
+[`../2026-09-06_hungarian-mbn-load/`](../2026-09-06_hungarian-mbn-load/)).
+
+```
+22:03:58.629  protected REGISTER sent
+22:03:58.841  SIP/2.0 500 Server Internal Error      (212 ms later)
+```
+
+The operator diagnostic, kept verbatim this time:
+
+```
+Warning: 399 5144.2233.S.260.5.94.255.255.5938.0.0.ims.mnc070.mcc216.3gppnetwork.org
+         "Server Internal Error"
+```
+
+☠️ **The earlier occurrence was recorded only as `<operator diagnostic string>`
+and the dumps that held it were then deleted** — by the `rm -f "$DUMPDIR"/*.raw`
+at the top of this repo's own re-run script, during attempts that never reached
+a REGISTER at all. The string is an operator-internal code and carries no
+personal identifier, so redacting it bought nothing and cost the record; it is
+written out here for that reason, and the delete is gone from the script with
+the reason in a comment above the line.
+
+The letter to the operator is **not** in this repository: it carries the IMSI
+and IMEI, which the carrier needs and this repo must not hold.
