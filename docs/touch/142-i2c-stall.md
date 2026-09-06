@@ -10,9 +10,10 @@ Reported upstream by Bert Karwatzki against msm8953-mainline commit
 0x41000353 -> 0x42000353): the hx83112b touchscreen stops responding after
 resume. Independently observed on this device by the operator.
 
-**Status: the duration is fully explained, the trigger conditions are measured,
-the cause of the hang is not known.** The msm8953.dtsi idle-state patch is on
-HOLD until it is.
+**Status (2026-09-06): the duration is explained, the trigger conditions are
+measured, and there are now TWO distinct hangs, told apart by the bus lines** -
+see section 10. The operator-visible one has been caught in the act with its own
+signature. The msm8953.dtsi idle-state patch remains on HOLD.
 
 ---
 
@@ -457,3 +458,107 @@ measured gaps run to 726 s, so only a real session — ~36 min of use with pause
 as `tests/checks/59-touch-i2c-stall-test.sh` argues — can speak to it. That
 check reports it on every later selftest run and distinguishes "no stalls" from
 "nobody touched the screen".
+
+
+---
+
+## 10. 2026-09-06: the operator's fault caught in the act, and it is not the one the reproducer makes
+
+Everything above rests on the unbind reproducer. On 2026-09-06 the fault the
+operator actually hits was captured with the driver **bound**, in ordinary use,
+by diagnostics added to `i2c-qup` in r84. It is a different mechanism.
+
+### The capture
+
+```
+06:36:55  i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active,
+                               master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+06:36:55  i2c_qup 78b7000.i2c: bus still held after 10 bus-clear attempts:
+                               clear not accepted, bus still active,
+                               (I2C_STATUS 0x04006300, BUS_CLR 0x1)
+```
+
+### Two hangs, one duration
+
+| | unbind reproducer (2026-09-04) | the operator's fault (2026-09-06) |
+|---|---|---|
+| address | 0x50, an address with no device | **0x48, the touch controller itself** |
+| driver | unbound | **bound, real use** |
+| screen | off | **on** |
+| bus lines | `SDA 0 SCL 0` | **`SDA 1 SCL 0`** |
+| reading | an unpowered part clamping both lines through its ESD path | **a powered slave stretching the clock** - SDA is free, SCL is held |
+
+☠️ **So the rail explanation in sections 6-9 does not cover the operator's
+fault.** It explains the reproducer, and the supply fix cut that chain at its
+first link; but a chip that is stretching SCL is powered and alive. Both produce
+`-ETIMEDOUT`, which is why one duration hid two mechanisms for two days.
+
+### Why the bus-clear did not help, and it is not what was assumed
+
+r84 added the QUP hardware bus-clear and it failed 3/3 against the reproducer.
+That was read as "clocking cannot persuade a dead chip", which is true there. The
+r85 diagnostic shows it is **not** what happens in the operator's fault:
+`BUS_CLR 0x1` reads back **still set** after all ten attempts - *the block never
+accepted the command*. With a transfer wedged, flushing and forcing `RUN` is not
+enough; the core has to be reset to idle and brought back up first, which is what
+the vendor driver does before every clear. Fixed in `af2628ca18d2`, unmeasured at
+the time of writing.
+
+### What the retry did, and did not do
+
+`himax_hx83112b` logged **nothing** during this event: one of its three attempts
+succeeded, so the panel never wedged. But the tap was still lost - the input log
+shows `PRESS #7` held for **9 ms** where its neighbours held 89-119 ms.
+
+**The retry protects the panel, not the touch.** That is exactly the operator's
+symptom since r83: occasional missing digits, no freeze. A PIN digit not taken
+after unlocking, and digits missing in the calculator.
+
+### The other fault the same week: a storm that killed the interrupt
+
+2026-09-05 21:26, on r84: 85 905 failed `-EIO` reads in eleven seconds (~7800/s),
+then `irq 127: nobody cared` and `Disabling IRQ #127` - a dead panel until the
+driver was rebound. Cause: `himax_irq_handler` returned `IRQ_NONE` on a failed
+read, so a level-triggered line that re-asserts immediately counted every pass as
+unhandled. Fixed in `c59812386d99` (r85).
+
+☠️ **r82 had the same bug and never tripped it**, because printing every failure
+over `console=ttyMSM0,115200` paced the loop: 72 chars/line at 11 520 chars/s
+gives **160 lines/s theoretical against 156 measured**. The serial console was
+an accidental brake, and `dev_err_ratelimited` removed it. The rate limit did not
+create the bug; it released the rate that trips it. **Removing an accidental
+throttle exposes whatever it was hiding, and that has to be looked for
+deliberately.**
+
+### Eliminated on 2026-09-06: the bus is healthy right after resume
+
+The operator's trigger is a power-button lock/unlock, so the bus was probed
+immediately after the screen returns, fully automatically, at 0, 1, 3 and 10 s:
+
+```
+after resume: 0 / 8 probes stalled      control: 0 / 8
+```
+
+all sub-millisecond. ☠️ `0/8` bounds the rate only at ~31 % by the rule of three,
+and the probe measures the **bus**, not touch *sensing* - a controller that is
+alive but not reporting would leave the bus spotless. Both limits stated because
+neither is obvious from the table.
+
+### The instruments this took, and what each cannot see
+
+| instrument | sees | blind to |
+|---|---|---|
+| `fp3-touch-gaps` v4/v5 (`captures/2026-09-06_r85-call-plus-tapping/`) | frame gaps >=100 ms, every `BTN_TOUCH`, and interrupts-without-frames | anything above the input layer |
+| `fp3-resume-probe.sh` | i2c health at chosen delays after resume, no human needed | touch sensing; it probes an empty address |
+| `fp3-resume-taps.sh` | lost taps after resume, with an interleaved control | needs a finger; the phone buzzes to time it |
+| `142-trigger.sh` | the unpowered-clamp hang | the supply fix (it unbinds, dropping the votes) and the bound-driver fault |
+
+☠️ **A uinput injector is not on this list and must not be.** It delivers events
+straight into the input layer, bypassing the controller and the bus - the things
+under test - so it would pass unconditionally. The stimulus cannot be automated;
+only the verification can, and now is.
+
+☠️ **And an instrument can break another one.** The automated resume probe
+unbinds the driver, which destroys the input node, which kills `fp3-touch-gaps`;
+systemd restarted it **12 times** between 06:31 and 06:34 and its counters reset
+each time. Stop the logger, or skip the unbind, before running the probe.

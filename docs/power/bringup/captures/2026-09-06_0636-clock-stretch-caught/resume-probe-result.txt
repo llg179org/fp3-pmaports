@@ -1,0 +1,28 @@
+
+=== resume-probe: i2c health right after the screen comes back
+=== 2026-09-06 06:30:37; bus i2c-2, device 2-0048, driver Himax-hx83112b-TS
+=== 2 rounds, blank 20s, probe delays: 0 1 3 10 s
+
+rnd arm      screen  delay    seconds  errno verdict
+1   RESUME   On          0     0.0003      6 ok
+1   RESUME   On          1     0.0004      6 ok
+1   RESUME   On          3     0.0005      6 ok
+1   RESUME   On         10     0.0011      6 ok
+1   CONTROL  On          0     0.0004      6 ok
+1   CONTROL  On          1     0.0009      6 ok
+1   CONTROL  On          3     0.0006      6 ok
+1   CONTROL  On         10     0.0008      6 ok
+2   RESUME   On          0     0.0006      6 ok
+2   RESUME   On          1     0.0010      6 ok
+2   RESUME   On          3     0.0006      6 ok
+2   RESUME   On         10     0.0006      6 ok
+2   CONTROL  On          0     0.0006      6 ok
+2   CONTROL  On          1     0.0006      6 ok
+2   CONTROL  On          3     0.0004      6 ok
+2   CONTROL  On         10     0.0007      6 ok
+
+=== result ===
+after resume: 0 / 8 probes stalled
+control     : 0 / 8 probes stalled
+touch driver now: Himax-hx83112b-TS
+=== done 2026-09-06 06:34:05 ===

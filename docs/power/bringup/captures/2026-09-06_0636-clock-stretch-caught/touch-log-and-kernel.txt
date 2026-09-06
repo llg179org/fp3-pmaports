@@ -1,0 +1,49 @@
+most: 06:37:26
+=== az utolsó 40 sor a touch naplóból ===
+06:20:10.640  RELEASE #610  held 67 ms
+06:20:10.713  PRESS   #611
+06:20:10.780  RELEASE #611  held 67 ms
+06:20:10.963  PRESS   #612
+06:20:11.039  RELEASE #612  held 76 ms
+06:20:11.147  PRESS   #613
+06:20:11.222  RELEASE #613  held 75 ms
+06:20:13.486  SWALLOWED: +1 interrupts, 0 frames in 1.0 s
+06:20:19.527  SWALLOWED: +1 interrupts, 0 frames in 1.0 s
+06:21:07.209  heartbeat: frames=3689 presses=613 irqs=11789 gaps>=100ms=1 down=False
+06:21:07.207  PRESS   #614
+06:21:07.317  RELEASE #614  held 109 ms
+== gap logger start 2026-09-06 06:31:08  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:31:21  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:31:35  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:32:00  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:32:13  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:32:27  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:32:52  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:33:05  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:33:19  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:33:44  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:33:57  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+== gap logger start 2026-09-06 06:34:11  (v5: irq-vs-frame correlated; EVERY gap >= 100 ms, down= annotated, never filtered)
+06:36:51.137  heartbeat: frames=0 presses=0 irqs=11802 gaps>=100ms=0 down=False
+06:36:51.135  PRESS   #1
+06:36:51.255  RELEASE #1  held 119 ms
+06:36:51.931  PRESS   #2
+06:36:52.020  RELEASE #2  held 89 ms
+06:36:52.220  PRESS   #3
+06:36:52.330  RELEASE #3  held 110 ms
+06:36:52.480  PRESS   #4
+06:36:52.589  RELEASE #4  held 109 ms
+06:36:52.755  PRESS   #5
+06:36:52.846  RELEASE #5  held 91 ms
+06:36:53.029  PRESS   #6
+06:36:53.136  RELEASE #6  held 107 ms
+06:36:55.326  PRESS   #7
+06:36:55.335  RELEASE #7  held 9 ms
+06:36:57.600  SWALLOWED: +1 interrupts, 0 frames in 1.0 s
+=== kernelhibák a boot óta ===
+1
+=== képernyő ki/be események az utolsó 10 percben ===
+2026-09-06T06:30:37+02:00 fp3 [35054]: gkr-pam: unlocked login keyring
+2026-09-06T06:30:37+02:00 fp3 [35054]: fp3 :  PWD=/home/fp3 ; USER=root ; COMMAND=/usr/bin/sh -c ROUNDS=2 BLANK=20 DELAYS=\"0 1 3 10\" sh /tmp/fp3-resume-probe.sh
+2026-09-06T06:30:58+02:00 fp3 systemd[1]: fp3-touch-gaps.service: Consumed 6.527s CPU time over 24min 43.169s wall clock time, 6.9M memory peak.
+2026-09-06T06:34:05+02:00 fp3 systemd[1]: session-c63.scope: Consumed 3.530s CPU time over 3min 28.245s wall clock time, 5.9M memory peak.
