@@ -1,4 +1,28 @@
-# #166 answered, and the answer is not the one the task assumed: there is no Hungarian MBN, and the nearest one costs LTE
+# #166: the modem carries no Hungarian config, but ONE EXISTS AS A FILE - and the substitute costs LTE
+
+☠️ **CORRECTED 2026-09-06, same day, and the correction is the important part.**
+This page first concluded "there is no Hungarian MBN, the route is closed by
+absence". That is true only of the modem's own PDC list.
+[`../2026-09-05_163-same-card-two-devices/`](../2026-09-05_163-same-card-two-devices/)
+had already established, and this session failed to read first, that the vendor
+ships one: `eu/vodafone/commerci/hungary`, identity `VDF_Hungary` /
+`Vodafone_Hungary_Commercial`, **built for this handset** (FP3 firmware build id
+`FP3.8901.3.A.0136.20211025`). It is on the device at
+
+```
+/android/vendor/firmware_mnt/image/modem_pr/mcfg/configs/mcfg_sw/
+        generic/eu/vodafone/commerci/hungary/mcfg_sw.mbn      36480 bytes
+```
+
+exactly the size that page records. So the route is **not closed by absence**:
+the config exists and simply is not loaded, and `qmicli --pdc-load-config` is
+the way to load it.
+
+☠️ **And the same page warned, in as many words, not to touch the config this
+session then activated**: *"do not reach for Global-VoLTE-Vodafone: it carries
+ims52.testnetz-vd2.de, a Vodafone Germany test network APN."* It was activated
+anyway, and the LTE loss recorded below was discovered empirically instead of
+being read. The measurement stands; the reason it was made does not.
 
 2026-09-06, pmOS `linux-fp3-7.1.3-r88`, modem `MPSS.TA.3.1.C1-425464`.
 **Reverted; the phone is back on `ROW_Commercial` and LTE.**

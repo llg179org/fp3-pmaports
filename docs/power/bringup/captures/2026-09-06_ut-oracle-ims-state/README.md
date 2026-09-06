@@ -1,4 +1,16 @@
-# ★ The oracle, read live: the stock stack is IMS-registered, and the AP never raises the IMS PDN
+# The stock stack is IMS-REGISTERED, and the AP never raises the IMS PDN
+
+☠️ **CORRECTED 2026-09-06 by the operator: this page called Ubuntu Touch "the
+oracle" and said "voice-capable", and both overstate what was measured.** UT
+registers IMS and **still CSFBs** - a call there drops to EDGE, which
+[`../2026-09-05_163-same-card-two-devices/`](../2026-09-05_163-same-card-two-devices/)
+had already recorded in as many words: *"the oracle has a full vendor IMS stack
+and still CSFBs"*. `VoiceCapable: true` is what ofono reports about the
+registration, not evidence that a call uses IMS.
+
+So UT is an oracle for **registration** and for nothing beyond it. Every
+statement below about registration stands; nothing here says VoLTE calls work on
+this handset, and they do not.
 
 2026-09-06, slot a, Ubuntu Touch 4.9.218. Read over ofono's D-Bus **as
 `phablet`, with no root at all** — which matters, because the capture this was
