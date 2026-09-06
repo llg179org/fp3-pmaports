@@ -196,7 +196,7 @@ class TapTest(Gtk.ApplicationWindow):
         self.stage["raw_ges"] = t - self.stage["t_raw"] if "t_raw" in self.stage else None
         self._handle_tap(x, y)
 
-    def _handle_tap(self, x, y):
+    def _handle_tap(self, x, y, fingers=1):
         """One tap, from whichever source saw it first. The stage record has
         already been opened by the caller."""
         w, h = self.area.get_width(), self.area.get_height()
@@ -229,13 +229,21 @@ class TapTest(Gtk.ApplicationWindow):
             if sym == self.last:
                 self.run_len += 1
                 self.breaks += 1
-                self.marks.append("!")
                 self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d"
                           % (self._stamp(), sym, self.run_len + 1, total, x, w))
             else:
                 self.run_len = 0
             self.last = sym
             self.marks.append(sym)
+            # ☠️ A touch that landed while another finger was still down. Every
+            # one of these was SILENTLY DROPPED by GestureClick until
+            # 2026-09-06 (18 of 18), so they are marked in the record rather
+            # than left to be inferred. The glyph is a zero because Adwaita
+            # Mono - checked by rendering it, the only mono font here that
+            # does - draws it with a dot in the middle, so it cannot be
+            # confused with the 'o' of the right half.
+            if fingers >= 2:
+                self.marks.append("0")
             self._log("%s  %s  #%d  x=%.0f/%d"
                       % (self._stamp(), sym, total, x, w))
         self.started = True
@@ -345,7 +353,7 @@ class TapTest(Gtk.ApplicationWindow):
             if ok:
                 self.stage["t_ges"] = self.stage["t_raw"]
                 self.stage["raw_ges"] = 0.0
-                self._handle_tap(ex, ey)
+                self._handle_tap(ex, ey, getattr(self, "n_down", 1))
         return False
 
     # ── drawing ────────────────────────────────────────────────────────────
@@ -525,6 +533,10 @@ class TapTest(Gtk.ApplicationWindow):
 
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)
+        # Adwaita Mono is the only monospace font installed here that draws a
+        # DOTTED zero (verified by rendering 0/o/O in each). That matters: the
+        # two-finger marker must not read as the right half's 'o'.
+        cr.select_font_face("Adwaita Mono")
         size = 16
         cr.set_font_size(size)
         per_line = max(8, int((w - 20) / (size * 0.72)))

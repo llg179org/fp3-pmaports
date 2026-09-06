@@ -558,3 +558,53 @@ and past the right edge (screenshot taken, layout fixed at font 11: about 44
 characters wide, about 20 lines). The rule is in a comment above the text:
 **screenshot it after editing.** `taptest-instructions-screen.png` beside this
 page is the fitted version.
+
+## Third run, larger sample: still zero lost
+
+| | run 8 | run 9 | run 10 |
+|---|---:|---:|---:|
+| raw touches on the halves | 542 | 704 | **792** |
+| taps produced | 542 | 704 | **792** |
+| **lost** | **18** | 0 | **0** |
+| two-finger touches | 18, all lost | 16, none lost | **59, none lost** |
+| BREAKs | 61 (6.2 %) | 29 | **5 (0.6 %)** |
+
+Fifty-nine overlapping touches, none lost. The five BREAKs are `run=2`/`run=3`
+same-side repeats with `raw == tap == 792`, so each had its own touch: the
+operator tapped the same side twice, which is not a loss.
+
+| stage | run 8 | run 9 | run 10 | run 10 p90 |
+|---|---:|---:|---:|---:|
+| `evt->raw` | 3.1 | 2.9 | 3.6 | 15.0 |
+| `raw->ges` | 0.5 | 0.7 | 0.8 | 1.2 |
+| `ges->draw` | 5.0 | 6.9 | 4.9 | 23.2 |
+| **`draw->present`** | 49.3 | 48.8 | **56.6** | 79.8 |
+
+### ☠️ The analysis script produced a false alarm — again
+
+The presentation check first reported `pres == pred` in **342 of 676** samples,
+which would have meant the number was the frame clock's model after all. It is
+an artefact of the *script*: 342 is exactly the count of samples with no
+presentation time at all, where `pres = 0` and `pred = 0` — and zero equals
+zero. Counted only over samples that have a presentation time: **0 of 334**,
+median difference 30.4 ms. The validation stands, now on a second independent
+run.
+
+That is the second false positive from an analysis script on this page (the
+first counted taps in the non-target record area as losses). **The scripts that
+read the instrument need the same scepticism as the instrument.**
+
+## Marking the overlapping touches, with a dotted zero
+
+A touch that lands while another finger is still down now appends `0` to the
+record: those were exactly the touches `GestureClick` dropped silently, so they
+are marked rather than left to be inferred. The BREAK `!` glyph is gone — a
+repeat is already visible as a repeat.
+
+☠️ The glyph has to be readable *against `o`*, so the font matters. Checked by
+rendering `0 o O` in every monospace font on the device
+(`dotted-zero-font-check.png`): **Adwaita Mono draws a dotted zero; Droid Sans
+Mono and the generic `monospace` alias do not.** The record text now selects
+Adwaita Mono explicitly. Rendering it was the point — the alternative was
+assuming which font has a dotted zero, which is exactly the kind of claim that
+looks fine until someone reads the screen.
