@@ -86,6 +86,7 @@ Counting rules that have each cost a wrong conclusion here:
 import atexit
 import os
 import signal
+import struct
 import subprocess
 
 import gi
@@ -101,30 +102,55 @@ MAX_MARKS = 600
 # bar and past the right edge: at font 11 the width is about 44 characters and
 # there is room for about 20 lines. Check a screenshot after editing them.
 INSTRUCTIONS = [
-    "Tap the two lower halves ALTERNATELY:",
-    "   .  o  .  o  .  o",
-    "The app logs a BREAK by itself when the",
-    "alternation fails. Press MARK when you",
-    "feel a tap was lost.",
+    "Tap the two lower halves ALTERNATELY.",
+    "BREAK is logged by the app. Press MARK",
+    "when you feel a tap was lost.",
     "",
-    "THE FOUR ROWS time one tap, hop by hop:",
-    " evt->raw   panel->driver->phoc->app",
+    "THE SIX ROWS follow one tap, top down:",
+    " irq      the CHIP raised its interrupt",
+    " contact  the DRIVER delivered a touch",
+    " cont->raw  evdev -> this app (via phoc)",
     " raw->ges   GTK gesture recognition",
     " ges->draw  render scheduling",
     " draw->shown  frame REACHED the screen",
+    "irq and contact are COUNTS, not times.",
     "",
     "Green fast, amber slow, red very slow.",
     "GREY = not measured. It is NOT green.",
     "0 in the record = a touch that landed",
     "while another finger was still down.",
-    "Each row has bars (last 12 samples) and",
-    "its own running light, which steps only",
-    "when THAT hop gets a new sample - so a",
-    "stalled hop freezes while others run.",
-    "Tap this text area to CLEAR the record.",
-    "The counters above it keep running.",
+    "Each row: bars = last 12 samples, and a",
+    "running light that steps only when THAT",
+    "hop fires - a stalled hop freezes while",
+    "the others keep running.",
+    "Tap this text to CLEAR the record.",
 ]
 
+
+
+# One evdev record on 64-bit: tv_sec, tv_usec, type, code, value.
+EV_FMT = "qqHHi"
+EV_SZ = struct.calcsize(EV_FMT)
+EV_ABS, ABS_MT_SLOT, ABS_MT_TRACKING_ID = 0x03, 0x2f, 0x39
+EV_SYN, SYN_DROPPED = 0x00, 3
+IRQ_NAME = "hx83112b"
+
+
+def _irq_count():
+    """The touch controller's interrupt count, or None.
+
+    The chip raising its interrupt means "there is touch data" - it is the
+    earliest thing on this phone that can be observed at all. ☠️ It is NOT one
+    interrupt per tap: a press, its moves and its release are many, so this is
+    only ever read as "did it move", never as a tap count.
+    """
+    try:
+        for line in open("/proc/interrupts"):
+            if IRQ_NAME in line:
+                return sum(int(x) for x in line.split(":")[1].split()[:8])
+    except (OSError, ValueError, IndexError):
+        pass
+    return None
 
 
 KCONTACTS_UNIT = "fp3-kcontacts"
@@ -273,6 +299,21 @@ class TapTest(Gtk.ApplicationWindow):
         # relying on the operator remembering, and stop it on the way out ONLY
         # if we were the ones who started it: another measurement may own it.
         self.owns_kcontacts = start_kcontacts(self._logline)
+
+        # ☠️ Watch evdev IN THIS PROCESS as well as in the external reader. The
+        # external log is the independent witness; this one is what lets the
+        # kernel's own layers appear on screen next to the client's, so a
+        # contact that never becomes a GdkEvent is visible AS IT HAPPENS rather
+        # than in a diff afterwards. Two readers are safe - evdev gives every
+        # open file its own ring buffer.
+        self.n_contact = self.n_syn_dropped = 0
+        self.contact_mono = None
+        self.mt_slot = 0
+        self.irq0 = _irq_count()
+        self.irq_now = self.irq0
+        self.n_irq_step = 0
+        self._open_evdev()
+        GLib.timeout_add(500, self._poll_irq)
         atexit.register(self._cleanup)
         for sig in (signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, self._on_signal)
@@ -313,6 +354,55 @@ class TapTest(Gtk.ApplicationWindow):
     # ── logging ────────────────────────────────────────────────────────────
     def _log(self, line):
         self.log.write(line + "\n")
+
+    def _open_evdev(self):
+        node = _touch_event_node()
+        if not node:
+            self._logline("evdev watch: NO event node - the kernel rows will "
+                          "stay GREY, which means unmeasured, not zero")
+            return
+        try:
+            fd = os.open(node, os.O_RDONLY | os.O_NONBLOCK)
+        except OSError as e:
+            self._logline("evdev watch: cannot open %s (%s) - the kernel rows "
+                          "will stay GREY, which means unmeasured, not zero"
+                          % (node, e))
+            return
+        self.evdev_fd = fd
+        GLib.unix_fd_add_full(GLib.PRIORITY_DEFAULT, fd, GLib.IOCondition.IN,
+                              self._on_evdev, None)
+        self._logline("evdev watch: open on %s" % node)
+
+    def _on_evdev(self, fd, _cond, _data):
+        try:
+            buf = os.read(fd, EV_SZ * 64)
+        except (BlockingIOError, OSError):
+            return True
+        for off in range(0, len(buf) - EV_SZ + 1, EV_SZ):
+            sec, usec, typ, code, val = struct.unpack_from(EV_FMT, buf, off)
+            if typ == EV_SYN and code == SYN_DROPPED:
+                self.n_syn_dropped += 1
+                self._logline("evdev SYN_DROPPED #%d - OUR ring overflowed, "
+                              "counts after this are incomplete"
+                              % self.n_syn_dropped)
+            elif typ == EV_ABS and code == ABS_MT_SLOT:
+                self.mt_slot = val
+            elif typ == EV_ABS and code == ABS_MT_TRACKING_ID and val >= 0:
+                self.n_contact += 1
+                self.contact_mono = self._mono()
+                self._logline("CONTACT #%d  slot=%d  kernel-ts %d.%06d"
+                              % (self.n_contact, self.mt_slot, sec, usec))
+        return True
+
+    def _poll_irq(self):
+        # Reads a file every 500 ms and NEVER repaints. A repaint here would be
+        # the same self-perturbation that contaminated the first presentation
+        # numbers; the light steps at the next natural paint instead.
+        c = _irq_count()
+        if c is not None and self.irq_now is not None and c != self.irq_now:
+            self.n_irq_step += 1
+        self.irq_now = c
+        return True
 
     def _logline(self, msg):
         self._log("%s  %s" % (self._stamp(), msg))
@@ -465,14 +555,15 @@ class TapTest(Gtk.ApplicationWindow):
             st["refresh"] = t.get_refresh_interval() / 1000.0
         else:
             st["drw_prs"] = None
-        for k in ("evt_lat", "raw_ges", "ges_drw", "drw_prs"):
+        for k in ("cont_raw", "evt_lat", "raw_ges", "ges_drw", "drw_prs"):
             if st.get(k) is not None:
                 self.stage_counts[k] = self.stage_counts.get(k, 0) + 1
         self.stage_hist.append(dict(st))
         del self.stage_hist[:-60]          # keep the last 60
-        self._log("%s  STAGES  evt->raw %s  raw->ges %s  ges->draw %s  "
+        self._log("%s  STAGES  cont->raw %s  evt->raw %s  raw->ges %s  ges->draw %s  "
                   "draw->present %s  (refresh %s)"
-                  % (self._stamp(), _ms(st.get("evt_lat")), _ms(st.get("raw_ges")),
+                  % (self._stamp(), _ms(st.get("cont_raw")), _ms(st.get("evt_lat")),
+                     _ms(st.get("raw_ges")),
                      _ms(st.get("ges_drw")), _ms(st.get("drw_prs")),
                      _ms(st.get("refresh")))
                   + ("  pres=%d pred=%d delta=%.1f ms"
@@ -534,8 +625,14 @@ class TapTest(Gtk.ApplicationWindow):
             if et == Gdk.EventType.TOUCH_BEGIN:
                 self.n_raw += 1
                 self.n_down = getattr(self, "n_down", 0) + 1
-            self.stage = {"t_raw": now, "evt_lat": lat, "touch":
-                          et == Gdk.EventType.TOUCH_BEGIN}
+            cont = None
+            if self.contact_mono is not None:
+                cont = now - self.contact_mono
+                if not 0.0 <= cont <= 2000.0:      # not this tap's contact
+                    cont = None
+                self.contact_mono = None
+            self.stage = {"t_raw": now, "evt_lat": lat, "cont_raw": cont,
+                          "touch": et == Gdk.EventType.TOUCH_BEGIN}
             ok, ex, ey = event.get_position()
             self.touch_seen = True
             self._log("%s  RAW %s #%d  evt->raw %s  at %s  fingers-down %d"
@@ -672,32 +769,59 @@ class TapTest(Gtk.ApplicationWindow):
         # before, when a stale stage and a fast one looked identical.
         st = self.stage_hist[-1] if self.stage_hist else {}
         refresh = st.get("refresh") or 16.7
-        stages = (("evt->raw", "evt_lat", 12.0, 40.0),
+        # Six rows, kernel first, so the chain reads top to bottom exactly
+        # as the touch travels. The first two are COUNTERS, not times: the chip
+        # raising an interrupt and the driver delivering a contact have no
+        # meaningful "duration" here, only a "did it happen".
+        stages = (("irq", None, 0, 0),
+                  ("contact", None, 0, 0),
+                  ("cont->raw", "cont_raw", 15.0, 45.0),
                   ("raw->ges", "raw_ges", 5.0, 25.0),
                   ("ges->draw", "ges_drw", 8.0, 30.0),
                   ("draw->shown", "drw_prs", refresh * 1.5, refresh * 4.0))
-        rowh = 40
-        y0 = 34
+        rowh = 30
+        y0 = 32
         for i, (name, key, warn, bad) in enumerate(stages):
             ry = y0 + i * rowh
-            v = st.get(key)
-            series = [d.get(key) for d in self.stage_hist[-12:]]
-            live = [x for x in series if x is not None]
+            counter = key is None
+            if counter:
+                # A counter row shows how many, and its light steps per event.
+                if name == "irq":
+                    n_ev = self.n_irq_step
+                    total = (None if self.irq_now is None or self.irq0 is None
+                             else self.irq_now - self.irq0)
+                else:
+                    n_ev = total = self.n_contact
+                v = None
+                series, live = [], []
+            else:
+                v = st.get(key)
+                n_ev = self.stage_counts.get(key, 0)
+                series = [d.get(key) for d in self.stage_hist[-12:]]
+                live = [x for x in series if x is not None]
 
             cr.set_source_rgb(0.14, 0.14, 0.17)          # row ground
             cr.rectangle(10, ry, w - 20, rowh - 4)
             cr.fill()
 
-            cr.set_source_rgb(*_stage_colour(v, warn, bad))   # the value chip
+            if counter:
+                chip = ((0.35, 0.35, 0.38) if total is None
+                        else (0.30, 0.55, 0.75))
+            else:
+                chip = _stage_colour(v, warn, bad)
+            cr.set_source_rgb(*chip)                          # the value chip
             cr.rectangle(10, ry, 92, rowh - 4)
             cr.fill()
             cr.set_source_rgb(0.05, 0.05, 0.05)
-            cr.set_font_size(11)
-            cr.move_to(14, ry + 14)
+            cr.set_font_size(10)
+            cr.move_to(14, ry + 11)
             cr.show_text(name)
-            cr.set_font_size(13)
-            cr.move_to(14, ry + 30)
-            cr.show_text("--" if v is None else "%.0f ms" % v)
+            cr.set_font_size(12)
+            cr.move_to(14, ry + 23)
+            if counter:
+                cr.show_text("--" if total is None else "%d" % total)
+            else:
+                cr.show_text("--" if v is None else "%.0f ms" % v)
 
             # sparkline of this hop's last 12 samples, scaled to its own worst
             sx, sw = 108, w - 20 - 108 - 74
@@ -708,20 +832,20 @@ class TapTest(Gtk.ApplicationWindow):
                 frac = min(sv, cap) / cap
                 bw2 = sw / 12.0
                 cr.set_source_rgb(*_stage_colour(sv, warn, bad))
-                cr.rectangle(sx + j * bw2, ry + (rowh - 8) * (1 - frac),
-                             bw2 - 2, (rowh - 8) * frac)
+                cr.rectangle(sx + j * bw2, ry + (rowh - 6) * (1 - frac),
+                             bw2 - 2, (rowh - 6) * frac)
                 cr.fill()
 
             # the running light: six cells, the lit one advances per sample
-            n = self.stage_counts.get(key, 0)
+            n = n_ev
             lx = w - 10 - 68
             for c in range(6):
                 on = (c == n % 6)
                 if on:
-                    cr.set_source_rgb(*_stage_colour(v, warn, bad))
+                    cr.set_source_rgb(*chip)
                 else:
                     cr.set_source_rgb(0.24, 0.24, 0.28)
-                cr.rectangle(lx + c * 11, ry + 12, 9, 12)
+                cr.rectangle(lx + c * 11, ry + 8, 9, 11)
                 cr.fill()
 
         # The marks, newest last, wrapped to the width and clipped to the area.
@@ -733,12 +857,12 @@ class TapTest(Gtk.ApplicationWindow):
         size = 16
         cr.set_font_size(size)
         per_line = max(8, int((w - 20) / (size * 0.72)))
-        rows = int((mark_y - 206) / (size + 4))
+        rows = int((mark_y - 220) / (size + 4))
         text = "".join(self.marks)
         lines = [text[i:i + per_line] for i in range(0, len(text), per_line)]
         shown = lines[-rows:]
         for i, line in enumerate(shown):
-            cr.move_to(10, 214 + i * (size + 4))
+            cr.move_to(10, 228 + i * (size + 4))
             if i == len(shown) - 1 and line:
                 cr.set_source_rgb(0.93, 0.93, 0.93)
                 cr.show_text(line[:-1])

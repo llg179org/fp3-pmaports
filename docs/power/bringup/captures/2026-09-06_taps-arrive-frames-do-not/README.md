@@ -688,3 +688,49 @@ empty*.
 ☠️ **A `SIGTERM` handler was required.** `systemctl stop` kills with SIGTERM, so
 `atexit` never ran and the reader would have been left behind — which the test
 above would have shown as case B failing.
+
+## The kernel's own layers, on screen
+
+The app now reads the touchscreen's evdev node **in its own process** and polls
+the controller's interrupt count, so the chain on screen starts where the touch
+does. Six stacked rows, top to bottom in the order the touch travels:
+
+| row | what it is |
+|---|---|
+| `irq` | count — the **chip** raised its interrupt: there is touch data |
+| `contact` | count — the **driver** delivered a contact through evdev |
+| `cont->raw` | ms — evdev to this app, i.e. across libinput and phoc |
+| `raw->ges` | ms — GTK gesture recognition |
+| `ges->draw` | ms — render scheduling |
+| `draw->shown` | ms — the frame reached the screen |
+
+★ **The diagnosis is now readable without any log.** A contact whose running
+light steps while `cont->raw`'s does not is a touch lost between evdev and the
+client; an `irq` light stepping with no `contact` is the driver swallowing it;
+neither stepping means nothing reached the input layer at all.
+
+Notes that keep this honest:
+
+- ☠️ `irq` and `contact` are **counts, not times**, and the row says so. An
+  interrupt is not one per tap — a press, its moves and its release are many —
+  so the row is only ever read as "did it move".
+- ☠️ The interrupt poll runs every 500 ms and **never repaints**. A repaint
+  there would be the same self-perturbation that contaminated the first
+  presentation numbers; the light steps at the next natural paint instead.
+- ☠️ Reading evdev in-process is *in addition to* the external
+  `kernel-contacts.py`, not instead of it: the external log stays as an
+  independent witness. Two readers are safe — evdev gives each open file its own
+  ring — and each gets its own `SYN_DROPPED`, which is logged.
+- ☠️ If the event node cannot be found or opened, the kernel rows stay **grey**
+  and the log says the rows are *unmeasured, not zero*.
+
+### ☠️ What is verified, and what is not
+
+Verified on the device: the app's user is in the `input` group and can open
+`/dev/input/event4`; the watch opened; `_irq_count()` parses `61102`, which is
+exactly the sum on the `hx83112b` line of `/proc/interrupts`.
+
+**Not verified: no contact and no interrupt step has been observed yet** — that
+needs a finger, and the operator had finished for the evening. The plumbing is
+checked; the measurement is not. The first tap of the next session validates
+both rows, and until then no number from them may be quoted.
