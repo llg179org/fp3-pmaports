@@ -1,0 +1,29 @@
+modem control device: /dev/rpmsg_ctrl3
+DIAG_CNTL -> /dev/rpmsg0   DIAG -> /dev/rpmsg1
+open burst: cntl 6132 bytes, diag 0 bytes
+sent FEATURE (14 bytes)
+   after FEATURE: cntl +3090, diag +0
+sent DIAGMODE (44 bytes)
+   after DIAGMODE: cntl +0, diag +0
+sent LOG_MASK(0x0B codes) (51 bytes)
+   after LOG_MASK(0x0B codes): cntl +0, diag +0
+
+capturing 150 s ...
+  +  10s  cntl       0  diag       0
+  +  20s  cntl      28  diag    5869
+  +  30s  cntl      28  diag    7884
+  +  40s  cntl      28  diag    8893
+  +  50s  cntl      28  diag    9804
+  +  60s  cntl      28  diag   11041
+  +  70s  cntl      28  diag   12384
+  +  80s  cntl      28  diag   13499
+  +  90s  cntl      28  diag   14649
+  + 100s  cntl      28  diag   15398
+  + 110s  cntl      28  diag   16419
+  + 120s  cntl      28  diag   17481
+  + 130s  cntl      28  diag   18494
+  + 140s  cntl      28  diag   19587
+  + 151s  cntl      28  diag   20530
+cleared LOG_MASK(equip 0x0B)
+
+total: cntl 28 bytes, diag 20530 bytes -> /var/lib/attach-capture

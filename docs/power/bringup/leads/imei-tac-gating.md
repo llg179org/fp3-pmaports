@@ -2,7 +2,25 @@
 
 # Does the operator refuse IMS voice to *this device*? — the IMEI/TAC gate
 
-**Status:** open, **not measurable from anything we currently hold**, but there is
+**Status: CLOSED 2026-09-06, and the answer is NO** — the network reports **IMS
+voice over PS = SUPPORTED** to this UE, in this tracking area. See
+[`../captures/2026-09-06_ims-vops-supported/`](../captures/2026-09-06_ims-vops-supported/).
+By this page's own framing that means *"the refusal is not at that layer and the
+fault is below ofono, on our side."* The device-policy explanation is out.
+
+☠️ The capture this page said we could not take was taken **on pmOS, without a
+slot switch**. Three things stood in the way and none of them was the modem:
+`mmcli -m 0` hardcoded while the modem had renumbered to `Modem/1`; the DIAG
+control handshake being answered **once per boot**, which this page's own tool
+documents at line 47 and which made three attempts void; and `--disable` leaving
+the modem camped, so a real detach needs `--set-power-state-low`.
+
+The text below is kept as it stood, because the measurement it specifies is
+exactly the one that was made.
+
+---
+
+**Status (historic):** open, **not measurable from anything we currently hold**, but there is
 one decisive measurement and we have the tooling for it.
 
 ## Why the question is live
