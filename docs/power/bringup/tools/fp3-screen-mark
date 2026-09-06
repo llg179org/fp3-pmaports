@@ -1,0 +1,23 @@
+#!/bin/sh
+# Write every screen on/off transition into /dev/kmsg, so it lands on the SAME
+# timeline as the i2c-qup timeout decode. The panel driver carries no dev_dbg,
+# so there is otherwise no kernel-side timestamp for "the display came up".
+#
+# ☠️ Polls rather than waits: neither bl_power nor the DRM dpms attribute is
+# pollable, and a 50 ms sample is far finer than the seconds-scale question
+# being asked. It reads only, so it cannot disturb what it measures.
+set -u
+BL=/sys/class/backlight/1a94000.dsi.0
+DPMS=/sys/class/drm/card0-DSI-1/dpms
+prev=""
+while :; do
+	p=$(cat "$BL/bl_power" 2>/dev/null)
+	b=$(cat "$BL/brightness" 2>/dev/null)
+	d=$(cat "$DPMS" 2>/dev/null)
+	cur="$p/$b/$d"
+	if [ "$cur" != "$prev" ]; then
+		[ -n "$prev" ] && echo "SCREEN: $prev -> $cur" > /dev/kmsg
+		prev="$cur"
+	fi
+	sleep 0.05
+done

@@ -215,3 +215,58 @@ dead candidates: [`../leads/modem-idle-lte.md`](../leads/modem-idle-lte.md).
 | [`sleep-night-fit.py`](sleep-night-fit.py) | turns a `sleep-night.sh` log into mA: volts → charge through the pack's own measured discharge curve, then charge against time. ☠️ It refuses to present a bare number when the fit is noise-dominated or the run sat on the flat top of the curve — the first four rounds of 2026-08-29 read "77.7 mA" with a residual a fifth of the whole travel, which is not a measurement |
 | [`sleep-knob-ab.sh`](sleep-knob-ab.sh) | A-B-A′ on one knob measured in **residency** instead of duty or mA — the third wrapper, because residency and duty are different quantities and a null on one is not a null on the other (stopping ModemManager left the duty flat at 38/36/37 % and took the suspend from 16-53 s to the full 602 s). Its first job: `mmcli -m 0 --disable` separates a daemon **poll timer** from a modem **indication subscription** with nothing patched — the daemon keeps all its timers, the subscriptions go with the disable |
 | [`call-wake-test.sh`](call-wake-test.sh) | does an incoming call still raise the phone once a knob is applied — the responsiveness half of the trade, which no residency number replaces |
+
+## Touch: what the kernel delivered versus what a client received
+
+Built 2026-09-06 for `docs/touch/lost-taps.md` — taps that vanish while the
+kernel logs nothing at all. The pair is the point: both write to the same clock,
+so a tap present in one log and missing from the other says **which layer** lost
+it, which nothing before them could answer.
+
+| tool | the question it answers |
+|---|---|
+| [`fp3-touch-gaps.py`](fp3-touch-gaps.py) | what the **kernel** put on `/dev/input/eventN` — contacts, frame gaps, and the interrupt count inside each lift. Root service, writes `/home/fp3/142-gaps.txt` |
+| [`fp3-taptest.py`](fp3-taptest.py) | what a **client** received, after the compositor. A gapless full-screen target: bottom 3/8 split by one vertical line, left `.` and right `o`, tapped alternately so a lost tap shows as `..` or `oo` without counting or aiming. A MARK strip records the operator's own judgement. User service, writes `/home/fp3/taptest.log` |
+| [`fp3-screen-mark`](fp3-screen-mark) | screen on/off transitions, written into the kernel log so they share the timeline with the touch driver's own messages |
+
+```sh
+n=$(grep -n 'taptest start' /home/fp3/taptest.log | tail -1 | cut -d: -f1)
+tail -n +$n /home/fp3/taptest.log | grep -cE '  [.o]  #'      # client taps
+grep -c CONTACT /home/fp3/142-gaps.txt                        # kernel contacts
+```
+
+☠️ **Six ways these lied, all of them plausible-looking.** In the spirit of the
+note at the top of this page - the mistakes were instrument mistakes, and each
+fix is written into the script that made it.
+
+- **`BTN_TOUCH` undercounts.** Single-touch emulation: 1 when the *first* finger
+  lands, 0 when the *last* lifts, so a second contact arriving while the first
+  is down makes no transition. The operator tapped with index and middle finger;
+  the client logged 864 taps against 784 kernel presses — a client apparently
+  receiving *more* than the kernel sent, which is impossible and is the only
+  reason it was noticed. Erring the other way it would have been reported as
+  loss in the compositor. Now counts `ABS_MT_TRACKING_ID` openings.
+- **The IRQ window contained the press's own interrupt.** `/proc/interrupts`
+  counts the hard IRQ, which precedes `BTN_TOUCH` in userspace. Quiet lifts
+  alternated +0/+1 on sampling phase alone, and five of seven "chip reported, no
+  press" lines in one window were that. Now ends 40 ms early.
+- **A gate can demand a known negative.** v6 required interrupts during the
+  *lift*, when no finger is on the panel and zero is correct; its own gate
+  refused it. The known positive is the hold.
+- **A GUI that reflows is an instrument that lies.** Four versions used ordinary
+  GTK containers and the split moved the moment it was touched. It produced a
+  run of eleven "lost" taps that the kernel-vs-client comparison showed were
+  nothing of the kind. Fixed by dropping layout entirely: one `DrawingArea`,
+  every region arithmetic on width and height.
+- **A control with no feedback manufactures the failures it records.** MARK drew
+  nothing when pressed, so a press that registered looked like one that had not
+  and was pressed again — four times in half a second.
+- **A pre-install gate can be written so it cannot fail.**
+  `[ -s err ] && ! grep -q '^Terminated$' err` passes whenever that word appears
+  *anywhere*, so a Python traceback alongside the timeout's own message read as
+  success and shipped a program whose draw function raised on every call — a
+  blank white window with no other symptom. Count everything that is *not* the
+  expected line instead.
+
+`fp3-taptest.py` needs `py3-cairo`; without it the window is blank white and
+nothing else says why.
