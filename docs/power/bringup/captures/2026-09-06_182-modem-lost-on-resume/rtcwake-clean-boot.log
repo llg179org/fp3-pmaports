@@ -1,0 +1,25 @@
+23:36:18  === before suspend ===
+23:36:19  MM started at: Sun 2026-09-06 23:32:20 CEST
+23:36:19  modem:     /org/freedesktop/ModemManager1/Modem/0 [QUALCOMM INCORPORATED] 0
+23:36:19  qmi:   	Model: '0'
+23:36:19  === suspending, asking for 900 s ===
+rtcwake: assuming RTC uses UTC ...
+rtcwake: wakeup from "mem" using /dev/rtc0 at Fri Jan  2 16:40:51 1970
+23:36:43  === resumed after 24 s of WALL CLOCK (asked for 900) ===
+23:36:43  QMI answers again at +0s
+23:36:53  modem after:     /org/freedesktop/ModemManager1/Modem/0 [QUALCOMM INCORPORATED] 0
+23:36:53  === what has a wakeup_count now (was 0 before, if it changed it woke us) ===
+23:36:53  === ModemManager journal, unfiltered tail ===
+                            <<<<<<   service = "nas"
+                            <<<<<<   client  = 1
+                            <<<<<< QMI:
+                            <<<<<<   flags       = "indication"
+                            <<<<<<   transaction = 19
+                            <<<<<<   tlv_length  = 9
+                            <<<<<<   message     = "Signal Info" (0x0051)
+                            <<<<<< TLV:
+                            <<<<<<   type       = "LTE Signal Strength" (0x14)
+                            <<<<<<   length     = 6
+                            <<<<<<   value      = BB:F9:A4:FF:B2:00
+                            <<<<<<   translated = [ rssi = '-69' rsrq = '-7' rsrp = '-92' snr = '178' ]
+23:36:53  === DONE ===

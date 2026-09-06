@@ -11002,3 +11002,31 @@ time asleep — the quantity being measured. The wall clock was in ModemManager'
 own journal.
 
 Capture: [`captures/2026-09-06_181-idle-suspend-night/`](captures/2026-09-06_181-idle-suspend-night/)
+
+### #182 — short suspends do NOT reproduce the modem loss, and the cable is in the way
+
+Three controlled `rtcwake` cycles, one in the session's dirty state and two after
+a **reboot at the operator's suggestion** so the installed configuration is what
+is under test: 32 s, ~100 s and 24 s of actual suspend, and in every one the QMI
+transport answered **at +0 s** and the modem object survived. The fault needs
+something these runs do not have.
+
+Two candidates remain from the failing case: the **duration** (19 min 36 s) and
+the **wake source** (an incoming call, not an RTC alarm).
+
+★ **The 24 s run is not a failed long suspend — it is a second call-wake test,
+and it PASSED.** The operator rang the phone during it; the journal names the
+waker (`call state changed: unknown -> ringing-in (incoming-new)`), the modem
+survived, and **the phone rang**. So:
+
+| suspend | woken by | modem after | rang? |
+|---|---|---|---|
+| 19 min 36 s | incoming call | **lost** | **no** |
+| 24 s | incoming call | survived | **yes** |
+
+**The only remaining variable is the DURATION of the suspend.** ☠️ Withdrawn
+within the hour: "the ssh session over the USB gadget keeps waking it" — the
+waker was the call. And `wakeup_sources` carried no `wakeup_count` for it, so
+that file did not name a waker the modem's own log named plainly.
+
+Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
