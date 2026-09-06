@@ -583,9 +583,28 @@ fourth line is deliberately empty; see below.
   so this does the same — `QUP_SW_RESET`, poll `QUP_RESET_STATE`, restore the
   cached `QUP_CONFIG` and `QUP_I2C_MASTER_GEN`, back to `QUP_RUN_STATE`,
   rewrite `QUP_I2C_CLK_CTL`, and only then write the clear.
-- **The measured effect.** **None yet.** Deployed 2026-09-06 08:00 and running
-  (`fp3-commit 585a3423b76f`, package `linux-fp3-7.1.3-r86`), but the fault
-  needs a finger and the sampler shows 0 ACTIVE minutes since boot.
+- **The measured effect.** **The clear is now accepted, first try.** Caught in
+  ordinary use at 09:00:23 on 2026-09-06, one hour after deploying r86, when the
+  operator took the phone off the charger and the lock screen missed three
+  presses:
+
+  ```
+  09:00:23.817467  transfer to 0x48 timed out, bus active, master is us,
+                   SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+  09:00:23.819568  bus cleared after 1 attempt(s)
+  ```
+
+  The status word is **identical** to the 06:36:55 fault on r85, so this is the
+  same mechanism, not a different one that happens to recover. On r84/r85 it
+  produced `clear not accepted` after ten attempts; on r86 it clears 2.1 ms
+  later, on the first. Counters for the whole boot: `bus still held` 0,
+  `clear not accepted` 0, `Failed to read input event` 0, `Disabling IRQ` 0.
+
+  ☠️ **And the tap was still lost.** Recovery is not prevention: the transfer
+  still timed out first, and that timeout is 2.03 s (21.786 resume → 23.817
+  timeout), which during PIN entry swallows several taps. r86 closes the
+  cascade, not the fault — exactly the distinction the operator drew when
+  rejecting "the stall is shorter" as a fix.
 
 ☠️ **The success criterion is a log line, not a fault count.** If the clear now
 takes effect, `bus still held … clear not accepted` must be replaced by
@@ -598,3 +617,73 @@ is reset by every boot. From r86 the unit `fp3-i2c-qup-dyndbg.service`
 with `systemctl is-active fp3-i2c-qup-dyndbg` and
 `sudo grep -c 'i2c-qup.c.*=p' /sys/kernel/debug/dynamic_debug/control`, which
 should read 5.
+
+
+## 12. Where the fault comes from: the pinctrl fix for a different bus
+
+The 09:00 capture carries more than the success criterion. The three lines
+before it say when the fault happens:
+
+```
+09:00:21.766407  78b7000.i2c: pm_runtime: suspending...
+09:00:21.786452  78b7000.i2c: pm_runtime: resuming...      <- 20 ms later
+09:00:23.817467  78b7000.i2c: transfer to 0x48 timed out
+```
+
+**The transfer that hangs is the first one after a runtime-PM resume.** That
+makes it a consequence of something the resume path does, and the resume path
+on this driver was changed by us:
+
+`1380c70af7b3 "i2c: qup: select the sleep/default pinctrl states across runtime
+PM"` selects the sleep state on runtime suspend and the default state on resume.
+It was written for a **different bus**: on i2c-3 (`7af6000`, the `aw8898`
+speaker amp) the ADSP resets the BLSP6 pads behind Linux's back, and cycling
+through the sleep state is what makes the resume-side select rewrite them.
+
+On the touch bus the same cycling has a cost, and the DT says what it is:
+
+```
+i2c_3_default:  pins gpio10, gpio11   function = "blsp_i2c3"   bias-disable
+i2c_3_sleep:    pins gpio10, gpio11   function = "gpio"        bias-disable
+```
+
+Every runtime suspend takes SDA and SCL **out of the I2C function to plain GPIO
+with no pull**, and resume puts them back. Before that commit the driver never
+touched pinctrl, so this sleep state was dead configuration; the commit is what
+made it run. A controller left mid-byte by a pad transition then holds SCL low —
+which is precisely the `SDA 1 SCL 0` signature, and precisely what a bus-clear
+is for.
+
+**Why it hits touch and not the amp** is asymmetric access, not the pins: the
+driver writes to the amp when it chooses, while the touch controller raises an
+asynchronous interrupt, so a read can begin at any instant — including one that
+lands on a resume.
+
+☠️ **This is a hypothesis with a mechanism, not a conclusion.** It explains why
+the fault needs a finger, why the unbind reproducer never made it, and why it
+appeared in ordinary use rather than under load — but nothing here has been
+measured against a control yet.
+
+### The experiment now running
+
+One change, no flash, revertible, and it leaves the amp's fix untouched:
+
+```sh
+echo on > /sys/bus/platform/devices/78b7000.i2c/power/control   # touch bus only
+```
+
+Runtime PM off on the touch bus stops the suspend/resume cycling, so the pins
+never leave `blsp_i2c3`. Armed 2026-09-06 09:05:05; the baseline for that boot
+is in `/var/log/fp3-touch/r86-experiment.log` (1 timeout, 1 clear, 72 touch
+interrupts — a thin before-window, and it is worth saying so). It reverts on
+reboot, or with `echo auto`.
+
+If the timeouts stop over a comparable window of use, the resume path is
+implicated and the fix belongs in the driver or the DT: give this bus a sleep
+state that keeps the I2C function, or restrict the pinctrl cycling to the bus
+that needs it. If they continue, the resume is a coincidence of timing and this
+section is wrong.
+
+☠️ **What this experiment cannot separate**: runtime PM off stops the pinctrl
+cycling *and* the clock gating. It tests whether the resume path is involved at
+all, not which half of it. That is the next question, not this one.
