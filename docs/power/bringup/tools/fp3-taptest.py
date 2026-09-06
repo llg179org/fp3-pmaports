@@ -56,6 +56,7 @@ class TapTest(Gtk.ApplicationWindow):
         self.breaks = self.n_mark = self.run_len = 0
         self.last = None
         self.started = False
+        self.n_draw = 0
         self.mark_flash_until = 0.0
         self.log = open(LOG, "a", buffering=1)
         self._log("== taptest start %s" % time.strftime("%F %H:%M:%S"))
@@ -157,6 +158,14 @@ class TapTest(Gtk.ApplicationWindow):
 
     # ── drawing ────────────────────────────────────────────────────────────
     def _draw(self, _area, cr, w, h, *_):
+        # ☠️ Log WHEN a frame is actually painted, not only when one is asked
+        # for. Measured 2026-09-06: every tap was delivered and logged, and the
+        # operator still saw nothing until the NEXT tap - queue_draw() had run,
+        # so the loss was in presentation, not in input. Without this line the
+        # log cannot tell those two apart, and the operator's eye gets blamed.
+        self.n_draw += 1
+        self._log("%s  DRAW #%d  marks=%d" % (self._stamp(), self.n_draw,
+                                              len(self.marks)))
         mark_y, half_y = h * MARK_TOP, h * HALVES_TOP
 
         cr.set_source_rgb(0.06, 0.06, 0.08)   # record area

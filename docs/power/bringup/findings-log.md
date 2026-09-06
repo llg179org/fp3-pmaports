@@ -10692,3 +10692,27 @@ now exists, so the phone comes up IMS-**off**; the sentence describes a phone
 that no longer exists and is corrected there.
 
 Capture: [`captures/2026-09-06_hungarian-mbn-load/`](captures/2026-09-06_hungarian-mbn-load/)
+
+## 2026-09-06 — the taps arrive, the frames do not
+
+`fp3-taptest.py` against phoc: **118 taps, perfect `. o . o` alternation, zero
+BREAKs** — every tap reached the client and was logged to the millisecond. Yet
+the operator twice pressed MARK because a tap had produced nothing on screen,
+and the log dates those: `.` #79 logged 18:59:43.956, MARK at 18:59:47.347
+(**3.4 s** unpainted); `o` #90 logged 18:59:55.980, MARK at 18:59:58.128
+(**2.1 s**). `queue_draw()` runs immediately after the log line that proves the
+press was handled, so the redraw was requested and the screen still did not
+change until the next input event.
+
+This is the shape of the original calculator complaint, and it moves the fault
+one layer further out again: not the touch driver (already exonerated), not the
+compositor's input path, but **presentation**. ☠️ Not yet established: when the
+frame was actually painted — this run logs presses, not paints. `fp3-taptest.py`
+now logs `DRAW #n` from inside its draw function to close that, and the
+controlled form (tap once, touch nothing for five seconds) has not been run.
+
+☠️ It also retro-weakens every earlier GUI round of this investigation: if
+frames are withheld until the next event, a perceived lost tap is the expected
+observation even on a perfect input path.
+
+Capture: [`captures/2026-09-06_taps-arrive-frames-do-not/`](captures/2026-09-06_taps-arrive-frames-do-not/)
