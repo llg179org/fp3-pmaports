@@ -10599,3 +10599,51 @@ already in the skill: *a confident claim built on an unchecked exit status.* And
 the `measurement-watch` gate was found NET NEGATIVE after a fourth false firing
 on reboot units, which cannot be watched the way it demands because the unit dies
 with the system it reboots; fixed in `measurement-watch.cjs`.
+
+## 2026-09-06 (afternoon) — ★ a second touch fault, and an all-zero read that the driver calls "no fingers"
+
+Full page: `docs/touch/lost-taps.md`. Separate from the i2c stall above: between
+10:30 and 11:13 there was **not one i2c error** and taps still went missing.
+
+**The mechanism, from two code facts.** `himax_verify_checksum()` sums the 56
+event bytes and requires the low byte of the sum to be zero — which **a buffer
+of zeroes satisfies trivially**. Zeroes are not what this chip reports (its idle
+frame is `0xff`: `num_points == 0xff` is special-cased and an unused slot is
+`HIMAX_INVALID_COORD` = `0xffff`), so an empty read is accepted as a valid "no
+fingers" event. It then yields zero points, `himax_process_event()` reports
+nothing, and **the input core drops the redundant `SYN_REPORT`** — leaving no
+frame, no error and no trace of any kind. r88 warns on it, rate limited, and
+deliberately changes no behaviour so the next occurrence is not confounded.
+☠️ A silent r88 refutes this and is a result too.
+
+**Two dropouts caught, both marked by the operator with the power button** — a
+separate input device the touch path cannot swallow, timestamped by logind. At
+11:12:21–23, tapping a keypad continuously, three consecutive lifts of 556, 798
+and 966 ms against a median of 83 ms, each carrying interrupts and delivering no
+frame.
+
+☠️ **The instrument was wrong three times and confident every time**, which is
+the transferable part:
+
+| version | claimed | actually |
+|---|---|---|
+| v6 | `CHIP NEVER REPORTED` on 17/30 presses | gated on the **lift**, where no finger means no interrupts — a known *negative* used as a known positive |
+| v6 | `frames=1` on every lift | the release's own `SYN_REPORT` counted inside the lift |
+| v7 | seven lost taps around a charger plug | `/proc/interrupts` counts the **hard** IRQ, which precedes `BTN_TOUCH` in userspace, so the window held the press's own interrupt; five of seven were that |
+
+v8 ends the window 40 ms early and gates twice — on the hold (interrupts must
+rise with a finger down: 30/30) and on the first 30 lifts (short ones must read
++0: 18/18). Nothing was quoted until both passed. The gate belongs **inside**
+the tool: v6's own gate is what refused v6.
+
+☠️ **`uinput` cannot automate this stimulus** and never could — it injects past
+the sensor, the controller and the bus. If r88 stays silent the route is a
+capacitive finger: conductive tape switched to ground by a relay from the host.
+
+☠️ **GitHub 429'd the archive endpoint** after the third kernel tarball of the
+day, blocking `pmb checksum`. The download is the bottleneck, not the checksum,
+so skipping verification would not have helped. Built instead from a local
+`git archive --prefix=linux-<sha>/` placed in `work/cache_distfiles` under the
+name `source=` expects — no download at all. **That APKBUILD's sha512 is of the
+local tarball and must not be mirrored to `fp3-pmaports` until re-checksummed
+against the real one**, or a later build elsewhere fails long after the cause.

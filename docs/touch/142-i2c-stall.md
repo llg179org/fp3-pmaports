@@ -687,6 +687,14 @@ Adding `QUP_STATE`, `QUP_OPERATIONAL` and `QUP_ERROR_FLAGS` to that same line
 would separate the two directly, costs one `dev_err_ratelimited` argument list,
 and needs no new tooling — the fault already reaches that code path every time.
 
+## 14. A second, different fault lives in [`lost-taps.md`](lost-taps.md)
+
+Section 13 moved this investigation across the bus to the himax side. What it
+found there turned out to be a **separate fault** with no i2c signature at all -
+taps vanish while the kernel logs nothing - so it has its own page rather than
+more sections here. Do not read a clean i2c log as evidence about it, or its
+lost taps as evidence about this stall.
+
 ## 13. r87 answers the fork: the master is waiting, the slave holds the clock
 
 Section 12 ended with two states that fit `SDA 1 SCL 0` and need opposite fixes.
