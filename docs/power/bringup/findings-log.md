@@ -10527,3 +10527,75 @@ known positive) runs until r85 ships. r85 is blocked on GitHub 429-ing the
 archive endpoint after four kernel tarballs today.
 
 Write-up: `captures/2026-09-05_2126-irq-disabled-on-r84/`.
+
+## 2026-09-06 — ★ the touch stall is the slave holding the clock, and it does not need a finger (#179)
+
+Three releases in one morning, each answering the question the last one raised.
+Full trail in `docs/touch/142-i2c-stall.md` §11–13.
+
+**r86 — the bus-clear was refused, not ineffective.** r84 added the hardware
+bus-clear and it failed 3/3; the diagnostic added alongside it is what said why:
+`QUP_I2C_MASTER_BUS_CLR` still read back `0x1` after ten attempts, so the core
+never accepted the write. The vendor driver resets the core first. r86 does the
+same — `QUP_SW_RESET`, poll `QUP_RESET_STATE`, restore the cached `QUP_CONFIG`
+and `QUP_I2C_MASTER_GEN`, back to `QUP_RUN_STATE`, rewrite `QUP_I2C_CLK_CTL`,
+then write the clear. Caught in ordinary use one hour after the deploy:
+
+| | r84/r85 | r86 |
+|---|---|---|
+| status word | `0x0411a700` | `0x0411a700` — identical, same mechanism |
+| clear | `clear not accepted` after 10 | **`bus cleared after 1 attempt(s)`**, 2.1 ms |
+
+☠️ **The tap was still lost.** Recovery is not prevention: the transfer still
+times out first, and 2.03 s during PIN entry swallows several taps. The operator
+drew exactly this line when rejecting "the stall is shorter" as a fix, and it
+stands.
+
+**A hypothesis published and refuted within 3.5 minutes.** The hanging transfer
+in the first capture was the first one after a runtime-PM resume, which pointed
+at the pinctrl cycling `1380c70af7b3` added for the *speaker amp's* bus — on the
+touch bus the sleep state takes SDA/SCL out of `blsp_i2c3` to bare GPIO with no
+pull. The experiment it proposed disproved it: with runtime PM off (no suspend,
+no resume, no pinctrl change) the fault arrived anyway with the same status word.
+☠️ And the observation was **vacuous to begin with** — with runtime PM in `auto`
+the bus suspends after every transfer, so *every* transfer is the first after a
+resume. It carried no information at all, and looked like a finding.
+
+**r87 — the register decode settles which side is at fault.** `QUP_STATE`,
+`QUP_OPERATIONAL` and `QUP_ERROR_FLAGS` added to the line the fault already
+prints. First event after the deploy:
+
+```
+STATE 0x0000001d   OPER 0x00000010   ERR 0x00000000
+```
+
+RUN state, `QUP_STATE_VALID` set, **zero error flags**, and `QUP_OUT_NOT_EMPTY`
+— bytes still in the output FIFO. **A master waiting, not a master that has
+stopped.** The himax at 0x48 holds SCL low for over two seconds; the QUP is
+correct throughout. That retires every master-side suspect at once: no
+arbitration loss, no NACK, no overrun.
+
+☠️ **And the framing was wrong all along: the fault does not need a finger.**
+That event landed 38 s into a boot with **one** touch interrupt in the entire
+boot. Every earlier capture came during heavy use, which is when anyone was
+looking — not when the fault happens. What the driver offers the chip is a bare
+`regmap_raw_read` on the event stack: no wake, no handshake, no readiness check,
+where downstream Himax drivers conventionally have all three.
+
+Why the chip is not ready is **undecided**: a low-power state never woken, its
+own init after a panel power transition (panel and touch are both HX83112B and
+share `iovcc` on `pm8953_l6`), or a crashed controller all fit equally. The next
+question is on the himax side, not i2c-qup's.
+
+☠️ **The i2c bus number moved from i2c-4 to i2c-2 across one reboot** (`2-0048`).
+Nothing may hardcode it; the sampler locates the interrupt by name for exactly
+this reason.
+
+☠️ **Two self-inflicted faults worth keeping.** A `git checkout` of a branch
+already checked out in another worktree **failed**, and the rest of the `&&`/`;`
+chain ran anyway — so "patch-id AZONOS" compared a commit with itself and
+"pushed" an unchanged branch. Same class as the `| tail` and `pgrep -f` traps
+already in the skill: *a confident claim built on an unchecked exit status.* And
+the `measurement-watch` gate was found NET NEGATIVE after a fourth false firing
+on reboot units, which cannot be watched the way it demands because the unit dies
+with the system it reboots; fixed in `measurement-watch.cjs`.
