@@ -60,6 +60,9 @@ INSTRUCTIONS = [
     "its own running light, which steps only",
     "when THAT hop gets a new sample - so a",
     "stalled hop freezes while others run.",
+    "",
+    "Tap this text area to CLEAR the record.",
+    "The counters above it keep running.",
 ]
 
 
@@ -203,6 +206,19 @@ class TapTest(Gtk.ApplicationWindow):
         if not h:
             return
         if y < h * MARK_TOP:
+            # Tapping the record clears it, so a long run can be cut into
+            # readable stretches without restarting the app. ☠️ The COUNTERS
+            # are deliberately left alone: they are the measurement, the
+            # string is only its display, and resetting both would silently
+            # discard the totals the header is there to keep.
+            if self.started and self.marks:
+                self._log("%s  CLEAR  (record wiped by a tap at %.0f,%.0f; "
+                          "%d marks dropped, counters kept)"
+                          % (self._stamp(), x, y, len(self.marks)))
+                del self.marks[:]
+                self.last = None
+                self.run_len = 0
+                self.area.queue_draw()
             return                            # the record area is not a target
         if y < h * HALVES_TOP:
             self.n_mark += 1

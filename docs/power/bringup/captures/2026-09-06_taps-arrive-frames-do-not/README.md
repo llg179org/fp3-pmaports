@@ -608,3 +608,21 @@ Mono and the generic `monospace` alias do not.** The record text now selects
 Adwaita Mono explicitly. Rendering it was the point — the alternative was
 assuming which font has a dotted zero, which is exactly the kind of claim that
 looks fine until someone reads the screen.
+
+## Tapping the record clears it
+
+A tap in the record area wipes the mark string, so a long session can be cut
+into readable stretches without restarting the app and losing the run.
+
+Two choices worth stating, because both could have been made the other way and
+would have quietly cost something:
+
+- ☠️ **The counters are NOT reset.** `raw`, `gest`, `breaks` and the tap totals
+  are the measurement; the string is only its display. Clearing both would
+  discard the one number this whole page turns on — the gap between `raw` and
+  `gest`, which *is* the lost taps.
+- ☠️ **The clear is logged** (`CLEAR`, with the position and how many marks were
+  dropped). Without that line a later analysis sees a mark sequence that
+  suddenly shortens and cannot tell a deliberate wipe from a fault — and this
+  page has already produced two false alarms from analysis scripts reading the
+  log too literally.
