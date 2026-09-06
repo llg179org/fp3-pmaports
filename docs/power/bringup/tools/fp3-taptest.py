@@ -230,7 +230,8 @@ class TapTest(Gtk.ApplicationWindow):
                   % (self._stamp(), _ms(st.get("evt_lat")), _ms(st.get("raw_ges")),
                      _ms(st.get("ges_drw")), _ms(st.get("drw_prs")),
                      _ms(st.get("refresh"))))
-        self.area.queue_draw()
+        # Deliberately NO queue_draw() here - see the comment where this is
+        # armed. The log is the measurement; the screen is a convenience.
         return False
 
     def _unflash(self):
@@ -291,12 +292,16 @@ class TapTest(Gtk.ApplicationWindow):
             self.stage["ges_drw"] = self.stage["t_drw"] - self.stage["t_ges"]
             fc = self.get_frame_clock()
             if fc is not None:
-                # Resolve THIS frame's presentation time later: the timings are
-                # not complete until the compositor reports the frame back.
-                # ☠️ Reading timings does not schedule a frame; the single
-                # 400 ms timeout below repaints once per tap so the number can
-                # be shown, and that repaint is itself a perturbation - it is
-                # why the resolve is one-shot and not a tick callback.
+                # Resolve THIS frame's presentation time later: the timings
+                # are not complete until the compositor reports the frame back.
+                # ☠️ THE RESOLVE MUST NOT REPAINT. An earlier version called
+                # queue_draw() here so the number could be shown at once, and
+                # the operator reported the display had become slower than the
+                # version without any of this - the instrument was degrading
+                # the thing it measures, one forced frame per tap. The numbers
+                # taken that way (118 / 80 / 73 ms) are contaminated and were
+                # withdrawn. Now the resolve only logs and stores; the blocks
+                # update at the next natural paint, which is the next tap.
                 self.pending_frame = (fc.get_frame_counter(), self.stage)
                 GLib.timeout_add(400, self._resolve_present)
         mark_y, half_y = h * MARK_TOP, h * HALVES_TOP

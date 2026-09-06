@@ -304,3 +304,44 @@ Three samples so far: **118.4, 80.3, 73.4 ms**. The whole input path costs
   was *nothing at all until the next tap* — 73 ms is perceptible but it is not
   that. It may be the "small delay" the operator described later in the day; it
   is not obviously the same phenomenon as the first one.
+
+## ☠️☠️ WITHDRAWN: those three numbers measured the instrument
+
+The operator, after using the staged version: *"in the previous version (without
+the small boxes and the evt numbers) the display was fast and there were no
+misses; now it is as if the display had slowed down."*
+
+They are right, and the mechanism was written into this page as a risk before it
+happened. To display a frame's presentation time the app called `queue_draw()`
+from the resolve, **one extra forced frame 400 ms after every tap**. During a
+sequence of taps that is a second stream of repaints interleaved with the real
+ones.
+
+So **`118.4 / 80.3 / 73.4 ms` are withdrawn**: they may be measuring, in part,
+the frames the measurement itself added. They are kept here because the shape of
+the error is the lesson — the perturbation was identified, written down in a code
+comment as the reason the resolve was one-shot rather than a tick callback, and
+then quoted as a result anyway. **Labelling a confound is not controlling for
+it.**
+
+★ **And the operator's report is itself the second, independent detection of
+this class of problem today** — the first being their rejection of the
+"you could not see the glyph" explanation. Both times the person in front of the
+screen had information no amount of reading the source could produce.
+
+### The fix
+
+The resolve now **only logs and stores**; the blocks update at the next natural
+paint, which is the next tap. Nothing in the measurement path schedules a frame
+any more. The log is the measurement; the screen is a convenience.
+
+A single isolated tap therefore has its presentation time in the log but not yet
+on screen — which is the correct trade: the alternative is the instrument that
+was just withdrawn.
+
+### What must be re-measured
+
+Everything in the block above. The hop costs from the input side (`evt->raw`,
+`raw->ges`, `ges->draw`) are much less exposed to this — they are all upstream of
+the paint — but they were taken in the same contaminated runs and get no free
+pass.

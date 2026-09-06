@@ -10806,3 +10806,22 @@ earlier run printed `raw 0` and it was read as a property of the transport); the
 stage record was never reset so only the first tap was ever resolved (the
 operator saw "the number does not change"); and in CAPTURE the signal hands the
 handler `None`, so every press raised an AttributeError that GTK swallowed.
+
+### ☠️☠️ Withdrawn within the hour: those numbers measured the instrument
+
+The operator reported that the staged version had made the display *slower* than
+the version before it. Correct: to show a frame's presentation time the app
+called `queue_draw()` from the resolve — **one forced frame 400 ms after every
+tap**. `118.4 / 80.3 / 73.4 ms` are withdrawn; they may be measuring the frames
+the measurement added.
+
+The perturbation had been identified in advance and written into a code comment
+as the reason the resolve was one-shot rather than a tick callback — and the
+numbers were quoted as a result anyway. **Labelling a confound is not
+controlling for it.**
+
+Fixed: the resolve now only logs and stores, and the blocks update at the next
+natural paint. Nothing in the measurement path schedules a frame. ★ This is the
+second time today the operator's own observation overturned a conclusion the
+source code could not have yielded; the first was their rejection of the
+"you could not see the glyph change" explanation.
