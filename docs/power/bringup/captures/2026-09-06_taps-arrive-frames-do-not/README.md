@@ -251,3 +251,56 @@ matters if the reader stalls that long.
 the client must resync, so "the buffer overflowed and swallowed it" is a
 *checkable* claim rather than a story. Nothing above the kernel has a fixed tap
 limit: phoc's and GTK's queues are memory-bounded lists.
+
+## ★ First end-to-end timing: the input path is 7.5 ms, the display is 73 ms
+
+The instrument needed three fixes before it measured anything, all of them the
+same class of bug — **a stage that silently reports "unmeasurable" looks exactly
+like a stage that is fast**:
+
+1. ☠️ **`EventControllerLegacy` in the default BUBBLE phase saw nothing.**
+   `GestureClick` had already claimed the sequence. Every run on this page
+   before now printed `raw 0` in its header and that was read as "no raw touch
+   events on this transport" rather than as a bug in the controller's phase.
+   Fixed with `set_propagation_phase(CAPTURE)`.
+2. ☠️ **The stage record was never reset**, so after the first tap the resolve
+   was never re-armed again and a whole run produced exactly **one** `STAGES`
+   line — which the operator saw as *"the number does not change after a
+   press"*.
+3. ☠️ **In the CAPTURE phase the signal hands the handler `None`**; the event
+   must be fetched with `controller.get_current_event()`. Every press raised
+   `AttributeError` inside the handler, GTK swallowed it, the app kept running,
+   and the log showed nothing but `n/a`. **A handler that throws is
+   indistinguishable from one that is never called.**
+
+With all four hops finally measured:
+
+```
+evt->raw 4.8 ms   raw->ges 0.9 ms   ges->draw 1.8 ms   draw->present 73.4 ms
+                                                       (refresh 16.7 ms)
+```
+
+| hop | cost |
+|---|---|
+| kernel → libinput → phoc → app | **4.8 ms** |
+| GTK gesture arbitration | **0.9 ms** |
+| render scheduling | **1.8 ms** |
+| ★ **drawn frame → on the display** | **73.4 ms — about 4.4 refresh intervals** |
+
+Three samples so far: **118.4, 80.3, 73.4 ms**. The whole input path costs
+7.5 ms and the presentation costs an order of magnitude more.
+
+☠️ **Not yet a result, and two things must be checked before it is quoted:**
+
+- **Is `get_presentation_time()` real feedback or a prediction?** GDK exposes
+  `get_predicted_presentation_time()` separately and `get_complete()` was true,
+  which is suggestive and not conclusive. A number that is really the frame
+  clock's own estimate would be a plausible fabrication of exactly the shape
+  this investigation wants.
+- **Three samples are not a distribution**, and all three were the first taps
+  after an idle period, which is the case most likely to carry a wake-up cost.
+
+- ☠️ And even at 73 ms this does **not** yet explain the original report, which
+  was *nothing at all until the next tap* — 73 ms is perceptible but it is not
+  that. It may be the "small delay" the operator described later in the day; it
+  is not obviously the same phenomenon as the first one.

@@ -121,6 +121,12 @@ class TapTest(Gtk.ApplicationWindow):
         # Without it "the client did not receive it" covers both, and this
         # investigation spent an afternoon unable to tell them apart.
         raw = Gtk.EventControllerLegacy()
+        # ☠️ Without CAPTURE this controller saw NOTHING - `raw 0` in the header
+        # for every run on 2026-09-06, and both transport stages reported n/a.
+        # Controllers default to the BUBBLE phase, where GestureClick has
+        # already claimed the sequence. CAPTURE runs first, which is the whole
+        # point of having a raw counter next to a gesture one.
+        raw.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
         raw.connect("event", self._raw_event)
         self.area.add_controller(raw)
         self.n_raw = 0
@@ -151,6 +157,11 @@ class TapTest(Gtk.ApplicationWindow):
     # ── input ──────────────────────────────────────────────────────────────
     def _pressed(self, _g, _n, x, y):
         t = self._mono()
+        # ☠️ Start a new record unless _raw_event just opened one for THIS tap.
+        # Without this the dict kept the previous tap's t_drw, the resolve was
+        # never re-armed, and a whole run produced exactly one STAGES line.
+        if "t_ges" in self.stage or "t_drw" in self.stage:
+            self.stage = {}
         self.stage["t_ges"] = t
         self.stage["raw_ges"] = t - self.stage["t_raw"] if "t_raw" in self.stage else None
         w, h = self.area.get_width(), self.area.get_height()
@@ -227,6 +238,16 @@ class TapTest(Gtk.ApplicationWindow):
         return False
 
     def _raw_event(self, _c, event):
+        # ☠️ In the CAPTURE phase the signal hands over None here; the event has
+        # to be fetched from the controller instead. Measured 2026-09-06: every
+        # press raised AttributeError inside the handler, which GTK swallows -
+        # the app kept running, the counter stayed 0, and the log showed nothing
+        # but n/a. A handler that throws looks exactly like one that is not
+        # being called.
+        if event is None:
+            event = _c.get_current_event()
+        if event is None:
+            return False
         et = event.get_event_type()
         if et in (Gdk.EventType.TOUCH_BEGIN, Gdk.EventType.BUTTON_PRESS):
             now = self._mono()
@@ -369,10 +390,10 @@ class TapTest(Gtk.ApplicationWindow):
         # stage read as green is exactly how this instrument would lie.
         st = self.stage_hist[-1] if self.stage_hist else {}
         refresh = st.get("refresh") or 16.7
-        stages = (("evt\u2192raw", st.get("evt_lat"), 12.0, 40.0),
-                  ("raw\u2192ges", st.get("raw_ges"), 5.0, 25.0),
-                  ("ges\u2192draw", st.get("ges_drw"), 8.0, 30.0),
-                  ("draw\u2192shown", st.get("drw_prs"), refresh * 1.5,
+        stages = (("evt->raw", st.get("evt_lat"), 12.0, 40.0),
+                  ("raw->ges", st.get("raw_ges"), 5.0, 25.0),
+                  ("ges->draw", st.get("ges_drw"), 8.0, 30.0),
+                  ("draw->shown", st.get("drw_prs"), refresh * 1.5,
                    refresh * 4.0))
         bw, bh, y0 = (w - 20) / 4.0, 34, 34
         cr.set_font_size(11)
@@ -386,6 +407,26 @@ class TapTest(Gtk.ApplicationWindow):
             cr.show_text(name)
             cr.move_to(x0 + 4, y0 + 27)
             cr.show_text("--" if v is None else "%.0f ms" % v)
+
+        # The last 12 draw->shown samples, so a single outlier cannot be read
+        # as a result. Bar height is capped at 200 ms; the cap is drawn as a
+        # line so a clipped bar is visibly clipped and not silently flattened.
+        hist = [d.get("drw_prs") for d in self.stage_hist[-12:]]
+        bx, by, bwid, bhh = 10, y0 + bh + 6, (w - 20) / 12.0, 26
+        cr.set_source_rgb(0.22, 0.22, 0.25)
+        cr.rectangle(bx, by, w - 20, bhh)
+        cr.fill()
+        for i, v in enumerate(hist):
+            if v is None:
+                continue
+            frac = min(v, 200.0) / 200.0
+            cr.set_source_rgb(*_stage_colour(v, refresh * 1.5, refresh * 4.0))
+            cr.rectangle(bx + i * bwid, by + bhh * (1 - frac),
+                         bwid - 2, bhh * frac)
+            cr.fill()
+        cr.set_source_rgb(0.5, 0.5, 0.55)
+        cr.rectangle(bx, by, w - 20, 1)
+        cr.fill()
 
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)

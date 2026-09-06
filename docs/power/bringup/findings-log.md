@@ -10785,3 +10785,24 @@ bug (an apostrophe inside `${var#...}` in a double-quoted ash string) made the
 file unparseable — the script's own log was empty and only `journalctl` had the
 reason. Bound every call in an unattended script, and `sh -n` it **on the
 device** first.
+
+### ★ The input path is 7.5 ms; the display is 73 ms
+
+With all four hops finally instrumented: `evt->raw 4.8 ms`, `raw->ges 0.9 ms`,
+`ges->draw 1.8 ms`, **`draw->present 73.4 ms`** at a 16.7 ms refresh — about 4.4
+frames. Samples so far 118.4 / 80.3 / 73.4 ms. The entire path from the panel to
+the drawn frame costs 7.5 ms and the presentation costs ten times that.
+
+☠️ Not yet quotable: `get_presentation_time()` may be the frame clock's own
+prediction rather than compositor feedback (`get_predicted_presentation_time()`
+exists separately; `get_complete()` was true, which is suggestive only), and
+three samples taken as the first taps after idle are not a distribution. And
+73 ms does not explain the original report of *nothing until the next tap*.
+
+☠️ Three instrument bugs had to be fixed first, all the same class - a stage
+that reports "unmeasurable" looks exactly like a stage that is fast:
+`EventControllerLegacy` in the default BUBBLE phase saw nothing at all (every
+earlier run printed `raw 0` and it was read as a property of the transport); the
+stage record was never reset so only the first tap was ever resolved (the
+operator saw "the number does not change"); and in CAPTURE the signal hands the
+handler `None`, so every press raised an AttributeError that GTK swallowed.
