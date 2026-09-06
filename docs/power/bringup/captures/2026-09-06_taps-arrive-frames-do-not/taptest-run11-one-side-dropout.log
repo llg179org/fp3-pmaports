@@ -1,0 +1,1679 @@
+== taptest start 2026-09-06 20:21:18
+20:21:18.557  DRAW #1  marks=0
+20:21:21.509  geometry: 360x720, halves 180 + 180 px, divider at 180
+20:25:43.187  event clock: now-evt = 10.0 ms  usable=True
+20:25:43.188  RAW touch-begin #1  evt->raw 10.0 ms  at 93,557  fingers-down 1
+20:25:43.188  .  #1  x=93/360
+20:25:43.189  DRAW #2  marks=1
+20:25:43.419  DRAW #3  marks=1
+20:25:43.592  STAGES  evt->raw 10.0 ms  raw->ges 1.2 ms  ges->draw 0.6 ms  draw->present 76.5 ms  (refresh 16.7 ms)  pres=9615728258 pred=9615676364 delta=51.9 ms
+20:25:43.895  RAW touch-begin #2  evt->raw 10.4 ms  at 257,524  fingers-down 1
+20:25:43.895  o  #2  x=257/360
+20:25:43.896  DRAW #4  marks=2
+20:25:44.126  DRAW #5  marks=2
+20:25:44.297  STAGES  evt->raw 10.4 ms  raw->ges 1.2 ms  ges->draw 0.7 ms  draw->present 68.1 ms  (refresh 16.7 ms)  pres=9616427408 pred=9616383770 delta=43.6 ms
+20:25:44.370  RAW touch-begin #3  evt->raw 4.1 ms  at 81,546  fingers-down 1
+20:25:44.371  .  #3  x=81/360
+20:25:44.372  DRAW #6  marks=3
+20:25:44.602  DRAW #7  marks=3
+20:25:44.773  STAGES  evt->raw 4.1 ms  raw->ges 1.0 ms  ges->draw 0.8 ms  draw->present 75.2 ms  (refresh 16.7 ms)  pres=9616910083 pred=9616859288 delta=50.8 ms
+20:25:44.845  RAW touch-begin #4  evt->raw 4.2 ms  at 247,541  fingers-down 1
+20:25:44.846  o  #4  x=247/360
+20:25:44.847  DRAW #8  marks=4
+20:25:45.077  DRAW #9  marks=4
+20:25:45.248  STAGES  evt->raw 4.2 ms  raw->ges 0.9 ms  ges->draw 0.8 ms  draw->present 82.8 ms  (refresh 16.7 ms)  pres=9617392751 pred=9617334319 delta=58.4 ms
+20:25:45.347  RAW touch-begin #5  evt->raw 5.4 ms  at 90,553  fingers-down 1
+20:25:45.347  .  #5  x=90/360
+20:25:45.349  DRAW #10  marks=5
+20:25:45.578  DRAW #11  marks=5
+20:25:45.634  RAW touch-begin #6  evt->raw 3.3 ms  at 235,538  fingers-down 1
+20:25:45.634  o  #6  x=235/360
+20:25:45.635  DRAW #12  marks=6
+20:25:45.750  STAGES  evt->raw 3.3 ms  raw->ges 1.4 ms  ges->draw 1.0 ms  draw->present 61.4 ms  (refresh 16.7 ms)  pres=9618160041 pred=9618116460 delta=43.6 ms
+20:25:45.865  DRAW #13  marks=6
+20:25:47.005  RAW touch-begin #7  evt->raw 7.5 ms  at 79,558  fingers-down 1
+20:25:47.024  .  #7  x=79/360
+20:25:47.026  DRAW #14  marks=7
+20:25:47.255  DRAW #15  marks=7
+20:25:47.428  STAGES  evt->raw 7.5 ms  raw->ges 20.6 ms  ges->draw 1.4 ms  draw->present 50.8 ms  (refresh 16.7 ms)  pres=9619540307 pred=9619513434 delta=26.9 ms
+20:25:48.367  RAW touch-begin #8  evt->raw 10.4 ms  at 258,518  fingers-down 1
+20:25:48.367  o  #8  x=258/360
+20:25:48.368  DRAW #16  marks=8
+20:25:48.598  DRAW #17  marks=8
+20:25:48.769  STAGES  evt->raw 10.4 ms  raw->ges 0.6 ms  ges->draw 0.7 ms  draw->present 91.4 ms  (refresh 16.7 ms)  pres=9620922076 pred=9620855210 delta=66.9 ms
+20:25:49.142  RAW touch-begin #9  evt->raw 5.1 ms  at 57,552  fingers-down 1
+20:25:49.143  .  #9  x=57/360
+20:25:49.145  RAW touch-begin #10  evt->raw 7.0 ms  at 248,516  fingers-down 2
+20:25:49.145  o  #10  x=248/360
+20:25:49.146  DRAW #18  marks=11
+20:25:49.374  DRAW #19  marks=11
+20:25:49.402  DRAW #20  marks=11
+20:25:49.547  STAGES  evt->raw 7.0 ms  raw->ges 0.0 ms  ges->draw 2.0 ms  draw->present 312.0 ms  (refresh 16.7 ms)  pres=9621921037 pred=9621633614 delta=287.4 ms
+20:25:50.720  RAW touch-begin #11  evt->raw 9.2 ms  at 72,529  fingers-down 1
+20:25:50.721  .  #11  x=72/360
+20:25:50.722  RAW touch-begin #12  evt->raw 3.1 ms  at 250,507  fingers-down 2
+20:25:50.723  o  #12  x=250/360
+20:25:50.724  DRAW #21  marks=14
+20:25:50.962  DRAW #22  marks=14
+20:25:51.125  STAGES  evt->raw 3.1 ms  raw->ges 0.0 ms  ges->draw 1.6 ms  draw->present 66.2 ms  (refresh 16.7 ms)  pres=9623252886 pred=9623211176 delta=41.7 ms
+20:25:52.445  RAW touch-begin #13  evt->raw 3.6 ms  at 168,515  fingers-down 1
+20:25:52.445  .  #13  x=168/360
+20:25:52.446  DRAW #23  marks=15
+20:25:52.676  DRAW #24  marks=15
+20:25:52.847  STAGES  evt->raw 3.6 ms  raw->ges 1.1 ms  ges->draw 0.5 ms  draw->present 58.3 ms  (refresh 16.7 ms)  pres=9624967469 pred=9624933855 delta=33.6 ms
+20:25:53.608  RAW touch-begin #14  evt->raw 8.6 ms  at 249,509  fingers-down 1
+20:25:53.608  o  #14  x=249/360
+20:25:53.609  DRAW #25  marks=16
+20:25:53.839  DRAW #26  marks=16
+20:25:54.010  STAGES  evt->raw 8.6 ms  raw->ges 2.1 ms  ges->draw 0.9 ms  draw->present 60.4 ms  (refresh 16.7 ms)  pres=9626132895 pred=9626096802 delta=36.1 ms
+== taptest start 2026-09-06 20:25:55
+20:25:55.300  DRAW #1  marks=0
+20:25:58.252  geometry: 360x720, halves 180 + 180 px, divider at 180
+20:26:06.876  event clock: now-evt = 12.8 ms  usable=True
+20:26:06.877  RAW touch-begin #1  evt->raw 12.8 ms  at 97,544  fingers-down 1
+20:26:06.877  .  #1  x=97/360
+20:26:06.879  DRAW #2  marks=1
+20:26:07.108  DRAW #3  marks=1
+20:26:07.284  STAGES  evt->raw 12.8 ms  raw->ges 2.1 ms  ges->draw 1.1 ms  draw->present 72.1 ms  (refresh 16.7 ms)  pres=9639414100 pred=9639366177 delta=47.9 ms
+20:26:08.042  RAW touch-begin #2  evt->raw 6.6 ms  at 259,533  fingers-down 1
+20:26:08.042  o  #2  x=259/360
+20:26:08.043  DRAW #4  marks=2
+20:26:08.274  DRAW #5  marks=2
+20:26:08.444  STAGES  evt->raw 6.6 ms  raw->ges 1.0 ms  ges->draw 0.4 ms  draw->present 105.8 ms  (refresh 16.7 ms)  pres=9640611872 pred=9640530727 delta=81.1 ms
+20:26:08.657  RAW touch-begin #3  evt->raw 6.3 ms  at 99,547  fingers-down 1
+20:26:08.658  .  #3  x=99/360
+20:26:08.659  DRAW #6  marks=3
+20:26:08.888  DRAW #7  marks=3
+20:26:09.060  STAGES  evt->raw 6.3 ms  raw->ges 1.9 ms  ges->draw 1.2 ms  draw->present 55.2 ms  (refresh 16.7 ms)  pres=9641177557 pred=9641146469 delta=31.1 ms
+20:26:09.155  RAW touch-begin #4  evt->raw 5.1 ms  at 254,556  fingers-down 1
+20:26:09.156  o  #4  x=254/360
+20:26:09.157  DRAW #8  marks=4
+20:26:09.386  DRAW #9  marks=4
+20:26:09.558  STAGES  evt->raw 5.1 ms  raw->ges 1.1 ms  ges->draw 1.1 ms  draw->present 89.8 ms  (refresh 16.7 ms)  pres=9641710063 pred=9641644425 delta=65.6 ms
+20:26:09.598  RAW touch-begin #5  evt->raw 4.7 ms  at 95,551  fingers-down 1
+20:26:09.599  .  #5  x=95/360
+20:26:09.600  DRAW #10  marks=5
+20:26:09.830  DRAW #11  marks=5
+20:26:10.002  STAGES  evt->raw 4.7 ms  raw->ges 1.6 ms  ges->draw 1.3 ms  draw->present 79.2 ms  (refresh 16.7 ms)  pres=9642142787 pred=9642093075 delta=49.7 ms
+20:26:11.502  RAW touch-begin #6  evt->raw 4.3 ms  at 251,514  fingers-down 1
+20:26:11.502  o  #6  x=251/360
+20:26:11.503  RAW touch-begin #7  evt->raw 6.1 ms  at 66,491  fingers-down 2
+20:26:11.504  .  #7  x=66/360
+20:26:11.504  DRAW #12  marks=8
+20:26:11.733  DRAW #13  marks=8
+20:26:11.760  DRAW #14  marks=8
+20:26:11.905  STAGES  evt->raw 6.1 ms  raw->ges 0.0 ms  ges->draw 1.2 ms  draw->present 56.2 ms  (refresh 16.7 ms)  pres=9644023416 pred=9643991880 delta=31.5 ms
+20:26:13.087  RAW touch-begin #8  evt->raw 7.4 ms  at 72,536  fingers-down 1
+20:26:13.087  BREAK  . repeated, run=2  (#8)  x=72/360
+20:26:13.087  .  #8  x=72/360
+20:26:13.088  DRAW #15  marks=9
+20:26:13.130  RAW touch-begin #9  evt->raw 42.3 ms  at 252,558  fingers-down 2
+20:26:13.130  o  #9  x=252/360
+20:26:13.161  DRAW #16  marks=11
+20:26:13.318  DRAW #17  marks=11
+20:26:13.361  DRAW #18  marks=11
+20:26:13.489  STAGES  evt->raw 42.3 ms  raw->ges 0.0 ms  ges->draw 31.6 ms  draw->present 63.9 ms  (refresh 16.7 ms)  pres=9645687824 pred=9645655470 delta=32.4 ms
+20:26:14.562  RAW touch-begin #10  evt->raw 8.9 ms  at 257,515  fingers-down 1
+20:26:14.563  BREAK  o repeated, run=2  (#10)  x=257/360
+20:26:14.563  o  #10  x=257/360
+20:26:14.564  RAW touch-begin #11  evt->raw 10.4 ms  at 78,488  fingers-down 2
+20:26:14.564  .  #11  x=78/360
+20:26:14.564  DRAW #19  marks=14
+20:26:14.794  DRAW #20  marks=14
+20:26:14.822  DRAW #21  marks=14
+20:26:14.965  STAGES  evt->raw 10.4 ms  raw->ges 0.0 ms  ges->draw 1.0 ms  draw->present 58.3 ms  (refresh 16.7 ms)  pres=9647085730 pred=9647052062 delta=33.7 ms
+20:26:16.104  RAW touch-begin #12  evt->raw 4.8 ms  at 92,525  fingers-down 1
+20:26:16.105  BREAK  . repeated, run=2  (#12)  x=92/360
+20:26:16.105  .  #12  x=92/360
+20:26:16.106  DRAW #22  marks=15
+20:26:16.133  RAW touch-begin #13  evt->raw 17.2 ms  at 290,553  fingers-down 2
+20:26:16.134  o  #13  x=290/360
+20:26:16.155  DRAW #23  marks=17
+20:26:16.335  DRAW #24  marks=17
+20:26:16.365  DRAW #25  marks=17
+20:26:16.507  STAGES  evt->raw 17.2 ms  raw->ges 0.0 ms  ges->draw 22.5 ms  draw->present 97.6 ms  (refresh 16.7 ms)  pres=9648716331 pred=9648651189 delta=65.1 ms
+20:26:17.294  RAW touch-begin #14  evt->raw 6.0 ms  at 95,504  fingers-down 1
+20:26:17.295  .  #14  x=95/360
+20:26:17.296  DRAW #26  marks=18
+20:26:17.328  RAW touch-begin #15  evt->raw 30.4 ms  at 289,537  fingers-down 2
+20:26:17.328  o  #15  x=289/360
+20:26:17.354  DRAW #27  marks=20
+20:26:17.525  DRAW #28  marks=20
+20:26:17.559  DRAW #29  marks=20
+20:26:17.696  STAGES  evt->raw 30.4 ms  raw->ges 0.0 ms  ges->draw 26.6 ms  draw->present 47.2 ms  (refresh 16.7 ms)  pres=9649864114 pred=9649849304 delta=14.8 ms
+20:26:18.358  RAW touch-begin #16  evt->raw 6.0 ms  at 93,510  fingers-down 1
+20:26:18.359  .  #16  x=93/360
+20:26:18.360  DRAW #30  marks=21
+20:26:18.386  RAW touch-begin #17  evt->raw 24.0 ms  at 286,544  fingers-down 2
+20:26:18.387  o  #17  x=286/360
+20:26:18.402  DRAW #31  marks=23
+20:26:18.590  DRAW #32  marks=23
+20:26:18.617  DRAW #33  marks=23
+20:26:18.761  STAGES  evt->raw 24.0 ms  raw->ges 0.0 ms  ges->draw 16.0 ms  draw->present 47.1 ms  (refresh 16.7 ms)  pres=9650912179 pred=9650896466 delta=15.7 ms
+20:26:27.286  RAW touch-begin #18  evt->raw 12.7 ms  at 90,257  fingers-down 1
+20:26:27.296  CLEAR  (record wiped by a tap at 90,257; 23 marks dropped, counters kept)
+20:26:27.297  DRAW #34  marks=0
+20:26:27.700  STAGES  evt->raw 12.7 ms  raw->ges 10.7 ms  ges->draw 1.3 ms  draw->present 54.9 ms  (refresh 16.7 ms)  pres=9659815595 pred=9659784738 delta=30.9 ms
+20:26:29.068  RAW touch-begin #19  evt->raw 4.7 ms  at 91,673  fingers-down 1
+20:26:29.069  .  #18  x=91/360
+20:26:29.071  DRAW #35  marks=1
+20:26:29.299  DRAW #36  marks=1
+20:26:29.473  STAGES  evt->raw 4.7 ms  raw->ges 2.6 ms  ges->draw 1.9 ms  draw->present 61.5 ms  (refresh 16.7 ms)  pres=9661596817 pred=9661558577 delta=38.2 ms
+20:26:29.520  RAW touch-begin #20  evt->raw 7.3 ms  at 286,607  fingers-down 1
+20:26:29.520  o  #19  x=286/360
+20:26:29.522  DRAW #37  marks=2
+20:26:29.751  DRAW #38  marks=2
+20:26:29.923  RAW touch-begin #21  evt->raw 3.9 ms  at 102,574  fingers-down 1
+20:26:29.924  .  #20  x=102/360
+20:26:29.924  STAGES  evt->raw 7.3 ms  raw->ges 1.7 ms  ges->draw 1.4 ms  draw->present 77.4 ms  (refresh 16.7 ms)  pres=9662062821 pred=9662009369 delta=53.5 ms
+20:26:29.925  DRAW #39  marks=3
+20:26:30.155  DRAW #40  marks=3
+20:26:30.256  RAW touch-begin #22  evt->raw 5.1 ms  at 270,607  fingers-down 1
+20:26:30.257  o  #21  x=270/360
+20:26:30.258  DRAW #41  marks=4
+20:26:30.328  STAGES  evt->raw 5.1 ms  raw->ges 0.8 ms  ges->draw 0.7 ms  draw->present 42.0 ms  (refresh 16.7 ms)  pres=9662762606 pred=9662745196 delta=17.4 ms
+20:26:30.487  DRAW #42  marks=4
+20:26:30.615  RAW touch-begin #23  evt->raw 3.5 ms  at 67,567  fingers-down 1
+20:26:30.615  .  #22  x=67/360
+20:26:30.616  DRAW #43  marks=5
+20:26:30.658  STAGES  evt->raw 3.5 ms  raw->ges 1.1 ms  ges->draw 0.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:26:30.846  DRAW #44  marks=5
+20:26:32.412  RAW touch-begin #24  evt->raw 5.0 ms  at 282,587  fingers-down 1
+20:26:32.413  o  #23  x=282/360
+20:26:32.414  DRAW #45  marks=6
+20:26:32.643  DRAW #46  marks=6
+20:26:32.815  STAGES  evt->raw 5.0 ms  raw->ges 1.0 ms  ges->draw 1.0 ms  draw->present 81.0 ms  (refresh 16.7 ms)  pres=9664957980 pred=9664901272 delta=56.7 ms
+20:26:32.835  RAW touch-begin #25  evt->raw 5.3 ms  at 89,556  fingers-down 1
+20:26:32.836  .  #24  x=89/360
+20:26:32.837  DRAW #47  marks=7
+20:26:32.961  RAW touch-begin #26  evt->raw 4.6 ms  at 276,584  fingers-down 1
+20:26:32.962  o  #25  x=276/360
+20:26:32.963  DRAW #48  marks=8
+20:26:33.063  RAW touch-begin #27  evt->raw 6.2 ms  at 96,551  fingers-down 2
+20:26:33.063  .  #26  x=96/360
+20:26:33.065  DRAW #49  marks=10
+20:26:33.098  DRAW #50  marks=10
+20:26:33.148  RAW touch-begin #28  evt->raw 2.0 ms  at 294,571  fingers-down 1
+20:26:33.149  o  #27  x=294/360
+20:26:33.164  DRAW #51  marks=11
+20:26:33.197  DRAW #52  marks=11
+20:26:33.251  STAGES  evt->raw 2.0 ms  raw->ges 0.7 ms  ges->draw 15.1 ms  draw->present 48.2 ms  (refresh 16.7 ms)  pres=9665674977 pred=9665659230 delta=15.7 ms
+20:26:33.252  RAW touch-begin #29  evt->raw 29.7 ms  at 111,549  fingers-down 1
+20:26:33.252  .  #28  x=111/360
+20:26:33.280  DRAW #53  marks=12
+20:26:33.303  DRAW #54  marks=12
+20:26:33.342  RAW touch-begin #30  evt->raw 2.6 ms  at 286,571  fingers-down 1
+20:26:33.342  o  #29  x=286/360
+20:26:33.347  DRAW #55  marks=13
+20:26:33.370  STAGES  evt->raw 2.6 ms  raw->ges 0.5 ms  ges->draw 5.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:26:33.379  DRAW #56  marks=13
+20:26:33.408  RAW touch-begin #31  evt->raw 2.1 ms  at 126,536  fingers-down 1
+20:26:33.409  .  #30  x=126/360
+20:26:33.413  DRAW #57  marks=14
+20:26:33.466  STAGES  evt->raw 2.1 ms  raw->ges 0.7 ms  ges->draw 4.9 ms  draw->present 48.0 ms  (refresh 16.7 ms)  pres=9665924685 pred=9665908066 delta=16.6 ms
+20:26:33.499  DRAW #58  marks=14
+20:26:33.518  RAW touch-begin #32  evt->raw 4.3 ms  at 288,564  fingers-down 1
+20:26:33.518  o  #31  x=288/360
+20:26:33.563  DRAW #59  marks=15
+20:26:33.588  STAGES  evt->raw 4.3 ms  raw->ges 1.0 ms  ges->draw 45.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:26:33.589  RAW touch-begin #33  evt->raw 9.8 ms  at 113,544  fingers-down 1
+20:26:33.589  .  #32  x=113/360
+20:26:33.597  DRAW #60  marks=16
+20:26:33.663  DRAW #61  marks=16
+20:26:33.683  STAGES  evt->raw 9.8 ms  raw->ges 0.7 ms  ges->draw 8.2 ms  draw->present 80.6 ms  (refresh 16.7 ms)  pres=9666141345 pred=9666091954 delta=49.4 ms
+20:26:33.691  RAW touch-begin #34  evt->raw 2.2 ms  at 288,567  fingers-down 1
+20:26:33.692  o  #33  x=288/360
+20:26:33.699  DRAW #62  marks=17
+20:26:33.748  STAGES  evt->raw 2.2 ms  raw->ges 0.6 ms  ges->draw 7.7 ms  draw->present 45.6 ms  (refresh 16.7 ms)  pres=9666208077 pred=9666181934 delta=26.1 ms
+20:26:33.749  DRAW #63  marks=17
+20:26:33.773  RAW touch-begin #35  evt->raw 17.8 ms  at 114,537  fingers-down 1
+20:26:33.773  .  #34  x=114/360
+20:26:33.795  DRAW #64  marks=18
+20:26:33.818  STAGES  evt->raw 17.8 ms  raw->ges 0.9 ms  ges->draw 21.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:26:33.829  DRAW #65  marks=18
+20:26:33.922  DRAW #66  marks=18
+20:26:34.004  DRAW #67  marks=18
+== taptest start 2026-09-06 20:27:24
+20:27:24.138  DRAW #1  marks=0
+20:27:27.088  geometry: 360x720, halves 180 + 180 px, divider at 180
+20:27:46.024  event clock: now-evt = 16.9 ms  usable=True
+20:27:46.025  RAW touch-begin #1  evt->raw 16.9 ms  at 93,604  fingers-down 1
+20:27:46.025  .  #1  x=93/360
+20:27:46.026  DRAW #2  marks=1
+20:27:46.256  DRAW #3  marks=1
+20:27:46.431  STAGES  evt->raw 16.9 ms  raw->ges 1.7 ms  ges->draw 0.7 ms  draw->present 76.9 ms  (refresh 16.7 ms)  pres=9738566301 pred=9738513770 delta=52.5 ms
+20:27:46.526  RAW touch-begin #2  evt->raw 3.9 ms  at 288,571  fingers-down 1
+20:27:46.527  o  #2  x=288/360
+20:27:46.528  DRAW #4  marks=2
+20:27:46.758  DRAW #5  marks=2
+20:27:46.929  STAGES  evt->raw 3.9 ms  raw->ges 1.1 ms  ges->draw 0.7 ms  draw->present 91.7 ms  (refresh 16.7 ms)  pres=9739082405 pred=9739016026 delta=66.4 ms
+20:27:47.009  RAW touch-begin #3  evt->raw 4.1 ms  at 99,592  fingers-down 1
+20:27:47.010  .  #3  x=99/360
+20:27:47.011  DRAW #6  marks=3
+20:27:47.240  DRAW #7  marks=3
+20:27:47.412  STAGES  evt->raw 4.1 ms  raw->ges 1.0 ms  ges->draw 0.7 ms  draw->present 74.6 ms  (refresh 16.7 ms)  pres=9739548517 pred=9739498356 delta=50.2 ms
+20:27:47.460  RAW touch-begin #4  evt->raw 6.1 ms  at 271,575  fingers-down 1
+20:27:47.461  o  #4  x=271/360
+20:27:47.463  DRAW #8  marks=4
+20:27:47.692  DRAW #9  marks=4
+20:27:47.865  STAGES  evt->raw 6.1 ms  raw->ges 1.9 ms  ges->draw 1.5 ms  draw->present 121.3 ms  (refresh 16.7 ms)  pres=9740047859 pred=9739950432 delta=97.4 ms
+20:27:47.960  RAW touch-begin #5  evt->raw 5.7 ms  at 98,586  fingers-down 1
+20:27:47.961  .  #5  x=98/360
+20:27:47.963  DRAW #10  marks=5
+20:27:48.192  DRAW #11  marks=5
+20:27:48.365  STAGES  evt->raw 5.7 ms  raw->ges 2.2 ms  ges->draw 1.5 ms  draw->present 70.8 ms  (refresh 16.7 ms)  pres=9740497190 pred=9740450289 delta=46.9 ms
+20:27:48.483  RAW touch-begin #6  evt->raw 3.8 ms  at 270,545  fingers-down 1
+20:27:48.484  o  #6  x=270/360
+20:27:48.485  DRAW #12  marks=6
+20:27:48.714  DRAW #13  marks=6
+20:27:48.886  STAGES  evt->raw 3.8 ms  raw->ges 1.2 ms  ges->draw 0.8 ms  draw->present 65.4 ms  (refresh 16.7 ms)  pres=9741013206 pred=9740972165 delta=41.0 ms
+20:27:49.107  RAW touch-begin #7  evt->raw 5.0 ms  at 109,574  fingers-down 1
+20:27:49.108  .  #7  x=109/360
+20:27:49.110  DRAW #14  marks=7
+20:27:49.148  RAW touch-begin #8  evt->raw 18.8 ms  at 270,566  fingers-down 2
+20:27:49.148  o  #8  x=270/360
+20:27:49.168  DRAW #15  marks=8
+20:27:49.339  DRAW #16  marks=8
+20:27:49.380  DRAW #17  marks=8
+20:27:49.511  STAGES  evt->raw 18.8 ms  raw->ges 0.0 ms  ges->draw 20.5 ms  draw->present 47.6 ms  (refresh 16.7 ms)  pres=9741678929 pred=9741662776 delta=16.2 ms
+20:27:49.955  RAW touch-begin #9  evt->raw 4.0 ms  at 259,568  fingers-down 1
+20:27:49.956  BREAK  o repeated, run=2  (#9)  x=259/360
+20:27:49.956  o  #9  x=259/360
+20:27:49.956  DRAW #18  marks=9
+20:27:49.984  RAW touch-begin #10  evt->raw 16.6 ms  at 93,570  fingers-down 2
+20:27:49.984  .  #10  x=93/360
+20:27:50.000  DRAW #19  marks=10
+20:27:50.186  DRAW #20  marks=10
+20:27:50.216  DRAW #21  marks=10
+20:27:50.357  STAGES  evt->raw 16.6 ms  raw->ges 0.0 ms  ges->draw 16.8 ms  draw->present 97.5 ms  (refresh 16.7 ms)  pres=9742560867 pred=9742494855 delta=66.0 ms
+20:27:50.905  RAW touch-begin #11  evt->raw 4.8 ms  at 85,562  fingers-down 1
+20:27:50.906  BREAK  . repeated, run=2  (#11)  x=85/360
+20:27:50.906  .  #11  x=85/360
+20:27:50.907  DRAW #22  marks=11
+20:27:50.938  RAW touch-begin #12  evt->raw 28.7 ms  at 261,564  fingers-down 2
+20:27:50.938  o  #12  x=261/360
+20:27:50.967  DRAW #23  marks=12
+20:27:51.136  DRAW #24  marks=12
+20:27:51.169  DRAW #25  marks=12
+20:27:51.308  STAGES  evt->raw 28.7 ms  raw->ges 0.0 ms  ges->draw 29.7 ms  draw->present 261.9 ms  (refresh 16.7 ms)  pres=9743692290 pred=9743462897 delta=229.4 ms
+20:27:51.903  RAW touch-begin #13  evt->raw 4.7 ms  at 88,566  fingers-down 1
+20:27:51.927  .  #13  x=88/360
+20:27:51.929  RAW touch-begin #14  evt->raw 30.4 ms  at 267,569  fingers-down 2
+20:27:51.929  o  #14  x=267/360
+20:27:51.930  DRAW #26  marks=14
+20:27:52.158  DRAW #27  marks=14
+20:27:52.185  DRAW #28  marks=14
+20:27:52.331  STAGES  evt->raw 30.4 ms  raw->ges 0.0 ms  ges->draw 1.5 ms  draw->present 81.4 ms  (refresh 16.7 ms)  pres=9744474389 pred=9744417469 delta=56.9 ms
+20:27:55.798  RAW touch-begin #15  evt->raw 5.4 ms  at 95,539  fingers-down 1
+20:27:55.798  .  #15  x=95/360
+20:27:55.799  DRAW #29  marks=15
+20:27:55.831  RAW touch-begin #16  evt->raw 11.9 ms  at 268,546  fingers-down 2
+20:27:55.831  o  #16  x=268/360
+20:27:55.858  DRAW #30  marks=16
+20:27:56.029  DRAW #31  marks=16
+20:27:56.065  DRAW #32  marks=16
+20:27:56.200  STAGES  evt->raw 11.9 ms  raw->ges 0.0 ms  ges->draw 27.8 ms  draw->present 47.4 ms  (refresh 16.7 ms)  pres=9748369158 pred=9748353383 delta=15.8 ms
+20:27:57.063  RAW touch-begin #17  evt->raw 5.4 ms  at 118,547  fingers-down 1
+20:27:57.068  .  #17  x=118/360
+20:27:57.070  RAW touch-begin #18  evt->raw 3.2 ms  at 259,551  fingers-down 2
+20:27:57.071  o  #18  x=259/360
+20:27:57.072  DRAW #33  marks=18
+20:27:57.299  DRAW #34  marks=18
+20:27:57.325  DRAW #35  marks=18
+20:27:57.473  STAGES  evt->raw 3.2 ms  raw->ges 0.0 ms  ges->draw 2.0 ms  draw->present 132.1 ms  (refresh 16.7 ms)  pres=9749667195 pred=9749559477 delta=107.7 ms
+20:27:58.220  RAW touch-begin #19  evt->raw 5.1 ms  at 248,552  fingers-down 1
+20:27:58.221  BREAK  o repeated, run=2  (#19)  x=248/360
+20:27:58.221  o  #19  x=248/360
+20:27:58.222  DRAW #36  marks=19
+20:27:58.252  RAW touch-begin #20  evt->raw 29.4 ms  at 102,552  fingers-down 2
+20:27:58.252  .  #20  x=102/360
+20:27:58.273  DRAW #37  marks=20
+20:27:58.452  DRAW #38  marks=20
+20:27:58.483  DRAW #39  marks=20
+20:27:58.623  STAGES  evt->raw 29.4 ms  raw->ges 0.0 ms  ges->draw 22.0 ms  draw->present 95.9 ms  (refresh 16.7 ms)  pres=9750832188 pred=9750767905 delta=64.3 ms
+20:27:59.258  RAW touch-begin #21  evt->raw 9.3 ms  at 104,550  fingers-down 1
+20:27:59.259  BREAK  . repeated, run=2  (#21)  x=104/360
+20:27:59.259  .  #21  x=104/360
+20:27:59.261  RAW touch-begin #22  evt->raw 13.0 ms  at 265,551  fingers-down 2
+20:27:59.262  o  #22  x=265/360
+20:27:59.264  DRAW #40  marks=22
+20:27:59.489  DRAW #41  marks=22
+20:27:59.517  DRAW #42  marks=22
+20:27:59.665  STAGES  evt->raw 13.0 ms  raw->ges 0.0 ms  ges->draw 3.0 ms  draw->present 54.0 ms  (refresh 16.7 ms)  pres=9751780916 pred=9751750981 delta=29.9 ms
+20:28:00.257  RAW touch-begin #23  evt->raw 4.6 ms  at 243,528  fingers-down 1
+20:28:00.257  BREAK  o repeated, run=2  (#23)  x=243/360
+20:28:00.257  o  #23  x=243/360
+20:28:00.259  RAW touch-begin #24  evt->raw 6.5 ms  at 97,532  fingers-down 2
+20:28:00.259  .  #24  x=97/360
+20:28:00.260  DRAW #43  marks=24
+20:28:00.488  DRAW #44  marks=24
+20:28:00.515  DRAW #45  marks=24
+20:28:00.661  STAGES  evt->raw 6.5 ms  raw->ges 0.0 ms  ges->draw 1.4 ms  draw->present 72.8 ms  (refresh 16.7 ms)  pres=9752795618 pred=9752747377 delta=48.2 ms
+20:28:01.132  RAW touch-begin #25  evt->raw 4.7 ms  at 251,542  fingers-down 1
+20:28:01.132  o  #25  x=251/360
+20:28:01.134  RAW touch-begin #26  evt->raw 6.5 ms  at 92,536  fingers-down 2
+20:28:01.134  .  #26  x=92/360
+20:28:01.135  DRAW #46  marks=26
+20:28:01.363  DRAW #47  marks=26
+20:28:01.385  DRAW #48  marks=26
+20:28:01.535  STAGES  evt->raw 6.5 ms  raw->ges 0.0 ms  ges->draw 1.2 ms  draw->present 62.9 ms  (refresh 16.7 ms)  pres=9753660620 pred=9753622309 delta=38.3 ms
+20:28:02.133  RAW touch-begin #27  evt->raw 6.3 ms  at 93,546  fingers-down 1
+20:28:02.134  BREAK  . repeated, run=2  (#27)  x=93/360
+20:28:02.134  .  #27  x=93/360
+20:28:02.135  DRAW #49  marks=27
+20:28:02.167  RAW touch-begin #28  evt->raw 26.1 ms  at 251,546  fingers-down 2
+20:28:02.168  o  #28  x=251/360
+20:28:02.183  DRAW #50  marks=28
+20:28:02.364  DRAW #51  marks=28
+20:28:02.399  DRAW #52  marks=28
+20:28:02.536  STAGES  evt->raw 26.1 ms  raw->ges 0.0 ms  ges->draw 16.3 ms  draw->present 45.6 ms  (refresh 16.7 ms)  pres=9754691909 pred=9754677788 delta=14.1 ms
+20:28:03.154  RAW touch-begin #29  evt->raw 7.0 ms  at 254,544  fingers-down 1
+20:28:03.155  BREAK  o repeated, run=2  (#29)  x=254/360
+20:28:03.155  o  #29  x=254/360
+20:28:03.156  DRAW #53  marks=29
+20:28:03.189  RAW touch-begin #30  evt->raw 32.8 ms  at 89,549  fingers-down 2
+20:28:03.190  .  #30  x=89/360
+20:28:03.213  DRAW #54  marks=30
+20:28:03.386  DRAW #55  marks=30
+20:28:03.420  DRAW #56  marks=30
+20:28:03.557  STAGES  evt->raw 32.8 ms  raw->ges 0.0 ms  ges->draw 23.9 ms  draw->present 47.5 ms  (refresh 16.7 ms)  pres=9755723281 pred=9755707359 delta=15.9 ms
+20:28:04.268  RAW touch-begin #31  evt->raw 6.8 ms  at 102,546  fingers-down 1
+20:28:04.269  BREAK  . repeated, run=2  (#31)  x=102/360
+20:28:04.269  .  #31  x=102/360
+20:28:04.270  DRAW #57  marks=31
+20:28:04.500  DRAW #58  marks=31
+20:28:04.671  STAGES  evt->raw 6.8 ms  raw->ges 1.5 ms  ges->draw 0.8 ms  draw->present 71.4 ms  (refresh 16.7 ms)  pres=9756804431 pred=9756757446 delta=47.0 ms
+20:28:04.958  RAW touch-begin #32  evt->raw 6.1 ms  at 269,541  fingers-down 1
+20:28:04.959  o  #32  x=269/360
+20:28:04.961  DRAW #59  marks=32
+20:28:05.190  DRAW #60  marks=32
+20:28:05.331  RAW touch-begin #33  evt->raw 6.1 ms  at 97,545  fingers-down 1
+20:28:05.332  .  #33  x=97/360
+20:28:05.334  DRAW #61  marks=33
+20:28:05.369  STAGES  evt->raw 6.1 ms  raw->ges 2.2 ms  ges->draw 0.9 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:05.473  RAW touch-begin #34  evt->raw 5.1 ms  at 262,548  fingers-down 1
+20:28:05.474  o  #34  x=262/360
+20:28:05.476  DRAW #62  marks=34
+20:28:05.553  RAW touch-begin #35  evt->raw 2.0 ms  at 95,555  fingers-down 1
+20:28:05.554  .  #35  x=95/360
+20:28:05.559  DRAW #63  marks=35
+20:28:05.661  RAW touch-begin #36  evt->raw 3.5 ms  at 261,551  fingers-down 1
+20:28:05.661  o  #36  x=261/360
+20:28:05.676  DRAW #64  marks=36
+20:28:05.708  DRAW #65  marks=36
+20:28:05.732  RAW touch-begin #37  evt->raw 13.9 ms  at 96,551  fingers-down 1
+20:28:05.732  .  #37  x=96/360
+20:28:05.735  STAGES  evt->raw 3.5 ms  raw->ges 1.0 ms  ges->draw 14.4 ms  draw->present 47.7 ms  (refresh 16.7 ms)  pres=9758186540 pred=9758171074 delta=15.5 ms
+20:28:05.742  DRAW #66  marks=37
+20:28:05.792  DRAW #67  marks=37
+20:28:05.820  RAW touch-begin #38  evt->raw 2.8 ms  at 260,550  fingers-down 1
+20:28:05.820  o  #38  x=260/360
+20:28:05.821  DRAW #68  marks=38
+20:28:05.876  STAGES  evt->raw 2.8 ms  raw->ges 0.9 ms  ges->draw 0.7 ms  draw->present 51.9 ms  (refresh 16.7 ms)  pres=9758336285 pred=9758308646 delta=27.6 ms
+20:28:05.886  RAW touch-begin #39  evt->raw 1.6 ms  at 95,548  fingers-down 1
+20:28:05.886  .  #39  x=95/360
+20:28:05.893  DRAW #69  marks=39
+20:28:05.960  STAGES  evt->raw 1.6 ms  raw->ges 0.5 ms  ges->draw 7.1 ms  draw->present 45.1 ms  (refresh 16.7 ms)  pres=9758401374 pred=9758384812 delta=16.6 ms
+20:28:05.963  DRAW #70  marks=39
+20:28:05.985  RAW touch-begin #40  evt->raw 10.4 ms  at 265,549  fingers-down 1
+20:28:05.985  o  #40  x=265/360
+20:28:06.024  DRAW #71  marks=40
+20:28:06.053  RAW touch-begin #41  evt->raw 28.9 ms  at 94,551  fingers-down 1
+20:28:06.054  .  #41  x=94/360
+20:28:06.057  DRAW #72  marks=41
+20:28:06.091  STAGES  evt->raw 28.9 ms  raw->ges 1.2 ms  ges->draw 3.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:06.124  DRAW #73  marks=41
+20:28:06.146  RAW touch-begin #42  evt->raw 13.8 ms  at 261,550  fingers-down 1
+20:28:06.146  o  #42  x=261/360
+20:28:06.158  DRAW #74  marks=42
+20:28:06.202  RAW touch-begin #43  evt->raw 3.1 ms  at 97,549  fingers-down 1
+20:28:06.203  .  #43  x=97/360
+20:28:06.208  DRAW #75  marks=43
+20:28:06.227  STAGES  evt->raw 3.1 ms  raw->ges 0.6 ms  ges->draw 5.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:06.257  DRAW #76  marks=43
+20:28:06.291  DRAW #77  marks=43
+20:28:06.314  RAW touch-begin #44  evt->raw 7.8 ms  at 259,543  fingers-down 1
+20:28:06.314  o  #44  x=259/360
+20:28:06.322  DRAW #78  marks=44
+20:28:06.375  RAW touch-begin #45  evt->raw 1.7 ms  at 99,544  fingers-down 1
+20:28:06.375  .  #45  x=99/360
+20:28:06.390  DRAW #79  marks=45
+20:28:06.426  STAGES  evt->raw 1.7 ms  raw->ges 0.6 ms  ges->draw 14.7 ms  draw->present 48.9 ms  (refresh 16.7 ms)  pres=9758901976 pred=9758883731 delta=18.2 ms
+20:28:06.440  DRAW #80  marks=45
+20:28:06.539  RAW touch-begin #46  evt->raw 5.3 ms  at 259,540  fingers-down 1
+20:28:06.539  o  #46  x=259/360
+20:28:06.540  DRAW #81  marks=46
+20:28:06.565  STAGES  evt->raw 5.3 ms  raw->ges 1.2 ms  ges->draw 0.9 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:06.573  DRAW #82  marks=46
+20:28:06.640  DRAW #83  marks=46
+20:28:06.727  RAW touch-begin #47  evt->raw 4.7 ms  at 95,541  fingers-down 1
+20:28:06.727  .  #47  x=95/360
+20:28:06.728  DRAW #84  marks=47
+20:28:06.768  RAW touch-begin #48  evt->raw 3.0 ms  at 258,544  fingers-down 2
+20:28:06.769  o  #48  x=258/360
+20:28:06.776  DRAW #85  marks=48
+20:28:06.799  STAGES  evt->raw 3.0 ms  raw->ges 0.0 ms  ges->draw 8.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:06.860  RAW touch-begin #49  evt->raw 4.9 ms  at 96,543  fingers-down 2
+20:28:06.861  .  #49  x=96/360
+20:28:06.862  DRAW #86  marks=49
+20:28:06.941  STAGES  evt->raw 4.9 ms  raw->ges 0.0 ms  ges->draw 1.8 ms  draw->present 58.0 ms  (refresh 16.7 ms)  pres=9759382694 pred=9759349563 delta=33.1 ms
+20:28:06.968  DRAW #87  marks=49
+20:28:06.993  RAW touch-begin #50  evt->raw 20.4 ms  at 258,549  fingers-down 1
+20:28:06.993  o  #50  x=258/360
+20:28:07.022  DRAW #88  marks=50
+20:28:07.051  RAW touch-begin #51  evt->raw 3.0 ms  at 97,551  fingers-down 1
+20:28:07.052  .  #51  x=97/360
+20:28:07.055  DRAW #89  marks=51
+20:28:07.129  STAGES  evt->raw 3.0 ms  raw->ges 0.9 ms  ges->draw 3.4 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.139  DRAW #90  marks=51
+20:28:07.164  RAW touch-begin #52  evt->raw 27.1 ms  at 257,549  fingers-down 1
+20:28:07.165  o  #52  x=257/360
+20:28:07.173  DRAW #91  marks=52
+20:28:07.195  STAGES  evt->raw 27.1 ms  raw->ges 0.9 ms  ges->draw 8.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.217  RAW touch-begin #53  evt->raw 2.8 ms  at 91,549  fingers-down 1
+20:28:07.217  .  #53  x=91/360
+20:28:07.223  DRAW #92  marks=53
+20:28:07.262  STAGES  evt->raw 2.8 ms  raw->ges 0.8 ms  ges->draw 6.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.272  DRAW #93  marks=53
+20:28:07.305  DRAW #94  marks=53
+20:28:07.328  RAW touch-begin #54  evt->raw 6.1 ms  at 258,548  fingers-down 1
+20:28:07.329  o  #54  x=258/360
+20:28:07.340  DRAW #95  marks=54
+20:28:07.395  DRAW #96  marks=54
+20:28:07.419  RAW touch-begin #55  evt->raw 22.3 ms  at 92,548  fingers-down 1
+20:28:07.420  .  #55  x=92/360
+20:28:07.423  STAGES  evt->raw 6.1 ms  raw->ges 0.7 ms  ges->draw 11.2 ms  draw->present 45.3 ms  (refresh 16.7 ms)  pres=9759848369 pred=9759834537 delta=13.8 ms
+20:28:07.438  DRAW #97  marks=55
+20:28:07.463  STAGES  evt->raw 22.3 ms  raw->ges 0.6 ms  ges->draw 18.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.471  DRAW #98  marks=55
+20:28:07.523  RAW touch-begin #56  evt->raw 2.8 ms  at 257,549  fingers-down 1
+20:28:07.523  o  #56  x=257/360
+20:28:07.524  DRAW #99  marks=56
+20:28:07.570  DRAW #100  marks=56
+20:28:07.592  RAW touch-begin #57  evt->raw 3.7 ms  at 95,546  fingers-down 2
+20:28:07.592  .  #57  x=95/360
+20:28:07.593  STAGES  evt->raw 2.8 ms  raw->ges 0.6 ms  ges->draw 0.4 ms  draw->present 61.9 ms  (refresh 16.7 ms)  pres=9760048669 pred=9760016352 delta=32.3 ms
+20:28:07.605  DRAW #101  marks=57
+20:28:07.627  STAGES  evt->raw 3.7 ms  raw->ges 0.0 ms  ges->draw 13.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.650  DRAW #102  marks=57
+20:28:07.741  RAW touch-begin #58  evt->raw 4.1 ms  at 252,557  fingers-down 1
+20:28:07.742  o  #58  x=252/360
+20:28:07.743  DRAW #103  marks=58
+20:28:07.789  DRAW #104  marks=58
+20:28:07.821  RAW touch-begin #59  evt->raw 16.0 ms  at 87,549  fingers-down 2
+20:28:07.822  .  #59  x=87/360
+20:28:07.838  DRAW #105  marks=59
+20:28:07.867  STAGES  evt->raw 16.0 ms  raw->ges 0.0 ms  ges->draw 17.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:07.941  RAW touch-begin #60  evt->raw 4.5 ms  at 251,552  fingers-down 1
+20:28:07.941  o  #60  x=251/360
+20:28:07.942  DRAW #106  marks=60
+20:28:07.988  DRAW #107  marks=60
+20:28:08.019  RAW touch-begin #61  evt->raw 14.7 ms  at 87,554  fingers-down 2
+20:28:08.019  .  #61  x=87/360
+20:28:08.020  STAGES  evt->raw 4.5 ms  raw->ges 1.3 ms  ges->draw 0.6 ms  draw->present 58.5 ms  (refresh 16.7 ms)  pres=9760463831 pred=9760430685 delta=33.1 ms
+20:28:08.054  DRAW #108  marks=61
+20:28:08.116  RAW touch-begin #62  evt->raw 2.4 ms  at 256,548  fingers-down 1
+20:28:08.116  o  #62  x=256/360
+20:28:08.122  DRAW #109  marks=62
+20:28:08.144  STAGES  evt->raw 2.4 ms  raw->ges 0.4 ms  ges->draw 6.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:08.172  DRAW #110  marks=62
+20:28:08.201  RAW touch-begin #63  evt->raw 21.5 ms  at 90,553  fingers-down 2
+20:28:08.201  .  #63  x=90/360
+20:28:08.219  DRAW #111  marks=63
+20:28:08.241  STAGES  evt->raw 21.5 ms  raw->ges 0.0 ms  ges->draw 19.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:08.253  DRAW #112  marks=63
+20:28:08.298  RAW touch-begin #64  evt->raw 1.9 ms  at 256,542  fingers-down 1
+20:28:08.298  o  #64  x=256/360
+20:28:08.304  DRAW #113  marks=64
+20:28:08.343  STAGES  evt->raw 1.9 ms  raw->ges 0.5 ms  ges->draw 5.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:08.352  DRAW #114  marks=64
+20:28:08.375  RAW touch-begin #65  evt->raw 11.5 ms  at 92,549  fingers-down 2
+20:28:08.375  .  #65  x=92/360
+20:28:08.387  DRAW #115  marks=65
+20:28:08.454  DRAW #116  marks=65
+20:28:08.478  RAW touch-begin #66  evt->raw 15.4 ms  at 260,541  fingers-down 1
+20:28:08.478  o  #66  x=260/360
+20:28:08.479  STAGES  evt->raw 11.5 ms  raw->ges 0.0 ms  ges->draw 12.9 ms  draw->present 45.9 ms  (refresh 16.7 ms)  pres=9760896359 pred=9760882124 delta=14.2 ms
+20:28:08.504  DRAW #117  marks=66
+20:28:08.527  STAGES  evt->raw 15.4 ms  raw->ges 0.9 ms  ges->draw 25.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:08.537  DRAW #118  marks=66
+20:28:08.567  RAW touch-begin #67  evt->raw 22.1 ms  at 91,553  fingers-down 1
+20:28:08.568  .  #67  x=91/360
+20:28:08.587  DRAW #119  marks=67
+20:28:08.619  DRAW #120  marks=67
+20:28:08.646  STAGES  evt->raw 22.1 ms  raw->ges 0.7 ms  ges->draw 19.1 ms  draw->present 48.4 ms  (refresh 16.7 ms)  pres=9761098182 pred=9761082186 delta=16.0 ms
+20:28:08.648  RAW touch-begin #68  evt->raw 3.3 ms  at 257,547  fingers-down 1
+20:28:08.648  o  #68  x=257/360
+20:28:08.670  DRAW #121  marks=68
+20:28:08.704  STAGES  evt->raw 3.3 ms  raw->ges 0.6 ms  ges->draw 22.0 ms  draw->present 48.1 ms  (refresh 16.7 ms)  pres=9761181115 pred=9761165296 delta=15.8 ms
+20:28:08.713  RAW touch-begin #69  evt->raw 1.2 ms  at 90,551  fingers-down 2
+20:28:08.714  .  #69  x=90/360
+20:28:08.720  DRAW #122  marks=69
+20:28:08.788  STAGES  evt->raw 1.2 ms  raw->ges 0.0 ms  ges->draw 6.6 ms  draw->present 64.3 ms  (refresh 16.7 ms)  pres=9761247113 pred=9761214447 delta=32.7 ms
+20:28:08.804  DRAW #123  marks=69
+20:28:08.830  RAW touch-begin #70  evt->raw 18.8 ms  at 256,539  fingers-down 1
+20:28:08.830  o  #70  x=256/360
+20:28:08.852  DRAW #124  marks=70
+20:28:08.880  RAW touch-begin #71  evt->raw 17.4 ms  at 91,555  fingers-down 2
+20:28:08.880  .  #71  x=91/360
+20:28:08.886  DRAW #125  marks=71
+20:28:08.913  STAGES  evt->raw 17.4 ms  raw->ges 0.0 ms  ges->draw 6.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:08.952  DRAW #126  marks=71
+20:28:08.973  RAW touch-begin #72  evt->raw 3.4 ms  at 256,544  fingers-down 1
+20:28:08.973  o  #72  x=256/360
+20:28:09.017  DRAW #127  marks=72
+20:28:09.054  RAW touch-begin #73  evt->raw 3.5 ms  at 90,556  fingers-down 1
+20:28:09.054  .  #73  x=90/360
+20:28:09.068  DRAW #128  marks=73
+20:28:09.093  STAGES  evt->raw 3.5 ms  raw->ges 0.8 ms  ges->draw 13.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:09.118  DRAW #129  marks=73
+20:28:09.180  RAW touch-begin #74  evt->raw 1.4 ms  at 253,551  fingers-down 1
+20:28:09.180  o  #74  x=253/360
+20:28:09.180  DRAW #130  marks=74
+20:28:09.235  DRAW #131  marks=74
+20:28:09.261  RAW touch-begin #75  evt->raw 27.0 ms  at 95,552  fingers-down 2
+20:28:09.262  .  #75  x=95/360
+20:28:09.262  STAGES  evt->raw 1.4 ms  raw->ges 0.5 ms  ges->draw 0.3 ms  draw->present 69.9 ms  (refresh 16.7 ms)  pres=9761713216 pred=9761668229 delta=45.0 ms
+20:28:09.269  DRAW #132  marks=75
+20:28:09.297  STAGES  evt->raw 27.0 ms  raw->ges 0.0 ms  ges->draw 8.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:09.317  DRAW #133  marks=75
+20:28:09.339  RAW touch-begin #76  evt->raw 5.1 ms  at 253,548  fingers-down 1
+20:28:09.340  o  #76  x=253/360
+20:28:09.352  DRAW #134  marks=76
+20:28:09.418  STAGES  evt->raw 5.1 ms  raw->ges 0.6 ms  ges->draw 12.2 ms  draw->present 46.3 ms  (refresh 16.7 ms)  pres=9761861261 pred=9761847318 delta=13.9 ms
+20:28:09.420  DRAW #135  marks=76
+20:28:09.445  RAW touch-begin #77  evt->raw 27.8 ms  at 95,548  fingers-down 1
+20:28:09.445  .  #77  x=95/360
+20:28:09.452  DRAW #136  marks=77
+20:28:09.478  STAGES  evt->raw 27.8 ms  raw->ges 0.8 ms  ges->draw 6.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:09.501  DRAW #137  marks=77
+20:28:09.523  RAW touch-begin #78  evt->raw 23.3 ms  at 250,545  fingers-down 1
+20:28:09.524  o  #78  x=250/360
+20:28:09.535  DRAW #138  marks=78
+20:28:09.579  RAW touch-begin #79  evt->raw 2.3 ms  at 103,552  fingers-down 2
+20:28:09.580  .  #79  x=103/360
+20:28:09.581  STAGES  evt->raw 23.3 ms  raw->ges 0.7 ms  ges->draw 11.7 ms  draw->present 48.0 ms  (refresh 16.7 ms)  pres=9762046627 pred=9762031147 delta=15.5 ms
+20:28:09.585  DRAW #139  marks=79
+20:28:09.662  RAW touch-begin #80  evt->raw 2.3 ms  at 245,545  fingers-down 1
+20:28:09.663  o  #80  x=245/360
+20:28:09.668  DRAW #140  marks=80
+20:28:09.689  STAGES  evt->raw 2.3 ms  raw->ges 0.5 ms  ges->draw 5.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:09.699  DRAW #141  marks=80
+20:28:09.752  RAW touch-begin #81  evt->raw 2.5 ms  at 96,549  fingers-down 1
+20:28:09.752  .  #81  x=96/360
+20:28:09.768  DRAW #142  marks=81
+20:28:09.817  DRAW #143  marks=81
+20:28:09.853  RAW touch-begin #82  evt->raw 2.8 ms  at 246,542  fingers-down 1
+20:28:09.854  o  #82  x=246/360
+20:28:09.854  STAGES  evt->raw 2.5 ms  raw->ges 0.8 ms  ges->draw 15.5 ms  draw->present 46.4 ms  (refresh 16.7 ms)  pres=9762277169 pred=9762260625 delta=16.5 ms
+20:28:09.855  DRAW #144  marks=82
+20:28:09.904  DRAW #145  marks=82
+20:28:09.932  RAW touch-begin #83  evt->raw 22.9 ms  at 95,546  fingers-down 1
+20:28:09.932  .  #83  x=95/360
+20:28:09.936  STAGES  evt->raw 2.8 ms  raw->ges 1.0 ms  ges->draw 1.0 ms  draw->present 42.5 ms  (refresh 16.7 ms)  pres=9762360331 pred=9762337218 delta=23.1 ms
+20:28:09.968  DRAW #146  marks=83
+20:28:09.988  STAGES  evt->raw 22.9 ms  raw->ges 0.7 ms  ges->draw 35.2 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:09.990  DRAW #147  marks=83
+20:28:10.084  DRAW #148  marks=83
+20:28:10.163  DRAW #149  marks=83
+20:28:10.680  RAW touch-begin #84  evt->raw 4.6 ms  at 121,539  fingers-down 1
+20:28:10.680  BREAK  . repeated, run=2  (#84)  x=121/360
+20:28:10.680  .  #84  x=121/360
+20:28:10.681  DRAW #150  marks=84
+20:28:10.711  RAW touch-begin #85  evt->raw 11.4 ms  at 243,538  fingers-down 2
+20:28:10.711  o  #85  x=243/360
+20:28:10.732  DRAW #151  marks=85
+20:28:10.911  DRAW #152  marks=85
+20:28:10.943  DRAW #153  marks=85
+20:28:11.082  STAGES  evt->raw 11.4 ms  raw->ges 0.0 ms  ges->draw 21.9 ms  draw->present 46.7 ms  (refresh 16.7 ms)  pres=9763242028 pred=9763226901 delta=15.1 ms
+20:28:11.578  RAW touch-begin #86  evt->raw 4.8 ms  at 106,549  fingers-down 1
+20:28:11.579  .  #86  x=106/360
+20:28:11.580  RAW touch-begin #87  evt->raw 6.4 ms  at 241,550  fingers-down 2
+20:28:11.580  o  #87  x=241/360
+20:28:11.580  DRAW #154  marks=87
+20:28:11.810  DRAW #155  marks=87
+20:28:11.836  DRAW #156  marks=87
+20:28:11.981  STAGES  evt->raw 6.4 ms  raw->ges 0.0 ms  ges->draw 1.1 ms  draw->present 313.0 ms  (refresh 16.7 ms)  pres=9764356498 pred=9764068167 delta=288.3 ms
+20:28:12.823  RAW touch-begin #88  evt->raw 10.4 ms  at 111,550  fingers-down 1
+20:28:12.823  .  #88  x=111/360
+20:28:12.824  RAW touch-begin #89  evt->raw 3.0 ms  at 243,556  fingers-down 2
+20:28:12.825  o  #89  x=243/360
+20:28:12.826  DRAW #157  marks=89
+20:28:13.054  DRAW #158  marks=89
+20:28:13.075  DRAW #159  marks=89
+20:28:13.227  STAGES  evt->raw 3.0 ms  raw->ges 0.0 ms  ges->draw 1.7 ms  draw->present 49.3 ms  (refresh 16.7 ms)  pres=9765337963 pred=9765312901 delta=25.1 ms
+20:28:13.800  RAW touch-begin #90  evt->raw 5.3 ms  at 241,559  fingers-down 1
+20:28:13.800  BREAK  o repeated, run=2  (#90)  x=241/360
+20:28:13.800  o  #90  x=241/360
+20:28:13.802  RAW touch-begin #91  evt->raw 7.8 ms  at 105,551  fingers-down 2
+20:28:13.802  .  #91  x=105/360
+20:28:13.803  DRAW #160  marks=91
+20:28:14.031  DRAW #161  marks=91
+20:28:14.053  DRAW #162  marks=91
+20:28:14.204  STAGES  evt->raw 7.8 ms  raw->ges 0.0 ms  ges->draw 1.3 ms  draw->present 70.2 ms  (refresh 16.7 ms)  pres=9766336333 pred=9766290708 delta=45.6 ms
+20:28:14.609  RAW touch-begin #92  evt->raw 6.8 ms  at 104,554  fingers-down 1
+20:28:14.610  BREAK  . repeated, run=2  (#92)  x=104/360
+20:28:14.610  .  #92  x=104/360
+20:28:14.611  RAW touch-begin #93  evt->raw 9.0 ms  at 237,559  fingers-down 2
+20:28:14.612  o  #93  x=237/360
+20:28:14.613  DRAW #163  marks=93
+20:28:14.845  DRAW #164  marks=93
+20:28:15.014  STAGES  evt->raw 9.0 ms  raw->ges 0.0 ms  ges->draw 1.8 ms  draw->present 59.6 ms  (refresh 16.7 ms)  pres=9767135370 pred=9767099985 delta=35.4 ms
+20:28:15.662  RAW touch-begin #94  evt->raw 4.6 ms  at 99,548  fingers-down 1
+20:28:15.662  .  #94  x=99/360
+20:28:15.663  DRAW #165  marks=94
+20:28:15.893  DRAW #166  marks=94
+20:28:16.064  STAGES  evt->raw 4.6 ms  raw->ges 1.1 ms  ges->draw 0.9 ms  draw->present 57.5 ms  (refresh 16.7 ms)  pres=9768184109 pred=9768150965 delta=33.1 ms
+20:28:16.280  RAW touch-begin #95  evt->raw 7.0 ms  at 248,561  fingers-down 1
+20:28:16.281  o  #95  x=248/360
+20:28:16.283  DRAW #167  marks=95
+20:28:16.512  DRAW #168  marks=95
+20:28:16.684  STAGES  evt->raw 7.0 ms  raw->ges 1.7 ms  ges->draw 1.6 ms  draw->present 70.5 ms  (refresh 16.7 ms)  pres=9768816800 pred=9768770014 delta=46.8 ms
+20:28:16.697  RAW touch-begin #96  evt->raw 7.7 ms  at 94,553  fingers-down 1
+20:28:16.698  .  #96  x=94/360
+20:28:16.700  DRAW #169  marks=96
+20:28:16.929  DRAW #170  marks=96
+20:28:17.008  RAW touch-begin #97  evt->raw 2.4 ms  at 252,559  fingers-down 1
+20:28:17.008  o  #97  x=252/360
+20:28:17.009  DRAW #171  marks=97
+20:28:17.102  STAGES  evt->raw 2.4 ms  raw->ges 0.9 ms  ges->draw 0.7 ms  draw->present 60.8 ms  (refresh 16.7 ms)  pres=9769532745 pred=9769500576 delta=32.2 ms
+20:28:17.239  DRAW #172  marks=97
+20:28:17.265  RAW touch-begin #98  evt->raw 9.4 ms  at 102,551  fingers-down 1
+20:28:17.267  .  #98  x=102/360
+20:28:17.305  DRAW #173  marks=98
+20:28:17.410  STAGES  evt->raw 9.4 ms  raw->ges 3.5 ms  ges->draw 37.8 ms  draw->present 47.0 ms  (refresh 16.7 ms)  pres=9769815754 pred=9769799601 delta=16.2 ms
+20:28:17.497  DRAW #174  marks=98
+20:28:18.300  RAW touch-begin #99  evt->raw 4.0 ms  at 110,553  fingers-down 1
+20:28:18.324  BREAK  . repeated, run=2  (#99)  x=110/360
+20:28:18.324  .  #99  x=110/360
+20:28:18.326  DRAW #175  marks=99
+20:28:18.363  RAW touch-begin #100  evt->raw 31.5 ms  at 243,560  fingers-down 2
+20:28:18.363  o  #100  x=243/360
+20:28:18.388  DRAW #176  marks=100
+20:28:18.558  DRAW #177  marks=100
+20:28:18.595  DRAW #178  marks=100
+20:28:18.727  STAGES  evt->raw 31.5 ms  raw->ges 0.0 ms  ges->draw 25.5 ms  draw->present 46.4 ms  (refresh 16.7 ms)  pres=9770897376 pred=9770882551 delta=14.8 ms
+20:28:19.809  RAW touch-begin #101  evt->raw 5.2 ms  at 230,563  fingers-down 1
+20:28:19.809  BREAK  o repeated, run=2  (#101)  x=230/360
+20:28:19.809  o  #101  x=230/360
+20:28:19.811  RAW touch-begin #102  evt->raw 7.7 ms  at 107,554  fingers-down 2
+20:28:19.811  .  #102  x=107/360
+20:28:19.812  DRAW #179  marks=102
+20:28:20.040  DRAW #180  marks=102
+20:28:20.064  DRAW #181  marks=102
+20:28:20.213  STAGES  evt->raw 7.7 ms  raw->ges 0.0 ms  ges->draw 1.3 ms  draw->present 53.4 ms  (refresh 16.7 ms)  pres=9772328518 pred=9772299700 delta=28.8 ms
+20:28:21.085  RAW touch-begin #103  evt->raw 6.8 ms  at 99,564  fingers-down 1
+20:28:21.086  BREAK  . repeated, run=2  (#103)  x=99/360
+20:28:21.086  .  #103  x=99/360
+20:28:21.086  DRAW #182  marks=103
+20:28:21.116  RAW touch-begin #104  evt->raw 22.6 ms  at 226,568  fingers-down 2
+20:28:21.116  o  #104  x=226/360
+20:28:21.132  DRAW #183  marks=104
+20:28:21.316  DRAW #184  marks=104
+20:28:21.348  DRAW #185  marks=104
+20:28:21.487  STAGES  evt->raw 22.6 ms  raw->ges 0.0 ms  ges->draw 17.1 ms  draw->present 97.7 ms  (refresh 16.7 ms)  pres=9773693375 pred=9773628120 delta=65.3 ms
+20:28:22.047  RAW touch-begin #105  evt->raw 4.8 ms  at 102,562  fingers-down 1
+20:28:22.048  .  #105  x=102/360
+20:28:22.048  DRAW #186  marks=105
+20:28:22.080  RAW touch-begin #106  evt->raw 19.8 ms  at 233,563  fingers-down 2
+20:28:22.080  o  #106  x=233/360
+20:28:22.099  DRAW #187  marks=106
+20:28:22.278  DRAW #188  marks=106
+20:28:22.311  DRAW #189  marks=106
+20:28:22.449  STAGES  evt->raw 19.8 ms  raw->ges 0.0 ms  ges->draw 20.4 ms  draw->present 96.6 ms  (refresh 16.7 ms)  pres=9774658788 pred=9774593649 delta=65.1 ms
+20:28:23.149  RAW touch-begin #107  evt->raw 7.8 ms  at 232,571  fingers-down 1
+20:28:23.150  BREAK  o repeated, run=2  (#107)  x=232/360
+20:28:23.150  o  #107  x=232/360
+20:28:23.151  RAW touch-begin #108  evt->raw 9.8 ms  at 99,561  fingers-down 2
+20:28:23.151  .  #108  x=99/360
+20:28:23.152  DRAW #190  marks=108
+20:28:23.383  DRAW #191  marks=108
+20:28:23.553  STAGES  evt->raw 9.8 ms  raw->ges 0.0 ms  ges->draw 1.4 ms  draw->present 58.9 ms  (refresh 16.7 ms)  pres=9775674022 pred=9775639702 delta=34.3 ms
+20:28:24.250  RAW touch-begin #109  evt->raw 5.1 ms  at 114,550  fingers-down 1
+20:28:24.251  BREAK  . repeated, run=2  (#109)  x=114/360
+20:28:24.251  .  #109  x=114/360
+20:28:24.253  DRAW #192  marks=109
+20:28:24.283  RAW touch-begin #110  evt->raw 20.9 ms  at 247,558  fingers-down 2
+20:28:24.284  o  #110  x=247/360
+20:28:24.311  DRAW #193  marks=110
+20:28:24.499  DRAW #194  marks=110
+20:28:24.528  DRAW #195  marks=110
+20:28:24.654  STAGES  evt->raw 20.9 ms  raw->ges 0.0 ms  ges->draw 28.3 ms  draw->present 47.9 ms  (refresh 16.7 ms)  pres=9776822042 pred=9776806687 delta=15.4 ms
+20:28:26.049  RAW touch-begin #111  evt->raw 5.5 ms  at 101,550  fingers-down 1
+20:28:26.049  .  #111  x=101/360
+20:28:26.051  DRAW #196  marks=111
+20:28:26.080  RAW touch-begin #112  evt->raw 10.0 ms  at 240,565  fingers-down 2
+20:28:26.081  o  #112  x=240/360
+20:28:26.091  DRAW #197  marks=112
+20:28:26.280  DRAW #198  marks=112
+20:28:26.312  DRAW #199  marks=112
+20:28:26.452  STAGES  evt->raw 10.0 ms  raw->ges 0.0 ms  ges->draw 11.5 ms  draw->present 98.2 ms  (refresh 16.7 ms)  pres=9778652772 pred=9778587082 delta=65.7 ms
+20:28:28.277  RAW touch-begin #113  evt->raw 4.7 ms  at 97,548  fingers-down 1
+20:28:28.278  .  #113  x=97/360
+20:28:28.279  DRAW #200  marks=113
+20:28:28.508  DRAW #201  marks=113
+20:28:28.679  STAGES  evt->raw 4.7 ms  raw->ges 1.2 ms  ges->draw 0.7 ms  draw->present 57.4 ms  (refresh 16.7 ms)  pres=9780798963 pred=9780766075 delta=32.9 ms
+20:28:34.703  RAW touch-begin #114  evt->raw 7.2 ms  at 90,553  fingers-down 1
+20:28:34.704  BREAK  . repeated, run=2  (#114)  x=90/360
+20:28:34.705  .  #114  x=90/360
+20:28:34.706  DRAW #202  marks=114
+20:28:34.924  RAW touch-begin #115  evt->raw 3.6 ms  at 94,547  fingers-down 1
+20:28:34.924  BREAK  . repeated, run=3  (#115)  x=94/360
+20:28:34.924  .  #115  x=94/360
+20:28:34.925  DRAW #203  marks=115
+20:28:34.994  DRAW #204  marks=115
+20:28:35.075  RAW touch-begin #116  evt->raw 5.1 ms  at 91,548  fingers-down 1
+20:28:35.076  BREAK  . repeated, run=4  (#116)  x=91/360
+20:28:35.076  .  #116  x=91/360
+20:28:35.077  DRAW #205  marks=116
+20:28:35.108  STAGES  evt->raw 5.1 ms  raw->ges 1.2 ms  ges->draw 0.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:35.162  DRAW #206  marks=116
+20:28:35.222  RAW touch-begin #117  evt->raw 1.8 ms  at 92,547  fingers-down 1
+20:28:35.222  BREAK  . repeated, run=5  (#117)  x=92/360
+20:28:35.222  .  #117  x=92/360
+20:28:35.223  DRAW #207  marks=117
+20:28:35.312  DRAW #208  marks=117
+20:28:35.340  STAGES  evt->raw 1.8 ms  raw->ges 0.6 ms  ges->draw 0.7 ms  draw->present 67.4 ms  (refresh 16.7 ms)  pres=9787753481 pred=9787702404 delta=51.1 ms
+20:28:35.373  RAW touch-begin #118  evt->raw 3.5 ms  at 92,547  fingers-down 1
+20:28:35.373  BREAK  . repeated, run=6  (#118)  x=92/360
+20:28:35.374  .  #118  x=92/360
+20:28:35.375  DRAW #209  marks=118
+20:28:35.462  DRAW #210  marks=118
+20:28:35.486  STAGES  evt->raw 3.5 ms  raw->ges 1.5 ms  ges->draw 0.7 ms  draw->present 48.8 ms  (refresh 16.7 ms)  pres=9787886545 pred=9787854181 delta=32.4 ms
+20:28:35.538  RAW touch-begin #119  evt->raw 2.5 ms  at 96,546  fingers-down 1
+20:28:35.538  BREAK  . repeated, run=7  (#119)  x=96/360
+20:28:35.538  .  #119  x=96/360
+20:28:35.539  DRAW #211  marks=119
+20:28:35.612  DRAW #212  marks=119
+20:28:35.641  STAGES  evt->raw 2.5 ms  raw->ges 1.1 ms  ges->draw 0.7 ms  draw->present 52.0 ms  (refresh 16.7 ms)  pres=9788054390 pred=9788032599 delta=21.8 ms
+20:28:35.695  RAW touch-begin #120  evt->raw 2.6 ms  at 93,547  fingers-down 1
+20:28:35.695  BREAK  . repeated, run=8  (#120)  x=93/360
+20:28:35.695  .  #120  x=93/360
+20:28:35.696  DRAW #213  marks=120
+20:28:35.775  DRAW #214  marks=120
+20:28:35.802  STAGES  evt->raw 2.6 ms  raw->ges 0.6 ms  ges->draw 0.6 ms  draw->present 95.4 ms  (refresh 16.7 ms)  pres=9788254128 pred=9788186292 delta=67.8 ms
+20:28:35.876  RAW touch-begin #121  evt->raw 2.0 ms  at 96,544  fingers-down 1
+20:28:35.877  BREAK  . repeated, run=9  (#121)  x=96/360
+20:28:35.877  .  #121  x=96/360
+20:28:35.878  DRAW #215  marks=121
+20:28:35.926  DRAW #216  marks=121
+20:28:35.949  STAGES  evt->raw 2.0 ms  raw->ges 0.9 ms  ges->draw 0.7 ms  draw->present 64.1 ms  (refresh 16.7 ms)  pres=9788404659 pred=9788369089 delta=35.6 ms
+20:28:36.023  RAW touch-begin #122  evt->raw 4.9 ms  at 266,552  fingers-down 1
+20:28:36.024  o  #122  x=266/360
+20:28:36.025  DRAW #217  marks=122
+20:28:36.096  STAGES  evt->raw 4.9 ms  raw->ges 0.9 ms  ges->draw 0.8 ms  draw->present 48.6 ms  (refresh 16.7 ms)  pres=9788536230 pred=9788518799 delta=17.4 ms
+20:28:36.110  DRAW #218  marks=122
+20:28:36.177  RAW touch-begin #123  evt->raw 2.3 ms  at 264,550  fingers-down 1
+20:28:36.177  BREAK  o repeated, run=2  (#123)  x=264/360
+20:28:36.177  o  #123  x=264/360
+20:28:36.178  DRAW #219  marks=123
+20:28:36.261  DRAW #220  marks=123
+20:28:36.286  STAGES  evt->raw 2.3 ms  raw->ges 1.2 ms  ges->draw 0.7 ms  draw->present 60.4 ms  (refresh 16.7 ms)  pres=9788701568 pred=9788665387 delta=36.2 ms
+20:28:36.346  RAW touch-begin #124  evt->raw 4.5 ms  at 269,552  fingers-down 1
+20:28:36.346  BREAK  o repeated, run=3  (#124)  x=269/360
+20:28:36.346  o  #124  x=269/360
+20:28:36.347  DRAW #221  marks=124
+20:28:36.412  DRAW #222  marks=124
+20:28:36.449  STAGES  evt->raw 4.5 ms  raw->ges 1.0 ms  ges->draw 0.5 ms  draw->present 42.5 ms  (refresh 16.7 ms)  pres=9788852506 pred=9788834732 delta=17.8 ms
+20:28:36.486  RAW touch-begin #125  evt->raw 2.2 ms  at 267,552  fingers-down 1
+20:28:36.487  BREAK  o repeated, run=4  (#125)  x=267/360
+20:28:36.487  o  #125  x=267/360
+20:28:36.487  DRAW #223  marks=125
+20:28:36.579  STAGES  evt->raw 2.2 ms  raw->ges 0.6 ms  ges->draw 0.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:36.592  DRAW #224  marks=125
+20:28:36.635  RAW touch-begin #126  evt->raw 2.1 ms  at 263,558  fingers-down 1
+20:28:36.636  BREAK  o repeated, run=5  (#126)  x=263/360
+20:28:36.636  o  #126  x=263/360
+20:28:36.641  DRAW #225  marks=126
+20:28:36.726  DRAW #226  marks=126
+20:28:36.748  STAGES  evt->raw 2.1 ms  raw->ges 0.8 ms  ges->draw 5.5 ms  draw->present 63.0 ms  (refresh 16.7 ms)  pres=9789167322 pred=9789135452 delta=31.9 ms
+20:28:36.785  RAW touch-begin #127  evt->raw 2.0 ms  at 265,560  fingers-down 1
+20:28:36.786  BREAK  o repeated, run=6  (#127)  x=265/360
+20:28:36.786  o  #127  x=265/360
+20:28:36.786  DRAW #227  marks=127
+20:28:36.875  DRAW #228  marks=127
+20:28:36.911  STAGES  evt->raw 2.0 ms  raw->ges 0.7 ms  ges->draw 0.5 ms  draw->present 85.7 ms  (refresh 16.7 ms)  pres=9789334966 pred=9789276169 delta=58.8 ms
+20:28:37.016  DRAW #229  marks=127
+20:28:37.052  RAW touch-begin #128  evt->raw 3.1 ms  at 101,559  fingers-down 1
+20:28:37.053  .  #128  x=101/360
+20:28:37.054  DRAW #230  marks=128
+20:28:37.172  RAW touch-begin #129  evt->raw 6.3 ms  at 259,555  fingers-down 1
+20:28:37.172  o  #129  x=259/360
+20:28:37.173  DRAW #231  marks=129
+20:28:37.206  STAGES  evt->raw 6.3 ms  raw->ges 1.3 ms  ges->draw 1.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:37.234  RAW touch-begin #130  evt->raw 2.2 ms  at 100,559  fingers-down 2
+20:28:37.235  .  #130  x=100/360
+20:28:37.240  DRAW #232  marks=130
+20:28:37.284  DRAW #233  marks=130
+20:28:37.318  RAW touch-begin #131  evt->raw 3.2 ms  at 262,559  fingers-down 1
+20:28:37.319  o  #131  x=262/360
+20:28:37.323  DRAW #234  marks=131
+20:28:37.384  RAW touch-begin #132  evt->raw 2.2 ms  at 103,565  fingers-down 2
+20:28:37.385  .  #132  x=103/360
+20:28:37.385  DRAW #235  marks=132
+20:28:37.438  DRAW #236  marks=132
+20:28:37.464  STAGES  evt->raw 2.2 ms  raw->ges 0.0 ms  ges->draw 0.8 ms  draw->present 69.6 ms  (refresh 16.7 ms)  pres=9789917568 pred=9789868730 delta=48.8 ms
+20:28:37.473  DRAW #237  marks=132
+20:28:37.501  RAW touch-begin #133  evt->raw 3.2 ms  at 262,559  fingers-down 1
+20:28:37.502  o  #133  x=262/360
+20:28:37.523  DRAW #238  marks=133
+20:28:37.556  DRAW #239  marks=133
+20:28:37.580  STAGES  evt->raw 3.2 ms  raw->ges 0.6 ms  ges->draw 21.7 ms  draw->present 47.3 ms  (refresh 16.7 ms)  pres=9790033881 pred=9790018088 delta=15.8 ms
+20:28:37.581  RAW touch-begin #134  evt->raw 8.6 ms  at 101,562  fingers-down 1
+20:28:37.581  .  #134  x=101/360
+20:28:37.590  DRAW #240  marks=134
+20:28:37.623  DRAW #241  marks=134
+20:28:37.645  STAGES  evt->raw 8.6 ms  raw->ges 0.4 ms  ges->draw 8.8 ms  draw->present 48.1 ms  (refresh 16.7 ms)  pres=9790100927 pred=9790085218 delta=15.7 ms
+20:28:37.657  RAW touch-begin #135  evt->raw 2.0 ms  at 99,562  fingers-down 1
+20:28:37.658  BREAK  . repeated, run=2  (#135)  x=99/360
+20:28:37.658  .  #135  x=99/360
+20:28:37.673  DRAW #242  marks=135
+20:28:37.701  RAW touch-begin #136  evt->raw 2.4 ms  at 264,550  fingers-down 2
+20:28:37.701  o  #136  x=264/360
+20:28:37.722  DRAW #243  marks=136
+20:28:37.747  STAGES  evt->raw 2.4 ms  raw->ges 0.0 ms  ges->draw 22.1 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:28:37.756  DRAW #244  marks=136
+20:28:37.789  RAW touch-begin #137  evt->raw 1.3 ms  at 91,557  fingers-down 2
+20:28:37.790  .  #137  x=91/360
+20:28:37.804  DRAW #245  marks=137
+20:28:37.840  DRAW #246  marks=137
+20:28:37.888  DRAW #247  marks=137
+20:28:37.925  STAGES  evt->raw 1.3 ms  raw->ges 0.0 ms  ges->draw 15.4 ms  draw->present 47.5 ms  (refresh 16.7 ms)  pres=9790315187 pred=9790299389 delta=15.8 ms
+20:28:37.931  DRAW #248  marks=137
+20:28:38.021  DRAW #249  marks=137
+20:29:15.051  RAW touch-begin #138  evt->raw 5.5 ms  at 116,544  fingers-down 1
+20:29:15.051  BREAK  . repeated, run=2  (#138)  x=116/360
+20:29:15.051  .  #138  x=116/360
+20:29:15.052  DRAW #250  marks=138
+20:29:15.082  RAW touch-begin #139  evt->raw 3.9 ms  at 278,565  fingers-down 2
+20:29:15.083  o  #139  x=278/360
+20:29:15.094  DRAW #251  marks=139
+20:29:15.282  DRAW #252  marks=139
+20:29:15.314  DRAW #253  marks=139
+20:29:15.453  STAGES  evt->raw 3.9 ms  raw->ges 0.0 ms  ges->draw 12.6 ms  draw->present 97.7 ms  (refresh 16.7 ms)  pres=9827655241 pred=9827590004 delta=65.2 ms
+20:29:15.975  RAW touch-begin #140  evt->raw 4.7 ms  at 95,540  fingers-down 1
+20:29:15.975  .  #140  x=95/360
+20:29:15.976  DRAW #254  marks=140
+20:29:16.002  RAW touch-begin #141  evt->raw 16.0 ms  at 272,554  fingers-down 2
+20:29:16.003  o  #141  x=272/360
+20:29:16.026  DRAW #255  marks=141
+20:29:16.206  DRAW #256  marks=141
+20:29:16.234  DRAW #257  marks=141
+20:29:16.377  STAGES  evt->raw 16.0 ms  raw->ges 0.0 ms  ges->draw 24.0 ms  draw->present 97.7 ms  (refresh 16.7 ms)  pres=9828586650 pred=9828520434 delta=66.2 ms
+20:29:17.017  RAW touch-begin #142  evt->raw 8.4 ms  at 95,546  fingers-down 1
+20:29:17.019  .  #142  x=95/360
+20:29:17.020  DRAW #258  marks=142
+20:29:17.050  RAW touch-begin #143  evt->raw 25.6 ms  at 265,574  fingers-down 2
+20:29:17.050  o  #143  x=265/360
+20:29:17.075  DRAW #259  marks=143
+20:29:17.250  DRAW #260  marks=143
+20:29:17.281  DRAW #261  marks=143
+20:29:17.421  STAGES  evt->raw 25.6 ms  raw->ges 0.0 ms  ges->draw 25.3 ms  draw->present 46.5 ms  (refresh 16.7 ms)  pres=9829584300 pred=9829568336 delta=16.0 ms
+20:29:17.607  RAW touch-begin #144  evt->raw 7.6 ms  at 99,555  fingers-down 1
+20:29:17.608  .  #144  x=99/360
+20:29:17.609  DRAW #262  marks=144
+20:29:17.651  RAW touch-begin #145  evt->raw 21.8 ms  at 262,586  fingers-down 2
+20:29:17.651  o  #145  x=262/360
+20:29:17.672  DRAW #263  marks=145
+20:29:17.839  DRAW #264  marks=145
+20:29:17.882  DRAW #265  marks=145
+20:29:18.010  STAGES  evt->raw 21.8 ms  raw->ges 0.0 ms  ges->draw 21.9 ms  draw->present 47.0 ms  (refresh 16.7 ms)  pres=9830182749 pred=9830168144 delta=14.6 ms
+20:29:18.926  RAW touch-begin #146  evt->raw 6.1 ms  at 7,652  fingers-down 1
+20:29:18.927  .  #146  x=7/360
+20:29:18.929  DRAW #266  marks=146
+20:29:19.158  DRAW #267  marks=146
+20:29:19.223  RAW touch-begin #147  evt->raw 3.3 ms  at 47,541  fingers-down 1
+20:29:19.223  BREAK  . repeated, run=2  (#147)  x=47/360
+20:29:19.223  .  #147  x=47/360
+20:29:19.224  DRAW #268  marks=147
+20:29:19.331  STAGES  evt->raw 3.3 ms  raw->ges 1.2 ms  ges->draw 0.7 ms  draw->present 41.9 ms  (refresh 16.7 ms)  pres=9831729145 pred=9831716619 delta=12.5 ms
+20:29:19.454  DRAW #269  marks=147
+20:29:19.985  RAW touch-begin #148  evt->raw 6.5 ms  at 142,536  fingers-down 1
+20:29:19.986  BREAK  . repeated, run=3  (#148)  x=142/360
+20:29:19.986  .  #148  x=142/360
+20:29:19.987  DRAW #270  marks=148
+20:29:20.148  RAW touch-begin #149  evt->raw 4.9 ms  at 150,526  fingers-down 1
+20:29:20.165  BREAK  . repeated, run=4  (#149)  x=150/360
+20:29:20.166  .  #149  x=150/360
+20:29:20.167  DRAW #271  marks=149
+20:29:20.235  DRAW #272  marks=149
+20:29:20.279  RAW touch-begin #150  evt->raw 2.3 ms  at 143,515  fingers-down 1
+20:29:20.279  BREAK  . repeated, run=5  (#150)  x=143/360
+20:29:20.279  .  #150  x=143/360
+20:29:20.284  DRAW #273  marks=150
+20:29:20.388  STAGES  evt->raw 2.3 ms  raw->ges 0.8 ms  ges->draw 5.2 ms  draw->present 62.8 ms  (refresh 16.7 ms)  pres=9832810105 pred=9832779377 delta=30.7 ms
+20:29:20.401  DRAW #274  marks=150
+20:29:20.435  RAW touch-begin #151  evt->raw 3.1 ms  at 143,517  fingers-down 1
+20:29:20.436  BREAK  . repeated, run=6  (#151)  x=143/360
+20:29:20.436  .  #151  x=143/360
+20:29:20.437  DRAW #275  marks=151
+20:29:20.519  DRAW #276  marks=151
+20:29:20.568  STAGES  evt->raw 3.1 ms  raw->ges 1.2 ms  ges->draw 1.0 ms  draw->present 59.8 ms  (refresh 16.7 ms)  pres=9832960117 pred=9832925047 delta=35.1 ms
+20:29:20.594  RAW touch-begin #152  evt->raw 2.5 ms  at 164,521  fingers-down 1
+20:29:20.594  BREAK  . repeated, run=7  (#152)  x=164/360
+20:29:20.594  .  #152  x=164/360
+20:29:20.595  DRAW #277  marks=152
+20:29:20.678  DRAW #278  marks=152
+20:29:20.700  STAGES  evt->raw 2.5 ms  raw->ges 0.8 ms  ges->draw 0.5 ms  draw->present 51.7 ms  (refresh 16.7 ms)  pres=9833109450 pred=9833077375 delta=32.1 ms
+20:29:20.764  RAW touch-begin #153  evt->raw 5.9 ms  at 223,537  fingers-down 1
+20:29:20.765  o  #153  x=223/360
+20:29:20.766  DRAW #279  marks=153
+20:29:20.833  DRAW #280  marks=153
+20:29:20.857  STAGES  evt->raw 5.9 ms  raw->ges 1.3 ms  ges->draw 1.0 ms  draw->present 63.1 ms  (refresh 16.7 ms)  pres=9833292382 pred=9833259270 delta=33.1 ms
+20:29:20.884  RAW touch-begin #154  evt->raw 3.1 ms  at 231,543  fingers-down 1
+20:29:20.885  BREAK  o repeated, run=2  (#154)  x=231/360
+20:29:20.885  o  #154  x=231/360
+20:29:20.886  DRAW #281  marks=154
+20:29:20.996  STAGES  evt->raw 3.1 ms  raw->ges 1.2 ms  ges->draw 1.0 ms  draw->present 42.9 ms  (refresh 16.7 ms)  pres=9833392166 pred=9833371951 delta=20.2 ms
+20:29:20.996  DRAW #282  marks=154
+20:29:21.027  RAW touch-begin #155  evt->raw 2.9 ms  at 231,558  fingers-down 1
+20:29:21.028  BREAK  o repeated, run=3  (#155)  x=231/360
+20:29:21.028  o  #155  x=231/360
+20:29:21.029  DRAW #283  marks=155
+20:29:21.130  DRAW #284  marks=155
+20:29:21.169  RAW touch-begin #156  evt->raw 4.2 ms  at 229,557  fingers-down 1
+20:29:21.169  BREAK  o repeated, run=4  (#156)  x=229/360
+20:29:21.170  o  #156  x=229/360
+20:29:21.170  STAGES  evt->raw 2.9 ms  raw->ges 1.2 ms  ges->draw 0.7 ms  draw->present 66.7 ms  (refresh 16.7 ms)  pres=9833558496 pred=9833514674 delta=43.8 ms
+20:29:21.171  DRAW #285  marks=156
+20:29:21.264  DRAW #286  marks=156
+20:29:21.287  STAGES  evt->raw 4.2 ms  raw->ges 1.7 ms  ges->draw 0.8 ms  draw->present 108.2 ms  (refresh 16.7 ms)  pres=9833741957 pred=9833655356 delta=86.6 ms
+20:29:21.319  RAW touch-begin #157  evt->raw 3.7 ms  at 239,560  fingers-down 1
+20:29:21.320  BREAK  o repeated, run=5  (#157)  x=239/360
+20:29:21.320  o  #157  x=239/360
+20:29:21.322  DRAW #287  marks=157
+20:29:21.402  DRAW #288  marks=157
+20:29:21.430  STAGES  evt->raw 3.7 ms  raw->ges 1.9 ms  ges->draw 1.0 ms  draw->present 73.3 ms  (refresh 16.7 ms)  pres=9833857957 pred=9833809758 delta=48.2 ms
+20:29:21.460  RAW touch-begin #158  evt->raw 2.1 ms  at 231,556  fingers-down 1
+20:29:21.461  BREAK  o repeated, run=6  (#158)  x=231/360
+20:29:21.461  o  #158  x=231/360
+20:29:21.461  DRAW #289  marks=158
+20:29:21.567  DRAW #290  marks=158
+20:29:21.593  STAGES  evt->raw 2.1 ms  raw->ges 0.7 ms  ges->draw 0.8 ms  draw->present 66.5 ms  (refresh 16.7 ms)  pres=9833991071 pred=9833956932 delta=34.1 ms
+20:29:21.691  DRAW #291  marks=158
+20:29:21.727  RAW touch-begin #159  evt->raw 3.9 ms  at 103,513  fingers-down 1
+20:29:21.728  .  #159  x=103/360
+20:29:21.729  DRAW #292  marks=159
+20:29:21.863  STAGES  evt->raw 3.9 ms  raw->ges 1.6 ms  ges->draw 1.2 ms  draw->present 81.2 ms  (refresh 16.7 ms)  pres=9834273907 pred=9834211212 delta=62.7 ms
+20:29:21.919  RAW touch-begin #160  evt->raw 5.3 ms  at 227,528  fingers-down 1
+20:29:21.919  o  #160  x=227/360
+20:29:21.920  DRAW #293  marks=160
+20:29:21.997  DRAW #294  marks=160
+20:29:22.110  RAW touch-begin #161  evt->raw 5.0 ms  at 106,530  fingers-down 1
+20:29:22.111  .  #161  x=106/360
+20:29:22.111  DRAW #295  marks=161
+20:29:22.149  STAGES  evt->raw 5.0 ms  raw->ges 0.8 ms  ges->draw 0.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:29:22.162  DRAW #296  marks=161
+20:29:22.300  RAW touch-begin #162  evt->raw 3.7 ms  at 237,518  fingers-down 1
+20:29:22.300  o  #162  x=237/360
+20:29:22.301  DRAW #297  marks=162
+20:29:22.334  STAGES  evt->raw 3.7 ms  raw->ges 0.9 ms  ges->draw 0.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:29:22.365  DRAW #298  marks=162
+20:29:22.476  RAW touch-begin #163  evt->raw 4.0 ms  at 125,533  fingers-down 1
+20:29:22.477  .  #163  x=125/360
+20:29:22.478  DRAW #299  marks=163
+20:29:22.512  STAGES  evt->raw 4.0 ms  raw->ges 1.2 ms  ges->draw 0.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:29:22.548  DRAW #300  marks=163
+20:29:22.708  DRAW #301  marks=163
+20:29:23.576  RAW touch-begin #164  evt->raw 5.6 ms  at 168,523  fingers-down 1
+20:29:23.576  BREAK  . repeated, run=2  (#164)  x=168/360
+20:29:23.576  .  #164  x=168/360
+20:29:23.577  DRAW #302  marks=164
+20:29:23.807  DRAW #303  marks=164
+20:29:23.978  STAGES  evt->raw 5.6 ms  raw->ges 1.1 ms  ges->draw 0.7 ms  draw->present 63.4 ms  (refresh 16.7 ms)  pres=9836103721 pred=9836064831 delta=38.9 ms
+20:29:24.310  RAW touch-begin #165  evt->raw 8.0 ms  at 204,522  fingers-down 1
+20:29:24.311  o  #165  x=204/360
+20:29:24.312  DRAW #304  marks=165
+20:29:24.545  DRAW #305  marks=165
+20:29:24.713  STAGES  evt->raw 8.0 ms  raw->ges 1.4 ms  ges->draw 0.7 ms  draw->present 60.6 ms  (refresh 16.7 ms)  pres=9836835733 pred=9836799571 delta=36.2 ms
+20:29:24.750  RAW touch-begin #166  evt->raw 9.0 ms  at 161,519  fingers-down 1
+20:29:24.751  .  #166  x=161/360
+20:29:24.752  DRAW #306  marks=166
+20:29:24.982  DRAW #307  marks=166
+20:29:25.153  STAGES  evt->raw 9.0 ms  raw->ges 1.1 ms  ges->draw 0.8 ms  draw->present 70.2 ms  (refresh 16.7 ms)  pres=9837285013 pred=9837235327 delta=49.7 ms
+20:29:25.157  RAW touch-begin #167  evt->raw 5.8 ms  at 184,507  fingers-down 1
+20:29:25.158  o  #167  x=184/360
+20:29:25.160  DRAW #308  marks=167
+20:29:25.389  DRAW #309  marks=167
+20:29:25.561  STAGES  evt->raw 5.8 ms  raw->ges 1.9 ms  ges->draw 1.3 ms  draw->present 78.0 ms  (refresh 16.7 ms)  pres=9837700956 pred=9837651196 delta=49.8 ms
+20:29:25.831  RAW touch-begin #168  evt->raw 7.6 ms  at 159,505  fingers-down 1
+20:29:25.831  .  #168  x=159/360
+20:29:25.832  DRAW #310  marks=168
+20:29:26.064  DRAW #311  marks=168
+20:29:26.233  STAGES  evt->raw 7.6 ms  raw->ges 1.0 ms  ges->draw 0.7 ms  draw->present 87.8 ms  (refresh 16.7 ms)  pres=9838382951 pred=9838319703 delta=63.2 ms
+20:29:26.439  RAW touch-begin #169  evt->raw 7.4 ms  at 195,492  fingers-down 1
+20:29:26.440  o  #169  x=195/360
+20:29:26.444  DRAW #312  marks=169
+20:29:26.671  DRAW #313  marks=169
+20:29:26.846  STAGES  evt->raw 7.4 ms  raw->ges 3.4 ms  ges->draw 2.8 ms  draw->present 74.4 ms  (refresh 16.7 ms)  pres=9838981864 pred=9838930537 delta=51.3 ms
+20:29:28.810  RAW touch-begin #170  evt->raw 8.0 ms  at 258,488  fingers-down 1
+20:29:28.811  BREAK  o repeated, run=2  (#170)  x=258/360
+20:29:28.811  o  #170  x=258/360
+20:29:28.812  RAW touch-begin #171  evt->raw 10.1 ms  at 89,481  fingers-down 2
+20:29:28.813  .  #171  x=89/360
+20:29:28.813  DRAW #314  marks=171
+20:29:29.042  DRAW #315  marks=171
+20:29:29.074  DRAW #316  marks=171
+20:29:29.214  STAGES  evt->raw 10.1 ms  raw->ges 0.0 ms  ges->draw 0.8 ms  draw->present 52.5 ms  (refresh 16.7 ms)  pres=9841328427 pred=9841300669 delta=27.8 ms
+20:29:29.872  RAW touch-begin #172  evt->raw 5.0 ms  at 89,512  fingers-down 1
+20:29:29.873  BREAK  . repeated, run=2  (#172)  x=89/360
+20:29:29.873  .  #172  x=89/360
+20:29:29.874  DRAW #317  marks=172
+20:29:29.905  RAW touch-begin #173  evt->raw 28.8 ms  at 261,485  fingers-down 2
+20:29:29.905  o  #173  x=261/360
+20:29:29.915  DRAW #318  marks=173
+20:29:30.104  DRAW #319  marks=173
+20:29:30.136  DRAW #320  marks=173
+20:29:30.275  STAGES  evt->raw 28.8 ms  raw->ges 0.0 ms  ges->draw 10.9 ms  draw->present 97.6 ms  (refresh 16.7 ms)  pres=9842476319 pred=9842411235 delta=65.1 ms
+20:29:30.435  RAW touch-begin #174  evt->raw 9.6 ms  at 99,543  fingers-down 1
+20:29:30.436  .  #174  x=99/360
+20:29:30.438  DRAW #321  marks=174
+20:29:30.475  RAW touch-begin #175  evt->raw 15.3 ms  at 254,503  fingers-down 2
+20:29:30.475  o  #175  x=254/360
+20:29:30.499  DRAW #322  marks=175
+20:29:30.667  DRAW #323  marks=175
+20:29:30.706  DRAW #324  marks=175
+20:29:30.839  STAGES  evt->raw 15.3 ms  raw->ges 0.0 ms  ges->draw 24.8 ms  draw->present 63.1 ms  (refresh 16.7 ms)  pres=9843025199 pred=9842993572 delta=31.6 ms
+20:29:30.969  RAW touch-begin #176  evt->raw 5.9 ms  at 114,276  fingers-down 1
+20:29:30.970  CLEAR  (record wiped by a tap at 114,276; 175 marks dropped, counters kept)
+20:29:30.971  DRAW #325  marks=0
+20:29:31.372  STAGES  evt->raw 5.9 ms  raw->ges 1.2 ms  ges->draw 0.8 ms  draw->present 73.6 ms  (refresh 16.7 ms)  pres=9843507455 pred=9843458249 delta=49.2 ms
+20:29:31.668  RAW touch-begin #177  evt->raw 5.3 ms  at 254,503  fingers-down 1
+20:29:31.668  o  #176  x=254/360
+20:29:31.669  DRAW #326  marks=1
+20:29:31.699  RAW touch-begin #178  evt->raw 2.3 ms  at 93,563  fingers-down 2
+20:29:31.699  .  #177  x=93/360
+20:29:31.729  DRAW #327  marks=2
+20:29:31.899  DRAW #328  marks=2
+20:29:31.930  DRAW #329  marks=2
+20:29:32.070  STAGES  evt->raw 2.3 ms  raw->ges 0.0 ms  ges->draw 30.5 ms  draw->present 47.4 ms  (refresh 16.7 ms)  pres=9844239262 pred=9844224304 delta=15.0 ms
+20:29:32.460  RAW touch-begin #179  evt->raw 5.2 ms  at 261,506  fingers-down 1
+20:29:32.460  o  #178  x=261/360
+20:29:32.462  DRAW #330  marks=3
+20:29:32.490  RAW touch-begin #180  evt->raw 19.2 ms  at 100,547  fingers-down 2
+20:29:32.491  .  #179  x=100/360
+20:29:32.510  DRAW #331  marks=4
+20:29:32.691  DRAW #332  marks=4
+20:29:32.722  DRAW #333  marks=4
+20:29:32.863  STAGES  evt->raw 19.2 ms  raw->ges 0.0 ms  ges->draw 20.5 ms  draw->present 97.2 ms  (refresh 16.7 ms)  pres=9845070984 pred=9845006231 delta=64.8 ms
+20:29:33.477  RAW touch-begin #181  evt->raw 7.8 ms  at 256,521  fingers-down 1
+20:29:33.478  o  #180  x=256/360
+20:29:33.479  RAW touch-begin #182  evt->raw 3.1 ms  at 121,532  fingers-down 2
+20:29:33.480  .  #181  x=121/360
+20:29:33.480  DRAW #334  marks=6
+20:29:33.709  DRAW #335  marks=6
+20:29:33.737  DRAW #336  marks=6
+20:29:33.881  STAGES  evt->raw 3.1 ms  raw->ges 0.0 ms  ges->draw 1.4 ms  draw->present 92.5 ms  (refresh 16.7 ms)  pres=9846035975 pred=9845968137 delta=67.8 ms
+20:29:34.576  RAW touch-begin #183  evt->raw 8.6 ms  at 252,516  fingers-down 1
+20:29:34.576  o  #182  x=252/360
+20:29:34.577  DRAW #337  marks=7
+20:29:34.606  RAW touch-begin #184  evt->raw 22.0 ms  at 128,535  fingers-down 2
+20:29:34.607  .  #183  x=128/360
+20:29:34.623  DRAW #338  marks=8
+20:29:34.807  DRAW #339  marks=8
+20:29:34.838  DRAW #340  marks=8
+20:29:34.978  STAGES  evt->raw 22.0 ms  raw->ges 0.0 ms  ges->draw 17.4 ms  draw->present 97.7 ms  (refresh 16.7 ms)  pres=9847184099 pred=9847119011 delta=65.1 ms
+20:29:35.420  RAW touch-begin #185  evt->raw 4.0 ms  at 121,550  fingers-down 1
+20:29:35.421  BREAK  . repeated, run=2  (#184)  x=121/360
+20:29:35.421  .  #184  x=121/360
+20:29:35.422  RAW touch-begin #186  evt->raw 6.1 ms  at 256,521  fingers-down 2
+20:29:35.423  o  #185  x=256/360
+20:29:35.423  DRAW #341  marks=10
+20:29:35.652  DRAW #342  marks=10
+20:29:35.679  DRAW #343  marks=10
+20:29:35.824  STAGES  evt->raw 6.1 ms  raw->ges 0.0 ms  ges->draw 1.2 ms  draw->present 63.2 ms  (refresh 16.7 ms)  pres=9847949511 pred=9847911056 delta=38.5 ms
+20:29:36.323  RAW touch-begin #187  evt->raw 7.3 ms  at 248,537  fingers-down 1
+20:29:36.343  BREAK  o repeated, run=2  (#186)  x=248/360
+20:29:36.344  o  #186  x=248/360
+20:29:36.345  RAW touch-begin #188  evt->raw 29.4 ms  at 118,552  fingers-down 2
+20:29:36.345  .  #187  x=118/360
+20:29:36.346  DRAW #344  marks=12
+20:29:36.574  DRAW #345  marks=12
+20:29:36.603  DRAW #346  marks=12
+20:29:36.747  STAGES  evt->raw 29.4 ms  raw->ges 0.0 ms  ges->draw 1.6 ms  draw->present 55.5 ms  (refresh 16.7 ms)  pres=9848864554 pred=9848833630 delta=30.9 ms
+20:29:37.146  RAW touch-begin #189  evt->raw 8.2 ms  at 259,531  fingers-down 1
+20:29:37.146  o  #188  x=259/360
+20:29:37.148  DRAW #347  marks=13
+20:29:37.179  RAW touch-begin #190  evt->raw 15.8 ms  at 125,547  fingers-down 2
+20:29:37.179  .  #189  x=125/360
+20:29:37.202  DRAW #348  marks=14
+20:29:37.377  DRAW #349  marks=14
+20:29:37.411  DRAW #350  marks=14
+20:29:37.549  STAGES  evt->raw 15.8 ms  raw->ges 0.0 ms  ges->draw 23.9 ms  draw->present 263.8 ms  (refresh 16.7 ms)  pres=9849929448 pred=9849698249 delta=231.2 ms
+20:29:38.437  RAW touch-begin #191  evt->raw 7.2 ms  at 259,536  fingers-down 1
+20:29:38.437  o  #190  x=259/360
+20:29:38.438  RAW touch-begin #192  evt->raw 3.2 ms  at 123,562  fingers-down 2
+20:29:38.439  .  #191  x=123/360
+20:29:38.439  DRAW #351  marks=16
+20:29:38.668  DRAW #352  marks=16
+20:29:38.694  DRAW #353  marks=16
+20:29:38.840  STAGES  evt->raw 3.2 ms  raw->ges 0.0 ms  ges->draw 1.2 ms  draw->present 58.7 ms  (refresh 16.7 ms)  pres=9850961160 pred=9850927090 delta=34.1 ms
+20:29:39.281  RAW touch-begin #193  evt->raw 4.5 ms  at 264,526  fingers-down 1
+20:29:39.281  o  #192  x=264/360
+20:29:39.282  DRAW #354  marks=17
+20:29:39.309  RAW touch-begin #194  evt->raw 14.4 ms  at 137,571  fingers-down 2
+20:29:39.309  .  #193  x=137/360
+20:29:39.332  DRAW #355  marks=18
+20:29:39.512  DRAW #356  marks=18
+20:29:39.540  DRAW #357  marks=18
+20:29:39.683  STAGES  evt->raw 14.4 ms  raw->ges 0.0 ms  ges->draw 24.0 ms  draw->present 97.9 ms  (refresh 16.7 ms)  pres=9851893263 pred=9851826779 delta=66.5 ms
+20:29:40.345  RAW touch-begin #195  evt->raw 3.8 ms  at 247,539  fingers-down 1
+20:29:40.346  o  #194  x=247/360
+20:29:40.346  DRAW #358  marks=19
+20:29:40.576  DRAW #359  marks=19
+20:29:40.747  STAGES  evt->raw 3.8 ms  raw->ges 1.0 ms  ges->draw 0.7 ms  draw->present 65.9 ms  (refresh 16.7 ms)  pres=9852875333 pred=9852833990 delta=41.3 ms
+20:29:41.087  RAW touch-begin #196  evt->raw 7.2 ms  at 245,538  fingers-down 1
+20:29:41.088  BREAK  o repeated, run=2  (#195)  x=245/360
+20:29:41.088  o  #195  x=245/360
+20:29:41.090  DRAW #360  marks=20
+20:29:41.319  DRAW #361  marks=20
+20:29:41.491  STAGES  evt->raw 7.2 ms  raw->ges 1.3 ms  ges->draw 1.3 ms  draw->present 71.4 ms  (refresh 16.7 ms)  pres=9853624328 pred=9853576863 delta=47.5 ms
+20:29:41.834  RAW touch-begin #197  evt->raw 10.2 ms  at 133,566  fingers-down 1
+20:29:41.835  .  #196  x=133/360
+20:29:41.837  RAW touch-begin #198  evt->raw 5.7 ms  at 252,543  fingers-down 2
+20:29:41.838  o  #197  x=252/360
+20:29:41.839  DRAW #362  marks=22
+20:29:42.066  DRAW #363  marks=22
+20:29:42.089  DRAW #364  marks=22
+20:29:42.240  STAGES  evt->raw 5.7 ms  raw->ges 0.0 ms  ges->draw 2.1 ms  draw->present 104.8 ms  (refresh 16.7 ms)  pres=9854406548 pred=9854326307 delta=80.2 ms
+20:29:42.734  RAW touch-begin #199  evt->raw 6.1 ms  at 259,532  fingers-down 1
+20:29:42.735  BREAK  o repeated, run=2  (#198)  x=259/360
+20:29:42.735  o  #198  x=259/360
+20:29:42.736  DRAW #365  marks=23
+20:29:42.778  RAW touch-begin #200  evt->raw 4.0 ms  at 128,574  fingers-down 2
+20:29:42.779  .  #199  x=128/360
+20:29:42.812  DRAW #366  marks=24
+20:29:42.966  DRAW #367  marks=24
+20:29:43.009  DRAW #368  marks=24
+20:29:43.137  STAGES  evt->raw 4.0 ms  raw->ges 0.0 ms  ges->draw 34.6 ms  draw->present 62.9 ms  (refresh 16.7 ms)  pres=9855338481 pred=9855308246 delta=30.2 ms
+20:29:43.741  RAW touch-begin #201  evt->raw 4.5 ms  at 128,574  fingers-down 1
+20:29:43.741  BREAK  . repeated, run=2  (#200)  x=128/360
+20:29:43.741  .  #200  x=128/360
+20:29:43.742  DRAW #369  marks=25
+20:29:43.770  RAW touch-begin #202  evt->raw 8.2 ms  at 259,541  fingers-down 2
+20:29:43.771  o  #201  x=259/360
+20:29:43.794  DRAW #370  marks=26
+20:29:43.972  DRAW #371  marks=26
+20:29:44.002  DRAW #372  marks=26
+20:29:44.143  STAGES  evt->raw 8.2 ms  raw->ges 0.0 ms  ges->draw 24.2 ms  draw->present 46.1 ms  (refresh 16.7 ms)  pres=9856303541 pred=9856288676 delta=14.9 ms
+20:29:44.624  RAW touch-begin #203  evt->raw 4.3 ms  at 135,571  fingers-down 1
+20:29:44.624  .  #202  x=135/360
+20:29:44.625  DRAW #373  marks=27
+20:29:44.652  RAW touch-begin #204  evt->raw 26.3 ms  at 257,538  fingers-down 2
+20:29:44.652  o  #203  x=257/360
+20:29:44.674  DRAW #374  marks=28
+20:29:44.855  DRAW #375  marks=28
+20:29:44.883  DRAW #376  marks=28
+20:29:45.026  STAGES  evt->raw 26.3 ms  raw->ges 0.0 ms  ges->draw 23.2 ms  draw->present 97.7 ms  (refresh 16.7 ms)  pres=9857235203 pred=9857170067 delta=65.1 ms
+20:29:45.574  RAW touch-begin #205  evt->raw 6.6 ms  at 252,533  fingers-down 1
+20:29:45.575  BREAK  o repeated, run=2  (#204)  x=252/360
+20:29:45.575  o  #204  x=252/360
+20:29:45.576  DRAW #377  marks=29
+20:29:45.607  RAW touch-begin #206  evt->raw 5.4 ms  at 124,567  fingers-down 2
+20:29:45.607  .  #205  x=124/360
+20:29:45.623  DRAW #378  marks=30
+20:29:45.806  DRAW #379  marks=30
+20:29:45.838  DRAW #380  marks=30
+20:29:45.977  STAGES  evt->raw 5.4 ms  raw->ges 0.0 ms  ges->draw 16.8 ms  draw->present 97.4 ms  (refresh 16.7 ms)  pres=9858183583 pred=9858117658 delta=65.9 ms
+20:29:46.843  RAW touch-begin #207  evt->raw 5.2 ms  at 128,578  fingers-down 1
+20:29:46.871  BREAK  . repeated, run=2  (#206)  x=128/360
+20:29:46.871  .  #206  x=128/360
+20:29:46.872  RAW touch-begin #208  evt->raw 25.3 ms  at 251,544  fingers-down 2
+20:29:46.873  o  #207  x=251/360
+20:29:46.873  DRAW #381  marks=32
+20:29:47.102  DRAW #382  marks=32
+20:29:47.129  DRAW #383  marks=32
+20:29:47.274  STAGES  evt->raw 25.3 ms  raw->ges 0.0 ms  ges->draw 0.9 ms  draw->present 294.5 ms  (refresh 16.7 ms)  pres=9859630684 pred=9859360818 delta=269.9 ms
+20:29:58.854  RAW touch-begin #209  evt->raw 7.2 ms  at 146,294  fingers-down 1
+20:29:58.855  CLEAR  (record wiped by a tap at 146,294; 32 marks dropped, counters kept)
+20:29:58.856  DRAW #384  marks=0
+20:29:59.257  STAGES  evt->raw 7.2 ms  raw->ges 0.9 ms  ges->draw 0.8 ms  draw->present 72.3 ms  (refresh 16.7 ms)  pres=9871391157 pred=9871343269 delta=47.9 ms
+20:30:01.225  RAW touch-begin #210  evt->raw 4.7 ms  at 101,574  fingers-down 1
+20:30:01.226  .  #208  x=101/360
+20:30:01.229  DRAW #385  marks=1
+20:30:01.381  RAW touch-begin #211  evt->raw 5.1 ms  at 102,574  fingers-down 1
+20:30:01.382  BREAK  . repeated, run=2  (#209)  x=102/360
+20:30:01.382  .  #209  x=102/360
+20:30:01.383  DRAW #386  marks=2
+20:30:01.472  DRAW #387  marks=2
+20:30:01.532  RAW touch-begin #212  evt->raw 4.1 ms  at 111,576  fingers-down 1
+20:30:01.534  BREAK  . repeated, run=3  (#210)  x=111/360
+20:30:01.534  .  #210  x=111/360
+20:30:01.535  DRAW #388  marks=3
+20:30:01.626  DRAW #389  marks=3
+20:30:01.649  STAGES  evt->raw 4.1 ms  raw->ges 2.1 ms  ges->draw 1.2 ms  draw->present 88.2 ms  (refresh 16.7 ms)  pres=9874086671 pred=9874026746 delta=59.9 ms
+20:30:01.689  RAW touch-begin #213  evt->raw 3.5 ms  at 117,579  fingers-down 1
+20:30:01.689  BREAK  . repeated, run=4  (#211)  x=117/360
+20:30:01.690  .  #211  x=117/360
+20:30:01.691  DRAW #390  marks=4
+20:30:01.777  DRAW #391  marks=4
+20:30:01.797  STAGES  evt->raw 3.5 ms  raw->ges 1.4 ms  ges->draw 0.7 ms  draw->present 50.1 ms  (refresh 16.7 ms)  pres=9874203734 pred=9874180329 delta=23.4 ms
+20:30:01.825  RAW touch-begin #214  evt->raw 4.7 ms  at 150,589  fingers-down 1
+20:30:01.825  BREAK  . repeated, run=5  (#212)  x=150/360
+20:30:01.826  .  #212  x=150/360
+20:30:01.826  DRAW #392  marks=5
+20:30:01.927  DRAW #393  marks=5
+20:30:01.953  STAGES  evt->raw 4.7 ms  raw->ges 1.1 ms  ges->draw 0.7 ms  draw->present 80.1 ms  (refresh 16.7 ms)  pres=9874369626 pred=9874311718 delta=57.9 ms
+20:30:02.056  DRAW #394  marks=5
+20:30:03.031  RAW touch-begin #215  evt->raw 5.6 ms  at 224,282  fingers-down 1
+20:30:03.032  CLEAR  (record wiped by a tap at 224,282; 5 marks dropped, counters kept)
+20:30:03.033  DRAW #395  marks=0
+20:30:03.435  STAGES  evt->raw 5.6 ms  raw->ges 1.5 ms  ges->draw 1.4 ms  draw->present 54.7 ms  (refresh 16.7 ms)  pres=9875551252 pred=9875520464 delta=30.8 ms
+20:30:06.274  RAW touch-begin #216  evt->raw 5.4 ms  at 266,586  fingers-down 1
+20:30:06.274  o  #213  x=266/360
+20:30:06.275  DRAW #396  marks=1
+20:30:06.337  RAW touch-begin #217  evt->raw 2.1 ms  at 99,576  fingers-down 2
+20:30:06.338  .  #214  x=99/360
+20:30:06.339  DRAW #397  marks=2
+20:30:06.500  RAW touch-begin #218  evt->raw 4.4 ms  at 275,595  fingers-down 1
+20:30:06.500  o  #215  x=275/360
+20:30:06.501  DRAW #398  marks=3
+20:30:06.535  DRAW #399  marks=3
+20:30:06.560  RAW touch-begin #219  evt->raw 13.9 ms  at 100,581  fingers-down 1
+20:30:06.561  .  #216  x=100/360
+20:30:06.568  DRAW #400  marks=4
+20:30:06.619  DRAW #401  marks=4
+20:30:06.642  RAW touch-begin #220  evt->raw 14.0 ms  at 267,599  fingers-down 1
+20:30:06.643  o  #217  x=267/360
+20:30:06.653  DRAW #402  marks=5
+20:30:06.676  STAGES  evt->raw 14.0 ms  raw->ges 0.7 ms  ges->draw 10.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:06.703  RAW touch-begin #221  evt->raw 2.1 ms  at 96,583  fingers-down 1
+20:30:06.704  .  #218  x=96/360
+20:30:06.720  DRAW #403  marks=6
+20:30:06.740  STAGES  evt->raw 2.1 ms  raw->ges 0.5 ms  ges->draw 16.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:06.752  DRAW #404  marks=6
+20:30:06.800  DRAW #405  marks=6
+20:30:06.831  RAW touch-begin #222  evt->raw 29.8 ms  at 278,590  fingers-down 1
+20:30:06.831  o  #219  x=278/360
+20:30:06.852  DRAW #406  marks=7
+20:30:06.874  RAW touch-begin #223  evt->raw 23.2 ms  at 96,583  fingers-down 1
+20:30:06.875  .  #220  x=96/360
+20:30:06.885  DRAW #407  marks=8
+20:30:06.908  STAGES  evt->raw 23.2 ms  raw->ges 0.7 ms  ges->draw 10.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:06.936  DRAW #408  marks=8
+20:30:06.963  RAW touch-begin #224  evt->raw 2.8 ms  at 279,574  fingers-down 1
+20:30:06.963  o  #221  x=279/360
+20:30:06.964  DRAW #409  marks=9
+20:30:06.986  STAGES  evt->raw 2.8 ms  raw->ges 0.8 ms  ges->draw 0.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:07.020  RAW touch-begin #225  evt->raw 2.4 ms  at 92,574  fingers-down 1
+20:30:07.020  .  #222  x=92/360
+20:30:07.021  DRAW #410  marks=10
+20:30:07.054  STAGES  evt->raw 2.4 ms  raw->ges 0.7 ms  ges->draw 0.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:07.068  DRAW #411  marks=10
+20:30:07.118  DRAW #412  marks=10
+20:30:07.141  RAW touch-begin #226  evt->raw 22.8 ms  at 279,556  fingers-down 1
+20:30:07.142  o  #223  x=279/360
+20:30:07.168  DRAW #413  marks=11
+20:30:07.191  RAW touch-begin #227  evt->raw 14.1 ms  at 94,563  fingers-down 1
+20:30:07.192  .  #224  x=94/360
+20:30:07.201  DRAW #414  marks=12
+20:30:07.251  DRAW #415  marks=12
+20:30:07.269  STAGES  evt->raw 14.1 ms  raw->ges 0.6 ms  ges->draw 9.8 ms  draw->present 63.1 ms  (refresh 16.7 ms)  pres=9879727583 pred=9879696884 delta=30.7 ms
+20:30:07.286  RAW touch-begin #228  evt->raw 2.2 ms  at 266,559  fingers-down 1
+20:30:07.287  o  #225  x=266/360
+20:30:07.287  DRAW #416  marks=13
+20:30:07.346  RAW touch-begin #229  evt->raw 2.7 ms  at 87,555  fingers-down 1
+20:30:07.346  .  #226  x=87/360
+20:30:07.347  DRAW #417  marks=14
+20:30:07.371  STAGES  evt->raw 2.7 ms  raw->ges 0.8 ms  ges->draw 0.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:07.385  DRAW #418  marks=14
+20:30:07.433  DRAW #419  marks=14
+20:30:07.463  RAW touch-begin #230  evt->raw 2.2 ms  at 265,545  fingers-down 1
+20:30:07.464  o  #227  x=265/360
+20:30:07.467  DRAW #420  marks=15
+20:30:07.517  DRAW #421  marks=15
+20:30:07.539  RAW touch-begin #231  evt->raw 5.7 ms  at 83,552  fingers-down 1
+20:30:07.539  .  #228  x=83/360
+20:30:07.570  STAGES  evt->raw 2.2 ms  raw->ges 0.7 ms  ges->draw 3.7 ms  draw->present 46.5 ms  (refresh 16.7 ms)  pres=9879977121 pred=9879963276 delta=13.8 ms
+20:30:07.583  DRAW #422  marks=16
+20:30:07.604  STAGES  evt->raw 5.7 ms  raw->ges 0.6 ms  ges->draw 44.4 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:07.629  RAW touch-begin #232  evt->raw 2.8 ms  at 271,534  fingers-down 1
+20:30:07.630  o  #229  x=271/360
+20:30:07.633  DRAW #423  marks=17
+20:30:07.688  STAGES  evt->raw 2.8 ms  raw->ges 1.0 ms  ges->draw 3.8 ms  draw->present 65.3 ms  (refresh 16.7 ms)  pres=9880161901 pred=9880128882 delta=33.0 ms
+20:30:07.701  DRAW #424  marks=17
+20:30:07.727  RAW touch-begin #233  evt->raw 27.6 ms  at 84,549  fingers-down 1
+20:30:07.727  .  #230  x=84/360
+20:30:07.750  DRAW #425  marks=18
+20:30:07.782  DRAW #426  marks=18
+20:30:07.807  RAW touch-begin #234  evt->raw 6.3 ms  at 275,526  fingers-down 1
+20:30:07.808  o  #231  x=275/360
+20:30:07.833  DRAW #427  marks=19
+20:30:07.861  RAW touch-begin #235  evt->raw 1.6 ms  at 86,541  fingers-down 1
+20:30:07.861  .  #232  x=86/360
+20:30:07.866  DRAW #428  marks=20
+20:30:07.887  STAGES  evt->raw 1.6 ms  raw->ges 0.7 ms  ges->draw 4.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:07.958  DRAW #429  marks=20
+20:30:07.980  RAW touch-begin #236  evt->raw 4.3 ms  at 280,517  fingers-down 1
+20:30:07.981  o  #233  x=280/360
+20:30:07.981  DRAW #430  marks=21
+20:30:08.008  STAGES  evt->raw 4.3 ms  raw->ges 0.7 ms  ges->draw 0.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.020  RAW touch-begin #237  evt->raw 4.6 ms  at 89,537  fingers-down 1
+20:30:08.020  .  #234  x=89/360
+20:30:08.034  DRAW #431  marks=22
+20:30:08.056  STAGES  evt->raw 4.6 ms  raw->ges 0.5 ms  ges->draw 14.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.067  DRAW #432  marks=22
+20:30:08.116  DRAW #433  marks=22
+20:30:08.139  RAW touch-begin #238  evt->raw 23.6 ms  at 287,523  fingers-down 1
+20:30:08.139  o  #235  x=287/360
+20:30:08.150  DRAW #434  marks=23
+20:30:08.172  STAGES  evt->raw 23.6 ms  raw->ges 0.6 ms  ges->draw 10.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.185  RAW touch-begin #239  evt->raw 2.7 ms  at 83,532  fingers-down 1
+20:30:08.185  .  #236  x=83/360
+20:30:08.200  DRAW #435  marks=24
+20:30:08.234  STAGES  evt->raw 2.7 ms  raw->ges 0.8 ms  ges->draw 14.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.250  DRAW #436  marks=24
+20:30:08.281  RAW touch-begin #240  evt->raw 4.2 ms  at 286,525  fingers-down 1
+20:30:08.282  o  #237  x=286/360
+20:30:08.285  DRAW #437  marks=25
+20:30:08.351  RAW touch-begin #241  evt->raw 1.6 ms  at 81,537  fingers-down 1
+20:30:08.351  .  #238  x=81/360
+20:30:08.351  DRAW #438  marks=26
+20:30:08.382  STAGES  evt->raw 1.6 ms  raw->ges 0.5 ms  ges->draw 0.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.398  DRAW #439  marks=26
+20:30:08.431  DRAW #440  marks=26
+20:30:08.461  RAW touch-begin #242  evt->raw 2.4 ms  at 274,528  fingers-down 1
+20:30:08.461  o  #239  x=274/360
+20:30:08.466  DRAW #441  marks=27
+20:30:08.515  DRAW #442  marks=27
+20:30:08.535  RAW touch-begin #243  evt->raw 10.0 ms  at 74,528  fingers-down 1
+20:30:08.536  .  #240  x=74/360
+20:30:08.551  STAGES  evt->raw 2.4 ms  raw->ges 0.9 ms  ges->draw 4.7 ms  draw->present 63.0 ms  (refresh 16.7 ms)  pres=9880992090 pred=9880960401 delta=31.7 ms
+20:30:08.564  DRAW #443  marks=28
+20:30:08.601  STAGES  evt->raw 10.0 ms  raw->ges 1.0 ms  ges->draw 28.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:08.610  RAW touch-begin #244  evt->raw 2.1 ms  at 263,529  fingers-down 1
+20:30:08.610  o  #241  x=263/360
+20:30:08.615  DRAW #444  marks=29
+20:30:08.686  STAGES  evt->raw 2.1 ms  raw->ges 0.5 ms  ges->draw 4.5 ms  draw->present 47.2 ms  (refresh 16.7 ms)  pres=9881125234 pred=9881110235 delta=15.0 ms
+20:30:08.696  RAW touch-begin #245  evt->raw 4.7 ms  at 80,531  fingers-down 1
+20:30:08.696  .  #242  x=80/360
+20:30:08.699  DRAW #445  marks=30
+20:30:08.752  STAGES  evt->raw 4.7 ms  raw->ges 1.0 ms  ges->draw 3.0 ms  draw->present 47.7 ms  (refresh 16.7 ms)  pres=9881210252 pred=9881191898 delta=18.4 ms
+20:30:08.766  DRAW #446  marks=30
+20:30:08.788  RAW touch-begin #246  evt->raw 6.8 ms  at 263,528  fingers-down 1
+20:30:08.789  o  #243  x=263/360
+20:30:08.815  DRAW #447  marks=31
+20:30:08.850  DRAW #448  marks=31
+20:30:08.879  STAGES  evt->raw 6.8 ms  raw->ges 1.1 ms  ges->draw 26.8 ms  draw->present 49.1 ms  (refresh 16.7 ms)  pres=9881327853 pred=9881308786 delta=19.1 ms
+20:30:08.880  RAW touch-begin #247  evt->raw 16.0 ms  at 78,536  fingers-down 1
+20:30:08.880  .  #244  x=78/360
+20:30:08.899  DRAW #449  marks=32
+20:30:08.931  DRAW #450  marks=32
+20:30:08.965  STAGES  evt->raw 16.0 ms  raw->ges 0.4 ms  ges->draw 18.3 ms  draw->present 46.3 ms  (refresh 16.7 ms)  pres=9881408058 pred=9881394223 delta=13.8 ms
+20:30:08.976  RAW touch-begin #248  evt->raw 2.0 ms  at 263,531  fingers-down 1
+20:30:08.976  o  #245  x=263/360
+20:30:08.981  DRAW #451  marks=33
+20:30:09.016  STAGES  evt->raw 2.0 ms  raw->ges 0.5 ms  ges->draw 4.9 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:09.031  DRAW #452  marks=33
+20:30:09.052  RAW touch-begin #249  evt->raw 21.9 ms  at 85,534  fingers-down 1
+20:30:09.052  .  #246  x=85/360
+20:30:09.064  DRAW #453  marks=34
+20:30:09.101  STAGES  evt->raw 21.9 ms  raw->ges 0.6 ms  ges->draw 11.9 ms  draw->present 48.6 ms  (refresh 16.7 ms)  pres=9881576137 pred=9881558851 delta=17.3 ms
+20:30:09.114  DRAW #454  marks=34
+20:30:09.143  RAW touch-begin #250  evt->raw 2.3 ms  at 263,540  fingers-down 1
+20:30:09.143  o  #247  x=263/360
+20:30:09.144  DRAW #455  marks=35
+20:30:09.216  DRAW #456  marks=35
+20:30:09.241  RAW touch-begin #251  evt->raw 27.9 ms  at 81,537  fingers-down 1
+20:30:09.242  .  #248  x=81/360
+20:30:09.242  STAGES  evt->raw 2.3 ms  raw->ges 0.8 ms  ges->draw 0.5 ms  draw->present 51.1 ms  (refresh 16.7 ms)  pres=9881657666 pred=9881629568 delta=28.1 ms
+20:30:09.263  DRAW #457  marks=36
+20:30:09.300  STAGES  evt->raw 27.9 ms  raw->ges 0.9 ms  ges->draw 21.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:09.314  DRAW #458  marks=36
+20:30:09.338  RAW touch-begin #252  evt->raw 25.1 ms  at 264,538  fingers-down 1
+20:30:09.339  o  #249  x=264/360
+20:30:09.348  DRAW #459  marks=37
+20:30:09.382  RAW touch-begin #253  evt->raw 2.0 ms  at 80,537  fingers-down 1
+20:30:09.383  .  #250  x=80/360
+20:30:09.383  STAGES  evt->raw 25.1 ms  raw->ges 0.6 ms  ges->draw 9.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:09.398  DRAW #460  marks=38
+20:30:09.466  STAGES  evt->raw 2.0 ms  raw->ges 0.6 ms  ges->draw 15.4 ms  draw->present 46.2 ms  (refresh 16.7 ms)  pres=9881907214 pred=9881892524 delta=14.7 ms
+20:30:09.472  DRAW #461  marks=38
+20:30:09.496  RAW touch-begin #254  evt->raw 16.1 ms  at 265,533  fingers-down 1
+20:30:09.497  o  #251  x=265/360
+20:30:09.530  DRAW #462  marks=39
+20:30:09.558  STAGES  evt->raw 16.1 ms  raw->ges 0.7 ms  ges->draw 33.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:09.559  RAW touch-begin #255  evt->raw 11.8 ms  at 83,538  fingers-down 1
+20:30:09.559  .  #252  x=83/360
+20:30:09.563  DRAW #463  marks=40
+20:30:09.614  DRAW #464  marks=40
+20:30:09.649  RAW touch-begin #256  evt->raw 2.6 ms  at 277,535  fingers-down 1
+20:30:09.649  o  #253  x=277/360
+20:30:09.664  STAGES  evt->raw 11.8 ms  raw->ges 0.6 ms  ges->draw 3.7 ms  draw->present 64.2 ms  (refresh 16.7 ms)  pres=9882090287 pred=9882057590 delta=32.7 ms
+20:30:09.664  DRAW #465  marks=41
+20:30:09.715  RAW touch-begin #257  evt->raw 3.0 ms  at 84,540  fingers-down 1
+20:30:09.715  .  #254  x=84/360
+20:30:09.730  DRAW #466  marks=42
+20:30:09.749  STAGES  evt->raw 3.0 ms  raw->ges 0.6 ms  ges->draw 14.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:09.795  DRAW #467  marks=42
+20:30:09.825  RAW touch-begin #258  evt->raw 2.9 ms  at 274,537  fingers-down 1
+20:30:09.826  o  #255  x=274/360
+20:30:09.827  DRAW #468  marks=43
+20:30:09.891  RAW touch-begin #259  evt->raw 2.1 ms  at 93,541  fingers-down 1
+20:30:09.892  .  #256  x=93/360
+20:30:09.896  DRAW #469  marks=44
+20:30:09.931  STAGES  evt->raw 2.1 ms  raw->ges 0.5 ms  ges->draw 4.9 ms  draw->present 48.7 ms  (refresh 16.7 ms)  pres=9882408240 pred=9882389904 delta=18.3 ms
+20:30:09.946  DRAW #470  marks=44
+20:30:09.999  RAW touch-begin #260  evt->raw 3.0 ms  at 270,543  fingers-down 1
+20:30:10.000  o  #257  x=270/360
+20:30:10.000  DRAW #471  marks=45
+20:30:10.065  STAGES  evt->raw 3.0 ms  raw->ges 0.8 ms  ges->draw 0.5 ms  draw->present 62.4 ms  (refresh 16.7 ms)  pres=9882525664 pred=9882481488 delta=44.2 ms
+20:30:10.066  DRAW #472  marks=45
+20:30:10.093  RAW touch-begin #261  evt->raw 20.4 ms  at 85,536  fingers-down 1
+20:30:10.093  .  #258  x=85/360
+20:30:10.113  DRAW #473  marks=46
+20:30:10.139  STAGES  evt->raw 20.4 ms  raw->ges 0.7 ms  ges->draw 20.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:10.147  DRAW #474  marks=46
+20:30:10.174  RAW touch-begin #262  evt->raw 2.6 ms  at 270,549  fingers-down 1
+20:30:10.174  o  #259  x=270/360
+20:30:10.196  DRAW #475  marks=47
+20:30:10.227  STAGES  evt->raw 2.6 ms  raw->ges 0.8 ms  ges->draw 22.3 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:10.247  DRAW #476  marks=47
+20:30:10.266  RAW touch-begin #263  evt->raw 20.8 ms  at 88,540  fingers-down 1
+20:30:10.267  .  #260  x=88/360
+20:30:10.296  DRAW #477  marks=48
+20:30:10.318  STAGES  evt->raw 20.8 ms  raw->ges 0.9 ms  ges->draw 30.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:10.329  DRAW #478  marks=48
+20:30:10.351  RAW touch-begin #264  evt->raw 5.6 ms  at 274,548  fingers-down 1
+20:30:10.351  o  #261  x=274/360
+20:30:10.363  DRAW #479  marks=49
+20:30:10.401  STAGES  evt->raw 5.6 ms  raw->ges 0.7 ms  ges->draw 11.9 ms  draw->present 48.2 ms  (refresh 16.7 ms)  pres=9882874423 pred=9882857644 delta=16.8 ms
+20:30:10.413  DRAW #480  marks=49
+20:30:10.436  RAW touch-begin #265  evt->raw 13.5 ms  at 87,542  fingers-down 1
+20:30:10.436  .  #262  x=87/360
+20:30:10.463  DRAW #481  marks=50
+20:30:10.513  RAW touch-begin #266  evt->raw 2.1 ms  at 275,545  fingers-down 1
+20:30:10.514  o  #263  x=275/360
+20:30:10.514  STAGES  evt->raw 13.5 ms  raw->ges 1.0 ms  ges->draw 26.3 ms  draw->present 47.0 ms  (refresh 16.7 ms)  pres=9882972849 pred=9882958160 delta=14.7 ms
+20:30:10.514  DRAW #482  marks=51
+20:30:10.591  RAW touch-begin #267  evt->raw 2.4 ms  at 87,541  fingers-down 1
+20:30:10.591  .  #264  x=87/360
+20:30:10.598  STAGES  evt->raw 2.1 ms  raw->ges 0.6 ms  ges->draw 0.8 ms  draw->present 61.2 ms  (refresh 16.7 ms)  pres=9883038677 pred=9883006181 delta=32.5 ms
+20:30:10.599  DRAW #483  marks=52
+20:30:10.667  DRAW #484  marks=52
+20:30:10.698  STAGES  evt->raw 2.4 ms  raw->ges 0.9 ms  ges->draw 7.8 ms  draw->present 43.2 ms  (refresh 16.7 ms)  pres=9883105187 pred=9883088675 delta=16.5 ms
+20:30:10.748  DRAW #485  marks=52
+20:30:10.771  RAW touch-begin #268  evt->raw 9.9 ms  at 93,546  fingers-down 1
+20:30:10.772  BREAK  . repeated, run=2  (#265)  x=93/360
+20:30:10.772  .  #265  x=93/360
+20:30:10.828  DRAW #486  marks=53
+20:30:10.864  STAGES  evt->raw 9.9 ms  raw->ges 1.2 ms  ges->draw 55.8 ms  draw->present 48.7 ms  (refresh 16.7 ms)  pres=9883339593 pred=9883323150 delta=16.4 ms
+20:30:10.942  RAW touch-begin #269  evt->raw 5.2 ms  at 93,546  fingers-down 1
+20:30:10.943  BREAK  . repeated, run=3  (#266)  x=93/360
+20:30:10.943  .  #266  x=93/360
+20:30:10.944  DRAW #487  marks=54
+20:30:11.000  STAGES  evt->raw 5.2 ms  raw->ges 1.1 ms  ges->draw 1.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:11.011  DRAW #488  marks=54
+20:30:11.124  RAW touch-begin #270  evt->raw 4.0 ms  at 94,548  fingers-down 1
+20:30:11.125  BREAK  . repeated, run=4  (#267)  x=94/360
+20:30:11.125  .  #267  x=94/360
+20:30:11.126  DRAW #489  marks=55
+20:30:11.177  DRAW #490  marks=55
+20:30:11.229  STAGES  evt->raw 4.0 ms  raw->ges 1.1 ms  ges->draw 0.8 ms  draw->present 65.2 ms  (refresh 16.7 ms)  pres=9883654116 pred=9883621018 delta=33.1 ms
+20:30:11.309  RAW touch-begin #271  evt->raw 5.5 ms  at 91,547  fingers-down 1
+20:30:11.310  BREAK  . repeated, run=5  (#268)  x=91/360
+20:30:11.310  .  #268  x=91/360
+20:30:11.311  DRAW #491  marks=56
+20:30:11.345  STAGES  evt->raw 5.5 ms  raw->ges 1.9 ms  ges->draw 0.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:11.376  DRAW #492  marks=56
+20:30:11.399  RAW touch-begin #272  evt->raw 5.5 ms  at 256,548  fingers-down 1
+20:30:11.399  o  #269  x=256/360
+20:30:11.410  DRAW #493  marks=57
+20:30:11.478  RAW touch-begin #273  evt->raw 1.9 ms  at 88,550  fingers-down 1
+20:30:11.478  .  #270  x=88/360
+20:30:11.493  DRAW #494  marks=58
+20:30:11.527  STAGES  evt->raw 1.9 ms  raw->ges 0.7 ms  ges->draw 14.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:11.543  DRAW #495  marks=58
+20:30:11.571  RAW touch-begin #274  evt->raw 2.7 ms  at 253,547  fingers-down 1
+20:30:11.571  o  #271  x=253/360
+20:30:11.580  DRAW #496  marks=59
+20:30:11.630  DRAW #497  marks=59
+20:30:11.655  RAW touch-begin #275  evt->raw 2.6 ms  at 81,551  fingers-down 1
+20:30:11.655  .  #272  x=81/360
+20:30:11.665  DRAW #498  marks=60
+20:30:11.712  STAGES  evt->raw 2.6 ms  raw->ges 0.6 ms  ges->draw 9.8 ms  draw->present 43.9 ms  (refresh 16.7 ms)  pres=9884171870 pred=9884145665 delta=26.2 ms
+20:30:11.713  DRAW #499  marks=60
+20:30:11.802  DRAW #500  marks=60
+20:30:11.838  RAW touch-begin #276  evt->raw 3.2 ms  at 70,545  fingers-down 1
+20:30:11.839  BREAK  . repeated, run=2  (#273)  x=70/360
+20:30:11.839  .  #273  x=70/360
+20:30:11.840  DRAW #501  marks=61
+20:30:11.892  DRAW #502  marks=61
+20:30:11.914  STAGES  evt->raw 3.2 ms  raw->ges 0.9 ms  ges->draw 0.7 ms  draw->present 67.1 ms  (refresh 16.7 ms)  pres=9884369917 pred=9884319798 delta=50.1 ms
+20:30:12.041  RAW touch-begin #277  evt->raw 6.1 ms  at 56,541  fingers-down 1
+20:30:12.042  BREAK  . repeated, run=3  (#274)  x=56/360
+20:30:12.042  .  #274  x=56/360
+20:30:12.043  DRAW #503  marks=62
+20:30:12.078  STAGES  evt->raw 6.1 ms  raw->ges 1.2 ms  ges->draw 1.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:12.110  DRAW #504  marks=62
+20:30:12.224  RAW touch-begin #278  evt->raw 6.4 ms  at 71,548  fingers-down 1
+20:30:12.224  BREAK  . repeated, run=4  (#275)  x=71/360
+20:30:12.225  .  #275  x=71/360
+20:30:12.225  DRAW #505  marks=63
+20:30:12.259  STAGES  evt->raw 6.4 ms  raw->ges 1.3 ms  ges->draw 0.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:12.275  DRAW #506  marks=63
+20:30:12.406  RAW touch-begin #279  evt->raw 4.4 ms  at 91,557  fingers-down 1
+20:30:12.406  BREAK  . repeated, run=5  (#276)  x=91/360
+20:30:12.406  .  #276  x=91/360
+20:30:12.407  DRAW #507  marks=64
+20:30:12.445  STAGES  evt->raw 4.4 ms  raw->ges 1.1 ms  ges->draw 1.0 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:12.475  DRAW #508  marks=64
+20:30:12.588  RAW touch-begin #280  evt->raw 4.1 ms  at 99,552  fingers-down 1
+20:30:12.589  BREAK  . repeated, run=6  (#277)  x=99/360
+20:30:12.589  .  #277  x=99/360
+20:30:12.590  DRAW #509  marks=65
+20:30:12.628  STAGES  evt->raw 4.1 ms  raw->ges 1.1 ms  ges->draw 0.7 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:12.653  RAW touch-begin #281  evt->raw 2.0 ms  at 291,544  fingers-down 1
+20:30:12.654  o  #278  x=291/360
+20:30:12.658  DRAW #510  marks=66
+20:30:12.809  STAGES  evt->raw 2.0 ms  raw->ges 0.7 ms  ges->draw 4.4 ms  draw->present 46.8 ms  (refresh 16.7 ms)  pres=9885167904 pred=9885152362 delta=15.5 ms
+20:30:12.820  DRAW #511  marks=66
+20:30:12.884  DRAW #512  marks=66
+20:30:13.121  RAW touch-begin #282  evt->raw 4.8 ms  at 117,510  fingers-down 1
+20:30:13.122  .  #279  x=117/360
+20:30:13.122  DRAW #513  marks=67
+20:30:13.160  RAW touch-begin #283  evt->raw 10.1 ms  at 279,543  fingers-down 1
+20:30:13.161  o  #280  x=279/360
+20:30:13.191  DRAW #514  marks=68
+20:30:13.268  RAW touch-begin #284  evt->raw 3.1 ms  at 109,529  fingers-down 2
+20:30:13.269  .  #281  x=109/360
+20:30:13.269  DRAW #515  marks=69
+20:30:13.358  DRAW #516  marks=69
+20:30:13.391  DRAW #517  marks=69
+20:30:13.422  RAW touch-begin #285  evt->raw 6.0 ms  at 276,562  fingers-down 1
+20:30:13.423  o  #282  x=276/360
+20:30:13.451  RAW touch-begin #286  evt->raw 2.1 ms  at 97,542  fingers-down 2
+20:30:13.451  .  #283  x=97/360
+20:30:13.455  DRAW #518  marks=71
+20:30:13.507  DRAW #519  marks=71
+20:30:13.526  STAGES  evt->raw 2.1 ms  raw->ges 0.0 ms  ges->draw 4.5 ms  draw->present 47.7 ms  (refresh 16.7 ms)  pres=9885966217 pred=9885951204 delta=15.0 ms
+20:30:13.577  RAW touch-begin #287  evt->raw 5.1 ms  at 271,564  fingers-down 1
+20:30:13.578  o  #284  x=271/360
+20:30:13.579  DRAW #520  marks=72
+20:30:13.598  STAGES  evt->raw 5.1 ms  raw->ges 1.0 ms  ges->draw 0.5 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:13.651  RAW touch-begin #288  evt->raw 2.0 ms  at 104,556  fingers-down 1
+20:30:13.651  .  #285  x=104/360
+20:30:13.652  DRAW #521  marks=73
+20:30:13.681  STAGES  evt->raw 2.0 ms  raw->ges 0.6 ms  ges->draw 0.6 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:13.723  DRAW #522  marks=73
+20:30:13.749  RAW touch-begin #289  evt->raw 9.8 ms  at 283,542  fingers-down 1
+20:30:13.749  o  #286  x=283/360
+20:30:13.772  DRAW #523  marks=74
+20:30:13.823  DRAW #524  marks=74
+20:30:13.857  STAGES  evt->raw 9.8 ms  raw->ges 0.9 ms  ges->draw 22.4 ms  draw->present 47.1 ms  (refresh 16.7 ms)  pres=9886282195 pred=9886266417 delta=15.8 ms
+20:30:13.882  DRAW #525  marks=74
+20:30:13.907  RAW touch-begin #290  evt->raw 2.8 ms  at 126,405  fingers-down 1
+20:30:13.907  MARK #1  (operator felt a lost tap)
+20:30:13.908  DRAW #526  marks=75
+20:30:13.979  STAGES  evt->raw 2.8 ms  raw->ges 0.7 ms  ges->draw 0.7 ms  draw->present 62.4 ms  (refresh 16.7 ms)  pres=9886433697 pred=9886398554 delta=35.1 ms
+20:30:13.980  DRAW #527  marks=75
+20:30:14.176  RAW touch-begin #291  evt->raw 5.0 ms  at 123,524  fingers-down 1
+20:30:14.177  .  #287  x=123/360
+20:30:14.178  DRAW #528  marks=76
+20:30:14.240  RAW touch-begin #292  evt->raw 2.5 ms  at 295,533  fingers-down 1
+20:30:14.240  o  #288  x=295/360
+20:30:14.255  DRAW #529  marks=77
+20:30:14.305  DRAW #530  marks=77
+20:30:14.327  STAGES  evt->raw 2.5 ms  raw->ges 0.8 ms  ges->draw 14.7 ms  draw->present 48.5 ms  (refresh 16.7 ms)  pres=9886766414 pred=9886734096 delta=32.3 ms
+20:30:14.349  RAW touch-begin #293  evt->raw 2.7 ms  at 110,537  fingers-down 1
+20:30:14.349  .  #289  x=110/360
+20:30:14.355  DRAW #531  marks=78
+20:30:14.421  DRAW #532  marks=78
+20:30:14.442  RAW touch-begin #294  evt->raw 6.3 ms  at 283,555  fingers-down 1
+20:30:14.457  o  #290  x=283/360
+20:30:14.470  DRAW #533  marks=79
+20:30:14.503  DRAW #534  marks=79
+20:30:14.534  RAW touch-begin #295  evt->raw 21.1 ms  at 104,540  fingers-down 1
+20:30:14.535  .  #291  x=104/360
+20:30:14.554  DRAW #535  marks=80
+20:30:14.579  STAGES  evt->raw 21.1 ms  raw->ges 0.7 ms  ges->draw 19.3 ms  draw->present 37.7 ms  (refresh 16.7 ms)  pres=9887054896 pred=9887048613 delta=6.3 ms
+20:30:14.590  DRAW #536  marks=80
+20:30:14.616  RAW touch-begin #296  evt->raw 3.4 ms  at 275,558  fingers-down 1
+20:30:14.616  o  #292  x=275/360
+20:30:14.620  DRAW #537  marks=81
+20:30:14.656  STAGES  evt->raw 3.4 ms  raw->ges 0.8 ms  ges->draw 4.4 ms  draw->present 47.8 ms  (refresh 16.7 ms)  pres=9887131416 pred=9887116164 delta=15.3 ms
+20:30:14.690  RAW touch-begin #297  evt->raw 4.1 ms  at 101,547  fingers-down 1
+20:30:14.691  .  #293  x=101/360
+20:30:14.692  DRAW #538  marks=82
+20:30:14.756  STAGES  evt->raw 4.1 ms  raw->ges 1.0 ms  ges->draw 0.7 ms  draw->present 43.4 ms  (refresh 16.7 ms)  pres=9887198171 pred=9887180181 delta=18.0 ms
+20:30:14.774  DRAW #539  marks=82
+20:30:14.803  RAW touch-begin #298  evt->raw 24.0 ms  at 275,558  fingers-down 1
+20:30:14.804  o  #294  x=275/360
+20:30:14.819  DRAW #540  marks=83
+20:30:14.854  DRAW #541  marks=83
+20:30:14.884  STAGES  evt->raw 24.0 ms  raw->ges 0.9 ms  ges->draw 15.3 ms  draw->present 49.8 ms  (refresh 16.7 ms)  pres=9887331941 pred=9887313340 delta=18.6 ms
+20:30:14.885  RAW touch-begin #299  evt->raw 14.5 ms  at 102,548  fingers-down 1
+20:30:14.885  .  #295  x=102/360
+20:30:14.904  DRAW #542  marks=84
+20:30:14.936  DRAW #543  marks=84
+20:30:14.958  STAGES  evt->raw 14.5 ms  raw->ges 0.4 ms  ges->draw 19.7 ms  draw->present 48.0 ms  (refresh 16.7 ms)  pres=9887415597 pred=9887398334 delta=17.3 ms
+20:30:14.974  RAW touch-begin #300  evt->raw 4.6 ms  at 269,558  fingers-down 1
+20:30:14.974  o  #296  x=269/360
+20:30:14.975  DRAW #544  marks=85
+20:30:15.022  STAGES  evt->raw 4.6 ms  raw->ges 0.8 ms  ges->draw 0.5 ms  draw->present 44.7 ms  (refresh 16.7 ms)  pres=9887482622 pred=9887465310 delta=17.3 ms
+20:30:15.031  RAW touch-begin #301  evt->raw 2.8 ms  at 96,555  fingers-down 1
+20:30:15.031  .  #297  x=96/360
+20:30:15.032  DRAW #545  marks=86
+20:30:15.069  DRAW #546  marks=86
+20:30:15.092  STAGES  evt->raw 2.8 ms  raw->ges 0.5 ms  ges->draw 0.3 ms  draw->present 54.1 ms  (refresh 16.7 ms)  pres=9887548649 pred=9887515954 delta=32.7 ms
+20:30:15.118  DRAW #547  marks=86
+20:30:15.154  RAW touch-begin #302  evt->raw 2.7 ms  at 261,566  fingers-down 1
+20:30:15.154  o  #298  x=261/360
+20:30:15.155  DRAW #548  marks=87
+20:30:15.205  DRAW #549  marks=87
+20:30:15.228  STAGES  evt->raw 2.7 ms  raw->ges 0.5 ms  ges->draw 0.4 ms  draw->present 44.3 ms  (refresh 16.7 ms)  pres=9887661918 pred=9887635672 delta=26.2 ms
+20:30:15.229  RAW touch-begin #303  evt->raw 12.1 ms  at 98,569  fingers-down 1
+20:30:15.230  .  #299  x=98/360
+20:30:15.267  DRAW #550  marks=88
+20:30:15.306  STAGES  evt->raw 12.1 ms  raw->ges 0.7 ms  ges->draw 37.9 ms  draw->present 48.3 ms  (refresh 16.7 ms)  pres=9887778961 pred=9887762976 delta=16.0 ms
+20:30:15.357  RAW touch-begin #304  evt->raw 5.8 ms  at 259,574  fingers-down 1
+20:30:15.358  o  #300  x=259/360
+20:30:15.359  DRAW #551  marks=89
+20:30:15.385  RAW touch-begin #305  evt->raw 17.0 ms  at 93,582  fingers-down 2
+20:30:15.386  .  #301  x=93/360
+20:30:15.387  STAGES  evt->raw 5.8 ms  raw->ges 1.3 ms  ges->draw 0.8 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:15.418  DRAW #552  marks=90
+20:30:15.449  STAGES  evt->raw 17.0 ms  raw->ges 0.0 ms  ges->draw 33.2 ms  draw->present n/a  (refresh n/a)  pres=0 pred=0 delta=0.0 ms
+20:30:15.467  DRAW #553  marks=90
+20:30:15.589  DRAW #554  marks=90
+20:30:15.617  DRAW #555  marks=90

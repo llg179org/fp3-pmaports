@@ -79,6 +79,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `episode-watch.sh` | Catch the episode |
 | `fp3-charge-guard.service` | [Unit] |
 | `fp3-night-ladder.service` | [Unit] |
+| `fp3-taptest.py` | A touch target that cannot move, and a log of what a client got - run it WITH kernel-contacts.py or it is blind |
 | `freq-probe.sh` | Does stopping the modem stack pin the little cluster at a high OPP? |
 | `gptattr.py` | Read (and optionally set) the Qualcomm A/B boot-control attribute bits that |
 | `host-sleep-census.sh` | Sleep census read entirely from the HOST, touching nothing on the phone |
@@ -90,6 +91,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `idle-suspend-window.sh` | DOES THE PHONE SUSPEND ON ITS OWN, AND WHAT DOES IT COST WHEN IT DOES? |
 | `ims-state.py` | Read the modem's IMS registration and service status - bind and read on ONE qrtr client, which qmicli cannot do |
 | `ipa-handshake-probe.sh` | Did our IPA driver ever complete its handshake with the modem? |
+| `kernel-contacts.py` | Count what the KERNEL delivered off evdev, to diff against what fp3-taptest got |
 | `kmsg-tap.sh` | kmsg-tap.sh OUTFILE - stream the device's kernel log to a file ON THE HOST |
 | `ladder-summary.py` | Summarise a night-ladder run: how much the pack actually gave up over the whole |
 | `learn-cycle.sh` | One discharge span wide enough for the gauge to learn the pack from, and a |

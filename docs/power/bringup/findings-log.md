@@ -10902,3 +10902,25 @@ Stage medians reproduce across two runs with different tap patterns:
 **`draw->present` 49.3 / 48.8 ms**. The input path costs about 10 ms and the
 display about 49 ms — three refresh intervals — and that is the only
 unexplained thing left.
+
+### ★ A whole side drops out for half a second, below the app's view
+
+Operator report: tapping both sides alternately, only one appeared. The log
+shows it and rules out the client. Every raw touch on the halves became a tap
+across the whole run (175/175, 32/32, 5/5, 89/89) — but between 20:30:10.771 and
+20:30:11.310 there are four consecutive LEFT taps ~180 ms apart and **not one
+raw event for the right side**, which worked immediately before and after. A
+side went silent for ~0.6 s and recovered on its own.
+
+GTK, the gesture recogniser and the compositor's delivery are excluded because
+raw equals tap throughout. What remains is the panel, the driver, or libinput —
+where the app is blind by construction. ☠️ `kernel-contacts.py` (new, reads
+contacts straight off evdev with the kernel's timestamp) was armed at 20:32:41,
+**after** this window, so this occurrence cannot be attributed. Both loggers now
+run together.
+
+`fp3-taptest.py`'s docstring now carries the run procedure, the
+`kernel-contacts.py` dependency, and the counting rules — each of which cost a
+wrong conclusion today: a BREAK is not a loss, raw touches in the record area
+are not losses, `SYN_DROPPED` invalidates later counts, and a zero
+`draw->present` must not be averaged or compared against the prediction.

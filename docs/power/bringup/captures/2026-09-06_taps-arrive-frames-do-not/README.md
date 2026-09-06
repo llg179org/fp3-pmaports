@@ -633,3 +633,32 @@ would have quietly cost something:
   suddenly shortens and cannot tell a deliberate wipe from a fault — and this
   page has already produced two false alarms from analysis scripts reading the
   log too literally.
+
+## ★ A whole side drops out for half a second, below the app's view
+
+The operator reported tapping both sides alternately while only one appeared in
+the record. The log of that run (`taptest-run11-one-side-dropout.log`) shows it
+precisely, and it is **not** a loss inside the client:
+
+- Across the run, every raw touch on the halves became a tap — 175/175, 32/32,
+  5/5 and 89/89 in the four segments the operator's CLEAR taps cut it into.
+  **Zero lost.**
+- The last segment holds both sides, 49 `.` and 40 `o`, and its first forty taps
+  alternate perfectly.
+- But between **20:30:10.771 and 20:30:11.310** there are four consecutive left
+  taps at `x = 93, 93, 94, 91`, `y ≈ 547`, about 180 ms apart — and in that
+  half second **not one raw event for the right side arrives at all**. The right
+  side worked immediately before (`x ≈ 274`) and resumed immediately after
+  (`x = 256`).
+
+So a side went silent for ~0.6 s and came back on its own. The client received
+everything it was given; GTK, the gesture recogniser and the compositor's
+delivery are all already excluded because raw touches equal taps throughout.
+**What is left is the panel, the driver, or libinput — and the app is blind
+there by construction.**
+
+☠️ **This is exactly the case the app cannot resolve alone**, and it is why
+`kernel-contacts.py` exists: with no raw event, "the finger did not land" and
+"the panel or driver never reported it" produce identical logs. The kernel-side
+reader was armed at 20:32:41, *after* this window, so **this occurrence has no
+kernel-side evidence and cannot be attributed.** The next one will.

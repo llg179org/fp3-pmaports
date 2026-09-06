@@ -27,6 +27,61 @@ early rounds were lost.
 side of the compositor; the touch driver's own log is the kernel side. A tap in
 one and not the other says which layer lost it - the question no earlier
 instrument here could answer.
+
+HOW TO RUN IT
+=============
+On the device, as a unit so it survives the ssh session that started it:
+
+    systemd-run --unit=fp3-taptest --collect --uid=10000 \
+      --setenv=XDG_RUNTIME_DIR=/run/user/10000 \
+      --setenv=WAYLAND_DISPLAY=wayland-0 --setenv=GDK_BACKEND=wayland \
+      --setenv=HOME=/home/fp3 /usr/bin/python3 /tmp/fp3-taptest.py
+
+☠️ Launched with `setsid ... &` over ssh it dies when the session closes - it
+did, after drawing its first frame, and the log looked like a crash.
+
+☠️ RUN kernel-contacts.py AT THE SAME TIME. This app is BLIND on its own.
+--------------------------------------------------------------------------
+It only sees what the compositor hands it, so a touch that never arrives leaves
+NOTHING in its log - and "the finger did not land" and "the panel or the driver
+never reported it" are then indistinguishable. The second is the fault this
+port exists to find. So:
+
+    systemd-run --unit=fp3-kcontacts --collect /usr/bin/python3 \
+        /tmp/kernel-contacts.py /dev/input/event4 /var/log/kernel-contacts.log
+
+That logs the start of every contact straight off evdev, with the kernel's own
+timestamp. A second reader is safe: evdev gives each open file its own ring.
+
+HOW TO READ THE TWO LOGS TOGETHER
+=================================
+Line up `CONTACT` (kernel) against `RAW touch-begin` (this app) by timestamp;
+they should pair within a few ms. Then:
+
+  kernel CONTACT, no RAW      -> lost between evdev and the client
+                                 (libinput or phoc). THE INTERESTING CASE.
+  RAW, no tap                 -> lost in GTK. Measured 2026-09-06: 18 of 560,
+                                 every one with a second finger already down,
+                                 which is why taps now come from the raw touch
+                                 and GestureClick is only a control.
+  no CONTACT and no RAW       -> nothing reached the input layer at all. Either
+                                 the finger really did not land, or the panel /
+                                 driver dropped it before evdev - and only the
+                                 i2c and interrupt evidence separates those.
+
+Counting rules that have each cost a wrong conclusion here:
+
+  * Compare `raw` and `gest` in the header. A gap between them IS lost taps.
+    A BREAK is NOT: it only says the alternation broke, which a deliberate
+    double-tap on one side does too.
+  * Exclude raw touches with y < 4/8 of the height. That area is the record and
+    is not a target, and counting them as losses was a false positive once.
+  * `SYN_DROPPED` in the kernel log means that reader fell behind and its
+    counts after it are incomplete. The ring is 1024 events here, about 70
+    one-finger taps.
+  * A `draw->present` sample of 0 has no presentation time; do not average it
+    in, and do not compare it against the prediction - 0 == 0 read as agreement
+    once and nearly retracted a good measurement.
 """
 import gi
 gi.require_version("Gtk", "4.0")
