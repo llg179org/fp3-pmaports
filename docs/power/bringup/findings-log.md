@@ -10756,3 +10756,32 @@ point, the newest symbol is drawn large and highlighted — and ★ **a square t
 changes colour on every paint**, so "is the screen updating at all" is now
 answerable *without touching anything*. It cycles on existing paints and
 schedules none, so it does not perturb what it measures.
+
+### ☠️☠️ Reverted the same evening: the Hungarian config breaks every data bearer
+
+Bearer bring-up on the new config fails for **every** APN — `ims` and
+`internet.vodafone.net` alike — with the modem's own
+`verbose call end reason (2,235): invalid-profile-id`. The control, same script
+and same test with only the active config changed: `Vodafone_Hungary_Commercial`
+fails both, `ROW_Commercial` connects both. **`ROW_Commercial` is active again
+and the phone has data.** The Hungarian MBN is not usable on this device as
+things stand.
+
+☠️ B→A, not A→B→A, and a carrier-config activation also rewrites the modem's APN
+profile set — so the config and the profile table it writes are not separated by
+this measurement. Two hypotheses were tested and refuted first: a stale
+ModemManager cache (restart changed nothing) and a full profile store (14
+duplicates deleted, four profiles left, identical error). That deletion was a
+persistent modem write spent on a hypothesis that failed; the pre-deletion list
+is kept in the capture.
+
+Consequence for the VoLTE work: the config was meant to be the one changed
+variable under the `imsd` `500` of 2026-09-05, and it removes the data bearer
+that test needs. On `ROW_Commercial` the conditions are exactly 2026-09-05's, so
+re-running `imsd` would only reproduce the `500` and was not spent.
+
+☠️ Method: the A-B script hung 40 minutes on an unbounded `qmicli`, and a second
+bug (an apostrophe inside `${var#...}` in a double-quoted ash string) made the
+file unparseable — the script's own log was empty and only `journalctl` had the
+reason. Bound every call in an unattended script, and `sh -n` it **on the
+device** first.

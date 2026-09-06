@@ -223,3 +223,75 @@ the field only means something while registered. `ims-state.py` now prints the
 enum names for exactly this reason — it used to print a bare `0`, and before
 today it printed nothing at all for the registration status, because the GI
 binding returns the enum directly and the tool unpacked it as a tuple.
+
+## ☠️☠️ The Hungarian config breaks every data bearer. Reverted.
+
+Trying to re-run the `imsd` registration on the new config found that the IMS
+PDN would not come up at all:
+
+```
+couldn't connect the bearer: …MobileEquipment.Unknown:
+  Call failed: internal error: invalid-profile-id
+```
+
+and ModemManager's log shows the refusal comes from the **modem**, not from MM:
+`verbose call end reason (2,235): [internal] invalid-profile-id`.
+
+It is not IMS-specific — `internet.vodafone.net` fails identically — so the
+phone had **no data path at all**.
+
+### The control
+
+Same script, same bearer test, only the active config changed:
+
+| config | `internet.vodafone.net` | `ims` |
+|---|---|---|
+| `Vodafone_Hungary_Commercial` | **fails** `invalid-profile-id` | **fails** `invalid-profile-id` |
+| `ROW_Commercial` (reverted) | **connects** | **connects** |
+
+`ROW_Commercial` (`5CF9CADA5C358517BA3BB888D0342B79BD5FADED`) is active again and
+the phone has data. **The Hungarian MBN is not usable on this device as things
+stand.**
+
+☠️ **This is B→A, not A→B→A.** The return leg is missing, and two other things
+changed between the legs: ModemManager was restarted, and 14 duplicate profiles
+were deleted (below). Neither fixed it while the Hungarian config was active —
+that is what makes the config the causal agent rather than them — but activating
+a carrier config also rewrites the modem's APN profile set, so **"the config" and
+"the profile table it wrote" are not separated by this measurement.**
+
+### Two hypotheses tested and refuted on the way
+
+- **A stale ModemManager profile cache.** Restarting ModemManager changed
+  nothing; the identical error returned.
+- **A full profile store.** The list had grown to 18 profiles at ids 4–22 —
+  repeating `internet` / `mms` / `ims` triples, one triple per carrier-config
+  activation, with the last triple **truncated at 22** and no `ims` after it,
+  which looked exactly like a store that had run out. 14 duplicates were deleted
+  (`--wds-delete-profile=3gpp,N`, ids 9–22, keeping `qdp_profile_ia` at 4 and one
+  triple at 6–8) and **the error was unchanged with four profiles left**.
+  ☠️ That deletion was a persistent write to the modem made for a hypothesis
+  that then failed; the pre-deletion list is kept here as
+  `profiles-before-deletion.txt`. Requesting `ip-type=ipv4v6` to match the
+  existing profiles instead of creating a new one was also tried, and also
+  failed.
+
+### ☠️ An unattended script must not be able to hang
+
+The A-B script wrapped none of its `mmcli`/`qmicli` calls in `timeout` and hung
+for **40 minutes** on a `qmicli --pdc-list-configs` that never returned, then
+again on the next call after that one was killed. `leg-a.sh` beside this page is
+the corrected shape: every call bounded. A second bug in the same script —
+an apostrophe inside `${var#...}` in a double-quoted string — made ash reject
+the whole file, and because the failure was a *parse* error the script's own log
+was empty and only `journalctl` had the reason. **Syntax-check a deployed script
+on the device (`sh -n`) before running it unattended.**
+
+### What this does to the VoLTE work
+
+The point of loading the Hungarian config was to change one variable under the
+`imsd` registration that failed with a `500` on 2026-09-05. That test could not
+be run: the config that was supposed to be the new variable removes the data
+bearer the test needs. On `ROW_Commercial` the `ims` bearer connects again — but
+that is the 2026-09-05 configuration exactly, so re-running `imsd` there would
+only reproduce the `500`, and it was not spent.
