@@ -2672,3 +2672,14 @@ so that `after:` and `continues:` references still resolve.
       lane: phone
       when: the operator uses the phone for a normal session on r81
       why: ☠️ ANSWERED 2026-09-05 EVENING, AND NEGATIVELY. Three touch faults in fifteen minutes of ordinary use on r82, with the supply fix in place and both rails consumed: a 3-minute -5 wedge needing a driver rebind (9 s after an incoming call ended), then -110/-6 at 18:23:54 (15 s after the next call was signalled) and again at 18:25:23 (70 s later, on LTE, no call). The mechanism the fix addressed is real and measured - l6 fell to zero voters before it and keeps one after - but it was NOT the whole cause of #142. Trigger is also sharper than the documented one: screen ON, phone in use, an incoming CS call for two of the three. Full write-up: captures/2026-09-05_call-wedges-the-touchscreen/
+
+- [x] **157.** #142 FALLBACK, only if the supply fix fails: size the i2c-qup transfer timeout from the transfer, and add a retry to himax_hx83112b  — closed 2026-09-05 17:08
+      continues: 142
+      lane: phone
+      why: ☠️ LAST RESORT BY THE OPERATOR DECISION 2026-09-04 — fix the cause, not the 15 seconds. Do NOT start this while the supply task is open or unmeasured. Both are real defects and both are upstreamable on their own: i2c-qup computes xfer_timeout ONCE at probe from MX_DMA_TX_RX_LEN (128 KB) and hands the same 14.976 s to a 4-byte touch read, where the downstream i2c-msm-v2 on this same hardware computes it per transfer and gives 0.504 s
+      and himax_hx83112b retries nowhere, where the vendor driver retries every read and write 5x (HIMAX_REG_RETRY_TIMES) and ak7375 on this very phone was already fixed the same way (media: i2c: ak7375: retry the first transfer of a resume, same -110 signature). They remove the user-visible symptom without explaining it, which is why they are second
+      after: 175
+      prio: 10
+
+- [x] **180.** build and flash r85 (_commit=9c2d03f147c8): the IRQ_NONE fix, then REMOVE the fp3-touch-guard band-aid from the phone --why ☠️ BLOCKED TONIGHT ON GITHUB, not on us: pmb checksum got 'wget: server returned error: HTTP/1.1 429 Too Many Requests' after four ~250 MB kernel tarballs today. The commit IS on the fork (push output + git ls-remote show 9c2d03f147c8); retry the checksum when the limit clears. ☠️ The band-aid /usr/local/bin/fp3-touch-guard + fp3-touch-guard.service rebinds the touchscreen when the kernel disables its IRQ, bounded to 6/hour. It papers over exactly what c59812386d99 fixes, so disable and remove it in the same session that flashes r85: systemctl disable --now fp3-touch-guard.service; rm /etc/systemd/system/fp3-touch-guard.service /usr/local/bin/fp3-touch-guard --lane phone  — closed 2026-09-05 22:49
+      until: GitHub stops 429-ing the archive endpoint - retry ./pmb checksum linux-fp3 and look for 'Fetching' followed by 429 in work/log.txt. Try 2026-09-06 morning
