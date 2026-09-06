@@ -686,3 +686,68 @@ The register decode printed on timeout currently reports only `QUP_I2C_STATUS`.
 Adding `QUP_STATE`, `QUP_OPERATIONAL` and `QUP_ERROR_FLAGS` to that same line
 would separate the two directly, costs one `dev_err_ratelimited` argument list,
 and needs no new tooling — the fault already reaches that code path every time.
+
+## 13. r87 answers the fork: the master is waiting, the slave holds the clock
+
+Section 12 ended with two states that fit `SDA 1 SCL 0` and need opposite fixes.
+r87 (`wip/7.1.3/touch` `4d297f80e718` ≡ `debug-int/7.1.3` `0347772e8544`, same
+patch-id) adds `QUP_STATE`, `QUP_OPERATIONAL` and `QUP_ERROR_FLAGS` to the line
+the fault already prints, and the first event after the deploy answered it:
+
+```
+Sep 06 09:36:30.873297  i2c_qup 78b7000.i2c: transfer to 0x48 timed out,
+  bus active, master is us, SDA 1 SCL 0
+  (I2C_STATUS 0x0411a700 STATE 0x0000001d OPER 0x00000010 ERR 0x00000000)
+Sep 06 09:36:30.874330  i2c_qup 78b7000.i2c: bus cleared after 1 attempt(s)
+```
+
+Decoded against the driver's own defines, not from memory:
+
+| register | value | meaning |
+|---|---|---|
+| `QUP_STATE` | `0x1d` | bits[1:0] = 1 = `QUP_RUN_STATE`; `BIT(2)` `QUP_STATE_VALID` set; `BIT(4)` `QUP_I2C_MAST_GEN` set |
+| `QUP_ERROR_FLAGS` | `0x00` | no error bit of any kind |
+| `QUP_OPERATIONAL` | `0x10` | `BIT(4)` `QUP_OUT_NOT_EMPTY` — the output FIFO still holds bytes that were never shifted out |
+
+**The master is running, valid, error-free, and has data it cannot send.** That
+is a master waiting on the bus, not one that has stopped. The himax at 0x48 is
+holding SCL low for more than two seconds, and the QUP is behaving correctly
+throughout.
+
+Consequences, and they point in a different direction than the previous two
+sections did:
+
+- the bus-clear is treating the right side after all: pulsing SCL is exactly
+  what frees a stuck slave, and since r86 it is accepted on the first attempt;
+- ☠️ **the driver's timeout and its retry are the only reason this is survivable,
+  and they are mitigation.** The fault is on the far side of the bus;
+- nothing in the master's configuration is a suspect any more: no error flags
+  means no arbitration loss, no NACK, no overrun.
+
+### The observation that changes the picture most
+
+This fault landed **38 seconds after boot with one touch interrupt in the whole
+boot** (`/proc/interrupts`, located by name — the bus number moved from i2c-4 to
+i2c-2 across this reboot, which is why nothing here is allowed to hardcode it).
+
+So **the fault does not need a finger.** Every earlier capture came during heavy
+use and that framed it as a use-related fault; it is not. The common factor is
+the driver talking to a controller that is not ready to answer, and the
+mainline read path offers it nothing:
+
+```c
+static int himax_read_events(struct himax_ts_data *ts, ...)
+{
+	return regmap_raw_read(ts->regmap, HIMAX_AHB_ADDR_EVENT_STACK, ...);
+}
+```
+
+A plain register read. No wake, no handshake, no readiness check — where
+downstream Himax drivers conventionally have all three.
+
+☠️ **What this section does not establish** is *why* the controller is not
+ready: a low-power state the driver never wakes it from, its own initialisation
+after a panel power transition (panel and touch are both HX83112B and share
+`iovcc` on `pm8953_l6`), and a crashed controller all fit equally well so far.
+Distinguishing them is the next question, and it is a question about the himax
+side, not about i2c-qup.
