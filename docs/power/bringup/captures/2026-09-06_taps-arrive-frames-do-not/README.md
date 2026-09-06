@@ -491,3 +491,49 @@ being on the screen, on a phone whose whole input path costs under 5 ms.
 ☠️ **What causes those three frames is still unknown** — compositor pipeline
 depth, the DRM page-flip path and the panel's own latency are all untested. What
 has changed is that the number is now trustworthy enough to be worth explaining.
+
+## ★★★ The fix works: 704 touches on the halves, 704 taps, zero lost
+
+The build that takes its taps from the raw touch instead of `GestureClick`:
+
+| | before (run 8) | after (run 9) |
+|---|---:|---:|
+| raw touches on the two halves | 542 | **704** |
+| taps produced | 542 | **704** |
+| **lost** | **18** | **0** |
+| of those, two fingers down | 18 — every one lost | **16 — none lost** |
+
+Sixteen touches landed with a second finger still down and **all sixteen became
+taps**. That closes the loop: the losses were `GestureClick`'s single-sequence
+arbitration and nothing else.
+
+☠️ **My own analysis had a false positive first.** Ten raw touches had no tap
+after them and were counted as losses; they were at `y = 60…337`, in the
+**record area**, which `_handle_tap` deliberately ignores. The correct count
+excludes anything above `MARK_TOP`, and then it is zero. An analysis script gets
+no more benefit of the doubt than the instrument it reads.
+
+### The 29 BREAKs in this run are not losses either
+
+They come in runs: ten consecutive `.` between 20:05:45.2 and 20:05:46.7, then
+nineteen between 20:05:50.3 and 20:05:54.1, all at `x ≈ 71–94`, evenly spaced
+about 200 ms apart. That is the operator tapping one side on purpose. The app
+logs a BREAK whenever the alternation fails, deliberate or not — and since raw
+touches and taps are equal at 704 on the halves, **every one of those taps had
+its own raw touch**. A BREAK means "the alternation broke", never "a tap was
+lost"; only the raw-versus-tap gap means that, which is why both counters are on
+screen.
+
+### The stage numbers reproduce across two independent runs
+
+| stage | run 8 median | run 9 median | run 9 p90 |
+|---|---:|---:|---:|
+| `evt->raw` | 3.1 ms | 2.9 ms | 15.5 |
+| `raw->ges` | 0.5 ms | 0.7 ms | 1.1 |
+| `ges->draw` | 5.0 ms | 6.9 ms | 24.6 |
+| **`draw->present`** | **49.3 ms** | **48.8 ms** | 65.7 |
+
+Half a millisecond apart on the number that matters, from separate runs with
+different tap patterns. **The input path costs about 10 ms and the display costs
+about 49 ms — three refresh intervals — and that is now the only unexplained
+thing left on this page.**

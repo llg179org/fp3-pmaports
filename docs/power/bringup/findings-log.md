@@ -10878,3 +10878,27 @@ it is in GTK, not the kernel.
 **`draw->present` median 49.3 ms, p10 44.3, p90 67.9, refresh 16.7 ms** — about
 three refresh intervals, on a phone whose whole input path costs under 5 ms. ☠️
 What causes those three frames is untested.
+
+### ★★★ The fix works: 704 touches, 704 taps, zero lost
+
+Taking taps from the raw touch instead of `GestureClick`: 704 raw touches on the
+two halves produced 704 taps, **none lost** — including sixteen that landed with
+a second finger still down, every one of which had been lost before. The losses
+were `GestureClick`'s single-sequence arbitration and nothing else.
+
+The 29 BREAKs in that run are not losses: they are runs of ten and nineteen
+consecutive same-side taps about 200 ms apart, i.e. the operator tapping one
+side deliberately, and raw touches equal taps at 704 so each had its own touch.
+**A BREAK means the alternation broke, never that a tap was lost** — only the
+raw-vs-tap gap means that, which is why both counters are now on screen.
+
+☠️ My analysis script had a false positive first: ten raw touches with no tap
+were counted as losses and were at y = 60–337, in the record area the app
+deliberately ignores. An analysis script gets no more benefit of the doubt than
+the instrument it reads.
+
+Stage medians reproduce across two runs with different tap patterns:
+`evt->raw` 3.1 / 2.9 ms, `raw->ges` 0.5 / 0.7, `ges->draw` 5.0 / 6.9,
+**`draw->present` 49.3 / 48.8 ms**. The input path costs about 10 ms and the
+display about 49 ms — three refresh intervals — and that is the only
+unexplained thing left.
