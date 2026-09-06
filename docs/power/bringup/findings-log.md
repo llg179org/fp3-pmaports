@@ -10964,8 +10964,13 @@ manager's hint is therefore `false`. `IdleAction` fires on the manager's hint, s
 a login does not merely disturb the measurement — **it makes suspend impossible
 for as long as it is connected.**
 
-The `~/.fp3-measure.lock` was set and then *shown refusing* the next login. ☠️
-Not yet established: that the phone actually suspends. Until
-`suspend_stats/success` is non-zero, the record says only that it was told to.
+The `~/.fp3-measure.lock` was set and then *shown refusing* the next login.
+
+Left alone for 7 minutes past the 5-minute timer, **the phone stopped answering
+ssh** — one of the task's two criteria for step 3. ☠️ The other,
+`suspend_stats/success` climbing, cannot be read without logging in, which is
+what the night must not have; and **a dead USB gadget link looks identical from
+here** — common enough on this device to have its own watchdog. So "the phone
+suspended" may not be claimed on this evidence, and the morning read settles it.
 
 Capture: [`captures/2026-09-06_181-idle-suspend-night/`](captures/2026-09-06_181-idle-suspend-night/)

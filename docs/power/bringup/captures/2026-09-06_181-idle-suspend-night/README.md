@@ -93,10 +93,26 @@ has.
 
 ## What is left, and what may not be claimed
 
-- ☠️ **Step 3 is not finished.** "Confirm it actually suspends" needs the phone
-  left alone past the 5-minute timer and then one probe; that probe was started
-  and its result is not in this page. **Until `suspend_stats/success` is
-  non-zero, nothing here says the phone slept** — only that it was told to.
+- ☠️ **Step 3 is HALF done, and the half that is missing is the one that
+  proves it.** Left alone for 7 minutes past the 5-minute timer, the phone
+  stopped answering ssh:
+
+  ```
+  ssh: connect to host 172.16.42.1 port 22: Connection timed out
+  fp3-ssh: giving up after 3 attempts
+  ```
+
+  That is consistent with suspend and it is **one** of the task's two criteria.
+  The other — `suspend_stats/success` climbing — cannot be read without logging
+  in, and logging in is what the night must not have. So it stays unread until
+  morning.
+
+  ☠️ **An alternative explanation is not excluded: a dead USB gadget link looks
+  exactly the same from here.** That failure is common enough on this device to
+  have its own watchdog (`fp3-usbnet-watchdog`). If that is what happened, the
+  night measures nothing and it will not be visible until morning. Checking
+  would destroy the thing being measured, so the right move is to leave it — but
+  "the phone suspended" may NOT be claimed on this evidence.
 - Steps 4 and 5 belong to the operator: leave it untouched, then place **one**
   incoming call in the morning and report whether it rang and how long it took.
 - ☠️ This consumes the night that #158 also wants. #181 was chosen because the
