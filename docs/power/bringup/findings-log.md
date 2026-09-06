@@ -10739,3 +10739,20 @@ light off the panel**, and the only instrument tried against it is confounded.
 and looked broken. It was not — the operator was tapping every 0.28 s and the
 probe wanted isolated taps. Checking the log before rewriting the tool cost
 thirty seconds.
+
+### And the likeliest explanation is the instrument's own blindness
+
+Reading the draw function after the refutation: a tap on a half changed the
+header count and **one 16 px character at the end of a block of ~167 identical
+`.o.o.o` glyphs**, and nothing else — the halves drew a static `.` and `o` with
+**no press feedback at all**, while MARK flashed the whole bar yellow for
+350 ms. That predicts the operator's report exactly ("the character appeared
+when I pressed MARK") with no display fault whatsoever. Not established either
+way, but a mechanism needing nothing unusual now outranks one needing frames to
+vanish.
+
+`fp3-taptest.py` fixed: the touched half flashes 200 ms, a disc marks the touch
+point, the newest symbol is drawn large and highlighted — and ★ **a square that
+changes colour on every paint**, so "is the screen updating at all" is now
+answerable *without touching anything*. It cycles on existing paints and
+schedules none, so it does not perturb what it measures.

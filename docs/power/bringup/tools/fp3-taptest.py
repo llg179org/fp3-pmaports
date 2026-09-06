@@ -58,6 +58,16 @@ class TapTest(Gtk.ApplicationWindow):
         self.started = False
         self.n_draw = 0
         self.mark_flash_until = 0.0
+        # ☠️ The halves had NO feedback of their own: a tap changed one 16 px
+        # character at the end of a dense block of identical .o.o.o and nothing
+        # else, so a press that registered perfectly looked like one that had
+        # not. On 2026-09-06 that alone produced the report "the character only
+        # appeared when I pressed MARK" - MARK flashes, the halves did not.
+        # Measured in the same run: press to draw is 1.0 ms median. The app was
+        # never late; it was invisible.
+        self.half_flash_until = 0.0
+        self.half_flash_side = None
+        self.tap_xy = None
         self.log = open(LOG, "a", buffering=1)
         self._log("== taptest start %s" % time.strftime("%F %H:%M:%S"))
 
@@ -125,6 +135,10 @@ class TapTest(Gtk.ApplicationWindow):
                       % (self._stamp(), self.n_mark))
         else:
             sym = "." if x < w / 2 else "o"
+            self.half_flash_until = time.time() + 0.20
+            self.half_flash_side = sym
+            self.tap_xy = (x, y)
+            GLib.timeout_add(230, self._unflash)
             if sym == ".":
                 self.n_dot += 1
             else:
@@ -177,15 +191,30 @@ class TapTest(Gtk.ApplicationWindow):
             cr.set_source_rgb(0.40, 0.27, 0.27)
         cr.rectangle(0, mark_y, w, half_y - mark_y)
         cr.fill()
-        cr.set_source_rgb(0.13, 0.27, 0.20)   # left half
+        flash = time.time() < self.half_flash_until
+        if flash and self.half_flash_side == ".":
+            cr.set_source_rgb(0.35, 0.85, 0.55)   # left half, just pressed
+        else:
+            cr.set_source_rgb(0.13, 0.27, 0.20)
         cr.rectangle(0, half_y, w / 2, h - half_y)
         cr.fill()
-        cr.set_source_rgb(0.13, 0.20, 0.27)   # right half
+        if flash and self.half_flash_side == "o":
+            cr.set_source_rgb(0.40, 0.70, 0.95)   # right half, just pressed
+        else:
+            cr.set_source_rgb(0.13, 0.20, 0.27)
         cr.rectangle(w / 2, half_y, w - w / 2, h - half_y)
         cr.fill()
         cr.set_source_rgb(1, 1, 1)            # the single vertical divider
         cr.rectangle(w / 2 - 1, half_y, 2, h - half_y)
         cr.fill()
+
+        # Where the finger actually landed, for the whole flash. A tap that
+        # registered on the wrong side of the divider is then visible as such
+        # instead of being read as a lost tap.
+        if flash and self.tap_xy:
+            cr.set_source_rgb(1, 1, 1)
+            cr.arc(self.tap_xy[0], self.tap_xy[1], 14, 0, 6.2832)
+            cr.fill()
 
         cr.select_font_face("monospace")
         cr.set_source_rgb(1, 1, 1)
@@ -210,6 +239,24 @@ class TapTest(Gtk.ApplicationWindow):
                 cr.show_text(line)
             return
 
+        # ★ The newest symbol, big, in its own place. One tap now changes
+        # something the size of a thumb instead of one 16 px glyph buried in a
+        # block of 167 identical ones.
+        if self.marks:
+            cr.set_source_rgb(0.95, 0.85, 0.30)
+            cr.set_font_size(mark_y * 0.30)
+            cr.move_to(w - mark_y * 0.30, mark_y - 12)
+            cr.show_text(self.marks[-1])
+
+        # A tick that changes colour on EVERY paint. If the screen stops
+        # updating, this stops changing - so "did a frame reach the panel"
+        # becomes visible without tapping anything. It does not FORCE a paint,
+        # so it cannot alter the scanout behaviour under test.
+        cr.set_source_rgb(*[(0.9, 0.2, 0.2), (0.2, 0.9, 0.2), (0.2, 0.4, 0.95),
+                            (0.9, 0.9, 0.2)][self.n_draw % 4])
+        cr.rectangle(w - 26, 8, 18, 18)
+        cr.fill()
+
         cr.set_source_rgb(0.55, 0.9, 0.85)
         cr.set_font_size(17)
         cr.move_to(10, 26)
@@ -225,9 +272,17 @@ class TapTest(Gtk.ApplicationWindow):
         rows = int((mark_y - 40) / (size + 4))
         text = "".join(self.marks)
         lines = [text[i:i + per_line] for i in range(0, len(text), per_line)]
-        for i, line in enumerate(lines[-rows:]):
+        shown = lines[-rows:]
+        for i, line in enumerate(shown):
             cr.move_to(10, 48 + i * (size + 4))
-            cr.show_text(line)
+            if i == len(shown) - 1 and line:
+                cr.set_source_rgb(0.93, 0.93, 0.93)
+                cr.show_text(line[:-1])
+                cr.set_source_rgb(0.95, 0.85, 0.30)   # the newest one
+                cr.show_text(line[-1])
+            else:
+                cr.set_source_rgb(0.93, 0.93, 0.93)
+                cr.show_text(line)
 
 
 def main():

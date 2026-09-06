@@ -134,3 +134,42 @@ operator *saw*. If frames are withheld until the next event, then a perceived
 lost tap is the expected observation even when the input path is perfect — so
 the eleven "lost" taps that an earlier reflowing layout manufactured were not
 the only way this instrument could lie. The log, not the screen, is the witness.
+
+## ☠️ The likeliest explanation is the instrument's own blindness
+
+Reading `_draw` after the refutation above: **a tap on a half changed almost
+nothing on screen.**
+
+- The two halves draw a *static* `.` and `o`. They looked identical before and
+  after a press — the halves had **no feedback of any kind**. Only MARK flashed.
+- The only things that changed were the header count and **one 16 px character
+  appended to a block of ~167 identical `.o.o.o` glyphs**.
+- Tapping fast makes the block visibly grow, so it reads as responsive. Tapping
+  once and watching gives the eye nothing to catch.
+
+That predicts the operator's exact report — *"the character appeared when I
+pressed MARK"* — with no display fault at all: MARK flashes the whole bar bright
+yellow for 350 ms, the one unmissable change on the screen, and the eye then
+re-reads the block and finds the symbol that had been there the whole time.
+
+**So this page's headline may have been explaining an artefact of its own
+instrument's visual design.** It is not established either way — the display
+path is still unmeasured — but a mechanism that requires nothing unusual now
+outranks one that requires frames to go missing.
+
+## What was changed, and what it buys
+
+`fp3-taptest.py`, same run loop, four additions:
+
+| before | after |
+|---|---|
+| a tap on a half changed nothing visible | the touched half **flashes** for 200 ms (left green, right blue) |
+| no way to see where the finger landed | a white disc is drawn **at the touch point** for the flash, so a tap that crossed the divider looks like a wrong-side tap rather than a lost one |
+| the new symbol was one glyph among 167 | the **newest symbol is drawn large** in the record area, and highlighted in yellow inside the block |
+| no way to tell whether the screen updates at all | ★ a square top-right that **changes colour on every paint** |
+
+★ The paint tick is the real instrument fix. If frames stop reaching the panel
+the square stops changing, and that is visible **without touching anything** —
+which is what this whole question needed and no earlier version had. It cycles
+on existing paints and never schedules one, so it cannot alter the scanout
+behaviour under test.
