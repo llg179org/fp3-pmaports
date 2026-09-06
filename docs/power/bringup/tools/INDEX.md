@@ -115,6 +115,7 @@ as "this exists and this is what it was for", never as "this is current".
 | `night-ladder.sh` | An idle-ab.sh ladder that needs nothing from the host: it runs on the phone, |
 | `oracle-capture.sh` | Capture the RPM-side ground truth from the Ubuntu Touch oracle on slot_a |
 | `panel-witness.sh` | Every candidate witness for "is the panel actually off", printed side by side, |
+| `pdc-load.py` | Load an MBN carrier config into the modem over QMI PDC - `qmicli --pdc-load-config` segfaults before sending a single byte |
 | `pll-ramp-fit.py` | Read a pll-vs-voltage.sh log and answer the one question it was run to |
 | `pll-sweep.sh` | pll-sweep.sh - force N cpufreq transitions on one cluster and count how many |
 | `pll-vs-voltage.sh` | pll-vs-voltage.sh - run the same cpufreq sweep repeatedly while the battery |

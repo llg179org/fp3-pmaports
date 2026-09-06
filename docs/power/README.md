@@ -280,11 +280,23 @@ second, untested gate — device policy, not network provisioning. See
 [`bringup/leads/volte-is-provisioned.md`](bringup/leads/volte-is-provisioned.md)
 and [`bringup/leads/imsd-cost-estimate.md`](bringup/leads/imsd-cost-estimate.md).
 
-☠️ **The switch does not survive a reboot.** The IMS write survives a *modem
-firmware restart* (measured), but a **system reboot restores the original,
+☠️ **The switch does not survive a reboot** *by itself*. The IMS write survives a
+*modem firmware restart* (measured), but a **system reboot restores the original,
 expensive vector** — read twice after the 2026-09-02 06:31 boot, before any
 write. So a boot-time asserting service is a **requirement**, not a convenience:
 without it every restart silently brings the ~48 % state back.
+
+**That service now exists**, so as of 2026-09-06 the phone comes up IMS-**off**
+and stays there: `fp3-ims-reconcile.timer` (`OnBootSec=90s`,
+`OnUnitActiveSec=5min`) runs `fp3-ims-reconcile.py off`. ☠️ **Any VoLTE or IMS
+experiment must stop that timer first and restore it afterwards.** Measured
+2026-09-06: an `ims-toggle.py on` was reverted to `voice=False` within four
+minutes, and a read taken in that window would have been attributed to the
+network. It is also a trap in the other direction — the vector this port asserts
+is field-for-field what an untouched modem with IMS disabled looks like, so
+finding it is not a discovery about the carrier or the firmware. See
+[`bringup/captures/2026-09-06_hungarian-mbn-load/`](bringup/captures/2026-09-06_hungarian-mbn-load/),
+where exactly that was concluded and withdrawn.
 
 ---
 

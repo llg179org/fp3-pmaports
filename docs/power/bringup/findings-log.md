@@ -10647,3 +10647,48 @@ so skipping verification would not have helped. Built instead from a local
 name `source=` expects — no download at all. **That APKBUILD's sha512 is of the
 local tarball and must not be mirrored to `fp3-pmaports` until re-checksummed
 against the real one**, or a later build elsewhere fails long after the cause.
+
+## 2026-09-06 — the Hungarian carrier config is loaded and active; VoLTE still is not
+
+The Vodafone Hungary MBN taken off the UT slot's `firmware_mnt` now sits on the
+modem as `Vodafone_Hungary_Commercial` (ID = the file's SHA1) and is **Active**;
+the modem stayed on LTE, `vodafone HU`, home, attached. The SIM is One Hungary,
+MCC 216 MNC 070 — the network formerly branded Vodafone Hungary, so this is the
+matching config, unlike the `Global-VoLTE-Vodafone` (Vodafone Germany test
+network) activated by mistake earlier the same day.
+
+☠️ **`qmicli --pdc-load-config` segfaults before sending a single byte** —
+qmicli 1.39.0 / `libqmi-1.38.0_git20260414-r0`. `load_config_file_from_string()`
+in `src/qmicli/qmicli-pdc.c` calls `g_free()` on the pointer returned by
+`g_mapped_file_get_contents()`: an mmap region owned by the `GMappedFile`, and
+still needed afterwards since every chunk re-reads it. The crash lands before
+the first chunk exists, so nothing reaches the modem and the failure looks like
+a bad config or a bad modem. Worked around by
+[`tools/pdc-load.py`](tools/pdc-load.py), which drives the same protocol through
+the Qmi/Qrtr GI typelibs; ☠️ a `qrtr://` URI resolves through the QRTR bus, not
+through GIO.
+
+☠️ The PDC store is full at 25 software configs and the load **evicted**
+`TIM_Italy_Commercial`. A count is not a witness that a load happened; the
+description or the ID is.
+
+**It did not deliver VoLTE, and a claim that it explained the CSFB fallback was
+written and then withdrawn.** An IMS-settings read after the activation showed
+`voice (VoLTE) = False` and was briefly written up as the missing cause. It is
+this port's own IMS-off vector, held by `fp3-ims-reconcile.timer` (every 5 min,
+`fp3-ims-reconcile.py off`) for the ~50 mA it saves — field for field the
+`vector verified off` line in
+[`captures/2026-09-05_118-night-triage/run.log`](captures/2026-09-05_118-night-triage/run.log).
+Setting voice back on is accepted, does **not** produce a registration
+(`NOT_REGISTERED`, error code 0, at 20 s and 60 s), and is reverted by the timer
+within four minutes. Two lessons, both already written down somewhere this
+session did not look first: `ims-toggle.py` has done this since 2026-09-02 (a
+duplicate `ims-settings.py` was written and deleted), and its docstring already
+said *"the IMS services have never registered"*.
+
+☠️ `docs/power/README.md` still said a system reboot restores the expensive
+vector and that a boot-time asserting service was a requirement. That service
+now exists, so the phone comes up IMS-**off**; the sentence describes a phone
+that no longer exists and is corrected there.
+
+Capture: [`captures/2026-09-06_hungarian-mbn-load/`](captures/2026-09-06_hungarian-mbn-load/)

@@ -62,11 +62,26 @@ def finish():
     loop.quit()
 
 
+# QmiImsaImsRegistrationStatus / QmiImsaRegistrationTechnology, from
+# src/libqmi-glib/qmi-enums-imsa.h.
+REG_STATUS = {0: "NOT_REGISTERED", 1: "REGISTERING", 2: "REGISTERED",
+              3: "LIMITED_REGISTERED"}
+REG_TECH = {0: "WLAN", 1: "WWAN", 2: "INTERWORKING_WLAN"}
+
+
 def show_reg(out):
     print("IMS registration")
     try:
-        ok, st = out.get_ims_registration_status()
-        print("  registered: %s" % (ok and st))
+        # The GI binding returns the enum value directly here, not the
+        # (ok, value) tuple the other getters return; unpacking it raises
+        # "cannot unpack non-iterable ImsaImsRegistrationStatus object" and
+        # loses exactly the field this tool exists to read.
+        r = out.get_ims_registration_status()
+        st = r[1] if isinstance(r, tuple) else r
+        # Print the name, not the raw enum value: 0 reads like a boolean
+        # "no" and is in fact NOT_REGISTERED out of four states, one of
+        # which (LIMITED_REGISTERED) is neither yes nor no.
+        print("  registered: %s (%s)" % (int(st), REG_STATUS.get(int(st), "?")))
     except Exception as e:
         print("  status: <not reported> (%s)" % e)
     for name, getter in (("technology", "get_ims_registration_technology"),
@@ -74,7 +89,12 @@ def show_reg(out):
                          ("error message", "get_ims_registration_error_message")):
         try:
             r = getattr(out, getter)()
-            print("  %s: %s" % (name, r[1] if isinstance(r, tuple) else r))
+            v = r[1] if isinstance(r, tuple) else r
+            if name == "technology":
+                # Only meaningful while registered; say so rather than let a
+                # stale "WWAN" be read as evidence of a registration.
+                v = "%s (%s)" % (int(v), REG_TECH.get(int(v), "?"))
+            print("  %s: %s" % (name, v))
         except Exception:
             pass
 
