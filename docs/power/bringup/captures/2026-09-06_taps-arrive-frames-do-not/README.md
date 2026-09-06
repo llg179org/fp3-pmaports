@@ -157,6 +157,24 @@ instrument's visual design.** It is not established either way — the display
 path is still unmeasured — but a mechanism that requires nothing unusual now
 outranks one that requires frames to go missing.
 
+### ☠️ …and the operator rejected that, with the standing they have and I do not
+
+Put to the operator the same evening, the answer was: *"I did see what the last
+character at the end of the row was. It was not my perception."* They were
+watching the one glyph the explanation above assumes they could not pick out.
+
+**That testimony outranks the reasoning.** I inferred the operator's perception
+from the source code; they reported it from in front of the screen, which is the
+only place it can be observed. The blindness explanation is therefore **not
+supported**, and it is kept here only as a candidate that was proposed and
+rejected — not as the leading one. The feedback changes made for it are still
+worth having, because an instrument should not depend on the operator tracking
+one 16 px glyph even when they can.
+
+What remains, after two mechanisms have fallen, is that **nothing in the chain
+has been measured end to end**. That is what the staged instrument below is
+for.
+
 ## What was changed, and what it buys
 
 `fp3-taptest.py`, same run loop, four additions:
@@ -173,3 +191,63 @@ the square stops changing, and that is visible **without touching anything** —
 which is what this whole question needed and no earlier version had. It cycles
 on existing paints and never schedules one, so it cannot alter the scanout
 behaviour under test.
+
+
+## The instrument the whole day was missing: the four hops, timed
+
+Every stage of one tap is reachable from inside the app, and was verified
+present on this device before any of it was written:
+
+| stage | source | what it measures |
+|---|---|---|
+| `evt→raw` | `event.get_time()` vs `CLOCK_MONOTONIC` at the handler | kernel → libinput → phoc → Wayland transport |
+| `raw→ges` | `EventControllerLegacy` → `GestureClick::pressed` | GTK gesture arbitration |
+| `ges→draw` | → `_draw` | render scheduling |
+| ★ `draw→shown` | `Gdk.FrameTimings.get_presentation_time()` | **when the frame actually reached the display** |
+
+The last row is the measurement this investigation needed all day and the reason
+the `grim` probe was confounded: presentation time comes from the compositor's
+own feedback about a frame that was already on its way, so looking at it does
+not create it.
+
+They are drawn as four blocks at fixed coordinates, coloured by their own
+thresholds. ☠️ **Grey means "could not be measured" and is deliberately not the
+colour of "fast"** — an unmeasured hop shown as green is precisely how this
+instrument would lie.
+
+Two honesty gates are built in:
+
+- ☠️ **The event clock is tested, not assumed.** On wlroots the `GdkEvent` time
+  should be `CLOCK_MONOTONIC` milliseconds, but that is a claim about the
+  compositor; the app checks the implied latency is within 0–2000 ms and marks
+  the stage unusable otherwise. Calibrating an offset from the first event was
+  written first and thrown away — it makes the test circular, the first sample
+  reading 0 ms by construction.
+- ☠️ **The one-shot repaint is a perturbation and is labelled as one.** The
+  presentation time of a frame is only known after that frame is reported back,
+  so showing it needs a second paint 400 ms later. It is one per tap, never a
+  tick callback, so it cannot turn into the continuous repaint that would change
+  the scanout behaviour under test.
+
+## The buffer question, answered from our own kernel
+
+There is exactly one bounded queue in the path, and it is in the kernel: the
+per-client `evdev` ring, `roundup_pow_of_two(max(hint_events_per_packet × 8,
+64))` (`EVDEV_BUF_PACKETS = 8`, `EVDEV_MIN_BUFFER_SIZE = 64` in
+`drivers/input/evdev.c`).
+
+For this panel, computed from the device's own advertised capabilities
+(`/proc/bus/input/devices`: `ABS_X, ABS_Y, ABS_MT_SLOT, ABS_MT_TOUCH_MAJOR,
+ABS_MT_WIDTH_MAJOR, ABS_MT_POSITION_X, ABS_MT_POSITION_Y, ABS_MT_TRACKING_ID`)
+and `HIMAX_MAX_POINTS = 10` slots, `input_estimate_events_per_packet()` gives
+**80 events per packet** — the worst case, all ten fingers on every axis — so
+the ring is **1024 events**.
+
+A real one-finger tap is nothing like 80 events: about 10 for the press frame
+and 4 for the release. So the ring holds on the order of **70 taps**, and only
+matters if the reader stalls that long.
+
+★ **And an overflow is not silent.** The kernel injects `EV_SYN/SYN_DROPPED` and
+the client must resync, so "the buffer overflowed and swallowed it" is a
+*checkable* claim rather than a story. Nothing above the kernel has a fixed tap
+limit: phoc's and GTK's queues are memory-bounded lists.

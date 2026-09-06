@@ -48,6 +48,21 @@ INSTRUCTIONS = [
 ]
 
 
+def _ms(v):
+    return "n/a" if v is None else "%.1f ms" % v
+
+
+def _stage_colour(v, warn, bad):
+    """Green below warn, amber below bad, red above; grey when unmeasurable."""
+    if v is None:
+        return (0.35, 0.35, 0.38)
+    if v < warn:
+        return (0.25, 0.80, 0.40)
+    if v < bad:
+        return (0.95, 0.80, 0.25)
+    return (0.90, 0.25, 0.25)
+
+
 class TapTest(Gtk.ApplicationWindow):
     def __init__(self, app):
         super().__init__(application=app, title="fp3-taptest")
@@ -68,6 +83,20 @@ class TapTest(Gtk.ApplicationWindow):
         self.half_flash_until = 0.0
         self.half_flash_side = None
         self.tap_xy = None
+
+        # ── the five stages of one tap ────────────────────────────────────
+        # Filled in as the tap travels; drawn as four fixed blocks so a slow
+        # stage is a colour, not a number to read. All times CLOCK_MONOTONIC ms.
+        #   t_evt   the compositor's own stamp on the event  (event.get_time())
+        #   t_raw   EventControllerLegacy handler ran        -> transport
+        #   t_ges   GestureClick::pressed ran                -> arbitration
+        #   t_drw   _draw ran                                -> render schedule
+        #   t_prs   FrameTimings.get_presentation_time()     -> ON THE PANEL
+        self.stage = {}
+        self.stage_hist = []
+        self.pending_frame = None      # (frame_counter, stage dict)
+        self.evt_offset = None         # GdkEvent clock -> CLOCK_MONOTONIC
+        self.evt_offset_ok = None
         self.log = open(LOG, "a", buffering=1)
         self._log("== taptest start %s" % time.strftime("%F %H:%M:%S"))
 
@@ -102,6 +131,10 @@ class TapTest(Gtk.ApplicationWindow):
     def _log(self, line):
         self.log.write(line + "\n")
 
+    @staticmethod
+    def _mono():
+        return time.clock_gettime(time.CLOCK_MONOTONIC) * 1000.0
+
     def _stamp(self):
         t = time.time()
         return "%s.%03d" % (time.strftime("%H:%M:%S", time.localtime(t)),
@@ -117,6 +150,9 @@ class TapTest(Gtk.ApplicationWindow):
 
     # ── input ──────────────────────────────────────────────────────────────
     def _pressed(self, _g, _n, x, y):
+        t = self._mono()
+        self.stage["t_ges"] = t
+        self.stage["raw_ges"] = t - self.stage["t_raw"] if "t_raw" in self.stage else None
         w, h = self.area.get_width(), self.area.get_height()
         if not h:
             return
@@ -160,14 +196,63 @@ class TapTest(Gtk.ApplicationWindow):
         del self.marks[:-MAX_MARKS]
         self.area.queue_draw()
 
+    def _resolve_present(self):
+        pf, self.pending_frame = self.pending_frame, None
+        if not pf:
+            return False
+        counter, st = pf
+        fc = self.get_frame_clock()
+        t = fc.get_timings(counter) if fc is not None else None
+        if t is not None and t.get_complete():
+            pres = t.get_presentation_time()          # microseconds, or 0
+            if pres:
+                st["drw_prs"] = pres / 1000.0 - st["t_drw"]
+            else:
+                st["drw_prs"] = None                  # compositor reports none
+            st["refresh"] = t.get_refresh_interval() / 1000.0
+        else:
+            st["drw_prs"] = None
+        self.stage_hist.append(dict(st))
+        del self.stage_hist[:-60]          # keep the last 60
+        self._log("%s  STAGES  evt->raw %s  raw->ges %s  ges->draw %s  "
+                  "draw->present %s  (refresh %s)"
+                  % (self._stamp(), _ms(st.get("evt_lat")), _ms(st.get("raw_ges")),
+                     _ms(st.get("ges_drw")), _ms(st.get("drw_prs")),
+                     _ms(st.get("refresh"))))
+        self.area.queue_draw()
+        return False
+
     def _unflash(self):
         self.area.queue_draw()
         return False
 
     def _raw_event(self, _c, event):
-        if event.get_event_type() == Gdk.EventType.TOUCH_BEGIN:
-            self.n_raw += 1
-            self._log("%s  RAW touch-begin #%d" % (self._stamp(), self.n_raw))
+        et = event.get_event_type()
+        if et in (Gdk.EventType.TOUCH_BEGIN, Gdk.EventType.BUTTON_PRESS):
+            now = self._mono()
+            evt = float(event.get_time())          # milliseconds, compositor clock
+            # ☠️ On wlroots the GdkEvent time is CLOCK_MONOTONIC milliseconds -
+            # the same clock as _mono() - so the difference IS the transport
+            # latency and no offset is needed. But that is an assumption about
+            # the compositor, so TEST it instead of trusting it: a difference
+            # outside 0..2000 ms means the clocks do not share an origin, and
+            # the stage is then reported as unusable rather than as a number.
+            # Calibrating an offset from the first event would have made the
+            # test circular - the first sample would read 0 ms by construction.
+            d = now - evt
+            usable = 0.0 <= d <= 2000.0
+            if self.evt_offset_ok is None:
+                self.evt_offset_ok = usable
+                self._log("%s  event clock: now-evt = %.1f ms  usable=%s"
+                          % (self._stamp(), d, usable))
+            lat = d if usable else None
+            if et == Gdk.EventType.TOUCH_BEGIN:
+                self.n_raw += 1
+            self.stage = {"t_raw": now, "evt_lat": lat, "touch":
+                          et == Gdk.EventType.TOUCH_BEGIN}
+            self._log("%s  RAW %s #%d  evt->raw %s"
+                      % (self._stamp(), et.value_nick, self.n_raw,
+                         ("%.1f ms" % lat) if lat is not None else "n/a"))
         return False
 
     # ── drawing ────────────────────────────────────────────────────────────
@@ -180,6 +265,19 @@ class TapTest(Gtk.ApplicationWindow):
         self.n_draw += 1
         self._log("%s  DRAW #%d  marks=%d" % (self._stamp(), self.n_draw,
                                               len(self.marks)))
+        if "t_ges" in self.stage and "t_drw" not in self.stage:
+            self.stage["t_drw"] = self._mono()
+            self.stage["ges_drw"] = self.stage["t_drw"] - self.stage["t_ges"]
+            fc = self.get_frame_clock()
+            if fc is not None:
+                # Resolve THIS frame's presentation time later: the timings are
+                # not complete until the compositor reports the frame back.
+                # ☠️ Reading timings does not schedule a frame; the single
+                # 400 ms timeout below repaints once per tap so the number can
+                # be shown, and that repaint is itself a perturbation - it is
+                # why the resolve is one-shot and not a tick callback.
+                self.pending_frame = (fc.get_frame_counter(), self.stage)
+                GLib.timeout_add(400, self._resolve_present)
         mark_y, half_y = h * MARK_TOP, h * HALVES_TOP
 
         cr.set_source_rgb(0.06, 0.06, 0.08)   # record area
@@ -264,17 +362,42 @@ class TapTest(Gtk.ApplicationWindow):
                      % (self.n_dot + self.n_o, self.n_dot, self.n_o,
                         self.n_raw, self.breaks, self.n_mark))
 
+        # ── the four stages of the last tap, at FIXED coordinates ──────────
+        # One block per hop, coloured by its own threshold, so a slow hop is a
+        # colour and not a number to read. Grey means the hop could not be
+        # measured - never the same colour as "fast", because an unmeasured
+        # stage read as green is exactly how this instrument would lie.
+        st = self.stage_hist[-1] if self.stage_hist else {}
+        refresh = st.get("refresh") or 16.7
+        stages = (("evt\u2192raw", st.get("evt_lat"), 12.0, 40.0),
+                  ("raw\u2192ges", st.get("raw_ges"), 5.0, 25.0),
+                  ("ges\u2192draw", st.get("ges_drw"), 8.0, 30.0),
+                  ("draw\u2192shown", st.get("drw_prs"), refresh * 1.5,
+                   refresh * 4.0))
+        bw, bh, y0 = (w - 20) / 4.0, 34, 34
+        cr.set_font_size(11)
+        for i, (name, v, warn, bad) in enumerate(stages):
+            x0 = 10 + i * bw
+            cr.set_source_rgb(*_stage_colour(v, warn, bad))
+            cr.rectangle(x0, y0, bw - 3, bh)
+            cr.fill()
+            cr.set_source_rgb(0.05, 0.05, 0.05)
+            cr.move_to(x0 + 4, y0 + 13)
+            cr.show_text(name)
+            cr.move_to(x0 + 4, y0 + 27)
+            cr.show_text("--" if v is None else "%.0f ms" % v)
+
         # The marks, newest last, wrapped to the width and clipped to the area.
         cr.set_source_rgb(0.93, 0.93, 0.93)
         size = 16
         cr.set_font_size(size)
         per_line = max(8, int((w - 20) / (size * 0.72)))
-        rows = int((mark_y - 40) / (size + 4))
+        rows = int((mark_y - 84) / (size + 4))
         text = "".join(self.marks)
         lines = [text[i:i + per_line] for i in range(0, len(text), per_line)]
         shown = lines[-rows:]
         for i, line in enumerate(shown):
-            cr.move_to(10, 48 + i * (size + 4))
+            cr.move_to(10, 92 + i * (size + 4))
             if i == len(shown) - 1 and line:
                 cr.set_source_rgb(0.93, 0.93, 0.93)
                 cr.show_text(line[:-1])
