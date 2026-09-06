@@ -1,0 +1,16 @@
+Sep 06 08:02:53.211016 fp3 kernel: clk: Disabling unused clocks
+Sep 06 08:02:53.211053 fp3 kernel: PM: genpd: Disabling unused power domains
+Sep 06 08:03:22.370242 fp3 kernel: qcom,slim-ngd qcom,slim-ngd.1: TX timed out:MC:0xd,mt:0x2
+Sep 06 08:03:23.559512 fp3 kernel: qcom,slim-ngd qcom,slim-ngd.1: TX timed out:MC:0xd,mt:0x2
+Sep 06 09:00:23.817467 fp3 kernel: i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active, master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+Sep 06 09:00:23.819568 fp3 kernel: i2c_qup 78b7000.i2c: bus cleared after 1 attempt(s)
+Sep 06 09:04:37.702153 fp3 EXPERIMENT: runtime PM off on 78b7000 (touch) only, 09:04:37
+Sep 06 09:08:48.810485 fp3 kernel: i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active, master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+Sep 06 09:08:48.813949 fp3 kernel: i2c_qup 78b7000.i2c: bus cleared after 1 attempt(s)
+Sep 06 09:10:42.291654 fp3 unknown: EXPERIMENT rtpm-off-78b7000 REFUTED and reverted 09:10:42
+Sep 06 09:12:31.624554 fp3 kernel: i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active, master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700)
+Sep 06 09:12:31.626308 fp3 kernel: i2c_qup 78b7000.i2c: bus cleared after 1 attempt(s)
+Sep 06 09:14:48.769802 fp3 SCREEN: 0/160/On -> 0/161/On
+Sep 06 09:14:49.225624 fp3 SCREEN: 0/161/On -> 0/160/On
+Sep 06 09:17:31.722455 fp3 SCREEN: 0/160/On -> 4/160/On
+Sep 06 09:17:31.866473 fp3 SCREEN: 4/160/On -> 4/160/Off

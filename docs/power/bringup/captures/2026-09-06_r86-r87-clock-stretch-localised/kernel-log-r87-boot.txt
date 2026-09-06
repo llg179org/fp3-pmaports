@@ -1,0 +1,124 @@
+Sep 06 09:35:49.729154 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.729646 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.730877 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.731269 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.738177 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.738580 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.739815 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.740330 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.741264 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.741725 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.743006 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.743397 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.743790 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.744211 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.744260 fp3 kernel: clk: Disabling unused clocks
+Sep 06 09:35:49.744295 fp3 kernel: PM: genpd: Disabling unused power domains
+Sep 06 09:35:49.746033 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.746476 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.746905 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.747367 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.749551 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.750004 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.750421 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.750862 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.752246 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.752747 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.753271 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.753876 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.756287 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.756743 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.757191 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.757665 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.759588 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.760001 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.760409 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.760803 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.766055 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.766454 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.766867 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.767305 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.769787 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.770289 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.770855 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.771397 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:49.777464 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.777823 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:49.778380 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:49.778734 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.037870 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.038555 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.039096 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.039531 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.040901 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.042437 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.048395 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.054055 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.090045 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.093775 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.097668 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.107274 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.136652 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.145055 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.217258 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.222963 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.250249 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.257408 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.264626 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.265567 fp3 kernel: i2c_qup 78b7000.i2c: 
+Sep 06 09:35:52.270707 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.271517 fp3 kernel: i2c_qup 7af6000.i2c: 
+Sep 06 09:35:52.272137 fp3 kernel: i2c_qup 78b7000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.279748 fp3 kernel: i2c_qup 7af6000.i2c: using default clock-frequency 100000
+Sep 06 09:35:52.779151 fp3 kernel: input: Himax Touchscreen as /devices/platform/soc@0/78b7000.i2c/i2c-2/2-0048/input/input4
+Sep 06 09:36:18.360283 fp3 kernel: qcom,slim-ngd qcom,slim-ngd.1: TX timed out:MC:0xd,mt:0x2
+Sep 06 09:36:19.544532 fp3 kernel: qcom,slim-ngd qcom,slim-ngd.1: TX timed out:MC:0xd,mt:0x2
+Sep 06 09:36:26.758730 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: resuming...
+Sep 06 09:36:28.399054 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: suspending...
+Sep 06 09:36:28.847343 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 09:36:30.873297 fp3 kernel: i2c_qup 78b7000.i2c: transfer to 0x48 timed out, bus active, master is us, SDA 1 SCL 0 (I2C_STATUS 0x0411a700 STATE 0x0000001d OPER 0x00000010 ERR 0x00000000)
+Sep 06 09:36:30.874330 fp3 kernel: i2c_qup 78b7000.i2c: bus cleared after 1 attempt(s)
+Sep 06 09:36:32.126668 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 09:36:32.698630 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: resuming...
+Sep 06 09:36:33.946595 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: suspending...
+Sep 06 09:41:34.574620 fp3 SCREEN: 0/160/On -> 4/160/On
+Sep 06 09:41:34.715748 fp3 SCREEN: 4/160/On -> 4/160/Off
+Sep 06 10:28:36.886623 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: resuming...
+Sep 06 10:28:37.018975 fp3 SCREEN: 4/160/Off -> 4/160/On
+Sep 06 10:28:37.216884 fp3 SCREEN: 4/160/On -> 0/160/On
+Sep 06 10:28:37.539467 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:28:37.927603 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: suspending...
+Sep 06 10:28:41.471483 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:28:41.628252 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:28:42.226895 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: resuming...
+Sep 06 10:28:42.802717 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:28:43.474971 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: suspending...
+Sep 06 10:28:44.299168 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:02.820671 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:29:03.064455 fp3 SCREEN: 0/160/On -> 4/160/On
+Sep 06 10:29:03.266608 fp3 SCREEN: 4/160/On -> 4/160/Off
+Sep 06 10:29:14.654766 fp3 SCREEN: 4/160/Off -> 4/160/On
+Sep 06 10:29:14.856343 fp3 SCREEN: 4/160/On -> 0/160/On
+Sep 06 10:29:15.090900 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:20.547709 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:29:21.214210 fp3 SCREEN: 0/160/On -> 4/160/On
+Sep 06 10:29:21.347158 fp3 SCREEN: 4/160/On -> 4/160/Off
+Sep 06 10:29:21.730174 fp3 SCREEN: 4/160/Off -> 4/160/On
+Sep 06 10:29:22.289018 fp3 SCREEN: 4/160/On -> 0/160/On
+Sep 06 10:29:22.483245 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:26.787078 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:29:27.286731 fp3 SCREEN: 0/160/On -> 4/160/On
+Sep 06 10:29:27.426867 fp3 SCREEN: 4/160/On -> 4/160/Off
+Sep 06 10:29:29.226728 fp3 SCREEN: 4/160/Off -> 4/160/On
+Sep 06 10:29:29.494835 fp3 SCREEN: 4/160/On -> 0/160/On
+Sep 06 10:29:29.907868 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:34.799360 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:29:35.098956 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:41.531130 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:29:44.187176 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:29:45.307227 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:30:03.407029 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:30:04.615339 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 06 10:30:06.522802 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 06 10:30:08.474959 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: resuming...
+Sep 06 10:30:09.727127 fp3 kernel: i2c_qup 7af6000.i2c: pm_runtime: suspending...

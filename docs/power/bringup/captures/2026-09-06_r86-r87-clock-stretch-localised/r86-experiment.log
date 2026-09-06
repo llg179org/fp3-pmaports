@@ -1,0 +1,10 @@
+# EXPERIMENT rtpm-off-78b7000  start=1788678305 (09:05:05)
+# before this point r86 ran with runtime PM on the touch bus
+# baseline counters this boot:
+#   timed out, bus               1
+#   bus cleared after            1
+#   bus still held               0
+#   Failed to read input event   0
+#   Disabling IRQ                0
+#   touch irqs                   72
+# REFUTED 1788678642 (09:10:42): timeout at 09:08:48 with rtpm OFF, same signature. Reverted to auto.
