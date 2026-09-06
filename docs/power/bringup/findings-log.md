@@ -10924,3 +10924,24 @@ run together.
 wrong conclusion today: a BREAK is not a loss, raw touches in the record area
 are not losses, `SYN_DROPPED` invalidates later counts, and a zero
 `draw->present` must not be averaged or compared against the prediction.
+
+## 2026-09-06 — #179 closed: a touch fault no longer cascades
+
+Over **184 active minutes** on r88 (two boots with exposure: 98 min / 94 548
+interrupts and 86 min / 90 627), five times the 36-minute floor the task sets:
+**one** `i2c_qup` timeout, recovered 2 ms later by the hardware bus-clear
+(`bus cleared after 1 attempt(s)`), and then **zero** of everything the cascade
+consists of — no `-110`, no `-6`, no `-EIO`, **no `Disabling IRQ`**, no driver
+rebind. On r82 every `-110` was followed by a `-6` within the same second and one
+wedge needed a rebind.
+
+☠️ This closes the **cascade** (#179), not the **rate** (#178): with the driver
+retry in place a transient failure produces no log line at all, so zero errors is
+ambiguous between "no faults" and "faults absorbed", and `touch-exposure.py` says
+as much in its own verdict — *"clean, but only rules out 'worse than r82'."*
+
+☠️ The first count of this conflated subsystems: three "timed out" lines in the
+log, of which two are `qcom,slim-ngd` (SLIMbus audio). Splitting by subsystem
+took the i2c number from 3 to 1.
+
+Capture: [`captures/2026-09-06_179-no-cascade-on-r88/`](captures/2026-09-06_179-no-cascade-on-r88/)
