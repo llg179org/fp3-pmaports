@@ -11148,3 +11148,36 @@ option you added is the only change you made.
 ★ And it vindicates the prior-art rule added to `/msm8953-mainline-pr` in this
 same session: the search that found it took minutes and had never been run,
 because the work went straight from our own measurement to the source.
+
+### ★★★ 2026-09-07 — #182 PROVEN and CLOSED: with the flag restored, the failing arm rings
+
+The one cell the entry above says is missing. Armed 07:56 with
+`IdleAction=suspend` / `IdleActionSec=2min`, effective command line read back
+from systemd (`--test-quick-suspend-resume --log-level=DEBUG`), baseline
+`suspend_stats/success = 7`.
+
+```
+07:58:33  PM: suspend entry (s2idle)
+08:24:45  PM: suspend exit      <- 26 min 12 s, ended by the operator's incoming call
+```
+
+`success` 7 → 8, `fail` 0, and **the phone rang**. The journal names the
+mechanism rather than leaving it inferred: `syncing modem state (quick
+resuming)`, i.e. `mm_base_manager_sync`, and the call was reported **in the same
+second as the resume and before `system is resuming`** — `modem0` still existed
+with its call state, because nothing was rebuilt. Same PID throughout.
+
+| suspend | woken by | flag | modem | rang? |
+|---|---|---|---|---|
+| 623 / 1176 / 1508 s | incoming call | absent | **LOST** | no |
+| **1572 s** | incoming call | restored | survived | **YES** |
+
+The longest suspend of the series, in the arm that had failed three times out of
+three. **#182 closed, cause ours; #181 unblocked.**
+
+☠️ n = 1 in the surviving arm. ☠️ The upstream bug is untouched — stock
+ModemManager still loses `qrtr0` here; that belongs to
+[MM issue 1039](https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/issues/1039),
+not to us.
+
+Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)

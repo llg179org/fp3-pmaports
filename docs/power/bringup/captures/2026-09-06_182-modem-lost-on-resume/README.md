@@ -345,3 +345,68 @@ search that would have found this was never run, because the work started from
 our own measurement and went straight to the source. **Both halves of the rule
 fired here** — the distro's fix predates ours by a month, and the search took
 minutes.
+
+## ★★★ PROVEN — 2026-09-07 08:24, the failing arm now survives
+
+The one thing the section above said it lacked: the failing arm re-run with the
+flag restored. Armed 07:56, `IdleAction=suspend` / `IdleActionSec=2min`, baseline
+`suspend_stats/success = 7`, effective command line read back from systemd rather
+than assumed:
+
+```
+/usr/sbin/ModemManager --test-quick-suspend-resume --log-level=DEBUG
+```
+
+The phone suspended once on its own and stayed down, and the operator called:
+
+```
+07:58:33  PM: suspend entry (s2idle)
+08:24:45  PM: suspend exit          <- 26 min 12 s, ended by the incoming call
+```
+
+`suspend_stats/success` 7 → 8, `fail` 0. **It rang.**
+
+### What the journal shows, and it is stronger than "survived"
+
+```
+08:24:45  [modem0] reported 1 ongoing calls
+08:24:45  [modem0] call at index 1: direction incoming, state ringing-in
+08:24:45  [modem0/call0] call state changed: unknown -> ringing-in (incoming-new)
+08:24:45  [sleep-monitor-systemd] system is resuming
+08:24:45  <dbg> syncing modem state (quick resuming)
+08:24:45  [modem0] resume synchronization state (2/5): modem interface sync
+08:24:45  [modem0] SIM identifier has not changed
+08:24:45  [modem0] resume synchronization state (3/5): 3GPP interface sync
+```
+
+Three things, in order of how much they settle:
+
+- ★ **`syncing modem state (quick resuming)`** — the `mm_base_manager_sync`
+  path named in the section above, taken instead of the full re-scan. The
+  mechanism is confirmed by the daemon's own log, not inferred from `src/main.c`.
+- ★ **The call was reported in the same second as the resume, BEFORE
+  `system is resuming`.** `modem0` still existed and still had its call state:
+  nothing was rebuilt, so nothing had to be re-found.
+- **The PID never changed** (`1599608` throughout). ModemManager did not restart.
+
+| suspend | woken by | flag | modem | rang? |
+|---|---|---|---|---|
+| 623 s / 1176 s / 1508 s | incoming call | **absent** | **LOST** | **no** |
+| **1572 s (26 min 12 s)** | incoming call | **restored** | **survived** | **YES** |
+
+The longest suspend of the whole series, in the arm that failed three times out
+of three, ended in a ringing phone.
+
+### What this closes and what it does not
+
+- **#182 is closed, and its cause was ours**: the drop-in, not the platform.
+- **#181 is unblocked** — its morning sample is no longer a guaranteed
+  "did not ring".
+- ☠️ **The upstream bug is untouched.** The default ModemManager path still
+  loses `qrtr0` across a long suspend on this device; we are not hitting it only
+  because pmOS forces the quick-resume mode. Anyone running stock MM here will
+  see #182 again, and
+  [ModemManager issue #1039](https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/issues/1039)
+  is where that belongs.
+- ☠️ **Not tested: n = 1.** One long suspend, one call. Three prior failures make
+  a fluke unlikely, but the surviving arm has been sampled once.
