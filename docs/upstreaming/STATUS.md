@@ -570,6 +570,38 @@ which voice audio does not reach a SLIMbus codec at all. Whether the new design
 reproduces that gap is worth watching; if it does, saying so on the list is worth
 more than the patch is.
 
+### Where that project stands — searched 2026-09-07, four months after the announcement
+
+**Nothing has reached the list, and there is no public progress report.**
+
+| checked | result |
+|---|---|
+| patchwork, `alsa-devel`, `q6voice` | **0** |
+| patchwork, **any project**, `q6voice` | **0** |
+| pmOS blog after 2026-05-08 (4 monthly updates + the v26.06 release post) | no mention of q6voice, Linaro, voice calls or audio upstreaming |
+
+☠️ **A null needs its positive control, and this one has it.** The same query with
+`q6afe` returns 30 hits, newest 2026-08-11; with `qdsp6`, 30 hits, newest
+2026-08-25. So the endpoint is live, the project filter works, and the zero is a
+real zero rather than a broken query. The command, for re-running:
+
+```sh
+curl -s "https://patchwork.kernel.org/api/1.2/patches/?project=alsa-devel&q=q6voice&order=-date" \
+  | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d),"hits"); [print(p["date"][:10],p["state"],p["name"]) for p in d[:10]]'
+```
+
+☠️ **Absence from patchwork is not absence of work.** A rearchitecture of this size
+is months of private work before a v1, and the announcement only promised a
+kick-off "in the next weeks". This says *there is nothing to respond to yet*, not
+that the project has stalled.
+
+★ Worth noting from the same query: the qdsp6 area is **busy** — topology-driven
+Audio IF and AudioReach work from Prasad Kumpatla through August 2026, internal
+MI2S support from Richard Acayan accepted 2026-07-30. AudioReach is the newer
+path the pmOS post names as the alternative for newer devices, and it is landing
+now. That is context for `wcd9335-audio` as well: the tree we are sending into is
+moving under us.
+
 ## fp3-dts
 
 ```
