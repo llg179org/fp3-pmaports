@@ -166,3 +166,45 @@ checked, not assumed.
 - **First actionable step**: complete the package upgrade and re-test one
   suspend/resume. If the fault survives a matched 0.56 stack, it is a real phoc
   or wlroots bug on `msm_dpu` and worth reporting upstream with this capture.
+
+## ☠️ And the first actionable step is blocked — by pmOS edge, not by us
+
+`apk upgrade -a --simulate`, 2026-09-07:
+
+```
+ERROR: unable to select packages:
+  gnome-settings-daemon-mobile-999948.0-r2:
+    breaks:    postmarketos-ui-phosh-33-r0[!gnome-settings-daemon-mobile]
+    satisfies: phosh-99990.57.0-r1[gnome-settings-daemon]
+               phosh-portalsconf-99990.57.0-r1[gnome-settings-daemon]
+```
+
+`apk add phoc` and `apk add phosh` fail on the same conflict. **`phoc-0.57.0-r0`
+exists in the repository and is unreachable.**
+
+★ That also explains the skew rather than leaving it a mystery: **the half-upgraded
+state is not something this session or the operator did.** An `apk upgrade` was
+attempted at some point, the noarch subpackages (`-schemas`, `-lang`,
+`-systemd`, `-portalsconf`) went through, and the binaries did not, because edge
+is mid-transition on `postmarketos-ui-phosh`. Nothing on this device can complete
+it until that lands.
+
+So the ordering is forced:
+
+1. **wait** for edge to resolve `gnome-settings-daemon-mobile` vs
+   `postmarketos-ui-phosh`, then upgrade and re-test one suspend/resume;
+2. only if the fault survives a matched stack is it a phoc/wlroots bug worth
+   reporting on `msm_dpu`, and this capture is the report.
+
+☠️ Forcing it (`--force-broken-world`) is **not** the answer here: it would leave
+the UI meta-package inconsistent on a phone whose rootfs is at 90 %, and safety
+item 9 says what a full rootfs does to the next boot.
+
+## The mitigation that is already in place
+
+The phone no longer suspends on idle — the `IdleAction=suspend` drop-in was
+removed on 2026-09-07 08:45 (it belonged to `#181`/`#182` and had to go for
+`#142`'s arm A). With no automatic suspend there is no automatic way into this
+fault; it is reachable only by a deliberate suspend. **That is a mitigation by
+accident, and it is also exactly what `#181` needs to put back** — so the two
+cannot both be satisfied until this is fixed.

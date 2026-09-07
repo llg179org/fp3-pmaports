@@ -11241,3 +11241,30 @@ and minutes of tapping**, not seconds — the 09-04 rate was ~1 `-110` per minut
 of active use, and #178's floor is 500 touch interrupts.
 
 Capture: [`captures/2026-09-07_142-affinity-vs-touch-after-resume/`](captures/2026-09-07_142-affinity-vs-touch-after-resume/)
+
+### ☠️ 2026-09-07 — #183 cannot be advanced today: pmOS edge blocks the upgrade
+
+The search ran before any code, as the task required. Result: an open pmOS issue
+of the same shape on a different device ([pmaports#3062](https://gitlab.com/postmarketOS/pmaports/-/issues/3062),
+Samsung A5, since 2024, no fix), no match for the exact phoc lines, and one
+concrete fact about this installation — **`phoc` 0.55.1 and `phosh` 99990.55.0
+running against 0.56.0 schemas and units.**
+
+The obvious first step, completing that upgrade, is **blocked by edge itself**:
+
+```
+gnome-settings-daemon-mobile-999948.0-r2 breaks postmarketos-ui-phosh-33-r0
+```
+
+`phoc-0.57.0-r0` is in the repository and unreachable; `apk add phoc` and
+`apk add phosh` fail identically. ★ That also explains the skew — the noarch
+subpackages went through an earlier upgrade and the binaries did not. Nothing on
+the device can finish it. ☠️ `--force-broken-world` is not the answer on a rootfs
+at 90 % (safety item 9).
+
+Mitigation already in place by accident: the `IdleAction=suspend` drop-in was
+removed for #142's arm A, so the phone no longer suspends by itself and cannot
+fall into this fault unattended. ☠️ That is exactly what #181 needs to put back,
+so #181 and a usable screen cannot both be had until this is fixed.
+
+Capture: [`captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/`](captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/)
