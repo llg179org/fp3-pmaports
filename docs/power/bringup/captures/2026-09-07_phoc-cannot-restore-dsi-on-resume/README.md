@@ -108,3 +108,61 @@ re-reads the configuration without dropping the seat.
   test on resume is unknown, and no `phoc`/`wlroots` version has been checked
   against upstream reports yet. That search is the next step, and by the rule
   this repository adopted on 2026-09-07 it comes **before** any code.
+
+## The search the task demanded, run before any code — 2026-09-07
+
+**It is not FP3-specific and it is not new.** pmOS carries an open issue of
+exactly this shape:
+[pmaports#3062, *"Screen does not turn on when resuming from suspend in Phosh"*](https://gitlab.com/postmarketOS/pmaports/-/issues/3062)
+— Samsung A5 (2015), pmOS edge, opened 2024-08, *"the screen remains off, volume
+buttons are still responsive"*, **no root cause, workaround or fix identified**.
+Different SoC, different panel, same symptom class, still open two years later.
+
+☠️ Its own page is served through Anubis on `gitlab.postmarketos.org` and answers
+**Access Denied** to a tool fetch; the `gitlab.com` mirror answers. Same trap as
+`lore.kernel.org`, and worth remembering: a 403 there says nothing about whether
+the issue exists.
+
+No result matches the exact phoc lines (`Swapchain for output 'DSI-1' failed
+test`, `Failed to commit power mode change`). The nearest neighbour outside
+phosh is [sway#8144](https://github.com/swaywm/sway/issues/8144), where a
+`Swapchain for output … failed test` leaves one output black until the
+compositor is reloaded — i.e. the wlroots layer, not the compositor above it.
+
+## ★ What the search found instead: this installation is half-upgraded
+
+`apk list -I` on the device, 2026-09-07:
+
+| package | version |
+|---|---|
+| **`phoc`** (the running binary) | **0.55.1**-r0 |
+| `phoc-schemas`, `phoc-lang` | **0.56.0**-r0 |
+| **`phosh`** | **99990.55.0**-r3 |
+| `phosh-schemas`, `phosh-systemd`, `phosh-portalsconf` | **99990.56.0**-r0 |
+
+**The compositor and shell are 0.55 while their schemas and units are 0.56.** On
+pmOS edge that is an interrupted upgrade, not a supported combination — and the
+journal carries a matching assertion from the version-sensitive layer:
+
+```
+phoc: gmobile-CRITICAL: gm_display_panel_get_name: assertion 'GM_IS_DISPLAY_PANEL (self)' failed
+```
+
+☠️ **This is a fact about the installation, not yet a cause.** A GSettings-schema
+skew is not an obvious way to make a DRM atomic commit fail, and nothing here
+shows that it does. But a half-upgraded compositor has to be ruled out before
+anything deeper is worth chasing, and completing the upgrade is far cheaper than
+bisecting phoc.
+
+☠️ **The cost to check first**: `/` is at **90 %, 234 MB free**. Safety item 9 —
+filling this rootfs produces a reboot loop — so the upgrade needs its space
+checked, not assumed.
+
+## Where it stands
+
+- **Localised, not diagnosed.** DRM reports the connector on and connected while
+  phoc's atomic commit fails on resume.
+- **Not ours alone**: an open pmOS issue of the same shape on a different device.
+- **First actionable step**: complete the package upgrade and re-test one
+  suspend/resume. If the fault survives a matched 0.56 stack, it is a real phoc
+  or wlroots bug on `msm_dpu` and worth reporting upstream with this capture.
