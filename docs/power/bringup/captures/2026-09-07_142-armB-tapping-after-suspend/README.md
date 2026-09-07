@@ -222,3 +222,112 @@ With the driver **bound**, the rails **held** (`l6 use=2`), the bus **awake** an
 i2c faults and **zero** losses above evdev.
 
 That is the counterfactual arm B needs, and it did not exist before today.
+
+---
+
+# ★ The interrupt bursts that produce no input event — and where they sit
+
+The operator asked the sharp question: during the run of `.....`, did the
+**kernel** fail to report the `o` presses too?
+
+## For that run, no
+
+The per-second `WINDOW` rows carry a per-layer count, `irq` read straight off
+`/proc/interrupts` (`_irq_count()` matches the `hx83112b` line and sums the
+eight CPU columns — verified in the source, not assumed):
+
+```
+17:16:13   irq 105   contact 10   raw 10   gest 10   tap 10
+17:16:14   irq 108   contact  9   raw  9   gest  9   tap  9
+17:16:15   irq  90   contact 10   raw 10   gest  8   tap 10
+17:16:16   irq  37   contact  6   raw  6   gest  4   tap  6   <- the ..... run
+17:16:17   irq  49   contact  6   raw  6   gest  6   tap  6   <- the ..... run
+17:16:19   irq  73   contact  9   raw  9   gest  9   tap  9
+```
+
+The interrupt count **fell with** the contact count, 105/108/90 → 37/49. A
+driver-side drop has the opposite signature — `irq` staying high while
+`contact` collapses — and the app colours `contact` red for exactly that case.
+It did not fire. The `.....` run is a one-finger regime, not a lost `o`.
+
+## ☠️ A claim made and withdrawn in the same session
+
+It was put to the operator that `shown` fell to ~51 % of `tap`, i.e. half the
+frames never reached the screen. **That is not a measurement, and it is
+withdrawn.** `shown` counts **frames, not touches** — `_resolve_present()`
+resolves at most *one* pending frame per 400 ms cycle, and the app's own
+instructions say `irq` and `shown` "are NOT one per touch, so they are counts
+only, never judged". Comparing `shown` against `tap` is the comparison the
+instrument explicitly forbids, and it was made anyway before the source was
+read. Nothing about the display path is established here.
+
+## ★ But elsewhere in the run there IS a signature, and it pairs 7 of 7
+
+Seven windows have `irq > 0` and `contact == 0` — the chip raised interrupts and
+**no input event came out of them**. Every one of the seven coincides with an
+`i2c_qup 78b7000.i2c` runtime-PM transition:
+
+| window | irq | i2c bus at that second |
+|---|---:|---|
+| 17:13:12.238 | 1 | suspending |
+| 17:13:16.242 | 11 | suspending **and** resuming |
+| 17:15:14.999 | **29** | suspending |
+| 17:15:20.021 | **27** | resuming (suspended 17:15:19) |
+| 17:16:32.515 | **21** | suspending |
+| 17:16:50.530 | 1 | suspending |
+| 17:22:48.058 | 1 | suspending |
+
+☠️ **The converse does not hold**, which is what stops this being a coincidence
+of density: 17:15:00, 17:15:01, 17:20:43, 17:22:41 and 17:23:50 are bus
+suspends with no such window. The pairing runs one way — every burst sits on a
+transition, not every transition produces a burst.
+
+### The held-finger confound, excluded
+
+`kernel-contacts.py` logs CONTACT and RELEASE only, so a finger held down and
+sliding produces interrupts and no logged event — the same signature. It is
+excluded for all three large bursts by reading the events either side:
+
+| gap | last before | first after | panel |
+|---|---|---|---|
+| 17:15:13.847 → 17:15:16.260 | **RELEASE** #1042 | CONTACT #1043 | empty for 2.41 s |
+| 17:15:18.871 → 17:15:20.401 | **RELEASE** #1071 | CONTACT #1072 | empty for 1.53 s |
+| 17:16:31.321 → … | **RELEASE** #1725 | — | empty |
+
+A RELEASE before the gap means no finger was down. So 21–29 interrupts fired
+with **an empty panel** and produced nothing.
+
+### Why the line can repeat: it is level-triggered
+
+`/proc/interrupts` reads `msmgpio 65 **Level** hx83112b`. A level-triggered
+source that is not cleared re-asserts, so a read that does not complete gives
+tens of interrupts rather than one — which is the shape observed.
+
+### ☠️ What this does NOT establish
+
+1. **No touch was lost.** In all three large bursts the panel was empty, so
+   there was no finger to lose. Across the whole run `contact` 3366 → `raw`
+   3362: **four** events lost above evdev, 0.12 %.
+2. **Direction is unproven.** "The suspended bus stalls the read" and "an idle
+   panel lets the bus autosuspend while the chip churns" both predict this
+   table. Nothing here separates them.
+3. **A benign reading survives.** The chip may raise a no-fingers report after
+   each release which the driver reads correctly and emits nothing for. That
+   produces this signature with no fault at all.
+4. The `irq` column is polled every 500 ms into a 1000 ms window, so edge
+   attribution is ±0.5 s.
+
+### ★ Why it is worth recording anyway
+
+`#178` states that with `fb68b1bd764f` retrying silently, "zero errors" cannot
+be told from "faults absorbed", and that separating them "needs a counter the
+driver does not have". **`/proc/interrupts` paired with the evdev event count is
+that counter** — it sees interrupts the driver consumed without producing
+anything, which is precisely what an absorbed fault looks like. Whether these
+particular bursts are absorbed faults or benign no-touch reports is not settled;
+that the instrument exists is new.
+
+**Next measurement, and it needs no finger:** disable i2c-qup runtime PM
+(`echo on > /sys/bus/platform/devices/78b7000.i2c/power/control`) and repeat.
+If the bursts vanish, the bus transition is in the path; if they persist with an
+empty panel, they are the chip's own post-release reports.
