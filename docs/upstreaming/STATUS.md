@@ -23,7 +23,7 @@ with a link.
 | imx363-camera | camera | media `next` | 7 | rebased | – | us | reorder binding before driver; then the checkers | 2026-09-04 |
 | gcc-msm8953-csiphy | camera | clk `clk-next` | 1 | rebased | – | us | checker gauntlet; cover letter (carries `Fixes: 9bb6cfc3c77e`) | 2026-09-04 |
 | qmi-encdec-fix | sensor | qcom `for-next` | 1 | rebased | – | us | checker gauntlet (`sparse`); cover letter (carries `Fixes: fe099c387e06`) | 2026-09-04 |
-| q6voice | voice | ASoC | 1 | unsendable | – | – | the driver it patches was never posted upstream (patchwork: nothing for "q6voice"); revisit only if a q6voice driver appears on the list | 2026-09-03 |
+| q6voice | voice | ASoC | 1 | unsendable — **someone else is funded to do it** | – | Linaro | nothing to send; track the pmOS/Linaro codec2codec rearchitecture and offer FP3 test coverage when its series reaches alsa-devel | 2026-09-07 |
 | fp3-dts | all | qcom SoC (`arm64: dts: qcom`) | – | preparing | – | us | sent last; depends on every driver/binding series above having landed | 2026-09-03 |
 | qcom-mpm-wakeup-timer | power | irqchip `tip/irq/core` | 1 | rebased | – | us | cover letter; a trial build on the base (no cross toolchain here) | 2026-09-03 |
 | pinctrl-msm8953-mpm | power | pinctrl `for-next` | 1 | rebased | – | us | cover letter; send with or right after the dtsi series is visible | 2026-09-03 |
@@ -516,10 +516,59 @@ Done:
 Category:    voice
 Tree:        ASoC
 Source:      submit/7.1.3/voice (legacy; no upstreaming/ branch will be cut)
-Depends:     a q6voice driver in mainline — none exists, none was ever posted (patchwork empty for "q6voice", TODO.md)
+Depends:     a q6voice driver in mainline — none exists. ☠️ NOT because nobody
+             tried: the design cannot be upstreamed as it stands, and a funded
+             project is rearchitecting it (below)
 ```
 
-State `unsendable`: the one-line DAPM route patches a driver that is not upstream. Revisit if a q6voice driver appears on the list.
+State `unsendable`, and the reason is **architectural, not clerical** — corrected
+2026-09-07, because the earlier wording ("revisit only if a q6voice driver
+appears on the list") described a passive wait for something that is actively
+being built.
+
+### What we actually carry, and whose it is
+
+`wip/7.1.3/voice` is **one commit, 19 lines**, `bf4533309b3a` — a DAPM route
+added to `q6voice-dai.c`. The five q6voice files it patches (≈1000 lines) are
+**not ours**: they are Stephan Gerhold's, dated **2020-04-28**, with his own
+`Signed-off-by:`, and they arrived in `7.1.3/main` with the msm8953-mainline
+base (`git merge-base --is-ancestor 6fb6f6be942a 7.1.3/main` → yes).
+
+☠️ **The blocker is written in the code we carry, in its author's own words**, six
+years before anyone announced a project about it — `6fb6f6be942a`'s commit
+message:
+
+> *"At the moment it provides a single CS-Voice DAI with a hostless FE.
+> **Eventually usage should be simplified using a codec2codec link.**"*
+
+That hostless front end is what needs a userspace daemon
+([`q6voiced`](https://gitlab.postmarketos.org/postmarketOS/q6voiced)) to open and
+close the PCM around a call, and a kernel driver that needs a daemon to work is
+not an upstreamable shape.
+
+### ★ postmarketOS is paying Linaro to fix exactly that
+
+[*"New financed postmarketOS project: q6voice(d)"*](https://postmarketos.org/blog/2026/05/08/q6voice-project/),
+**2026-05-08**: pmOS has hired Linaro to rearchitect the q6voice patches into a
+**codec2codec** solution with no userspace daemon, then do manual integration
+testing, then submit to the kernel mailing list. No timeline is given beyond
+"kick off in the next weeks".
+
+So the honest state of this row is not "waiting for a driver to appear". It is
+**someone else's funded work in progress**, and the useful posture is:
+
+| | |
+|---|---|
+| send a patch | **no** — a route into a file that will be redesigned |
+| contribute to `q6voiced` / pmOS | ☠️ **no** — pmOS bans AI-assisted work outright |
+| respond on **alsa-devel** when Linaro's series lands | ✅ **yes** — that is LKML, the one open door |
+| what we would bring | an FP3 (SDM632 + **WCD9335 over SLIMbus**) with a working voice path — hardware coverage no other msm8953 board in the tree has |
+
+☠️ **And our 19-line route may be a real bug report rather than a patch.** It adds
+the missing `{ "SLIMBUS_0_RX", NULL, "SLIMBUS_0_RX Voice Mixer" }` route without
+which voice audio does not reach a SLIMbus codec at all. Whether the new design
+reproduces that gap is worth watching; if it does, saying so on the list is worth
+more than the patch is.
 
 ## fp3-dts
 
