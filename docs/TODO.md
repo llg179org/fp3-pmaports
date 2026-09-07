@@ -246,13 +246,13 @@ Three decisions the table does not show on its face:
       after: 178
       prio: 60
 
-- [ ] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
+- [@] 142. Bert's regression: 0314fee3ce35 (msm8953.dtsi system-pc arm,psci-suspend-param 0x41000353 -> 0x42000353, affinity level 2) breaks his hx83112b touchscreen after resume (i2c -110/-6) on a second FP3; reproduce on ours (touch after suspend, before/after revert), and HOLD the msm8953.dtsi idle-state patch out of any series until understood
       why: BERT REPRODUCED IT INDEPENDENTLY 2026-09-07: on his FP3, 1ac2e21fbf3a breaks the touchscreen after resume with 'Failed to read input event: -110' then '-6', and reverting cures it. ☠️ That is byte-for-byte the cascade signature this port measured on r82 - and #179 closed on r88 with the i2c-qup recovery in place, one timeout cleared in 2 ms and no -6 at all over 184 active minutes. WHETHER OUR r88 RECOVERY ALSO MASKS HIS REGRESSION IS UNTESTED, and it is the cheap next question: if it does, the affinity patch may be sendable after all. ☠️ Do not conflate the two - his is a regression cured by a revert, ours was a bus fault whose cascade the recovery removed. Analysis: docs/upstreaming/bert-2026-09-07-letter.md
       the review's section 4 had just listed that dtsi work as sendable
       a regression on a second device outranks that
       lane: phone
       they-do: At the weekend: a few MINUTES of tapping per arm (gnome-calculator is enough), not seconds - the -110 rate is usage-driven, ~1 per minute of active tapping and zero on unattended boots, so a clean test arm proves nothing unless it saw as much touching as the baseline. Both arms and the exact commands are in RESUME-at-the-weekend.md; the scripts are already on the device in /home/fp3. Also worth telling: whether the panel has ever behaved differently on an older kernel, since the journal only holds #80-fp3 boots and cannot say if this is a regression at all.
-      until: when Bert answers
+      until: when the operator taps the panel after a real suspend (the phone is armed: IdleActionSec=2min, probe at /tmp/touch-resume-probe.sh) - himax_resume() does no i2c, so no touch means no measurement and it cannot be run unattended. Also needs Bert to say WHICH commits his tree carried: the four touch fixes postdate his bisect point 1ac2e21fbf3a by 18-19 days, and that single fact decides between "the affinity commit is only the enabler of a supply bug we already fixed" and "it has a fault of its own"
 
 - [ ] 149. Cut msm8953-dtsi-idle (rpm-stats, rpm-master-stats, MPM node + wakeup-parent, domain-idle-states rename, drop local-timer-stop, system-pc request, SMSM bit) on the qcom SoC DT tree; keep 0314fee3ce35 (system-pc affinity) OUT until #142 settles; dtbs_check against the upstream bindings
       lane: upstreaming

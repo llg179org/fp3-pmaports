@@ -55,63 +55,92 @@ are TDDI parts — one die drives display and touch, both halves on the panel's
 rails — and before `c508e99b9fa9` the board DT declared no supply at all, so the
 driver took the dummy regulator and the panel driver's vote was the only one.
 
-**Hypothesis, labelled as such and untested:** the affinity change is not the
-fault but the **enabler**. Its own commit message says the RPM previously held the
-AP's active vote for the whole of every boot (`Shutdown count 0`); raising the
-level is what makes the system actually reach collapse — and a system that really
-collapses is one where the unheld panel rail really goes away. The revert cures
-the symptom by never getting deep enough to expose it.
+## ☠️☠️ WITHDRAWN before it was ever measured: "the affinity change is the enabler"
 
-☠️ **If that is right, what Bert needs is `cd2745d8d321` + `c508e99b9fa9`, not a
-revert — and the affinity patch is sendable.** If it is wrong, the affinity
-commit has a fault of its own and `#149` must keep holding it back.
+The paragraph that stood here proposed that the affinity change is not the fault
+but the **enabler** — that raising the level is what makes the system actually
+reach collapse, so the unheld panel rail really goes away. It was written from
+the commit dates alone, without reading this port's own prior capture, and that
+capture had already answered it **by measurement** three days earlier.
 
-### ☠️ The one fact that decides between them is not ours to look up
+★ **The rule this breaks is the one this session put into `/msm8953-mainline-pr`
+that same morning**: search for existing work before writing, and search again
+when done. It was applied to the outside world (ModemManager, `#182`) and not to
+this repository, which is where the answer was. Half a rule is what produced a
+plausible hypothesis in a question that was already settled.
 
-**Which of the five commits above Bert's tree carried is unknown.** His report
-says he reverted `1ac2e21fbf3a` and the touchscreen recovered; it does not say
-whether the 09-04/05 touch fixes were present when he did. Both readings fit what
-he wrote:
+## What [`../2026-09-04_142-touch-after-resume/`](../2026-09-04_142-touch-after-resume/) already measured
 
-- tree **without** them → the hypothesis stands and is nearly proven by the dates;
-- tree **with** them → the fixes do **not** mask it, the hypothesis is dead, and
-  the affinity commit has a real fault.
+On `#80-fp3`, **before** any of the four touch fixes existed:
 
-It is one `git log` on his side. It belongs in the next mail (`#154`), and until
-it is answered no amount of measuring here can distinguish the two.
+| gate | measurement | strength |
+|---|---|---|
+| **screen OFF** | 5/5 stalls against 0/5 with it on, interleaved, identical 12 s idle | p ≈ 0.004; 7/7 v 0/7 with reruns |
+| **idle ≥ ~10 s** | threshold between 3 s and 10 s; 0/52 688 at 0.02 s spacing, 1/3 at 45 s | the strongest effect of the day |
+| not a fresh boot | one observation each way | the weak leg |
 
-## What our own phone can and cannot say
+and the root cause, read straight out of `regulator_summary`:
 
-☠️ **The passive evidence is empty, and #179 could never have supplied it.**
+> `l6` has **exactly one consumer**, the panel's `iovcc`, and it drops its vote
+> when the display is powered down. `touchscreen@48` declared no supply at all,
+> because `trivial-touch.yaml` cannot carry one.
 
-- `himax_resume()` calls `enable_irq()` and **nothing else** — it does no i2c. So
-  a `-110`/`-6` cannot appear at resume on its own; it takes a real touch to fire
-  the interrupt. **This test cannot be run unattended.**
-- The boot of 2026-09-07 (8 h 53) shows `Failed to read input event` **0 times**
-  — with **70** touch interrupts in total. Check 59's floor is 500: that reads
-  "nobody touched it", not "clean".
-- #179's 184 clean active minutes carry **no suspend/resume information at all**
-  — its sampler has no such column — so they say nothing about a post-resume
-  failure whatever they say about the cascade.
+☠️ **And the affinity commit was explicitly excluded there, by measurement**:
 
-So the r88 evidence that #142 was written to lean on does not reach the question,
-and the measurement still has to be made.
+> *"the first failure came 324 s after the resume … the second 47.6 s after the
+> first, with no sleep of any kind. A resume cannot explain an event that happens
+> twice, minutes apart, without one. `0314fee3ce35` is therefore not the cause of
+> what we measured here."*
 
-## The measurement, and why it is cheap right now
+Stronger still, `armB-clean-boot-trial2.txt` is a clean boot **on the suspect
+`0x42000353`**, with a real suspend/resume and ~513 post-resume touch interrupts,
+and **no `-110` at all**.
 
-The phone is in the configuration `#182` left behind — `IdleAction=suspend`,
-`IdleActionSec=2min` — so it suspends on its own within minutes of being put
-down. That is the regime this test needs and it will not be cheaper later.
+So on this device the fault is **screen-gated and idle-gated, not
+suspend-gated**, and a suspend is merely a reliable way to turn the display off.
+The hold on the commit stays for the reason that capture already gave — *"it is
+no longer 'we suspect this commit', it is 'we cannot yet explain his
+observation'"* — and the dates section above is what makes his observation
+explicable at last, since none of the three rail commits existed when he bisected.
 
-`touch-resume-probe.sh` (beside this page) prints one snapshot; the **difference**
-between a snapshot taken before the suspend and one taken after the tapping is
-the measurement. The criterion is the one a finger can answer:
+## ★ The measurement that is actually outstanding, and it needs no finger
 
-> After a real suspend, does the panel respond to touch at all — and do `-110`,
-> `-6` or `Disabling IRQ` appear while it is being used?
+`ROOTCAUSE-the-panel-owns-the-rail.md` closes with the one thing it could not do:
 
-☠️ **The ambiguity to keep in view**: `HIMAX_READ_RETRIES` is 3, so a transient
-failure now leaves *no log line* — "zero errors" is ambiguous between "no faults"
-and "faults absorbed", exactly as `#178` states. It does not weaken this test,
-because Bert's failure is a **persistent loss** (`-6` = the device is gone), which
-no three-attempt retry absorbs.
+> ☠️ **NOT yet verified: that it actually fixes the phone.** The confirming run is
+> `142-trigger.sh` on a kernel carrying these commits, and that needs a build and
+> a flash.
+
+**That flash has happened.** The phone runs r88, which carries all three, so the
+pre-registered run is available now — and it is **pre-registered**, which is what
+makes it worth more than a fresh instrument: *screen-off must go from 5/5 to 0/5
+over five interleaved rounds.*
+
+★ It also satisfies the new-instrument gate on its own terms: `142-trigger.sh`
+has already answered a question whose answer is on record (5/5 v 0/5 on
+`#80-fp3`), so a null from it now means the fix worked, not that the instrument
+was pointed the wrong way.
+
+☠️ **Correction to this page's own earlier claim that the test "cannot be run
+unattended".** That is true of the *driver-bound* question — real touches after a
+real resume — because `himax_resume()` does no i2c and no touch means no event.
+It is **not** true of the pre-registered run: `142-trigger.sh` drives the screen
+over phosh's `org.gnome.ScreenSaver` D-Bus interface and probes an unused i2c
+address with the driver unbound. It needs the phone awake and phosh alive, and
+nothing else.
+
+Two different measurements, and only the second needs a person:
+
+| | instrument | driver | needs | settles |
+|---|---|---|---|---|
+| **A** | `142-trigger.sh` | unbound | phone awake | whether the rail fix removed the stall |
+| **B** | tapping after a real suspend | bound | a finger, minutes of it | whether ordinary use is now clean |
+
+☠️ **Before running A: disarm the idle-suspend drop-in.** `#182` left
+`IdleActionSec=2min` in place, and A blanks the screen for 12 s per round over
+~7 minutes — logind would suspend the phone in the middle of it.
+
+☠️ **The risk A carries** is in its own header: rebinding the Himax with the
+screen off returns `-5` and leaves the phone without a touchscreen — five reboots
+in one day on 2026-09-04. The script now always rebinds screen-on and arms a
+reboot after three failed tries.
