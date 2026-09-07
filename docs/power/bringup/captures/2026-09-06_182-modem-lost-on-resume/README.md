@@ -276,3 +276,72 @@ not see it, which only strengthens the conclusion that MM's failure is internal.
 
 Why a *long* suspend and a *call* wake together, when the transport is fine
 either way, is still unexplained.
+
+## ★★★ CAUSE FOUND, and it is ours: our debug drop-in disabled the distro's fix
+
+Searching for other people's work **before** writing any code — the rule this
+session put into `/msm8953-mainline-pr` — found it in minutes.
+
+ModemManager's own `NEWS` describes a daemon mode in which, on resume, **no
+device re-probing from scratch is launched**; the daemon syncs the existing
+modem's state instead. In `src/main.c`:
+
+| mode | on resume | |
+|---|---|---|
+| default | `resuming_cb` → `mm_base_manager_start (manager, FALSE)` | *"re-scanning (resuming)"* — the full rebuild that loses `qrtr0` |
+| `--test-quick-suspend-resume` | `resuming_quick_cb` → `mm_base_manager_sync (manager)` | *"syncing modem state"* — nothing is rebuilt, so nothing is lost |
+
+The precondition its NEWS names — *"useful when the WWAN module stays awake
+while the host is suspended"* — is **measurably true here**: the modem is what
+wakes the AP with an incoming call.
+
+★ **And pmOS already ships it**, `/usr/lib/systemd/system/ModemManager.service.d/quick-suspend-resume.conf`,
+dated 2026-08-05:
+
+```ini
+# Force the new quick suspend/resume mode until it's the default upstream,
+# see: https://gitlab.freedesktop.org/mobile-broadband/ModemManager/-/issues/1039
+ExecStart=
+ExecStart=/usr/sbin/ModemManager --test-quick-suspend-resume
+```
+
+☠️ **Our own debug drop-in removed it.** `/etc/systemd/system/ModemManager.service.d/zz-fp3-debug.conf`,
+dated 2026-09-02, clears `ExecStart` and sets only `--log-level=DEBUG`. `/etc`
+beats `/usr/lib` and `zz-` sorts last, so it wins. The effective command line,
+read from systemd rather than inferred:
+
+```
+argv[]=/usr/sbin/ModemManager --log-level=DEBUG
+```
+
+So the fault this task chased is very probably **self-inflicted by our own
+configuration**, and the distro had already worked around it a month earlier.
+
+### What was changed
+
+`zz-fp3-debug.conf` now carries **both** flags — the debug logging `#75` depends
+on, and the workaround — with the reason written into the file so the next person
+to edit it cannot repeat this:
+
+```
+/usr/sbin/ModemManager --test-quick-suspend-resume --log-level=DEBUG
+```
+
+☠️ **Not yet proven to fix it.** The failing arm — a long suspend ended by an
+incoming call — has not been re-run with the flag restored. Until it has, this is
+a very strong hypothesis with a mechanism, not a result.
+
+### ☠️ The lesson, and it is not about ModemManager
+
+A drop-in that sets one option **replaced an entire command line**. `ExecStart=`
+in a `[Service]` section does not add — it clears, and every later drop-in that
+sets it silently discards what earlier ones set. **After adding a drop-in, read
+back the effective value** (`systemctl show <unit> -p ExecStart`) rather than
+assuming the option you added is the only change you made. Four days of a
+"platform bug" hung on that.
+
+★ It also vindicates the rule added to the skill this same session: the
+search that would have found this was never run, because the work started from
+our own measurement and went straight to the source. **Both halves of the rule
+fired here** — the distro's fix predates ours by a month, and the search took
+minutes.

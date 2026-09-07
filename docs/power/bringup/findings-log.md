@@ -11117,3 +11117,34 @@ not against it: the transport may even have been helped, and MM still could not
 see it.
 
 Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
+
+### ★★★ #182 CAUSE: our own debug drop-in disabled the fix pmOS already ships
+
+ModemManager takes two different resume paths (`src/main.c`): by default
+`resuming_cb` → `mm_base_manager_start` — a **full re-scan**, which on this
+device does not find the `qrtr0` QMI port; with `--test-quick-suspend-resume`,
+`resuming_quick_cb` → `mm_base_manager_sync` — **no rebuild at all**. Its NEWS
+names the precondition as "the WWAN module stays awake while the host is
+suspended", which is measurably true here: the modem is what wakes the AP.
+
+★ **pmOS already forces that flag**, in
+`/usr/lib/systemd/system/ModemManager.service.d/quick-suspend-resume.conf` dated
+2026-08-05, citing ModemManager issue 1039.
+
+☠️ **Our own `/etc/.../zz-fp3-debug.conf` (2026-09-02) removed it** — it clears
+`ExecStart` and sets only `--log-level=DEBUG`, and `/etc` beats `/usr/lib` while
+`zz-` sorts last. Effective command line, read from systemd:
+`/usr/sbin/ModemManager --log-level=DEBUG`. The fault chased for two days is very
+probably **self-inflicted**. The drop-in now carries both flags, with the reason
+written into the file.
+
+☠️ Not yet proven: the failing arm has not been re-run with the flag restored.
+
+☠️ **The transferable lesson is about systemd, not ModemManager**: `ExecStart=` in
+a drop-in **clears** rather than adds, and the last drop-in wins. After adding
+one, read back `systemctl show <unit> -p ExecStart` instead of assuming the
+option you added is the only change you made.
+
+★ And it vindicates the prior-art rule added to `/msm8953-mainline-pr` in this
+same session: the search that found it took minutes and had never been run,
+because the work went straight from our own measurement to the source.
