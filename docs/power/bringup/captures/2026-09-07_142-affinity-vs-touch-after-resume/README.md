@@ -144,3 +144,86 @@ Two different measurements, and only the second needs a person:
 screen off returns `-5` and leaves the phone without a touchscreen — five reboots
 in one day on 2026-09-04. The script now always rebinds screen-on and arms a
 reboot after three failed tries.
+
+---
+
+# ARM A, run 2026-09-07 08:52–08:56 on `#89-fp3` (r88), clean boot
+
+```
+round 1 OFF screen=Off  first transaction after unbind:  2.0485 s errno 5  >>> STALL
+round 1 ON  screen=On   first transaction after unbind:  0.0007 s errno 6  ok
+round 2 OFF                                              2.0467 s errno 5  >>> STALL
+round 2 ON                                               0.0007 s errno 6  ok
+round 3 OFF                                              2.0526 s errno 5  >>> STALL
+round 3 ON                                               0.0007 s errno 6  ok
+round 4 OFF                                              2.0487 s errno 5  >>> STALL
+round 4 ON                                               0.0007 s errno 6  ok
+round 5 OFF                                              2.0499 s errno 5  >>> STALL
+round 5 ON                                               0.0008 s errno 6  ok
+
+screen OFF: 5/5      screen ON: 0/5
+```
+
+## ☠️☠️ The pre-registered criterion CANNOT be met by this instrument — measured, not argued
+
+The registration said *screen-off must go from 5/5 to 0/5*. It stayed 5/5, and
+that is **not** a verdict on the fix: `142-trigger.sh` **unbinds the touch
+driver as its first action**, and the rail fix *is* the driver's
+`devm_regulator_bulk_get_enable()` vote. devm releases it on unbind. Read
+straight out of the same `regulator_summary` that found the root cause:
+
+| state | `l6` | consumers |
+|---|---|---|
+| driver **bound** | `use=2 open=2` | `2-0048-iovcc` **and** `1a94000.dsi.0-iovcc` |
+| driver **unbound** | `use=1 open=1` | only `1a94000.dsi.0-iovcc` — **the touch vote is gone** |
+| after rebind | `open=2` | `2-0048-iovcc` back |
+
+**The instrument's first move removes the thing it was registered to test.** The
+registration was written on 2026-09-04, before the fix existed, so this could not
+have been foreseen then — but it means arm A can never answer that question, and
+no number of repetitions will change it.
+
+★ It is worth being precise about what a 5/5 here does and does not mean. It is
+**not** "the fix failed". It is "with no voter for the rail and the display down,
+the bus still stalls" — which is the root cause **re-confirmed on r88 by a second
+independent route**, since the vote structure was this time read out directly
+rather than inferred.
+
+## ★ What arm A DID measure, and it is a number #179 could not produce
+
+| | 2026-09-04, `#80-fp3` | 2026-09-07, `#89-fp3` (r88) |
+|---|---|---|
+| screen-off arm | **5/5** stalled | **5/5** stalled |
+| stall duration | **15.07 s** | **2.05 s** |
+| errno | **110** (`-ETIMEDOUT`) | **5** (`-EIO`) |
+| screen-on arm | 0/5 | 0/5 |
+
+Five rounds spanning 2.0467–2.0526 s — a spread of **6 ms**, so this is a
+*constant*, i.e. a timeout being hit, not a variable fault. `MECHANISM-qup-timeout.md`
+decomposes the old one as 2 s + 131072 × 99 µs = 14.98 s; **the 2 s base survives
+and the long tail is gone.** That is the i2c-qup bus-clear recovery firing where
+the driver previously waited out the whole transfer timeout.
+
+So the worst case for a dead bus on this board went from **15 s to 2 s**, and the
+error the driver sees changed from `-110` to `-5`. #179 established that the
+cascade was gone but explicitly could not measure a rate or a duration; this is
+the duration, from a deterministic trigger rather than from ordinary use.
+
+☠️ It is measured **with the driver unbound**, which is not a state ordinary use
+reaches. It bounds the bus's behaviour, not the driver's.
+
+## What is still outstanding — and it does need a finger after all
+
+☠️ **Correction to this page's own earlier correction.** It said the outstanding
+measurement needs no person. That is now wrong for a deeper reason than the first
+version was: the rail fix can only be exercised **with the driver bound**, and a
+bound driver only touches the bus when a finger fires its interrupt.
+
+Arm B stands as the only test of the fix:
+
+> after a real suspend, with the driver bound, does the panel respond to touch —
+> and do `-110`, `-6` or `Disabling IRQ` appear during **minutes** of tapping?
+
+The `#178` exposure floor applies: fewer than 500 touch interrupts means nobody
+touched it, and the 09-04 rate was roughly one `-110` per minute of active
+tapping. Seconds of tapping prove nothing.

@@ -11181,3 +11181,63 @@ ModemManager still loses `qrtr0` here; that belongs to
 not to us.
 
 Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)
+
+### ★★★ 2026-09-07 — the screen symptom was never #182: phoc cannot restore DSI-1 on resume
+
+Two days of *"felvillant a háttér, de fekete a képernyő"* were read as part of
+#182. #182 was fixed and verified this morning — **the phone rang and the screen
+still did not come back.**
+
+Every `PM: suspend exit` in the journal against the nearest phoc failure:
+**6 of the 6 resumes followed by an attempt to light the screen carry a phoc
+failure in the SAME SECOND**; the three unattended `rtcwake` resumes that nobody
+asked for a screen carry none. 1561 failure lines.
+
+```
+08:24:45  phoc: [types/output/swapchain.c:109] Swapchain for output 'DSI-1' failed test
+08:24:45  phoc: Failed to commit power mode change to 1 for 0xffff919e9db0
+```
+
+DRM says `dpms=On`, `status=connected`, backlight 160 unblanked — the panel is
+lit and the compositor is stuck blanked, and `ScreenSaver.SetActive` moves it in
+**neither** direction. ☠️ The power button is dead for a second reason: `phosh`
+holds a `handle-power-key` **block** inhibitor, took the key, and wedged.
+
+Restarting `greetd` did not fix it (`Atomic commit failed: Resource busy` on the
+fresh phoc); a clean reboot did.
+
+☠️ **Self-inflicted half:** our own script ran `systemctl restart systemd-logind`,
+which took the seat from the running compositor (`libseat: Could not take
+device: You are not in control of this session`). It did not cause the fault —
+the first `swapchain failed` predates it by hours — but it removed the cheaper
+repair. Use `systemctl kill -s HUP systemd-logind` to re-read the configuration
+without dropping the seat.
+
+Capture: [`captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/`](captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/)
+
+### ★★ 2026-09-07 — #142 arm A: the pre-registered criterion is unreachable by its own instrument
+
+`142-trigger.sh` on r88, clean boot: **screen-off 5/5, screen-on 0/5** — the
+registration of 2026-09-04 said 5/5 must become 0/5, and it did not.
+
+☠️ **That is not a verdict on the fix.** The script unbinds the touch driver as
+its first action, and the rail fix *is* the driver's
+`devm_regulator_bulk_get_enable()` vote, which devm releases on unbind. Measured
+directly in `regulator_summary`: `l6` has **two** consumers with the driver bound
+(`2-0048-iovcc` + `1a94000.dsi.0-iovcc`) and **one** with it unbound. The
+instrument's first move removes what it was registered to test. The registration
+predates the fix, so this could not have been foreseen — but no repetition will
+fix it.
+
+★ What it did measure is a number #179 could not: the stall went from
+**15.07 s / `-110`** to **2.05 s / `-5`**, five rounds spanning 6 ms — a constant,
+i.e. the i2c-qup bus-clear recovery firing where the driver used to wait out the
+full 14.98 s transfer timeout. The worst-case dead bus on this board is now 2 s.
+☠️ Measured with the driver unbound, so it bounds the **bus**, not the driver.
+
+The fix itself can only be exercised with the driver bound, and a bound driver
+touches the bus only when a finger fires its interrupt. **Arm B needs a person
+and minutes of tapping**, not seconds — the 09-04 rate was ~1 `-110` per minute
+of active use, and #178's floor is 500 touch interrupts.
+
+Capture: [`captures/2026-09-07_142-affinity-vs-touch-after-resume/`](captures/2026-09-07_142-affinity-vs-touch-after-resume/)
