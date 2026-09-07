@@ -11090,3 +11090,30 @@ dump at +0 s in both arms, and the call arm needs a person.
 missing: every cycle survived, so the transport never went away. And cycles 1–2
 asked for 720 s and got 110 s and 4 s, for a reason still unidentified; a run
 needing a guaranteed sleep duration cannot assume it gets one.
+
+### ☠️☠️ #182: "the QMI port is late" WITHDRAWN — it was never away
+
+The failing arm re-run 2026-09-07 with a sampler started before the suspend, so
+it resumes with the system and samples from +0 s. 25 min 08 s of suspend
+(06:44:00 → 07:09:08) ended by the operator's call; `suspend_stats/success` 6 →
+7; `mmcli -L` reported **no modems** and the operator confirmed **it did not
+ring**.
+
+★ **The sampler logged `QMI ok` on the first sample after resume and every second
+after — including 07:09:12, the second in which ModemManager declared there was
+no QMI port.** Not one `NO ANSWER` in the file. So the port was never late; the
+race diagnosis and the retry fix it implied are both withdrawn — a retry would
+have found the port present on its first attempt too.
+
+What the log says instead: *"creating modem with plugin 'qcom-soc' and '2'
+ports"* while a working MM lists `qrtr0 (qmi), rmnet_ipa0 (net)`. **`qrtr0` is
+not a device node** — it is MM's representation of a node on the QRTR bus,
+learned from libqrtr's notifications. So **MM's QRTR bus watch does not survive
+suspend and nothing re-adds the node.** The fix moves from "retry the probe" to
+"re-establish the QRTR bus connection after resume".
+
+☠️ The sampler polls, so it is not passive — and that cuts toward the conclusion,
+not against it: the transport may even have been helped, and MM still could not
+see it.
+
+Capture: [`captures/2026-09-06_182-modem-lost-on-resume/`](captures/2026-09-06_182-modem-lost-on-resume/)

@@ -205,3 +205,74 @@ suspend and it has not been identified; `wakeup_sources` named nothing earlier.
 It does not affect the 2×2 — the surviving long arm is cycle 3's real 665 s —
 but any future run that needs a guaranteed sleep duration cannot assume it gets
 one.
+
+## ☠️☠️ WITHDRAWN: "the QMI port is LATE". It was never away.
+
+The failing arm was run again on 2026-09-07 with a sampler started **before** the
+suspend and left running, so it resumes with the system and samples from **+0 s**
+without a resume hook.
+
+```
+06:44:00  ready to sleep
+07:09:08  system is resuming            <- 25 min 08 s, ended by the operator's call
+07:09:12  couldn't create modem for device 'qcom-soc':
+          Unsupported device: at least a QMI port is required
+```
+
+`suspend_stats/success` 6 → 7, `mmcli -L`: **no modems**, and the operator
+confirmed: **it did not ring.** The failing arm reproduced exactly.
+
+And the sampler, `qmi-poller-failing-arm.log`:
+
+```
+06:44:05  QMI ok        <- last sample before the freeze
+07:09:08  QMI ok        <- FIRST sample after resume, +0 s
+07:09:09  QMI ok
+07:09:10  QMI ok
+07:09:11  QMI ok
+07:09:12  QMI ok        <- the second MM declared there was no QMI port
+...        QMI ok        (not one "NO ANSWER" in the whole file)
+```
+
+★ **The QMI transport answered on the very first sample after resume and every
+second thereafter — including the second in which ModemManager said there was no
+QMI port.** So the port was never late and never absent. **The diagnosis "MM
+probes at +4 s and the port arrives later" is wrong and is withdrawn**, together
+with the fix it implied: a retry would have found the port present on its first
+attempt too, and changed nothing.
+
+### What the evidence says instead
+
+ModemManager's own view of the device is what is broken, not the transport:
+
+```
+07:09:12  [device qcom-soc] creating modem with plugin 'qcom-soc' and '2' ports
+07:09:12  couldn't create modem: at least a QMI port is required
+```
+
+Two ports, and neither is the QMI one — while a working ModemManager lists
+`qrtr0 (qmi), rmnet_ipa0 (net)` with `rpmsg_ctrl3` ignored. So the **`qrtr0` port
+object is missing from MM's rebuilt device**, and `qrtr0` is not a device node:
+it exists only as MM's representation of a node on the QRTR bus, learned through
+libqrtr's bus notifications. **MM's QRTR bus watch does not survive suspend, and
+nothing re-adds the node.**
+
+That relocates the fix from "retry the probe" to "re-establish the QRTR bus
+connection, or re-add its nodes, after resume" — a different change in a
+different place, and it would not have been found by making MM retry.
+
+☠️ **The sampler is not a passive observer** — it polls the transport once a
+second, so it could in principle have kept something alive. That caveat cuts the
+other way here: it means the transport may have been *helped*, and MM still could
+not see it, which only strengthens the conclusion that MM's failure is internal.
+
+### The 2×2 stands, and now has a mechanism
+
+| suspend | woken by | modem |
+|---|---|---|
+| 24 s | incoming call | survived |
+| 665 s | RTC alarm | survived |
+| 623 s / 1176 s / **1508 s** | incoming call | **LOST** |
+
+Why a *long* suspend and a *call* wake together, when the transport is fine
+either way, is still unexplained.
