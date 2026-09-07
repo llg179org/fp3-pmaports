@@ -1,0 +1,103 @@
+ regulator                      use open bypass  opmode voltage current     min     max
+---------------------------------------------------------------------------------------
+ regulator-dummy                  5   36      0 unknown     0mV     0mA     0mV     0mV 
+    1c00000.gpu-vddcx             0                                 0mA     0mV     0mV
+    1c00000.gpu-vdd               0                                 0mA     0mV     0mV
+    1a94000.dsi-vddio             1                               100mA     0mV     0mV
+    s1                            0    0      0    fast   656mV     0mA     0mV     0mV 
+    s2                            0    0      0  normal   712mV     0mA     0mV     0mV 
+    s3                            0    0      0  normal  1224mV     0mA     0mV     0mV 
+    s4                            0    0      0    fast  2040mV     0mA     0mV     0mV 
+    s5                            1    1      0  normal   875mV     0mA   400mV  1065mV 
+       b018000.power-controller-apc   0                                 0mA   875mV   875mV
+    s6                            0    0      0  normal   875mV     0mA     0mV     0mV 
+    l1                            0    0      0    idle   975mV     0mA     0mV     0mV 
+    l2                            0    0      0  normal  1175mV     0mA     0mV     0mV 
+    l3                            0    0      0  normal   925mV     0mA     0mV     0mV 
+    l4                            0    0      0    idle  1800mV     0mA     0mV     0mV 
+    l5                            0    0      0    idle  1800mV     0mA     0mV     0mV 
+    l6                            0    0      0  normal  1800mV     0mA     0mV     0mV 
+    l7                            0    0      0    idle  1800mV     0mA     0mV     0mV 
+    l8                            0    0      0  normal  2900mV     0mA     0mV     0mV 
+    l9                            0    0      0  normal  3300mV     0mA     0mV     0mV 
+    l10                           0    0      0    idle  2800mV     0mA     0mV     0mV 
+    l11                           0    0      0  normal  2950mV     0mA     0mV     0mV 
+    l12                           0    0      0  normal  2900mV     0mA     0mV     0mV 
+    l13                           0    0      0  normal  3125mV     0mA     0mV     0mV 
+    l14                           0    0      0    idle  1800mV     0mA     0mV     0mV 
+    l15                           0    0      0    idle  1750mV     0mA     0mV     0mV 
+    l16                           0    0      0  normal  1800mV     0mA     0mV     0mV 
+    l17                           0    0      0  normal  2850mV     0mA     0mV     0mV 
+    l18                           0    0      0  normal  2700mV     0mA     0mV     0mV 
+    l19                           0    0      0    idle  1300mV     0mA     0mV     0mV 
+    l20                           0    0      0 unknown  1740mV     0mA     0mV     0mV 
+    l21                           0    0      0 unknown  1740mV     0mA     0mV     0mV 
+    l22                           0    0      0  normal  2800mV     0mA     0mV     0mV 
+    l23                           0    0      0  normal  1200mV     0mA     0mV     0mV 
+    s3                            2    7      0 unknown   984mV     0mA   984mV  1240mV 
+       1b00020.camss-vdda         0                                 9mA*    0mV     0mV
+       1b00020.camss-vdda         0                                 9mA*    0mV     0mV
+       1b00020.camss-vdda         0                                 9mA*    0mV     0mV
+       1a94000.dsi-vdda           1                               100mA     0mV     0mV
+       l1                         0    0      0 unknown   975mV     0mA   975mV  1050mV 
+       l2                         0    1      0 unknown  1175mV     0mA   975mV  1175mV 
+          0-001a-vdig             0                                 0mA  1175mV  1175mV
+       l3                         2    2      0 unknown   925mV     0mA   925mV   925mV 
+          1a94400.phy-vcca        1                                17mA     0mV     0mV
+          79000.phy-vdd           1                                 0mA     0mV     0mV
+    s4                            3    5      0 unknown  1036mV     0mA  1040mV  2040mV 
+       l5                         3    5      0 unknown  1800mV     0mA  1800mV  1800mV 
+          4-0034-dvdd             1                                 0mA     0mV     0mV
+          4-0034-vddio            1                                 0mA     0mV     0mV
+          a204000.remoteproc.iris-vdddig   0                                10mA* 1800mV  1800mV
+          a204000.remoteproc-vddpx   0                                 0mA  1800mV  1800mV
+          7824900.mmc-vqmmc       1                               325mA     0mV     0mV
+       l6                         2    2      0 unknown  1800mV     0mA  1800mV  1800mV 
+          2-0048-iovcc            1                                 0mA     0mV     0mV
+          1a94000.dsi.0-iovcc     1                                 0mA     0mV     0mV
+       l7                         1    3      0 unknown  1800mV     0mA  1800mV  1900mV 
+          a204000.remoteproc.iris-vddxo   0                                10mA* 1800mV  1800mV
+          4080000.remoteproc-pll   0                                 0mA     0mV     0mV
+          79000.phy-vdda-pll      1                                 0mA     0mV     0mV
+       l16                        0    0      0 unknown  1800mV     0mA  1800mV  1800mV 
+       l19                        0    1      0 unknown  1300mV     0mA  1200mV  1350mV 
+          a204000.remoteproc.iris-vddrfa   0                               100mA* 1300mV  1300mV
+    s5                            0    0      0 unknown  1036mV     0mA  1040mV  2040mV 
+    l23                           0    0      0 unknown   975mV     0mA   975mV  1225mV 
+ lcdb_dummy                       3    2      0 unknown  5500mV     0mA  5500mV  5500mV 
+    1a94000.dsi.0-vsp             1                                 0mA     0mV     0mV
+    1a94000.dsi.0-vsn             1                                 0mA     0mV     0mV
+ vph_pwr                          5   12      0 unknown     0mV     0mA     0mV     0mV 
+    4-0034-vdd                    1                                 0mA     0mV     0mV
+    cam_af_2p85                   0    1      0 unknown  2850mV     0mA  2850mV  2850mV 
+       0-000c-vdd                 0                                 0mA     0mV     0mV
+    cam_io_1p8                    0    3      0 unknown  1800mV     0mA  1800mV  1800mV 
+       1-0010-vddio               0                                 0mA     0mV     0mV
+       0-001a-vif                 0                                 0mA     0mV     0mV
+       0-000c-vio                 0                                 0mA     0mV     0mV
+    cam2_dig_1p2                  0    1      0 unknown  1200mV     0mA  1200mV  1200mV 
+       1-0010-vddd                0                                 0mA     0mV     0mV
+    l8                            1    1      0 unknown  2900mV     0mA  2900mV  2900mV 
+       7824900.mmc-vmmc           1                               800mA  2900mV  3000mV
+    l9                            0    1      0 unknown  3300mV     0mA  3000mV  3300mV 
+       a204000.remoteproc.iris-vddpa   0                               515mA* 3300mV  3300mV
+    l10                           1    1      0 unknown  2800mV     0mA  2800mV  3000mV 
+       2-0048-vdda                1                                 0mA     0mV     0mV
+    l11                           0    1      0 unknown  2950mV     0mA  2950mV  2950mV 
+       7864900.mmc-vmmc           0                                 0mA  2900mV  3000mV
+    l12                           0    1      0 unknown  2900mV     0mA  1800mV  2950mV 
+       7864900.mmc-vqmmc          0                                 0mA  2900mV  2950mV
+    l13                           1    1      0 unknown  3125mV     0mA  3125mV  3125mV 
+       79000.phy-vdda-phy-dpdm    1                                 0mA     0mV     0mV
+    l17                           0    0      0 unknown  2850mV     0mA  2850mV  2850mV 
+    l22                           0    2      0 unknown  2800mV     0mA  2800mV  2800mV 
+       1-0010-vdda                0                                 0mA     0mV     0mV
+       0-001a-vana                0                                 0mA     0mV     0mV
+ usb_vbus                         0    1      0 unknown     0mV  1000mA     0mV     0mV 
+    200f000.spmi:pmic@2:typec@1500-vdd-vbus   0                                 0mA     0mV     0mV
+ wcd-vout-1p8                     5    5      0 unknown  1800mV     0mA  1800mV  1800mV 
+    217:1a0:1:0-vdd-io            1                                 0mA     0mV     0mV
+    217:1a0:1:0-vdd-rx            1                                 0mA     0mV     0mV
+    217:1a0:1:0-vdd-tx            1                                 0mA     0mV     0mV
+    217:1a0:1:0-vdd-buck-sido     1                                 0mA     0mV     0mV
+    217:1a0:1:0-vdd-buck          1                                 0mA     0mV     0mV

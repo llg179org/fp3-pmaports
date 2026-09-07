@@ -22,6 +22,57 @@ instruments, [`captures/`](captures/) the raw data, and
 
 ---
 
+## 2026-09-07 — #142 arm B is armed; its control leg is clean over 15 445 touch interrupts
+
+Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
+r88 / `#89-fp3`, source `6113869dcc3d`, `debug-int/7.1.3`.
+
+**Arm B itself has not run.** `/sys/power/suspend_stats/success` was `0` before
+and after; there was no suspend. What ran is the leg that had never been taken:
+ordinary two-finger tapping with the touch driver **bound**.
+
+That distinction is the whole reason this capture exists. Arm A
+([`captures/2026-09-07_142-affinity-vs-touch-after-resume/`](captures/2026-09-07_142-affinity-vs-touch-after-resume/))
+cannot test the rail fix, because `142-trigger.sh` unbinds the driver first and
+the fix *is* that driver's devm regulator vote. Confirmed here directly rather
+than inferred: with the driver bound, `l6` reads `use=2 open=2` with both
+`2-0048-iovcc` and `1a94000.dsi.0-iovcc`.
+
+**What the control leg measured** — 17:12–17:21, ~9 minutes:
+
+| | |
+|---|---|
+| himax IRQ 138 | 115 → 15 560 (**15 445**), i.e. 30× the `#178` floor |
+| kernel contacts, two independent readers | **1 725** and **1 725** |
+| `RAW` reaching the client | **1 725** — exact equality, no loss above evdev |
+| `SYN_DROPPED` | 0 |
+| `-110` / `-6` / `-5` / `Disabling IRQ` | **none** |
+
+On 2026-09-04 the rate was ~1 × `-110` per active minute. Nine dense minutes
+produced none.
+
+☠️ **Two things this does not say.** (1) `CONTACT == RAW` bounds losses *above*
+evdev only; a touch dropped by the panel or driver *before* evdev leaves that
+equality perfectly intact. (2) `fb68b1bd764f` retries a failed event read
+silently, so — exactly as `#178` argues — zero log lines is not distinguishable
+from faults absorbed. The leg bounds **user-visible** behaviour, not the fault
+rate.
+
+**A disproven reading, kept because it was tempting.** The operator pressed MARK
+at 17:16:17.584 after a run of 8 same-side taps, and the kernel log shows the
+second finger's `slot=1` absent for **2.67 s** — close enough to arm A's 2.05 s
+QUP bus-clear constant to look like a bus stall. It is not one: the same bus
+delivered **12 `slot=0` contacts inside that gap**, and the journal shows no
+error and not even a `pm_runtime` transition there. A stalled bus delivers
+nothing to anybody. The gap is not separable from a lifted finger by these logs,
+and `fp3-taptest.py`'s own rules warn that a BREAK is not a lost tap. The MARK
+is recorded and left **unresolved**.
+
+**Still outstanding:** the deliberate suspend, the resume, and minutes of tapping
+after it — and it may be unreachable until `#183` clears, since phoc has failed
+to restore DSI-1 on 6 of 6 resumes and a blank screen cannot be tapped. That
+outcome would itself be the datum.
+
 ## ☠️ Open, but no longer a blanket gate: the CPU0 PLL storm
 
 Measured 2026-08-16. `apcs-cpu0-pll failed to enable!` — 266 times in one boot,
