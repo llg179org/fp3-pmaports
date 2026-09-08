@@ -168,17 +168,24 @@ def _irq_count():
 # mattered. Nobody was watching that column, and a finger cannot feel where the
 # digitizer ends. So the instrument now says it out loud.
 #
-#   EDGE  432 Hz            a tap landed inside a margin: any of the four
-#                           outer edges, either side of the vertical split, or
-#                           either side of the field's top boundary
-#   OVER  648 Hz (= 432*1.5) a tap landed while another finger was still down
-#   MISS  864 Hz (= 432*2)  the alternation broke, i.e. a tap may have been lost
+#   ASTRAY  432 Hz   something about the GRIP went wrong: the tap landed in a
+#                    margin, or a finger was still down, or the alternation
+#                    broke and one of those explains it
+#   CAUGHT  864 Hz   THE FAULT ITSELF: the alternation broke and NOTHING about
+#                    the operator's hand accounts for it
 #
-# Root, fifth, octave, rising with how much the operator needs to hear it. The
-# overlap earns a tone of its own because it is the condition under which taps
-# were ACTUALLY being lost: GestureClick dropped 18 of 560 on 2026-09-06, every
-# one with a second finger already down. It is also the one an operator can act
-# on immediately - lift the previous finger before the next lands.
+# ☠️ TWO TONES, NOT THREE, and the pitch carries the MEANING rather than the
+# event. The operator's own limit, in their words: two pitches can be told
+# apart without paying attention, three cannot - and an instrument that needs
+# attention to be read is not an instrument during a run that needs the
+# attention on the finger. An earlier version had one tone per event class
+# (edge / overlap / break) and it failed exactly there.
+#
+# So the question each tap answers is not "what happened" but "is this MINE or
+# is this THE DEVICE": a break with an overlap or a boundary next to it is
+# explained by the hand and goes low; a break with neither is the thing this
+# whole instrument exists to find, and it is the only thing that goes high.
+# That makes the high tone rare, which is what makes it worth hearing.
 #
 # ☠️ BOTH WERE ONE OCTAVE LOWER AND THE LOW ONE DID NOT ARRIVE. The first
 # version used 216 Hz for EDGE and 432 Hz for MISS; the operator reported the
@@ -195,9 +202,8 @@ def _irq_count():
 # is interrupt-driven and independent of it - but it makes this app unsuitable,
 # while beeping, for any power, idle-residency or suspend measurement. Turn the
 # beeps off (BEEP_ENABLED = False) before using it for one.
-TONE_EDGE_HZ, TONE_EDGE_MS = 432.0, 90
-TONE_OVER_HZ, TONE_OVER_MS = 648.0, 110
-TONE_MISS_HZ, TONE_MISS_MS = 864.0, 150
+TONE_ASTRAY_HZ, TONE_ASTRAY_MS = 432.0, 90
+TONE_CAUGHT_HZ, TONE_CAUGHT_MS = 864.0, 150
 # ☠️ THE BOTTOM FRAME SITS HIGHER THAN THE OTHER THREE, on the operator's
 # instruction. It is not symmetry that matters here but where the hand actually
 # leaves: the bottom of this panel carries the gesture strip and the chin, so a
@@ -216,9 +222,8 @@ DIVIDER_MARGIN = 20       # either side of the vertical line
 # That is worse than losing it: it puts a false entry into the very record the
 # lost taps are counted from. So this line warns on both sides too.
 HALVES_TOP_MARGIN = 20    # either side of the halves/MARK boundary
-EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
-OVER_REPEAT_S = 0.20
-MISS_REPEAT_S = 0.15
+ASTRAY_REPEAT_S = 0.30    # rate limit, so tapping in a margin is not a buzz
+CAUGHT_REPEAT_S = 0.15    # the one that matters waits less
 BEEP_ENABLED = True
 
 
@@ -286,18 +291,19 @@ class Beeper:
             return
         try:
             self._files = {
-                "edge": _render_tone(os.path.join(dirpath, "fp3-tone-edge.wav"),
-                                     TONE_EDGE_HZ, TONE_EDGE_MS),
-                "over": _render_tone(os.path.join(dirpath, "fp3-tone-over.wav"),
-                                     TONE_OVER_HZ, TONE_OVER_MS),
-                "miss": _render_tone(os.path.join(dirpath, "fp3-tone-miss.wav"),
-                                     TONE_MISS_HZ, TONE_MISS_MS),
+                "astray": _render_tone(
+                    os.path.join(dirpath, "fp3-tone-astray.wav"),
+                    TONE_ASTRAY_HZ, TONE_ASTRAY_MS),
+                "caught": _render_tone(
+                    os.path.join(dirpath, "fp3-tone-caught.wav"),
+                    TONE_CAUGHT_HZ, TONE_CAUGHT_MS),
                 # ☠️ The sink is SUSPENDED when idle, so the FIRST tone pays for
                 # waking LPASS and the codec and can be clipped or lost. A
                 # silent primer at startup pays that cost once, before any
                 # measurement, instead of inside the first event that matters.
-                "prime": _render_tone(os.path.join(dirpath, "fp3-tone-prime.wav"),
-                                      TONE_MISS_HZ, 60, amp=0.0),
+                "prime": _render_tone(
+                    os.path.join(dirpath, "fp3-tone-prime.wav"),
+                    TONE_CAUGHT_HZ, 60, amp=0.0),
             }
         except OSError as e:
             self._log("  beeper: DISABLED (cannot write tones: %s)" % e)
@@ -310,11 +316,11 @@ class Beeper:
         # "margin 25 px" next to a bottom margin of 60 and a divider band of
         # 20 is a false record of the configuration, and the log is what a
         # reader trusts months later when the constants have moved on.
-        self._log("  beeper: %s, edge %.0f Hz/%d ms, over %.0f Hz/%d ms, "
-                  "miss %.0f Hz/%d ms; margins: sides/top %d px, bottom %d px, "
-                  "divider +-%d px, field-top +-%d px"
-                  % (self._player, TONE_EDGE_HZ, TONE_EDGE_MS,
-                     TONE_OVER_HZ, TONE_OVER_MS, TONE_MISS_HZ, TONE_MISS_MS,
+        self._log("  beeper: %s, astray %.0f Hz/%d ms, caught %.0f Hz/%d ms; "
+                  "margins: sides/top %d px, bottom %d px, divider +-%d px, "
+                  "field-top +-%d px"
+                  % (self._player, TONE_ASTRAY_HZ, TONE_ASTRAY_MS,
+                     TONE_CAUGHT_HZ, TONE_CAUGHT_MS,
                      EDGE_MARGIN, EDGE_MARGIN_BOTTOM, DIVIDER_MARGIN,
                      HALVES_TOP_MARGIN))
 
@@ -823,7 +829,7 @@ class TapTest(Gtk.ApplicationWindow):
             # 2026-09-08: 52 of 284 BREAKs had an EDGE within 0.35 s, and the
             # closest pairs were the SAME tap, 1-2 ms apart. The operator heard
             # it before the log was read, which is the whole reason the tones
-            # exist. Decided at the end of the tap instead; see _flush_edge.
+            # exist. Decided at the end of the tap instead; see the rule block below.
             self._pending_edge = (where, near, x, y, w, h)
         if y < h * MARK_TOP:
             # Tapping the record clears it, so a long run can be cut into
@@ -839,7 +845,9 @@ class TapTest(Gtk.ApplicationWindow):
                 self.last = None
                 self.run_len = 0
                 self.area.queue_draw()
-            self._flush_edge()   # no BREAK is possible here, so EDGE stands
+            # No alternation exists here, so a boundary can only be ASTRAY.
+            st = self._sound("astray" if self._pending_edge else None)
+            self._log_edge("astray" if st != "none" else None, st)
             return                            # the record area is not a target
         if y < h * HALVES_TOP:
             self.n_mark += 1
@@ -852,7 +860,8 @@ class TapTest(Gtk.ApplicationWindow):
             GLib.timeout_add(380, self._unflash)
             self._log("%s  MARK #%d  (operator felt a lost tap)"
                       % (self._stamp(), self.n_mark))
-            self._flush_edge()   # a MARK is never a BREAK, so EDGE stands
+            st = self._sound("astray" if self._pending_edge else None)
+            self._log_edge("astray" if st != "none" else None, st)
         else:
             sym = "." if x < w / 2 else "o"
             self.half_flash_until = time.time() + 0.20
@@ -864,49 +873,49 @@ class TapTest(Gtk.ApplicationWindow):
             else:
                 self.n_o += 1
             total = self.n_dot + self.n_o
-            # ★ ONE TAP, ONE TONE, and the precedence is MISS > OVER > EDGE.
-            # `claimed` records which event took the sound, so the other two
-            # can say so in the log instead of going unrecorded.
-            claimed = None
-            if sym == self.last:
+            broke = (sym == self.last)
+            overlap = fingers >= 2
+            edged = self._pending_edge is not None
+            # ★ THE WHOLE RULE, IN ONE PLACE. A break is only interesting when
+            # the hand does not explain it. An overlap or a boundary next to it
+            # is an explanation, so that break goes low with everything else the
+            # operator can fix. A break with neither is the fault this
+            # instrument exists to find.
+            astray = edged or overlap
+            if broke and not astray:
+                tone = "caught"
+            elif astray:
+                tone = "astray"
+            else:
+                tone = None
+            status = self._sound(tone)
+
+            if broke:
                 self.run_len += 1
                 self.breaks += 1
-                # ☠️ A BREAK is the only LIVE signal this app has that a tap
-                # may have gone missing, and it is deliberately a weak one:
-                # the app's own rules say a repeat also happens when the
-                # operator taps one side twice on purpose. It is used here
-                # because the alternative - a tap that produced no contact and
-                # no interrupt - leaves nothing at all to trigger on. The tone
-                # therefore means "the alternation just broke", not "a tap was
-                # lost", and the log line below is what gets counted.
-                fired = self.beeper.fire("miss", MISS_REPEAT_S)
-                claimed = "miss"
-                self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d  beep=%s"
+                # ☠️ A BREAK is still a weak signal on its own - the app's own
+                # rules say a repeat also happens when the operator taps one
+                # side twice deliberately. What changed is that it is no longer
+                # announced ALONE: it is announced only when nothing about the
+                # hand accounts for it, which is a narrower and more honest
+                # claim than the tone used to make.
+                self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d  "
+                          "explained=%s  tone=%s beep=%s"
                           % (self._stamp(), sym, self.run_len + 1, total, x, w,
-                             "yes" if fired else "rate-limited"))
+                             ("overlap" if overlap else "edge") if astray
+                             else "NO", tone or "none", status))
             else:
                 self.run_len = 0
-            # ☠️ The overlap is logged EVERY time, tone or not. Until now it was
-            # marked only as a '0' in the record - visible if you were looking
-            # at the strip, invisible otherwise, and never in the log at all.
-            # 17 of the 79 taps after 07:47 were overlaps and nothing said so.
-            if fingers >= 2:
+            # ☠️ Logged EVERY time, tone or not. Before 2026-09-08 an overlap
+            # was marked only as a '0' in the record - visible if you happened
+            # to be watching the strip, and nowhere else at all.
+            if overlap:
                 self.n_over += 1
-                if claimed is None:
-                    st = ("yes" if self.beeper.fire("over", OVER_REPEAT_S)
-                          else "rate-limited")
-                    claimed = "over"
-                else:
-                    st = "superseded-by-" + claimed
                 self._log("%s  OVERLAP #%d  %s  (#%d)  x=%.0f/%d  "
-                          "fingers-down %d  beep=%s"
+                          "fingers-down %d  tone=%s beep=%s"
                           % (self._stamp(), self.n_over, sym, total, x, w,
-                             fingers, st))
-            # ★ MISS and OVER both outrank EDGE. Being at a boundary is a
-            # standing condition the operator can SEE - the bands are drawn -
-            # while a break and an overlap are events they cannot. The scarce
-            # channel belongs to what the eye cannot supply.
-            self._flush_edge(superseded_by=claimed)
+                             fingers, tone or "none", status))
+            self._log_edge(tone, status)
             self.last = sym
             # ☠️ A touch that landed while another finger was still down takes
             # the place of its side symbol, it does not follow it: the record
@@ -928,32 +937,30 @@ class TapTest(Gtk.ApplicationWindow):
         del self.marks[:-MAX_MARKS]
         self.area.queue_draw()
 
-    def _flush_edge(self, superseded_by=None):
-        """Emit the held EDGE detection - the log line always, the tone only
-        when nothing of higher rank took this same tap.
+    def _sound(self, tone):
+        """Fire the tap's ONE tone and return how it went, for the log."""
+        if tone is None:
+            return "none"
+        gap = ASTRAY_REPEAT_S if tone == "astray" else CAUGHT_REPEAT_S
+        return "yes" if self.beeper.fire(tone, gap) else "rate-limited"
 
-        `superseded_by` NAMES the event that took it. "superseded" alone would
-        say the tone was withheld without saying why, and the log is the only
-        record of what the operator actually heard.
+    def _log_edge(self, tone, status):
+        """Write the held boundary detection, if there was one.
+
+        ☠️ It is logged whether or not it made the sound. The tone answers one
+        question - mine or the device's - and cannot also say WHICH boundary,
+        since one pitch serves five of them. Only this line does, and it is the
+        record a reader has months later.
         """
         pend = getattr(self, "_pending_edge", None)
         if not pend:
             return
         self._pending_edge = None
         where, near, x, y, w, h = pend
-        if superseded_by:
-            status = "superseded-by-" + superseded_by
-        else:
-            status = "yes" if self.beeper.fire("edge", EDGE_REPEAT_S) \
-                     else "rate-limited"
-        # The tone is feedback; THIS LINE is the evidence. Rate-limited,
-        # superseded, or simply inaudible on this speaker, the detection still
-        # reaches the record, so "I heard nothing" and "it did not fire" stay
-        # distinguishable. The boundary is named because one tone serves five
-        # of them and the ear cannot tell which.
-        self._log("%s  EDGE #%d  %s  %.0f px  at %.0f,%.0f of %dx%d  beep=%s"
+        self._log("%s  EDGE #%d  %s  %.0f px  at %.0f,%.0f of %dx%d  "
+                  "tone=%s beep=%s"
                   % (self._stamp(), self.n_edge, where.upper(), near,
-                     x, y, w, h, status))
+                     x, y, w, h, tone or "none", status))
 
     def _resolve_present(self):
         pf, self.pending_frame = self.pending_frame, None

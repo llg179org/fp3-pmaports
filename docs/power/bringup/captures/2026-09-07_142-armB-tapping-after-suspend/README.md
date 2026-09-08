@@ -1002,3 +1002,45 @@ shutdown line carries `%d FAILED`.
 what PulseAudio has already buffered. The code cuts the process — that is
 measured — but "the sound stops" is not, and a 150 ms tone may be short enough
 to have been handed over in full before the signal lands.
+
+## ★★ Two tones, and the pitch carries the MEANING
+
+The operator set the constraint from their own use: **two pitches can be told
+apart without paying attention, three cannot.** An instrument that needs
+attention to be read is useless during a run where the attention has to be on
+the finger — and the three-tone version had failed exactly there.
+
+So the tones no longer name the *event*. They answer the only question that
+matters while tapping: **is this mine, or is it the device?**
+
+| tone | meaning | fires when |
+|---|---|---|
+| **432 Hz**, 90 ms | *something went astray* — the grip | the tap landed in a margin, **or** a finger was still down, **or** the alternation broke and one of those explains it |
+| **864 Hz**, 150 ms | **the fault itself** | the alternation broke and **nothing** about the hand accounts for it |
+| silence | a clean tap | |
+
+★ The rule that makes this work is that **a break is only interesting when the
+hand does not explain it.** An overlap or a boundary alongside it *is* an
+explanation, so that break goes low with everything else the operator can fix.
+This makes the high tone rare, which is what makes it worth hearing — and it is
+a narrower, more honest claim than the old MISS tone made, since the app's own
+rules have always said a repeat can simply be a deliberate double tap.
+
+Every line still carries `tone=` and `beep=`, and the BREAK line now carries
+`explained=overlap|edge|NO`, so the log says which of the two a break was
+counted as. The tone answers one question and cannot also say *which* boundary
+was approached — one pitch serves five of them — so `EDGE` keeps its own line.
+
+Gated before deployment on the decision block **extracted from the file**, 8
+cases including the known negative (a clean alternating tap must make no sound
+at all): 0 mismatches. Tones measured on the device after deployment: 433.3 Hz
+and 860.0 Hz.
+
+### What this retires
+
+`fp3-tone-over.wav` and the 648 Hz fifth are gone, along with the
+MISS > OVER > EDGE precedence ladder. The ladder was not wrong — it was
+unreadable, which for an instrument is the same thing. It is recorded here
+rather than deleted because the reasoning that produced it (rank by urgency)
+is sound and only the assumption underneath it was false: that the operator
+could resolve three pitches while attending to something else.
