@@ -1609,3 +1609,63 @@ Runtime PM off, the bus never suspends, the operator taps as usual with the same
 pauses. **Outages stop** ⇒ the transition is in the path. **They continue** ⇒ the
 bus is not, and what idles is the controller itself. Reversible with `auto`, no
 rebuild, no flash, and it does not need the operator to judge anything.
+
+## 2026-09-08 11:33 — a fifth outage, the tightest correlation yet, and one lost to my own freeze
+
+`1133-slice.txt`. Nineteen consecutive `.`, 11:33:41.885 → 11:33:44.861,
+x=106–120, all `explained=NO` — nineteen high tones, which is what the operator
+heard.
+
+```
+11:33:28  suspending      12 s of idle
+11:33:40  resuming
+11:33:41.885 - 11:33:44.861   the outage, 1.9 s after the resume
+11:33:48  suspending
+```
+
+And the rate halves and recovers on the second the alternation returns:
+
+| second | irq | contact |
+|---|---:|---:|
+| 11:33:41–44 (the outage) | **51–57** | 4–5 |
+| **11:33:45** | **104** | 9 |
+| 11:33:46 | 100 | 9 |
+
+**Five of five outages follow a bus resume**, by 1.9 – 9.5 s.
+
+☠️ **This one has no kprobe data, and that is my fault.** I froze tracing at
+11:26 to read the buffer and never re-armed it. The freeze was not even
+necessary: reading `/sys/kernel/tracing/trace` gives a consistent snapshot with
+tracing still on. **An instrument switched off to be read is an instrument that
+will be off for the next event** — re-arm in the same command that reads, or do
+not stop it at all. Re-armed 11:39 with the buffer cleared.
+
+## The A/B, armed 2026-09-08 11:40
+
+```sh
+echo on > /sys/bus/platform/devices/78b7000.i2c/power/control
+```
+
+Verified to bite before anything is claimed from it: `control` reads `on`,
+`runtime_status` stayed `active` through 8 s of no touching where it had
+previously suspended within a second or two, and the journal has logged **zero**
+further `suspending` lines. Accumulated `runtime_suspended_time` before the
+change was 91 926 757 ms, so the bus really had been spending its life asleep.
+
+☠️ **This is a gated before/after, NOT an A-B-A′.** The lever changes the world:
+once runtime PM is off there are no resumes to return to, so the third leg would
+be a second B. The A leg is what today already measured — five outages across
+roughly two hours of intermittent tapping with `control=auto` — and the gate on
+it is satisfied by measurement rather than assumption: the bus demonstrably did
+suspend, and every one of the five outages followed a resume.
+
+☠️ **And the exposure cannot be counted in resumes**, because the B leg has
+none. The trigger the operator identified is a *pause*, and pauses are their
+behaviour, identical in both legs. So the comparison is **outages per idle gap
+> 2 s**, counted from the tap log on both sides — not per hour, and not per
+resume.
+
+☠️ **Revert when done**: `echo auto > …/power/control`. Holding a QUP out of
+runtime suspend costs power continuously, and this device's power figures are
+the subject of half the captures in this directory. Leaving it on would quietly
+poison the next idle-current measurement, and nothing about the file says so.
