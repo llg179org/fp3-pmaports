@@ -133,3 +133,72 @@ handset registered on LTE with a live data bearer is moved to GSM for voice at
 all.** That distinction matters in the report: asking them why CSFB was chosen
 is a different question from reporting a service outage, and the letter already
 frames it that way.
+
+## ★★ Third call, 18:39 — OUTGOING, and the asymmetry is the finding
+
+The first two were incoming (MT). This one was placed **from** the phone (MO),
+and it falls back too — but at a different moment.
+
+```
+18:39:44  CallAdded, State 0 -> 1 (dialing)      tech = LTE
+18:39:45  AccessTechnologies: <uint32 10>        LTE -> GSM+GPRS, 1 s AFTER dialling
+18:39:48  State 1 -> 2 (ringing at the far end)
+18:40:03  State 2 -> 4 (answered, after 15 s)
+18:40:11  State 4 -> 7 (ended, 8 s of talk)
+18:40:12  AccessTechnologies: <uint32 16384>     back to LTE
+```
+
+| | call 1 (MT) | call 2 (MT) | **call 3 (MO)** |
+|---|---|---|---|
+| drop relative to the call object | **−2 s** (before) | **−2 s** (before) | **+1 s (after)** |
+| ringing | 9 s | 11 s | 15 s |
+| talk | 19 s | 16 s | 8 s |
+| return after the end | +1 s | +1 s | +1 s |
+| **off LTE** | 31 s | 30 s | **27 s** |
+
+★ **The sign of that first interval is the result.** Incoming: the device is
+already on GSM two seconds *before* a call object exists — the network paged it
+on the CS domain and the fallback happened first. Outgoing: the call is created
+**while still on LTE**, and the drop follows one second later — the handset
+began the origination on LTE and was moved.
+
+Both are CSFB. But the MO case shows the device *trying* on LTE, which is the
+half a subscriber-side argument needs: it is not the handset declining to use
+IMS.
+
+☠️ What this cannot say is **who** decided. From the handset, "the modem chose
+CSFB because it knows MMTEL is not authorised" and "the network redirected an
+LTE origination" produce the same one-second gap. Separating them needs the
+network side — which is exactly what One HU are measuring.
+
+### A third independent confirmation, from a third interface
+
+The `Modem.Signal` interface switches which radio it reports:
+
+```
+18:39:42   'Lte'                    only
+18:39:49   'Lte' + 'Gsm'            the transition, both present
+18:39:51   'Gsm'  rssi -69
+18:40:02   'Gsm'  rssi -67
+18:40:12   'Gsm'  rssi -70
+18:40:22   'Lte' + 'Gsm'            back
+```
+
+So the fallback is now attested three ways, none depending on the others: the
+`AccessTechnologies` bitmask, the disappearance of LTE measurements (call 2),
+and the `Signal` interface changing which radio it describes (call 3).
+
+☠️ The GSM rssi (−67 … −70) reads stronger than the LTE rssi (−87). Different
+bands and different measurement definitions; nothing follows from the comparison
+and it is recorded only so a later reader does not draw something from it.
+
+## The times for One HU — three now
+
+- **2026-09-08 12:34:18** — incoming, moved LTE → GSM, 31 s off LTE
+- **2026-09-08 18:34:20** — incoming, 30 s off LTE
+- **2026-09-08 18:39:45** — **outgoing**, dialled on LTE and moved 1 s later, 27 s off LTE
+
+All three rang, all three were answered, audio was good in both directions on
+all three. **Nothing failed.** The question put to them is why a handset
+registered on LTE, with a live data bearer, is moved to GSM for voice — and the
+outgoing call sharpens it, because there the handset demonstrably started on LTE.
