@@ -1117,3 +1117,56 @@ and its release.
 
 That single column separates reading 1 from readings 2 and 3, costs one change
 to a reader already running, and asks the operator for nothing at all.
+
+## The discriminator, built 2026-09-08 09:59
+
+`kernel-contacts.py` logged only that a contact ended. It now logs **where it
+went**:
+
+```
+RELEASE #n slot=0  x 271->268 span 4  y 1612->1620 span 9  pts 7  dur 63ms
+```
+
+`span` is the whole point. Of the three readings of the 09:50 event, the first
+is now decidable **without asking the operator anything**:
+
+- a genuine long press stays near its own x — a span of tens
+- a **merge** of two fingers into one reported contact wanders or jumps toward
+  the other half
+
+The header reads the panel's own range out of the driver rather than leaving a
+reader to guess the scale:
+
+```
+axes: x 0..1079 (fuzz 0, res 0)   y 0..2159   <- DEVICE units, not the app's 360 px
+```
+
+Exactly 3× the app's 360×720 grid, so `span / 3` is logical px and the halves
+boundary at logical 180 sits at device **540**. A right-half contact that merged
+across would show a span near that; a press wobble shows tens.
+
+### Gated on synthetic records before deployment
+
+`kernel-contacts-span-gate.log`. The event format is fixed by this reader's own
+probe, so feeding it records whose answer is known tests the **decode**, which
+is the thing under test:
+
+| case | expected | measured |
+|---|---|---|
+| ordinary tap, small wobble | small span | `x 270->273 span 3` |
+| **a merge, 270 → 90** | large span | `x 270->90 span 180` |
+| positions with no live contact | ignored entirely | no entry |
+| contact with no position | said so | `(no position reported)` |
+| two slots at once | kept apart | slot 0 span 5, slot 1 span 40 |
+| EVIOCGABS on a non-device | says the scale is unknown | it did |
+
+☠️ **The gate found a crash before the device did.** A contact carrying X and no
+Y raised `TypeError: unsupported operand type(s) for -: 'NoneType' and
+'NoneType'` and killed the reader outright — the guard tested X alone. It would
+have died on the phone with the app still running and nobody watching its
+stderr, and the kernel side of a run would have been silently missing rather
+than empty. Each axis is now guarded separately and an absent one prints `n/a`.
+
+☠️ **Deployed and NOT yet exercised on a real touch.** Since the 09:59 restart
+there have been **0** releases, because nobody has tapped. The decode is proven
+on synthetic records and the instrument is unproven on the panel.

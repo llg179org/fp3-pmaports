@@ -1,0 +1,12 @@
+== kernel-contacts start 2026-09-08 09:58:43 on synth.evdev
+   axes: EVIOCGABS failed ([Errno 25] Inappropriate ioctl for device) - spans below have NO known scale
+01:16:40.020  CONTACT #1  slot=0 id=5
+01:16:40.150  RELEASE #1  slot=0  x 270->273 span 3  y 1600->1602 span 3  pts 4  dur 130ms
+01:16:40.170  CONTACT #2  slot=0 id=6
+01:16:40.360  RELEASE #2  slot=0  x 270->90 span 180  y 1600->1610 span 10  pts 6  dur 190ms
+01:16:40.410  CONTACT #3  slot=0 id=7
+01:16:40.430  RELEASE #3  slot=0  (no position reported)
+01:16:40.460  CONTACT #4  slot=0 id=8
+01:16:40.500  CONTACT #5  slot=1 id=9
+01:16:40.600  RELEASE #4  slot=0  x 100->105 span 5  y n/a  pts 2  dur 140ms
+01:16:40.630  RELEASE #5  slot=1  x 300->340 span 40  y n/a  pts 2  dur 130ms
