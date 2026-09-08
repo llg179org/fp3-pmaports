@@ -1372,3 +1372,60 @@ all — and if it survives while the tapping finger's touches vanish, the
 controller is dropping to one *tracked* contact rather than losing touches. Both
 outcomes are readable straight off `kernel-contacts.log`, and neither needs the
 operator to say what their hand was doing.
+
+## ★ The held-finger control, 2026-09-08 10:47:54 — the instrument works, the fault did not appear
+
+Slices: `held-finger-slice.txt`, `held-finger-window.txt`.
+
+The operator held one finger down while tapping with the other, as asked.
+
+```
+10:47:59.989  RELEASE  slot=0  x 247->274 span 37  y 1595->1616 span 21  pts 34  dur 5657ms
+```
+
+**One contact, 5 657 ms, never released.** At device x 247–274 it is the left
+half (divider 540), with 34 position samples and a 37-unit span — ordinary
+finger micro-movement. Meanwhile the tapping finger ran in **slot=1**: 19
+contacts, 49–110 ms each, not one of them lost.
+
+★ So **the controller does not drop a held contact**, and it tracks the two
+fingers in separate slots correctly. That is the control this test needed and it
+passed.
+
+### ☠️ But no outage occurred while the finger was held
+
+The tapping finger's down-times stayed 49–110 ms throughout — no trace of the
+doubling that marks an episode. **The discriminating observation is still
+outstanding.** The test proves the instrument, not the hypothesis: it needs to
+run until an episode happens *with the finger down*.
+
+### ★ New: the interrupt rate depends on a finger being PRESENT
+
+| regime | irq/s |
+|---|---:|
+| two tapping fingers (ordinary) | ~94 |
+| **one held + one tapping** | **~120** |
+| **during an outage** | **~50** |
+
+A finger resting on the panel keeps the controller out of its idle scan, so the
+rate goes *up*. That gives an argument about the outages: if the missing finger
+were physically present and sensed but simply not reported, the chip would be in
+active scan and the rate would be **high, like the held case**. Instead it falls
+**below both** normal regimes.
+
+☠️ **An argument, not a proof.** The same low rate follows just as well from
+there genuinely being fewer fingers on the panel. It narrows "sensed but not
+reported"; it does not settle anything.
+
+### Two side observations worth keeping
+
+- `gest` read **0** in every window while a finger was held, against `tap` of
+  4–5. GTK's `GestureClick` handles one sequence at a time, so it delivered
+  nothing at all — and the measurement survived only because the app takes its
+  taps from the **raw touch**, a design change made on 2026-09-06 for exactly
+  this reason. It is vindicated here.
+- ☠️ **`CONTACT #n` and `RELEASE #n` do not pair.** They come from two separate
+  counters in `kernel-contacts.py`, so the same number in the two lines refers
+  to different contacts. It reads as a matched pair and is not one. Worth
+  fixing, at the cost of restarting the reader — which would end a held-finger
+  run in progress, so it waits.

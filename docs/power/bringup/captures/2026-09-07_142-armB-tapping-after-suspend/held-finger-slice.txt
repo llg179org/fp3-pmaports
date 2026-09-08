@@ -1,0 +1,53 @@
+=== OVERLAP lines ===
+10:47:55.714  OVERLAP #16  o  (#1912)  x=253/360  fingers-down 2  tone=astray beep=yes
+10:47:55.971  OVERLAP #17  o  (#1913)  x=262/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:56.203  OVERLAP #18  o  (#1914)  x=265/360  fingers-down 2  tone=astray beep=yes
+10:47:56.428  OVERLAP #19  o  (#1915)  x=259/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:57.433  OVERLAP #20  o  (#1916)  x=260/360  fingers-down 2  tone=astray beep=yes
+10:47:57.660  OVERLAP #21  o  (#1917)  x=261/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:57.865  OVERLAP #22  o  (#1918)  x=266/360  fingers-down 2  tone=astray beep=yes
+10:47:58.065  OVERLAP #23  o  (#1919)  x=265/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:58.291  OVERLAP #24  o  (#1920)  x=267/360  fingers-down 2  tone=astray beep=yes
+10:47:58.525  OVERLAP #25  o  (#1921)  x=260/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:58.726  OVERLAP #26  o  (#1922)  x=258/360  fingers-down 2  tone=astray beep=yes
+10:47:58.931  OVERLAP #27  o  (#1923)  x=255/360  fingers-down 2  tone=astray beep=rate-limited
+10:47:59.142  OVERLAP #28  o  (#1924)  x=257/360  fingers-down 2  tone=astray beep=yes
+10:47:59.372  OVERLAP #29  o  (#1925)  x=248/360  fingers-down 2  tone=astray beep=rate-limited
+=== kernel contacts 10:47:55-10:48:02 ===
+10:47:55.074  CONTACT #1954  slot=1 id=22303
+10:47:55.147  RELEASE #1953  slot=1  x 792->792 span 0  y 1676->1676 span 0  pts 1  dur 73ms
+10:47:55.258  CONTACT #1955  slot=1 id=22304
+10:47:55.330  RELEASE #1954  slot=1  x 795->800 span 5  y 1635->1635 span 0  pts 2  dur 72ms
+10:47:55.480  CONTACT #1956  slot=1 id=22305
+10:47:55.530  RELEASE #1955  slot=1  x 787->787 span 0  y 1669->1669 span 0  pts 1  dur 49ms
+10:47:55.707  CONTACT #1957  slot=1 id=22306
+10:47:55.796  RELEASE #1956  slot=1  x 759->766 span 7  y 1732->1734 span 2  pts 2  dur 89ms
+10:47:55.963  CONTACT #1958  slot=1 id=22307
+10:47:56.046  RELEASE #1957  slot=1  x 787->792 span 5  y 1693->1694 span 1  pts 2  dur 82ms
+10:47:56.197  CONTACT #1959  slot=1 id=22308
+10:47:56.273  RELEASE #1958  slot=1  x 794->794 span 0  y 1578->1578 span 0  pts 1  dur 76ms
+10:47:56.423  CONTACT #1960  slot=1 id=22309
+10:47:56.505  RELEASE #1959  slot=1  x 778->784 span 6  y 1613->1616 span 3  pts 2  dur 82ms
+10:47:57.421  CONTACT #1961  slot=1 id=22310
+10:47:57.511  RELEASE #1960  slot=1  x 779->784 span 5  y 1609->1611 span 2  pts 2  dur 90ms
+10:47:57.654  CONTACT #1962  slot=1 id=22311
+10:47:57.719  RELEASE #1961  slot=1  x 783->783 span 0  y 1623->1623 span 0  pts 1  dur 65ms
+10:47:57.861  CONTACT #1963  slot=1 id=22312
+10:47:57.920  RELEASE #1962  slot=1  x 798->798 span 0  y 1611->1611 span 0  pts 1  dur 60ms
+10:47:58.060  CONTACT #1964  slot=1 id=22313
+10:47:58.143  RELEASE #1963  slot=1  x 794->794 span 0  y 1620->1620 span 0  pts 1  dur 83ms
+10:47:58.286  CONTACT #1965  slot=1 id=22314
+10:47:58.369  RELEASE #1964  slot=1  x 801->801 span 0  y 1612->1612 span 0  pts 1  dur 83ms
+10:47:58.520  CONTACT #1966  slot=1 id=22315
+10:47:58.585  RELEASE #1965  slot=1  x 780->780 span 0  y 1639->1639 span 0  pts 1  dur 65ms
+10:47:58.719  CONTACT #1967  slot=1 id=22316
+10:47:58.774  RELEASE #1966  slot=1  x 775->775 span 0  y 1656->1656 span 0  pts 1  dur 55ms
+10:47:58.925  CONTACT #1968  slot=1 id=22317
+10:47:59.018  RELEASE #1967  slot=1  x 764->764 span 0  y 1666->1666 span 0  pts 1  dur 93ms
+10:47:59.135  CONTACT #1969  slot=1 id=22318
+10:47:59.201  RELEASE #1968  slot=1  x 772->772 span 0  y 1675->1675 span 0  pts 1  dur 66ms
+10:47:59.368  CONTACT #1970  slot=1 id=22319
+10:47:59.423  RELEASE #1969  slot=1  x 743->743 span 0  y 1652->1652 span 0  pts 1  dur 55ms
+10:47:59.989  RELEASE #1970  slot=0  x 247->274 span 37  y 1595->1616 span 21  pts 34  dur 5657ms
+=== duration histogram, whole log ===
+  <50ms 23   50-100 877   100-150 833   150-250 18   250-400 1   >=400 2

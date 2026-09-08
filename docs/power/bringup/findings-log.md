@@ -22,6 +22,45 @@ instruments, [`captures/`](captures/) the raw data, and
 
 ---
 
+## 2026-09-08 — three more outages, the merge refuted, and a held finger that survived
+
+Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
+
+Three same-side runs with **every environmental cause absent** — no boundary, no
+hand drift, no overlap, the i2c bus awake, no driver error, nothing lost above
+evdev: 09:50 (four taps), 10:22 (two), 10:41 (**thirteen, over 2.8 s**). The
+last is two-phase: the right side vanishes for half a second, then the left for
+3.2 s, then both return in perfect alternation.
+
+**One signature recurs in all three**: the surviving finger's contacts last
+about twice as long — 75–110 ms before, 176–200 during, back after.
+
+**The merge reading is refuted by measurement.** `kernel-contacts.py` now logs
+each contact's position span; during an outage the largest is 11 device units
+(~4 logical px) on an axis running 0..1079 with the divider at 540, and every
+contact stays in its own half.
+
+**The interrupt rate falls WITH the contacts, not against them** — 94 → ~50 with
+`irq/contact` steady at 10–15. That excludes the driver receiving and discarding
+reports, which has the opposite signature.
+
+**The held-finger control passed and did not catch the fault.** One contact of
+5 657 ms, never released, tracked in its own slot while the other finger tapped
+in slot 1 — so the controller does not drop a held touch. No episode occurred
+during it, so the discriminating case is still outstanding.
+
+★ A held finger also raises the interrupt rate to ~120/s against ~94 for two
+tapping fingers, because it keeps the chip out of its idle scan. During an
+outage the rate falls **below both**, which argues against "the finger was
+sensed but not reported" — an argument, not a proof, since fewer fingers give
+the same reading.
+
+☠️ **What still cannot be decided from any log**: whether the missing taps
+happened. A touch that produces neither a contact nor an interrupt leaves
+nothing behind, and only a held finger — one that cannot fail to happen — can
+remove the operator from the question. That run has not yet coincided with an
+episode.
+
 ## 2026-09-08 — pmOS still never suspends: 20 h 48 min at success = 0, and a night lost to our own poller
 
 Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
