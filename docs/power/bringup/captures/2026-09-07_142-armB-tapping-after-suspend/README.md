@@ -1170,3 +1170,114 @@ than empty. Each axis is now guarded separately and an absent one prints `n/a`.
 ☠️ **Deployed and NOT yet exercised on a real touch.** Since the 09:59 restart
 there have been **0** releases, because nobody has tapped. The decode is proven
 on synthetic records and the instrument is unproven on the panel.
+
+## The span instrument's first real answer: the merge is REFUTED
+
+Measured 2026-09-08 10:22, over wifi (`wlan0` 192.168.100.17 — the operator
+unplugged USB; `FP3_DEV_IP` overrides the wrapper's default 172.16.42.1).
+
+**Every contact reports exactly ONE position.** `pts 1`, `span 0`, on
+essentially every tap:
+
+```
+10:22:23.054  CONTACT #178
+10:22:23.154  RELEASE #178  x 790->790 span 0  y 1656->1656 span 0  pts 1  dur 100ms
+```
+
+The input core drops unchanged ABS values, so `pts 1` means the reported
+position never moved by a single device unit during a 100–225 ms contact.
+
+★ **That refutes the merge reading of the 09:50 event.** Two fingers folded into
+one reported contact would move its position toward the other half — device
+units run 0..1079 with the divider at 540, so a merge would span hundreds. The
+break tap itself, `#189`, sits at **x=769**, squarely among the other right-side
+taps (754–790), and the largest span seen anywhere is **1**.
+
+☠️ **And it is a limit of the instrument, stated plainly.** With `pts 1` the
+`span` column is structurally zero and can discriminate nothing on its own. The
+refutation does not rest on "the span was small" — it rests on there being **no
+motion reports at all**, plus the absolute position of the break tap. Reading
+the `span` column alone would have produced a confident nothing.
+
+## The doubling is real in the kernel, and so is the slowdown
+
+```
+10:22:25.633  #187  x=296  (left)   dur 199 ms
+10:22:25.900  #188  x=754  (right)  dur 215 ms
+10:22:26.298  #189  x=769  (right)  dur 200 ms   <- the BREAK, explained=NO
+10:22:26.904  #190  x=329  (left)   dur 225 ms
+```
+
+Two right-side contacts in a row with **no left contact between them**, so
+nothing was lost between the kernel and the app.
+
+| | #178–#186 (before) | #187–#190 (around the break) |
+|---|---|---|
+| down-time | 84–116 ms | **199–225 ms** |
+| tap-to-tap | ~170–200 ms | **267 / 398 / 606 ms** |
+
+Both roughly doubled, exactly there — the same signature as 09:50.
+
+☠️ **What cannot be decided:** whether the finger slowed or the reports were
+late. An evdev timestamp is taken when the driver processes the report, so a
+late-serviced interrupt carries a late stamp; the two are indistinguishable from
+this log. What *is* settled is that the **graphics path did not slow**:
+
+| | 09:45–52 | 10:20–25 |
+|---|---|---|
+| `ges->draw` | 8.1 ms (n=731) | 8.9 ms (n=165) |
+| `draw->present` | 57.7 ms (n=399) | 64.5 ms (n=101) |
+| `evt->raw` | 5.8 ms | 7.8 ms |
+
++7 ms on `draw->present` is under half a refresh interval against a spread
+several times that. It is not a result.
+
+☠️ **`cont->raw` is NOT usable as a latency and must not be quoted as one.** It
+showed 163–394 ms on the same taps whose `evt->raw` was 4–8 ms. It pairs the
+last contact seen by the app's *own* evdev watch with the current GTK event, at
+a 2000 ms acceptance window — two delivery paths racing inside one process. When
+the GLib fd watch loses the race the pairing shifts by a tap and the number
+becomes the gap between two different taps. A real 394 ms kernel delay would
+have made `evt->raw` large too, and it did not.
+
+## Freeing the rootfs, 2026-09-08 10:35
+
+91 % → **84 %**, 216 → **356 MB** free. Safety item 9 is a reboot loop and a
+frozen graphical session, and it arrives without warning.
+
+**Preserved first, and verified, before anything was removed** — all three
+scanned for IMEI, IMSI, ICCID, MAC and phone-number shapes, clean.
+
+| | lines | where |
+|---|---|---|
+| `logs/journal-i2c-touch.log.gz` | 1 728 | **here** — every `i2c_qup`, himax and `PM: suspend` line the analysis rests on |
+| `logs/kernel-contacts-0907-0908.log.gz` | 41 091 | **here** — the independent kernel-side witness, and the only record of the span data |
+| `taptest-0907-0908.log.gz` | 119 574 | ☠️ **NOT in git** — `/mnt/1TB/pmos/fp3-raw-logs/2026-09-07_142-armB/`, md5 `cfbc4996…` |
+
+☠️ **The app log was kept out of the repository deliberately.** At 1.44 MB it
+would have been the largest tracked file in the whole tree — larger than
+`findings-log.md` — while this repo's other raw captures sit at 300–430 KB. It
+is also the *derivative* of the two: overwhelmingly `DRAW` and `STAGES` lines,
+with every window the analysis actually uses already extracted into the small
+slices beside this page. Raw data belongs in a capture; **119 000 lines of
+frame-clock noise, carried forever by every clone, does not.**
+
+| step | freed |
+|---|---|
+| the two superseded kernel apks, r86 and r87 (r88 kept as a rollback) | 60 MB |
+| `journalctl --vacuum-size=20M` | 74 MB |
+| truncating the two instrument logs | 9 MB |
+
+☠️ **`apk` was not invoked at all.** On apk-tools 3 any operation re-solves the
+world, and this port has already paid for that once — a kernel deploy carried
+out 39 removals planned by a five-day-old failed upgrade. The cache is plain
+files; `rm` cannot re-solve anything.
+
+☠️ **The journal was exported before it was vacuumed**, because
+`--vacuum-size` has already faked a perfect cross-boot correlation here by
+deleting the evidence that would have broken it.
+
+☠️ **And truncating a file a running process holds open was verified, not
+assumed**: both fds read `flags=02402001` in `/proc/<pid>/fdinfo`, i.e.
+`O_APPEND`, so writes seek to the end and no 8 MB hole is written back. Read off
+the running processes, not off the source.
