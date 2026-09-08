@@ -169,7 +169,8 @@ def _irq_count():
 # digitizer ends. So the instrument now says it out loud.
 #
 #   EDGE  432 Hz            a tap landed inside a margin: any of the four
-#                           outer edges, or either side of the vertical split
+#                           outer edges, either side of the vertical split, or
+#                           either side of the field's top boundary
 #   MISS  864 Hz (= 432*2)  the alternation broke, i.e. a tap may have been lost
 #
 # ☠️ BOTH WERE ONE OCTAVE LOWER AND THE LOW ONE DID NOT ARRIVE. The first
@@ -201,6 +202,12 @@ EDGE_MARGIN_BOTTOM = 60   # bottom only - the frame raised, as asked
 # in the record as a BREAK, i.e. as a lost tap, which is the one failure this
 # instrument exists to measure. So both sides of the divider warn.
 DIVIDER_MARGIN = 20       # either side of the vertical line
+# ☠️ And the same argument applies to the HORIZONTAL boundary where the halves
+# meet the MARK bar. A tap meant for a half that lands slightly high does not
+# vanish - it is recorded as a MARK, i.e. as the operator reporting a lost tap.
+# That is worse than losing it: it puts a false entry into the very record the
+# lost taps are counted from. So this line warns on both sides too.
+HALVES_TOP_MARGIN = 20    # either side of the halves/MARK boundary
 EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
 MISS_REPEAT_S = 0.15
 BEEP_ENABLED = True
@@ -290,10 +297,12 @@ class Beeper:
         # 20 is a false record of the configuration, and the log is what a
         # reader trusts months later when the constants have moved on.
         self._log("  beeper: %s, edge %.0f Hz/%d ms, miss %.0f Hz/%d ms; "
-                  "margins: sides/top %d px, bottom %d px, divider +-%d px"
+                  "margins: sides/top %d px, bottom %d px, divider +-%d px, "
+                  "field-top +-%d px"
                   % (self._player, TONE_EDGE_HZ, TONE_EDGE_MS,
                      TONE_MISS_HZ, TONE_MISS_MS,
-                     EDGE_MARGIN, EDGE_MARGIN_BOTTOM, DIVIDER_MARGIN))
+                     EDGE_MARGIN, EDGE_MARGIN_BOTTOM, DIVIDER_MARGIN,
+                     HALVES_TOP_MARGIN))
 
     def _run(self):
         while True:
@@ -712,9 +721,17 @@ class TapTest(Gtk.ApplicationWindow):
             cand.append(("top", y))
         if (h - y) < EDGE_MARGIN_BOTTOM:
             cand.append(("bottom", h - y))
+        # ☠️ The divider only EXISTS below the field's top edge. Checked at any
+        # y it fired for taps in the record area, where the split means nothing
+        # and a tap wipes the record instead of picking a side - a false
+        # warning, and one that would have trained the operator to ignore the
+        # tone. Found by the case table below, not in use.
         dv = abs(x - w / 2.0)
-        if dv < DIVIDER_MARGIN:
+        if y >= h * HALVES_TOP and dv < DIVIDER_MARGIN:
             cand.append(("divider", dv))
+        dh = abs(y - h * HALVES_TOP)
+        if dh < HALVES_TOP_MARGIN:
+            cand.append(("field-top", dh))
         if cand:
             # Report the WORST of them, not the first: a corner is inside two
             # margins at once and naming only one would understate it.
@@ -985,10 +1002,18 @@ class TapTest(Gtk.ApplicationWindow):
         cr.rectangle(0, half_y, EDGE_MARGIN, th)                    # left
         cr.rectangle(w - EDGE_MARGIN, half_y, EDGE_MARGIN, th)      # right
         cr.rectangle(0, h - EDGE_MARGIN_BOTTOM, w, EDGE_MARGIN_BOTTOM)   # bottom
+        # ☠️ The screen's own top edge was ALREADY a detection margin and had
+        # never been drawn, because the bands were painted only inside the
+        # halves. An unseen guard is exactly the failure being fixed here, so
+        # it is drawn now even though the code for it is unchanged. It goes
+        # under the instruction text, which is painted afterwards.
+        cr.rectangle(0, 0, w, EDGE_MARGIN)                          # top of screen
         cr.fill()
-        # Both sides of the split, drawn as one band centred on it.
+        # Both sides of the split, and both sides of the field's top edge,
+        # drawn as bands centred on the line they guard.
         cr.set_source_rgba(0.95, 0.45, 0.45, 0.30)
         cr.rectangle(w / 2 - DIVIDER_MARGIN, half_y, 2 * DIVIDER_MARGIN, th)
+        cr.rectangle(0, half_y - HALVES_TOP_MARGIN, w, 2 * HALVES_TOP_MARGIN)
         cr.fill()
 
         # Where the finger actually landed, for the whole flash. A tap that

@@ -777,3 +777,42 @@ trusted at all.
 ones. The app regenerates them under the same names, so without that step the
 playback test would have played the **old** 216 Hz tone and been read as the
 new one.
+
+### The frame closed, 2026-09-08 06:39
+
+Screenshot: `armb-frame-complete.png`.
+
+| boundary | margin | why it is guarded |
+|---|---|---|
+| left / right / **top of screen** | 25 px | the sensor runs out |
+| bottom | 60 px | gesture strip and chin - the frame is raised here |
+| vertical split | ±20 px | crossing files the tap on the **wrong side**, which reads as a BREAK |
+| **field top** (halves / MARK bar) | ±20 px | crossing turns a half-tap into a **MARK**, i.e. a false "operator felt a lost tap" entry in the very record lost taps are counted from |
+
+★ The screen's top edge had **always** been a detection margin and had never
+been drawn, because the bands were painted only inside the halves. An unseen
+guard is the exact failure this whole change exists to fix, so it is now drawn
+even though its code is unchanged.
+
+Measured from the screenshot, scanning at x=300 (clear of text and the split):
+
+| logical y | what | predicted |
+|---|---|---|
+| **25.0** | top band ends | `EDGE_MARGIN` |
+| 360.0 | MARK bar begins | `h·MARK_TOP` |
+| **430.0** | field-top band begins | `h·HALVES_TOP − 20` |
+| 450.0 | halves begin | `h·HALVES_TOP` |
+| **470.0** | field-top band ends | `h·HALVES_TOP + 20` |
+
+☠️ **The case table found a real defect before deployment.** The divider check
+had no vertical scope, so it fired for taps in the *record area* — where there
+is no split at all and a tap wipes the record rather than picking a side. A
+false warning there would have taught the operator to ignore the tone, which is
+the one way this instrument can fail completely. It is now conditioned on
+`y >= h·HALVES_TOP`. 14 cases, four of them known negatives, 0 mismatches.
+
+☠️ And one "mismatch" the table reported was **the table being wrong, not the
+code**: at (180, 10) it expected `top` and got `divider`, because x=180 sits
+exactly on the split, distance 0, which really is the nearest boundary. The
+rule that separates the two is that a failing case is a question, not a verdict
+— read which of the two is wrong before changing either.
