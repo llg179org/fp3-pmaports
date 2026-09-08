@@ -11,3 +11,5 @@
 # mistake was made by hand on 2026-09-08.
 callwatch*.log
 *-callwatch*.log
+ringlog*.tsv
+*-ringlog*.tsv

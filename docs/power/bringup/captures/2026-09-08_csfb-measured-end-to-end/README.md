@@ -505,3 +505,52 @@ running on the device**. `systemctl list-units | grep fp3` costs one second.
 stack never gets to SIP; a local precondition fails between bearer-up and the
 first message. `imsd` gets all the way to a SIP response and is refused by the
 core. Two stages, two symptoms, one network.
+
+## ★★ The strongest evidence was already on the phone: 35 for 35
+
+`fp3-ringlog.service` has been logging every incoming call the modem sees since
+before this investigation started — a reachability census written for `#63`,
+carrying a **band** column.
+
+| | |
+|---|---|
+| incoming calls recorded, 2026-09-03 → 2026-09-08 | **35** |
+| on `gsm/gsm-900-extended` | **35** |
+| on LTE | **0** |
+
+☠️ **The raw file is not in this repository** — `ringlog*.tsv` is now in
+`.gitignore` beside `callwatch*.log`, for the reason the operator gave: a call
+log records when its owner telephoned. It is at
+`/mnt/1TB/pmos/fp3-raw-logs/2026-09-08_callwatch/`, md5 `0f660eeb…`. The
+aggregate above is the finding; the per-call times belong in the report to One
+HU, not in a shared tree.
+
+☠️ **And it was found by accident, at the end.** `fp3-callwatch.sh` was written
+this afternoon after a prior-art check of `tools/` and `leads/` — and **not** of
+what is installed and running on the device. `systemctl list-units | grep fp3`
+would have shown `fp3-ringlog.service` in one second, and it answers most of the
+question on its own. The new tool is not a duplicate — it adds the LTE→GSM
+transition timing and the radio-quality stream, which ringlog does not have —
+but the check that would have shaped it was skipped, for the second time today.
+
+## Leg 1: the modem's own IMS enabled — inconclusive, and honestly so
+
+Enabled with the existing `fp3-ims-reconcile.py on` (no new tool), with a
+`systemd-run --on-active=300` dead-man revert armed **before** the change, and
+the 5-minute reconciler timer stopped so it could not undo the leg mid-run.
+
+| | |
+|---|---|
+| switches after 2 attempts | `voice/vowifi/video/sms/ut: True` |
+| the 8.4 s IMS-PDN loop | **not seen** — 0 `PDN`/`bearer`/`rmnet` lines in 4 minutes |
+| IMS registration | still **`not-registered`** |
+| `UE to TAS service` | **`unavailable` → `available`**, technology `wwan` |
+
+☠️ **"No loop" and "no logging" look identical here**, and the second is live:
+`#182` rewrote the ModemManager debug drop-in on 2026-09-07, and the 8.4 s cycle
+was originally measured with `--log-level=DEBUG` in place. Zero lines is
+therefore not evidence that the loop is gone. Re-running this leg needs the PDN
+logging confirmed present **first**, against a known positive.
+
+Reverted and the reconciler timer restarted; `Voice service enabled: no`
+confirmed by read-back.
