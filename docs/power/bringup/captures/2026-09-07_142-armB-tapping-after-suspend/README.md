@@ -939,3 +939,66 @@ lose still log themselves as `beep=superseded-by-<winner>`. The supersession is
 **named** rather than flagged: "superseded" alone would record that a tone was
 withheld without recording why, and the log is the only account of what the
 operator actually heard.
+
+### ☠️ A tone outliving its tap — the operator heard the previous tap
+
+The operator reported a **high** tone when a `0` is written, where the overlap's
+own tone is 648 Hz. The log ruled out the obvious explanation first: of 23
+overlaps, `superseded-by-miss` fired **zero** times, so the OVER tone was
+queued every time and the precedence rule was not at fault.
+
+The cause is across taps, not within one. **8 of the 23 overlaps had a BREAK on
+the *preceding* tap, 10–120 ms earlier**:
+
+```
+07:12:34.346  BREAK    o  (#75)  x=240/360           -> 864 Hz queued
+07:12:34.393  OVERLAP  .  (#76)  x=97/360  fingers 2 -> 648 Hz queued, 47 ms later
+```
+
+A tone lasts 150 ms plus the player's startup; taps arrive every ~200 ms and
+sometimes 10 ms apart. So the MISS was still sounding when the `0` appeared, and
+the operator — correctly — attributed what they heard to what they saw.
+
+**"One tap, one tone" was only ever true within a tap.** It is now true in time
+as well: a new event discards anything queued and `terminate()`s whatever is
+playing. The newest tap owns the speaker, which is the only rule under which a
+tone can be attributed to what is on screen.
+
+☠️ Cutting mid-tone clicks — the 5 ms fade exists only at the file's end. Taken
+deliberately: a truncated tone is honest about being interrupted, a tone that
+finishes in the wrong tap's moment is not.
+
+### ☠️☠️ The gate for it failed first, and the gate was the thing that was broken
+
+`beeper-gate.py` runs the `Beeper` class **extracted from the deployed file**.
+Its first version reported `played +0, CUT +0` on every case, which reads as
+"pre-emption does not work". It tested **nothing**: the regex ended the class at
+the first 12-space `return False`, which is the guard on `fire()`'s very first
+line, so `fire()` was extracted truncated and queued nothing at all.
+
+This is Step 0c's trap committed while trying to satisfy Step 0c — the stand-in
+was not the thing. The extraction now anchors on the next top-level definition
+and **asserts that `def fire`, `put_nowait`, `terminate` and `def _run` are all
+present** before running a single case, because a silently truncated extract
+looks exactly like a broken subject.
+
+With that fixed:
+
+| case | result |
+|---|---|
+| **known negative** — one tone alone | `played +1`, **`CUT +0`** — not cut |
+| **known positive** — three tones 50 ms apart | `played +3`, **`CUT +2`** — newest survives |
+| **the measured pair** — MISS then OVER 47 ms later | `played +2`, **`CUT +1`** |
+
+### And a defect the gate exposed in the instrument itself
+
+The worker's `except Exception: pass` meant **a beeper that never played was
+indistinguishable from one that did** — the exact failure this whole instrument
+exists to prevent, committed inside it. It now counts and logs failures, and the
+shutdown line carries `%d FAILED`.
+
+☠️ **One thing is still unverified and only the operator can settle it.**
+`terminate()` kills the *player*; whether the sink stops immediately depends on
+what PulseAudio has already buffered. The code cuts the process — that is
+measured — but "the sound stops" is not, and a 150 ms tone may be short enough
+to have been handed over in full before the signal lands.

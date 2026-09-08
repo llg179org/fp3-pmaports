@@ -272,6 +272,9 @@ class Beeper:
         self.played = 0
         self._last = {}
         self._q = queue.Queue(maxsize=1)
+        self._proc = None
+        self.cut = 0
+        self.failed = 0
         self._player = None
         for cand in ("paplay", "pw-play", "aplay"):
             if _which(cand):
@@ -322,21 +325,78 @@ class Beeper:
             if not path:
                 continue
             try:
-                subprocess.run([self._player, path],
-                               stdout=subprocess.DEVNULL,
-                               stderr=subprocess.DEVNULL, timeout=4)
-                self.played += 1
-            except Exception:
-                pass
+                self._proc = subprocess.Popen(
+                    [self._player, path],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                _, err = self._proc.communicate(timeout=4)
+                rc = self._proc.returncode
+                # ☠️ `played` counts PLAYER RUNS, not tones heard in full:
+                # paplay exits 0 on SIGTERM, so a run we cut short lands here
+                # too and cannot be told apart by its status. `cut` is the
+                # honest count of truncations - it is incremented at the moment
+                # terminate() is issued against a live process. A negative rc
+                # would mean an uncaught signal, also ours, also not a failure.
+                if rc == 0:
+                    self.played += 1
+                elif rc is not None and rc < 0:
+                    pass
+                else:
+                    self.failed += 1
+                    if self.failed <= 3:
+                        self._log("  beeper: %s exited %s%s" % (
+                            self._player, rc,
+                            (" - " + err.decode("utf-8", "replace").strip()[:120])
+                            if err else ""))
+            except Exception as e:
+                # ☠️ This used to be `pass`. A worker that swallows every error
+                # makes a beeper that NEVER plays indistinguishable from one
+                # that does - the failure this whole instrument exists to avoid,
+                # committed inside the instrument. Found by its own gate.
+                self.failed += 1
+                if self.failed <= 3:
+                    self._log("  beeper: play failed: %r" % (e,))
+            finally:
+                self._proc = None
 
     def fire(self, name, gap):
-        """Queue a tone. Returns True if queued, False if rate-limited/dropped."""
+        """Queue a tone, and give the speaker to THIS tap.
+
+        ☠️ Ordering within one tap was not enough. A tone outlives the tap that
+        raised it - 150 ms of audio plus the player's startup - while taps here
+        arrive every ~200 ms and sometimes 10 ms apart. Measured 2026-09-08: of
+        23 overlaps, 8 had a BREAK on the PRECEDING tap 10-120 ms earlier, so
+        the operator saw a `0` appear and heard the previous tap's MISS. They
+        reported it as the wrong tone for the overlap, and they were right: the
+        tone was correct for a tap that had already gone.
+
+        So a new event drops whatever is queued and cuts short whatever is
+        sounding. The newest tap owns the speaker, which is the only rule under
+        which a tone can be attributed to what is on screen.
+
+        ☠️ Cutting mid-tone clicks, because the 5 ms fade only exists at the
+        file's end. That is accepted deliberately: a truncated tone is honest
+        about being interrupted, while a tone that finishes in the wrong tap's
+        moment is not.
+        """
         if not self.ok:
             return False
         now = time.time()
         if now - self._last.get(name, 0.0) < gap:
             return False
         self._last[name] = now
+        while True:                       # discard anything not yet started
+            try:
+                self._q.get_nowait()
+                self.dropped += 1
+            except queue.Empty:
+                break
+        proc = self._proc                 # and silence what is playing
+        if proc is not None and proc.poll() is None:
+            try:
+                proc.terminate()
+                self.cut += 1
+            except Exception:
+                pass
         try:
             self._q.put_nowait(name)
             return True
@@ -659,9 +719,9 @@ class TapTest(Gtk.ApplicationWindow):
             stop_kcontacts(self._logline)
         b = getattr(self, "beeper", None)
         if b is not None and b.ok:
-            self._log("  beeper: %d played, %d dropped, %d edge detections, "
-                      "%d overlaps"
-                      % (b.played, b.dropped, self.n_edge, self.n_over))
+            self._log("  beeper: %d player runs, %d dropped, %d cut short, %d FAILED, "
+                      "%d edge detections, %d overlaps"
+                      % (b.played, b.dropped, b.cut, b.failed, self.n_edge, self.n_over))
         self._log("== taptest stop %s" % time.strftime("%F %H:%M:%S"))
         try:
             self.log.flush()
