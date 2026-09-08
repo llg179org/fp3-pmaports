@@ -1,0 +1,548 @@
+17:13:51.342  BREAK  o repeated, run=2  (#311)  x=254/360
+17:14:11.266  BREAK  . repeated, run=2  (#485)  x=96/360
+17:14:12.208  BREAK  o repeated, run=2  (#487)  x=266/360
+17:14:12.961  BREAK  . repeated, run=2  (#489)  x=93/360
+17:14:13.683  BREAK  o repeated, run=2  (#491)  x=275/360
+17:14:24.032  BREAK  . repeated, run=2  (#599)  x=129/360
+17:14:28.887  BREAK  o repeated, run=2  (#643)  x=260/360
+17:14:40.700  BREAK  . repeated, run=2  (#759)  x=92/360
+17:14:52.172  BREAK  . repeated, run=2  (#872)  x=108/360
+17:14:52.360  BREAK  . repeated, run=3  (#873)  x=111/360
+17:14:52.689  BREAK  o repeated, run=2  (#875)  x=284/360
+17:15:02.989  BREAK  o repeated, run=2  (#938)  x=274/360
+17:15:03.453  BREAK  . repeated, run=2  (#942)  x=91/360
+17:15:17.486  BREAK  . repeated, run=2  (#1052)  x=66/360
+17:15:20.410  BREAK  . repeated, run=2  (#1067)  x=67/360
+17:15:21.691  BREAK  . repeated, run=2  (#1078)  x=63/360
+17:15:21.853  BREAK  . repeated, run=3  (#1079)  x=68/360
+17:15:22.272  BREAK  . repeated, run=4  (#1080)  x=64/360
+17:15:39.546  BREAK  . repeated, run=2  (#1239)  x=93/360
+17:16:15.840  BREAK  . repeated, run=2  (#1588)  x=74/360
+17:16:16.049  BREAK  . repeated, run=3  (#1589)  x=76/360
+17:16:16.267  BREAK  . repeated, run=4  (#1590)  x=77/360
+17:16:16.487  BREAK  . repeated, run=5  (#1591)  x=78/360
+17:16:16.698  BREAK  . repeated, run=6  (#1592)  x=77/360
+17:16:16.898  BREAK  . repeated, run=7  (#1593)  x=75/360
+17:16:17.080  BREAK  . repeated, run=8  (#1594)  x=73/360
+17:16:18.485  BREAK  . repeated, run=2  (#1601)  x=52/360
+17:19:22.388  BREAK  o repeated, run=2  (#1787)  x=289/360
+17:21:16.201  BREAK  . repeated, run=2  (#2599)  x=123/360
+17:21:16.437  BREAK  . repeated, run=2  (#2602)  x=169/360
+17:21:16.555  BREAK  . repeated, run=3  (#2603)  x=102/360
+17:21:17.045  BREAK  . repeated, run=2  (#2608)  x=175/360
+17:21:17.085  BREAK  . repeated, run=3  (#2609)  x=90/360
+17:21:17.189  BREAK  . repeated, run=4  (#2610)  x=172/360
+17:21:17.285  BREAK  . repeated, run=5  (#2611)  x=80/360
+17:21:17.378  BREAK  . repeated, run=6  (#2612)  x=150/360
+17:21:17.467  BREAK  . repeated, run=7  (#2613)  x=65/360
+17:21:17.568  BREAK  . repeated, run=8  (#2614)  x=130/360
+17:21:17.661  BREAK  . repeated, run=9  (#2615)  x=51/360
+17:21:17.744  BREAK  . repeated, run=10  (#2616)  x=133/360
+17:21:17.843  BREAK  . repeated, run=11  (#2617)  x=55/360
+17:21:17.943  BREAK  . repeated, run=12  (#2618)  x=145/360
+17:21:18.026  BREAK  . repeated, run=13  (#2619)  x=80/360
+17:21:19.223  BREAK  o repeated, run=2  (#2631)  x=298/360
+17:21:19.290  BREAK  o repeated, run=3  (#2632)  x=238/360
+17:21:19.483  BREAK  o repeated, run=4  (#2633)  x=243/360
+17:21:19.675  BREAK  o repeated, run=5  (#2634)  x=237/360
+17:21:19.864  BREAK  o repeated, run=6  (#2635)  x=232/360
+17:21:20.046  BREAK  o repeated, run=7  (#2636)  x=225/360
+17:21:20.189  BREAK  o repeated, run=8  (#2637)  x=256/360
+17:21:20.291  BREAK  o repeated, run=9  (#2638)  x=183/360
+17:21:20.396  BREAK  o repeated, run=10  (#2639)  x=228/360
+17:21:48.707  BREAK  o repeated, run=2  (#2896)  x=248/360
+17:22:04.765  BREAK  . repeated, run=2  (#3032)  x=117/360
+17:22:06.728  BREAK  . repeated, run=2  (#3051)  x=95/360
+17:22:08.848  BREAK  o repeated, run=2  (#3073)  x=284/360
+17:22:33.556  BREAK  . repeated, run=2  (#3285)  x=98/360
+17:23:45.597  BREAK  . repeated, run=2  (#3373)  x=120/360
+05:41:05.950  BREAK  . repeated, run=2  (#3426)  x=52/360
+05:41:06.499  BREAK  . repeated, run=2  (#3431)  x=63/360
+05:41:16.153  BREAK  o repeated, run=2  (#3531)  x=227/360
+05:41:16.593  BREAK  o repeated, run=2  (#3534)  x=227/360
+05:41:16.811  BREAK  o repeated, run=3  (#3535)  x=231/360
+05:41:17.003  BREAK  o repeated, run=4  (#3536)  x=231/360
+05:41:17.211  BREAK  o repeated, run=5  (#3537)  x=228/360
+05:41:17.400  BREAK  o repeated, run=6  (#3538)  x=227/360
+05:41:17.617  BREAK  o repeated, run=7  (#3539)  x=230/360
+05:41:17.811  BREAK  o repeated, run=8  (#3540)  x=233/360
+05:41:18.225  BREAK  o repeated, run=2  (#3543)  x=227/360
+05:41:59.243  BREAK  o repeated, run=2  (#3694)  x=268/360
+05:42:24.903  BREAK  o repeated, run=2  (#3949)  x=266/360
+05:42:25.091  BREAK  . repeated, run=2  (#3951)  x=50/360
+05:42:25.260  BREAK  o repeated, run=2  (#3953)  x=263/360
+05:42:49.597  BREAK  o repeated, run=2  (#4188)  x=268/360
+05:45:45.662  BREAK  . repeated, run=2  (#4395)  x=50/360
+05:45:45.860  BREAK  . repeated, run=3  (#4396)  x=41/360
+05:45:52.921  BREAK  o repeated, run=2  (#4466)  x=291/360
+05:46:41.978  BREAK  . repeated, run=2  (#4792)  x=76/360
+05:46:47.102  BREAK  o repeated, run=2  (#4846)  x=274/360
+05:46:55.715  BREAK  o repeated, run=2  (#4929)  x=286/360
+05:50:31.048  BREAK  o repeated, run=2  (#5216)  x=291/360
+05:50:34.021  BREAK  o repeated, run=2  (#5221)  x=254/360
+05:50:38.601  BREAK  o repeated, run=2  (#5238)  x=312/360
+05:50:41.309  BREAK  . repeated, run=2  (#5259)  x=87/360
+05:50:41.502  BREAK  . repeated, run=3  (#5260)  x=85/360
+05:50:42.286  BREAK  o repeated, run=2  (#5268)  x=291/360
+05:50:42.443  BREAK  . repeated, run=2  (#5270)  x=83/360
+05:50:43.097  BREAK  o repeated, run=2  (#5276)  x=291/360
+05:50:43.375  BREAK  . repeated, run=2  (#5278)  x=83/360
+05:50:45.210  BREAK  o repeated, run=2  (#5296)  x=293/360
+05:50:46.570  BREAK  o repeated, run=2  (#5309)  x=299/360
+05:50:46.943  BREAK  o repeated, run=3  (#5310)  x=292/360
+05:50:47.093  BREAK  o repeated, run=4  (#5311)  x=293/360
+05:50:47.266  BREAK  o repeated, run=5  (#5312)  x=285/360
+05:50:48.377  BREAK  o repeated, run=2  (#5319)  x=279/360
+05:50:48.540  BREAK  o repeated, run=3  (#5320)  x=280/360
+05:50:48.706  BREAK  o repeated, run=4  (#5321)  x=280/360
+05:50:48.905  BREAK  o repeated, run=5  (#5322)  x=283/360
+05:50:49.082  BREAK  o repeated, run=6  (#5323)  x=284/360
+05:50:49.257  BREAK  o repeated, run=7  (#5324)  x=281/360
+05:50:49.437  BREAK  o repeated, run=8  (#5325)  x=279/360
+05:50:49.698  BREAK  o repeated, run=9  (#5326)  x=287/360
+05:50:50.961  BREAK  o repeated, run=2  (#5339)  x=290/360
+05:50:53.813  BREAK  o repeated, run=2  (#5364)  x=291/360
+05:50:55.638  BREAK  . repeated, run=2  (#5382)  x=76/360
+05:51:06.901  BREAK  . repeated, run=2  (#5446)  x=65/360
+05:51:07.032  BREAK  o repeated, run=2  (#5448)  x=282/360
+05:51:35.594  BREAK  . repeated, run=2  (#5713)  x=80/360
+05:51:38.090  BREAK  o repeated, run=2  (#5737)  x=298/360
+05:51:45.305  BREAK  o repeated, run=2  (#5806)  x=265/360
+05:52:41.524  BREAK  o repeated, run=2  (#6320)  x=285/360
+05:52:58.885  BREAK  o repeated, run=2  (#6477)  x=272/360
+05:52:59.305  BREAK  . repeated, run=2  (#6479)  x=105/360
+05:52:59.671  BREAK  o repeated, run=2  (#6481)  x=290/360
+05:53:01.383  BREAK  . repeated, run=2  (#6491)  x=77/360
+05:53:02.833  BREAK  o repeated, run=2  (#6497)  x=296/360
+05:53:03.239  BREAK  . repeated, run=2  (#6499)  x=29/360
+05:53:03.531  BREAK  o repeated, run=2  (#6501)  x=303/360
+05:53:06.054  BREAK  o repeated, run=2  (#6518)  x=239/360
+05:53:13.165  BREAK  o repeated, run=2  (#6575)  x=306/360
+05:53:13.179  BREAK  o repeated, run=3  (#6576)  x=267/360
+05:53:13.315  BREAK  o repeated, run=4  (#6577)  x=305/360
+05:53:13.345  BREAK  o repeated, run=5  (#6578)  x=268/360
+05:53:13.672  BREAK  o repeated, run=2  (#6581)  x=272/360
+05:53:13.778  BREAK  o repeated, run=3  (#6582)  x=298/360
+05:53:13.855  BREAK  o repeated, run=4  (#6583)  x=248/360
+05:53:25.968  BREAK  o repeated, run=2  (#6689)  x=245/360
+05:53:26.159  BREAK  o repeated, run=3  (#6690)  x=255/360
+05:53:26.333  BREAK  o repeated, run=4  (#6691)  x=255/360
+05:53:27.164  BREAK  o repeated, run=2  (#6700)  x=261/360
+05:53:31.039  BREAK  o repeated, run=2  (#6741)  x=261/360
+05:53:32.956  BREAK  . repeated, run=2  (#6761)  x=89/360
+05:53:33.219  BREAK  o repeated, run=2  (#6763)  x=251/360
+05:53:37.144  BREAK  o repeated, run=2  (#6802)  x=273/360
+05:53:39.451  BREAK  . repeated, run=2  (#6822)  x=80/360
+06:24:27.888  BREAK  . repeated, run=2  (#2)  x=30/360  beep=yes
+06:24:28.689  BREAK  . repeated, run=3  (#3)  x=41/360  beep=yes
+06:24:29.158  BREAK  . repeated, run=4  (#4)  x=62/360  beep=yes
+06:24:29.707  BREAK  . repeated, run=5  (#5)  x=92/360  beep=yes
+06:24:30.306  BREAK  . repeated, run=6  (#6)  x=122/360  beep=yes
+06:24:30.983  BREAK  . repeated, run=7  (#7)  x=155/360  beep=yes
+06:24:31.793  BREAK  . repeated, run=8  (#8)  x=170/360  beep=yes
+06:24:32.352  BREAK  . repeated, run=9  (#9)  x=145/360  beep=yes
+06:24:33.235  BREAK  . repeated, run=10  (#10)  x=103/360  beep=yes
+06:24:33.866  BREAK  . repeated, run=11  (#11)  x=119/360  beep=yes
+06:24:34.470  BREAK  . repeated, run=12  (#12)  x=119/360  beep=yes
+06:24:34.999  BREAK  . repeated, run=13  (#13)  x=115/360  beep=yes
+06:24:35.694  BREAK  . repeated, run=14  (#14)  x=38/360  beep=yes
+06:24:36.317  EDGE #1  20 px from the nearest edge  at 20,485 of 360x720  beep=yes
+06:24:36.318  BREAK  . repeated, run=15  (#15)  x=20/360  beep=yes
+06:24:37.713  BREAK  o repeated, run=2  (#17)  x=296/360  beep=yes
+06:24:38.358  BREAK  o repeated, run=3  (#18)  x=292/360  beep=yes
+06:24:38.962  BREAK  o repeated, run=4  (#19)  x=236/360  beep=yes
+06:24:39.524  BREAK  o repeated, run=5  (#20)  x=279/360  beep=yes
+06:24:40.045  BREAK  o repeated, run=6  (#21)  x=264/360  beep=yes
+06:24:40.480  BREAK  o repeated, run=7  (#22)  x=263/360  beep=yes
+06:24:45.343  EDGE #2  10 px from the nearest edge  at 10,614 of 360x720  beep=yes
+06:24:45.608  EDGE #3  7 px from the nearest edge  at 353,557 of 360x720  beep=rate-limited
+06:24:46.210  EDGE #4  7 px from the nearest edge  at 353,553 of 360x720  beep=yes
+06:24:46.212  BREAK  o repeated, run=2  (#37)  x=353/360  beep=yes
+06:24:46.552  EDGE #5  10 px from the nearest edge  at 10,612 of 360x720  beep=yes
+06:24:46.834  EDGE #6  10 px from the nearest edge  at 350,551 of 360x720  beep=rate-limited
+06:24:47.091  EDGE #7  11 px from the nearest edge  at 11,612 of 360x720  beep=yes
+06:24:47.291  EDGE #8  8 px from the nearest edge  at 352,551 of 360x720  beep=rate-limited
+06:24:47.616  EDGE #9  19 px from the nearest edge  at 19,613 of 360x720  beep=yes
+06:24:47.841  EDGE #10  17 px from the nearest edge  at 343,540 of 360x720  beep=rate-limited
+06:24:48.116  EDGE #11  12 px from the nearest edge  at 12,611 of 360x720  beep=yes
+06:24:48.334  EDGE #12  8 px from the nearest edge  at 352,541 of 360x720  beep=rate-limited
+06:24:48.968  EDGE #13  21 px from the nearest edge  at 21,611 of 360x720  beep=yes
+06:24:49.259  EDGE #14  12 px from the nearest edge  at 348,545 of 360x720  beep=rate-limited
+06:24:50.739  BREAK  . repeated, run=2  (#57)  x=25/360  beep=yes
+06:24:50.830  EDGE #15  8 px from the nearest edge  at 352,545 of 360x720  beep=yes
+06:24:50.954  EDGE #16  12 px from the nearest edge  at 12,608 of 360x720  beep=rate-limited
+06:24:51.056  EDGE #17  7 px from the nearest edge  at 353,545 of 360x720  beep=rate-limited
+06:24:51.166  EDGE #18  10 px from the nearest edge  at 10,608 of 360x720  beep=yes
+06:24:51.248  EDGE #19  7 px from the nearest edge  at 353,548 of 360x720  beep=rate-limited
+06:24:51.397  EDGE #20  7 px from the nearest edge  at 7,607 of 360x720  beep=rate-limited
+06:24:51.480  EDGE #21  8 px from the nearest edge  at 352,551 of 360x720  beep=yes
+06:24:51.615  EDGE #22  7 px from the nearest edge  at 7,607 of 360x720  beep=rate-limited
+06:24:51.702  EDGE #23  8 px from the nearest edge  at 352,551 of 360x720  beep=rate-limited
+06:24:51.838  EDGE #24  8 px from the nearest edge  at 8,606 of 360x720  beep=yes
+06:24:51.945  EDGE #25  8 px from the nearest edge  at 352,550 of 360x720  beep=rate-limited
+06:24:52.070  EDGE #26  10 px from the nearest edge  at 10,608 of 360x720  beep=rate-limited
+06:24:52.353  BREAK  . repeated, run=2  (#70)  x=57/360  beep=yes
+06:24:53.912  EDGE #27  24 px from the nearest edge  at 336,534 of 360x720  beep=yes
+06:24:54.084  EDGE #28  18 px from the nearest edge  at 18,612 of 360x720  beep=rate-limited
+06:24:54.226  EDGE #29  15 px from the nearest edge  at 345,549 of 360x720  beep=yes
+06:24:54.347  EDGE #30  18 px from the nearest edge  at 18,615 of 360x720  beep=rate-limited
+06:24:54.399  EDGE #31  8 px from the nearest edge  at 352,549 of 360x720  beep=rate-limited
+06:24:54.527  EDGE #32  12 px from the nearest edge  at 12,613 of 360x720  beep=yes
+06:24:54.714  EDGE #33  10 px from the nearest edge  at 10,611 of 360x720  beep=rate-limited
+06:24:54.714  BREAK  . repeated, run=2  (#93)  x=10/360  beep=yes
+06:24:54.798  EDGE #34  7 px from the nearest edge  at 353,564 of 360x720  beep=rate-limited
+06:24:54.904  EDGE #35  7 px from the nearest edge  at 7,609 of 360x720  beep=yes
+06:24:54.959  EDGE #36  8 px from the nearest edge  at 352,562 of 360x720  beep=rate-limited
+06:24:55.099  EDGE #37  8 px from the nearest edge  at 8,609 of 360x720  beep=rate-limited
+06:24:55.144  EDGE #38  8 px from the nearest edge  at 352,562 of 360x720  beep=rate-limited
+06:24:55.268  EDGE #39  11 px from the nearest edge  at 349,572 of 360x720  beep=yes
+06:24:55.270  BREAK  o repeated, run=2  (#99)  x=349/360  beep=yes
+06:24:55.464  EDGE #40  9 px from the nearest edge  at 351,570 of 360x720  beep=rate-limited
+06:24:55.465  BREAK  o repeated, run=3  (#100)  x=351/360  beep=rate-limited
+06:24:55.594  EDGE #41  20 px from the nearest edge  at 20,608 of 360x720  beep=yes
+06:24:55.729  EDGE #42  18 px from the nearest edge  at 342,559 of 360x720  beep=rate-limited
+06:24:55.874  EDGE #43  19 px from the nearest edge  at 341,548 of 360x720  beep=rate-limited
+06:24:57.030  BREAK  o repeated, run=2  (#115)  x=270/360  beep=yes
+06:24:57.231  BREAK  o repeated, run=3  (#116)  x=276/360  beep=yes
+06:24:57.408  BREAK  o repeated, run=4  (#117)  x=277/360  beep=yes
+06:24:57.580  BREAK  o repeated, run=5  (#118)  x=279/360  beep=yes
+06:24:57.750  BREAK  o repeated, run=6  (#119)  x=283/360  beep=rate-limited
+06:24:57.941  BREAK  o repeated, run=7  (#120)  x=276/360  beep=yes
+06:24:59.346  EDGE #44  8 px from the nearest edge  at 8,589 of 360x720  beep=yes
+06:24:59.347  BREAK  . repeated, run=2  (#132)  x=8/360  beep=rate-limited
+06:24:59.523  EDGE #45  12 px from the nearest edge  at 348,533 of 360x720  beep=rate-limited
+06:24:59.624  EDGE #46  7 px from the nearest edge  at 7,595 of 360x720  beep=rate-limited
+06:24:59.820  EDGE #47  7 px from the nearest edge  at 7,598 of 360x720  beep=yes
+06:24:59.820  BREAK  . repeated, run=2  (#135)  x=7/360  beep=rate-limited
+06:25:00.009  EDGE #48  7 px from the nearest edge  at 7,599 of 360x720  beep=rate-limited
+06:25:00.009  BREAK  . repeated, run=3  (#136)  x=7/360  beep=yes
+06:25:00.085  EDGE #49  7 px from the nearest edge  at 353,538 of 360x720  beep=rate-limited
+06:25:00.178  EDGE #50  7 px from the nearest edge  at 7,599 of 360x720  beep=yes
+06:25:00.275  EDGE #51  19 px from the nearest edge  at 341,534 of 360x720  beep=rate-limited
+06:25:00.401  EDGE #52  10 px from the nearest edge  at 10,599 of 360x720  beep=rate-limited
+06:25:00.494  EDGE #53  15 px from the nearest edge  at 345,533 of 360x720  beep=yes
+06:25:00.608  EDGE #54  13 px from the nearest edge  at 13,600 of 360x720  beep=rate-limited
+06:25:00.703  EDGE #55  14 px from the nearest edge  at 346,545 of 360x720  beep=rate-limited
+06:25:00.819  EDGE #56  17 px from the nearest edge  at 17,602 of 360x720  beep=yes
+06:25:01.027  BREAK  . repeated, run=2  (#145)  x=34/360  beep=yes
+06:25:01.058  EDGE #57  7 px from the nearest edge  at 353,535 of 360x720  beep=rate-limited
+06:25:01.711  BREAK  . repeated, run=2  (#148)  x=75/360  beep=yes
+06:25:03.157  EDGE #58  22 px from the nearest edge  at 338,518 of 360x720  beep=yes
+06:25:03.338  EDGE #59  7 px from the nearest edge  at 353,520 of 360x720  beep=rate-limited
+06:25:03.338  BREAK  o repeated, run=2  (#164)  x=353/360  beep=yes
+06:25:03.380  EDGE #60  7 px from the nearest edge  at 7,602 of 360x720  beep=rate-limited
+06:25:03.513  EDGE #61  8 px from the nearest edge  at 352,526 of 360x720  beep=yes
+06:25:03.644  EDGE #62  8 px from the nearest edge  at 8,601 of 360x720  beep=rate-limited
+06:25:03.692  EDGE #63  7 px from the nearest edge  at 353,530 of 360x720  beep=rate-limited
+06:25:04.752  EDGE #64  21 px from the nearest edge  at 21,601 of 360x720  beep=yes
+06:25:04.753  BREAK  . repeated, run=2  (#170)  x=21/360  beep=yes
+06:25:04.936  EDGE #65  21 px from the nearest edge  at 21,600 of 360x720  beep=rate-limited
+06:25:04.937  BREAK  . repeated, run=3  (#171)  x=21/360  beep=rate-limited
+06:25:05.130  BREAK  . repeated, run=4  (#172)  x=29/360  beep=yes
+06:25:05.294  BREAK  . repeated, run=5  (#173)  x=31/360  beep=yes
+06:25:05.469  BREAK  . repeated, run=6  (#174)  x=32/360  beep=rate-limited
+06:25:05.645  BREAK  . repeated, run=7  (#175)  x=38/360  beep=yes
+06:25:05.838  BREAK  . repeated, run=8  (#176)  x=39/360  beep=yes
+06:26:18.836  BREAK  . repeated, run=2  (#178)  x=90/360  beep=yes
+06:26:19.037  BREAK  . repeated, run=3  (#179)  x=90/360  beep=yes
+06:26:19.237  BREAK  . repeated, run=4  (#180)  x=89/360  beep=yes
+06:26:19.403  BREAK  . repeated, run=5  (#181)  x=89/360  beep=rate-limited
+06:26:19.583  BREAK  . repeated, run=6  (#182)  x=87/360  beep=yes
+06:26:19.762  BREAK  . repeated, run=7  (#183)  x=87/360  beep=yes
+06:26:20.179  BREAK  o repeated, run=2  (#185)  x=274/360  beep=yes
+06:26:20.345  BREAK  o repeated, run=3  (#186)  x=278/360  beep=yes
+06:26:20.502  BREAK  o repeated, run=4  (#187)  x=286/360  beep=rate-limited
+06:26:20.665  BREAK  o repeated, run=5  (#188)  x=334/360  beep=yes
+06:26:20.819  EDGE #66  18 px from the nearest edge  at 342,642 of 360x720  beep=rate-limited
+06:26:20.819  BREAK  o repeated, run=6  (#189)  x=342/360  beep=rate-limited
+06:26:20.983  EDGE #67  13 px from the nearest edge  at 347,643 of 360x720  beep=rate-limited
+06:26:20.983  BREAK  o repeated, run=7  (#190)  x=347/360  beep=yes
+06:26:21.160  EDGE #68  8 px from the nearest edge  at 352,646 of 360x720  beep=yes
+06:26:21.160  BREAK  o repeated, run=8  (#191)  x=352/360  beep=rate-limited
+06:26:21.379  EDGE #69  8 px from the nearest edge  at 352,648 of 360x720  beep=rate-limited
+06:26:21.380  BREAK  o repeated, run=9  (#192)  x=352/360  beep=rate-limited
+06:26:21.600  EDGE #70  12 px from the nearest edge  at 348,650 of 360x720  beep=yes
+06:26:21.601  BREAK  o repeated, run=10  (#193)  x=348/360  beep=rate-limited
+06:26:22.011  EDGE #71  13 px from the nearest edge  at 347,645 of 360x720  beep=yes
+06:26:22.012  BREAK  o repeated, run=11  (#194)  x=347/360  beep=rate-limited
+06:26:22.191  EDGE #72  10 px from the nearest edge  at 350,649 of 360x720  beep=rate-limited
+06:26:22.191  BREAK  o repeated, run=12  (#195)  x=350/360  beep=yes
+06:26:22.340  EDGE #73  11 px from the nearest edge  at 349,651 of 360x720  beep=yes
+06:26:22.340  BREAK  o repeated, run=13  (#196)  x=349/360  beep=rate-limited
+06:26:51.822  EDGE #1  20 px from the nearest edge  at 20,555 of 360x720  beep=yes
+06:26:53.182  EDGE #2  7 px from the nearest edge  at 7,630 of 360x720  beep=yes
+06:26:53.182  BREAK  . repeated, run=2  (#2)  x=7/360  beep=rate-limited
+06:26:54.000  EDGE #3  7 px from the nearest edge  at 7,594 of 360x720  beep=yes
+06:26:54.002  BREAK  . repeated, run=3  (#3)  x=7/360  beep=yes
+06:26:56.267  EDGE #4  7 px from the nearest edge  at 7,588 of 360x720  beep=yes
+06:26:56.268  BREAK  . repeated, run=4  (#4)  x=7/360  beep=yes
+06:26:57.586  BREAK  . repeated, run=5  (#5)  x=28/360  beep=yes
+06:26:58.523  BREAK  . repeated, run=6  (#6)  x=56/360  beep=yes
+06:26:59.404  BREAK  . repeated, run=7  (#7)  x=83/360  beep=yes
+06:27:03.670  EDGE #5  7 px from the nearest edge  at 353,639 of 360x720  beep=yes
+06:27:04.249  EDGE #6  8 px from the nearest edge  at 8,656 of 360x720  beep=yes
+06:27:04.818  EDGE #7  7 px from the nearest edge  at 353,646 of 360x720  beep=yes
+06:27:05.434  EDGE #8  8 px from the nearest edge  at 8,658 of 360x720  beep=yes
+06:27:06.052  EDGE #9  8 px from the nearest edge  at 352,645 of 360x720  beep=yes
+06:27:06.867  EDGE #10  19 px from the nearest edge  at 19,674 of 360x720  beep=yes
+06:27:09.421  EDGE #11  11 px from the nearest edge  at 349,521 of 360x720  beep=yes
+06:27:09.824  EDGE #12  10 px from the nearest edge  at 10,462 of 360x720  beep=yes
+06:27:10.270  EDGE #13  24 px from the nearest edge  at 336,502 of 360x720  beep=yes
+06:27:11.136  EDGE #14  11 px from the nearest edge  at 349,531 of 360x720  beep=yes
+06:27:11.138  BREAK  o repeated, run=2  (#27)  x=349/360  beep=yes
+06:27:11.568  EDGE #15  7 px from the nearest edge  at 7,506 of 360x720  beep=yes
+06:27:12.028  EDGE #16  16 px from the nearest edge  at 344,581 of 360x720  beep=yes
+06:27:15.803  EDGE #17  22 px from the nearest edge  at 268,698 of 360x720  beep=yes
+06:27:16.070  BREAK  . repeated, run=2  (#59)  x=70/360  beep=yes
+06:27:16.405  BREAK  . repeated, run=3  (#60)  x=84/360  beep=yes
+06:27:16.560  EDGE #18  24 px from the nearest edge  at 87,696 of 360x720  beep=yes
+06:27:16.561  BREAK  . repeated, run=4  (#61)  x=87/360  beep=rate-limited
+06:27:16.737  EDGE #19  16 px from the nearest edge  at 84,704 of 360x720  beep=rate-limited
+06:27:16.737  BREAK  . repeated, run=5  (#62)  x=84/360  beep=yes
+06:27:16.886  EDGE #20  14 px from the nearest edge  at 88,706 of 360x720  beep=rate-limited
+06:27:16.886  BREAK  . repeated, run=6  (#63)  x=88/360  beep=rate-limited
+06:27:17.050  EDGE #21  19 px from the nearest edge  at 89,701 of 360x720  beep=rate-limited
+06:27:17.050  BREAK  . repeated, run=7  (#64)  x=89/360  beep=yes
+06:27:17.391  EDGE #22  18 px from the nearest edge  at 88,702 of 360x720  beep=yes
+06:27:17.392  BREAK  . repeated, run=8  (#65)  x=88/360  beep=rate-limited
+06:27:17.766  EDGE #23  16 px from the nearest edge  at 86,704 of 360x720  beep=yes
+06:27:17.766  BREAK  . repeated, run=9  (#66)  x=86/360  beep=rate-limited
+06:27:17.939  EDGE #24  18 px from the nearest edge  at 92,702 of 360x720  beep=rate-limited
+06:27:17.940  BREAK  . repeated, run=10  (#67)  x=92/360  beep=yes
+06:27:19.004  EDGE #25  16 px from the nearest edge  at 98,704 of 360x720  beep=yes
+06:27:19.004  BREAK  . repeated, run=11  (#68)  x=98/360  beep=rate-limited
+06:27:19.315  BREAK  . repeated, run=12  (#69)  x=100/360  beep=yes
+06:27:21.651  BREAK  . repeated, run=13  (#70)  x=76/360  beep=yes
+06:27:22.698  BREAK  . repeated, run=14  (#71)  x=88/360  beep=yes
+06:27:23.308  BREAK  . repeated, run=15  (#72)  x=95/360  beep=yes
+06:27:24.083  BREAK  . repeated, run=16  (#73)  x=101/360  beep=yes
+06:27:25.072  BREAK  . repeated, run=17  (#74)  x=87/360  beep=yes
+06:27:25.384  EDGE #26  24 px from the nearest edge  at 285,696 of 360x720  beep=yes
+06:27:27.586  EDGE #27  23 px from the nearest edge  at 259,697 of 360x720  beep=yes
+06:27:28.244  EDGE #28  21 px from the nearest edge  at 270,699 of 360x720  beep=yes
+06:27:28.954  EDGE #29  19 px from the nearest edge  at 270,701 of 360x720  beep=yes
+06:27:29.824  EDGE #30  16 px from the nearest edge  at 270,704 of 360x720  beep=yes
+06:27:31.236  EDGE #31  22 px from the nearest edge  at 268,698 of 360x720  beep=yes
+06:27:34.598  EDGE #32  21 px from the nearest edge  at 252,699 of 360x720  beep=yes
+06:27:36.039  EDGE #33  12 px from the nearest edge  at 259,708 of 360x720  beep=yes
+06:27:37.996  EDGE #34  13 px from the nearest edge  at 246,707 of 360x720  beep=yes
+06:27:38.462  EDGE #35  21 px from the nearest edge  at 71,699 of 360x720  beep=yes
+06:27:38.945  EDGE #36  12 px from the nearest edge  at 259,708 of 360x720  beep=yes
+06:27:39.427  EDGE #37  18 px from the nearest edge  at 74,702 of 360x720  beep=yes
+06:27:50.461  EDGE #38  10 px from the nearest edge  at 350,557 of 360x720  beep=yes
+06:27:50.829  EDGE #39  9 px from the nearest edge  at 9,515 of 360x720  beep=yes
+06:27:52.226  EDGE #40  20 px from the nearest edge  at 340,553 of 360x720  beep=yes
+06:27:53.740  EDGE #41  10 px from the nearest edge  at 10,526 of 360x720  beep=yes
+06:27:54.265  EDGE #42  14 px from the nearest edge  at 346,554 of 360x720  beep=yes
+06:27:56.519  EDGE #43  14 px from the nearest edge  at 14,529 of 360x720  beep=yes
+06:27:57.847  EDGE #44  16 px from the nearest edge  at 16,537 of 360x720  beep=yes
+06:27:58.139  EDGE #45  13 px from the nearest edge  at 347,558 of 360x720  beep=rate-limited
+06:27:58.403  EDGE #46  12 px from the nearest edge  at 12,526 of 360x720  beep=yes
+06:27:59.048  EDGE #47  17 px from the nearest edge  at 17,529 of 360x720  beep=yes
+06:27:59.637  EDGE #48  17 px from the nearest edge  at 17,537 of 360x720  beep=yes
+06:28:00.342  BREAK  . repeated, run=2  (#135)  x=60/360  beep=yes
+06:28:04.489  BREAK  o repeated, run=2  (#179)  x=275/360  beep=yes
+06:28:04.657  BREAK  o repeated, run=3  (#180)  x=279/360  beep=yes
+06:28:05.093  BREAK  . repeated, run=2  (#182)  x=63/360  beep=yes
+06:28:05.373  BREAK  . repeated, run=3  (#183)  x=71/360  beep=yes
+06:28:05.550  BREAK  . repeated, run=4  (#184)  x=72/360  beep=yes
+06:28:05.716  BREAK  . repeated, run=5  (#185)  x=72/360  beep=yes
+06:28:05.879  BREAK  . repeated, run=6  (#186)  x=72/360  beep=rate-limited
+06:28:07.793  BREAK  . repeated, run=2  (#205)  x=65/360  beep=yes
+06:28:08.342  BREAK  . repeated, run=2  (#210)  x=75/360  beep=yes
+06:28:09.539  EDGE #49  21 px from the nearest edge  at 281,699 of 360x720  beep=yes
+06:28:09.700  EDGE #50  16 px from the nearest edge  at 280,704 of 360x720  beep=rate-limited
+06:28:09.761  EDGE #51  21 px from the nearest edge  at 93,699 of 360x720  beep=rate-limited
+06:28:09.854  EDGE #52  13 px from the nearest edge  at 279,707 of 360x720  beep=yes
+06:28:09.945  EDGE #53  18 px from the nearest edge  at 97,702 of 360x720  beep=rate-limited
+06:28:20.462  EDGE #54  19 px from the nearest edge  at 289,701 of 360x720  beep=yes
+06:28:22.269  BREAK  o repeated, run=2  (#232)  x=256/360  beep=yes
+06:28:23.656  EDGE #55  23 px from the nearest edge  at 76,697 of 360x720  beep=yes
+06:28:23.976  EDGE #56  17 px from the nearest edge  at 286,703 of 360x720  beep=yes
+06:28:24.337  EDGE #57  19 px from the nearest edge  at 80,701 of 360x720  beep=yes
+06:28:25.449  EDGE #58  17 px from the nearest edge  at 289,703 of 360x720  beep=yes
+06:28:27.610  EDGE #59  21 px from the nearest edge  at 279,699 of 360x720  beep=yes
+06:28:28.425  EDGE #60  17 px from the nearest edge  at 293,703 of 360x720  beep=yes
+06:28:29.194  EDGE #61  16 px from the nearest edge  at 272,704 of 360x720  beep=yes
+06:28:30.909  EDGE #62  17 px from the nearest edge  at 69,703 of 360x720  beep=yes
+06:28:32.468  EDGE #63  12 px from the nearest edge  at 50,708 of 360x720  beep=yes
+06:28:32.964  EDGE #64  17 px from the nearest edge  at 61,703 of 360x720  beep=yes
+06:28:43.409  BREAK  . repeated, run=2  (#262)  x=96/360  beep=yes
+06:28:43.879  BREAK  o repeated, run=2  (#266)  x=312/360  beep=yes
+06:28:46.303  BREAK  o repeated, run=2  (#291)  x=303/360  beep=yes
+06:28:47.537  BREAK  o repeated, run=2  (#300)  x=281/360  beep=yes
+06:28:52.434  EDGE #65  15 px from the nearest edge  at 55,705 of 360x720  beep=yes
+06:28:52.628  EDGE #66  13 px from the nearest edge  at 58,707 of 360x720  beep=rate-limited
+06:28:52.835  BREAK  o repeated, run=2  (#357)  x=267/360  beep=yes
+06:28:53.035  BREAK  o repeated, run=3  (#358)  x=270/360  beep=yes
+06:28:53.234  BREAK  o repeated, run=4  (#359)  x=264/360  beep=yes
+06:28:56.402  EDGE #67  21 px from the nearest edge  at 64,699 of 360x720  beep=yes
+06:28:56.593  EDGE #68  19 px from the nearest edge  at 61,701 of 360x720  beep=rate-limited
+06:28:56.802  EDGE #69  16 px from the nearest edge  at 66,704 of 360x720  beep=yes
+06:28:56.984  EDGE #70  24 px from the nearest edge  at 67,696 of 360x720  beep=rate-limited
+06:28:57.174  EDGE #71  23 px from the nearest edge  at 67,697 of 360x720  beep=yes
+06:28:58.147  BREAK  o repeated, run=2  (#408)  x=284/360  beep=yes
+06:28:58.456  BREAK  . repeated, run=2  (#410)  x=50/360  beep=yes
+06:28:59.658  BREAK  . repeated, run=2  (#421)  x=91/360  beep=yes
+06:29:04.747  BREAK  . repeated, run=2  (#463)  x=76/360  beep=yes
+06:29:08.372  BREAK  o repeated, run=2  (#499)  x=290/360  beep=yes
+06:29:10.366  BREAK  o repeated, run=2  (#518)  x=262/360  beep=yes
+06:29:12.791  BREAK  o repeated, run=2  (#543)  x=279/360  beep=yes
+06:29:14.006  BREAK  o repeated, run=2  (#556)  x=267/360  beep=yes
+06:29:15.304  BREAK  . repeated, run=2  (#568)  x=95/360  beep=yes
+06:29:18.108  BREAK  o repeated, run=2  (#586)  x=223/360  beep=yes
+06:29:18.616  BREAK  o repeated, run=2  (#589)  x=274/360  beep=yes
+06:29:20.946  BREAK  . repeated, run=2  (#607)  x=95/360  beep=yes
+06:29:32.978  BREAK  . repeated, run=2  (#714)  x=89/360  beep=yes
+06:29:45.323  BREAK  . repeated, run=2  (#829)  x=43/360  beep=yes
+06:29:45.529  EDGE #72  17 px from the nearest edge  at 343,562 of 360x720  beep=yes
+06:29:45.710  EDGE #73  24 px from the nearest edge  at 24,572 of 360x720  beep=rate-limited
+06:29:46.047  EDGE #74  19 px from the nearest edge  at 19,568 of 360x720  beep=yes
+06:29:46.483  EDGE #75  24 px from the nearest edge  at 24,581 of 360x720  beep=yes
+06:29:46.707  EDGE #76  11 px from the nearest edge  at 11,569 of 360x720  beep=rate-limited
+06:29:47.025  EDGE #77  11 px from the nearest edge  at 11,580 of 360x720  beep=yes
+06:29:47.209  EDGE #78  7 px from the nearest edge  at 7,570 of 360x720  beep=rate-limited
+06:29:47.209  BREAK  . repeated, run=2  (#842)  x=7/360  beep=yes
+06:29:47.483  EDGE #79  10 px from the nearest edge  at 10,584 of 360x720  beep=yes
+06:29:47.688  EDGE #80  12 px from the nearest edge  at 12,591 of 360x720  beep=rate-limited
+06:29:47.877  EDGE #81  21 px from the nearest edge  at 21,598 of 360x720  beep=yes
+06:29:48.096  EDGE #82  16 px from the nearest edge  at 16,593 of 360x720  beep=rate-limited
+06:29:48.292  EDGE #83  17 px from the nearest edge  at 17,590 of 360x720  beep=yes
+06:29:49.333  EDGE #84  23 px from the nearest edge  at 23,592 of 360x720  beep=yes
+06:29:49.539  EDGE #85  17 px from the nearest edge  at 17,587 of 360x720  beep=rate-limited
+06:29:49.752  EDGE #86  12 px from the nearest edge  at 12,583 of 360x720  beep=yes
+06:29:49.966  EDGE #87  10 px from the nearest edge  at 10,578 of 360x720  beep=rate-limited
+06:29:50.174  EDGE #88  11 px from the nearest edge  at 11,582 of 360x720  beep=yes
+06:29:50.391  EDGE #89  12 px from the nearest edge  at 12,583 of 360x720  beep=rate-limited
+06:29:50.608  EDGE #90  10 px from the nearest edge  at 10,578 of 360x720  beep=yes
+06:29:50.814  EDGE #91  10 px from the nearest edge  at 10,575 of 360x720  beep=rate-limited
+06:29:51.033  EDGE #92  13 px from the nearest edge  at 13,578 of 360x720  beep=yes
+06:29:51.230  EDGE #93  13 px from the nearest edge  at 13,572 of 360x720  beep=rate-limited
+06:29:52.387  EDGE #94  21 px from the nearest edge  at 21,588 of 360x720  beep=yes
+06:29:52.388  BREAK  . repeated, run=2  (#881)  x=21/360  beep=rate-limited
+06:29:54.264  EDGE #95  14 px from the nearest edge  at 14,605 of 360x720  beep=yes
+06:29:59.753  BREAK  . repeated, run=2  (#890)  x=142/360  beep=yes
+06:30:00.307  BREAK  . repeated, run=3  (#891)  x=61/360  beep=yes
+06:30:32.431  EDGE #96  19 px from the nearest edge  at 249,701 of 360x720  beep=yes
+06:30:33.270  EDGE #97  22 px from the nearest edge  at 96,698 of 360x720  beep=yes
+06:30:33.834  EDGE #98  16 px from the nearest edge  at 256,704 of 360x720  beep=yes
+06:30:34.595  EDGE #99  21 px from the nearest edge  at 91,699 of 360x720  beep=yes
+06:30:34.957  EDGE #100  23 px from the nearest edge  at 257,697 of 360x720  beep=yes
+06:30:35.475  EDGE #101  22 px from the nearest edge  at 88,698 of 360x720  beep=yes
+06:30:37.752  EDGE #102  21 px from the nearest edge  at 92,699 of 360x720  beep=yes
+06:30:37.961  EDGE #103  22 px from the nearest edge  at 290,698 of 360x720  beep=rate-limited
+06:30:38.249  EDGE #104  12 px from the nearest edge  at 101,708 of 360x720  beep=yes
+06:30:38.444  EDGE #105  20 px from the nearest edge  at 295,700 of 360x720  beep=rate-limited
+06:30:38.708  EDGE #106  23 px from the nearest edge  at 87,697 of 360x720  beep=yes
+06:30:38.911  EDGE #107  16 px from the nearest edge  at 292,704 of 360x720  beep=rate-limited
+06:30:39.580  EDGE #108  15 px from the nearest edge  at 299,705 of 360x720  beep=yes
+06:30:40.010  EDGE #109  15 px from the nearest edge  at 287,705 of 360x720  beep=yes
+06:30:45.820  EDGE #110  13 px from the nearest edge  at 258,707 of 360x720  beep=yes
+06:30:46.506  EDGE #111  20 px from the nearest edge  at 72,700 of 360x720  beep=yes
+06:30:47.625  EDGE #112  24 px from the nearest edge  at 75,696 of 360x720  beep=yes
+06:36:34.838  EDGE #1  BOTTOM  28 px  at 36,692 of 360x720  beep=yes
+06:36:35.524  EDGE #2  BOTTOM  38 px  at 250,682 of 360x720  beep=yes
+06:36:36.624  EDGE #3  RIGHT  15 px  at 345,475 of 360x720  beep=yes
+06:36:36.629  BREAK  o repeated, run=2  (#5)  x=345/360  beep=yes
+06:36:37.548  EDGE #4  LEFT  8 px  at 8,560 of 360x720  beep=yes
+06:36:38.469  EDGE #5  RIGHT  17 px  at 343,500 of 360x720  beep=yes
+06:36:40.567  EDGE #6  LEFT  16 px  at 16,498 of 360x720  beep=yes
+06:36:40.568  BREAK  . repeated, run=2  (#9)  x=16/360  beep=yes
+06:36:42.581  EDGE #7  LEFT  22 px  at 22,477 of 360x720  beep=yes
+06:36:43.516  EDGE #8  RIGHT  17 px  at 343,515 of 360x720  beep=yes
+06:36:44.703  EDGE #9  DIVIDER  9 px  at 171,312 of 360x720  beep=yes
+06:36:57.308  EDGE #10  LEFT  11 px  at 11,539 of 360x720  beep=yes
+06:36:57.607  EDGE #11  LEFT  16 px  at 16,537 of 360x720  beep=rate-limited
+06:36:57.796  EDGE #12  LEFT  18 px  at 18,544 of 360x720  beep=yes
+06:36:57.889  EDGE #13  RIGHT  23 px  at 337,551 of 360x720  beep=rate-limited
+06:36:57.977  EDGE #14  LEFT  21 px  at 21,538 of 360x720  beep=rate-limited
+06:36:59.027  BREAK  o repeated, run=2  (#59)  x=331/360  beep=yes
+06:37:00.128  BREAK  o repeated, run=3  (#60)  x=330/360  beep=yes
+06:37:02.377  EDGE #15  LEFT  7 px  at 7,524 of 360x720  beep=yes
+06:37:03.081  EDGE #16  RIGHT  17 px  at 343,544 of 360x720  beep=yes
+06:37:05.046  BREAK  o repeated, run=2  (#81)  x=273/360  beep=yes
+06:37:07.152  EDGE #17  BOTTOM  57 px  at 67,663 of 360x720  beep=yes
+06:37:22.781  EDGE #18  DIVIDER  18 px  at 198,546 of 360x720  beep=yes
+06:37:23.895  EDGE #19  DIVIDER  10 px  at 170,536 of 360x720  beep=yes
+06:37:26.237  EDGE #20  DIVIDER  15 px  at 195,553 of 360x720  beep=yes
+06:37:29.304  EDGE #21  RIGHT  17 px  at 343,500 of 360x720  beep=yes
+06:37:29.952  EDGE #22  LEFT  16 px  at 16,605 of 360x720  beep=yes
+06:37:31.113  EDGE #23  RIGHT  16 px  at 344,529 of 360x720  beep=yes
+06:37:31.796  EDGE #24  LEFT  15 px  at 15,600 of 360x720  beep=yes
+06:37:34.052  BREAK  . repeated, run=2  (#121)  x=103/360  beep=yes
+06:40:53.654  EDGE #1  FIELD-TOP  14 px  at 88,464 of 360x720  beep=yes
+06:40:55.645  EDGE #2  FIELD-TOP  18 px  at 75,468 of 360x720  beep=yes
+06:40:57.370  EDGE #3  FIELD-TOP  13 px  at 55,463 of 360x720  beep=yes
+06:40:58.136  EDGE #4  FIELD-TOP  13 px  at 274,463 of 360x720  beep=yes
+06:40:59.136  EDGE #5  FIELD-TOP  8 px  at 66,442 of 360x720  beep=yes
+06:41:00.391  EDGE #6  FIELD-TOP  20 px  at 276,470 of 360x720  beep=yes
+06:41:00.393  BREAK  o repeated, run=2  (#9)  x=276/360  beep=yes
+06:41:02.577  EDGE #7  FIELD-TOP  15 px  at 262,465 of 360x720  beep=yes
+06:41:03.279  EDGE #8  FIELD-TOP  12 px  at 82,462 of 360x720  beep=yes
+06:41:27.104  EDGE #9  LEFT  24 px  at 24,537 of 360x720  beep=yes
+06:41:27.105  BREAK  . repeated, run=2  (#13)  x=24/360  beep=yes
+06:41:28.744  EDGE #10  LEFT  15 px  at 15,468 of 360x720  beep=yes
+06:41:28.744  BREAK  . repeated, run=3  (#14)  x=15/360  beep=rate-limited
+06:41:30.241  EDGE #11  RIGHT  12 px  at 348,464 of 360x720  beep=yes
+06:41:31.873  EDGE #12  FIELD-TOP  7 px  at 10,457 of 360x720  beep=yes
+06:41:32.990  EDGE #13  FIELD-TOP  2 px  at 338,448 of 360x720  beep=yes
+06:41:35.498  EDGE #14  LEFT  13 px  at 13,464 of 360x720  beep=yes
+06:41:35.499  BREAK  . repeated, run=2  (#17)  x=13/360  beep=yes
+06:41:36.972  EDGE #15  FIELD-TOP  10 px  at 342,460 of 360x720  beep=yes
+06:41:38.318  EDGE #16  LEFT  11 px  at 11,580 of 360x720  beep=yes
+06:41:39.282  EDGE #17  RIGHT  12 px  at 348,556 of 360x720  beep=yes
+06:41:40.297  EDGE #18  LEFT  12 px  at 12,466 of 360x720  beep=yes
+06:41:41.217  EDGE #19  RIGHT  18 px  at 342,472 of 360x720  beep=yes
+06:41:48.680  EDGE #20  BOTTOM  19 px  at 289,701 of 360x720  beep=yes
+06:41:49.440  EDGE #21  BOTTOM  23 px  at 53,697 of 360x720  beep=yes
+06:41:49.968  EDGE #22  BOTTOM  36 px  at 277,684 of 360x720  beep=yes
+06:41:50.695  EDGE #23  BOTTOM  22 px  at 46,698 of 360x720  beep=yes
+06:41:51.850  EDGE #24  RIGHT  10 px  at 350,608 of 360x720  beep=yes
+06:41:52.578  EDGE #25  LEFT  7 px  at 7,612 of 360x720  beep=yes
+06:41:53.991  EDGE #26  DIVIDER  18 px  at 198,561 of 360x720  beep=yes
+06:41:55.837  EDGE #27  DIVIDER  19 px  at 199,559 of 360x720  beep=yes
+06:41:56.426  EDGE #28  DIVIDER  11 px  at 169,553 of 360x720  beep=yes
+06:41:59.622  EDGE #29  FIELD-TOP  12 px  at 100,462 of 360x720  beep=yes
+06:41:59.623  BREAK  . repeated, run=2  (#46)  x=100/360  beep=rate-limited
+06:42:01.317  EDGE #30  FIELD-TOP  12 px  at 78,462 of 360x720  beep=yes
+06:42:02.056  EDGE #31  FIELD-TOP  15 px  at 258,465 of 360x720  beep=yes
+06:42:03.498  EDGE #32  FIELD-TOP  12 px  at 85,438 of 360x720  beep=yes
+06:42:04.663  EDGE #33  FIELD-TOP  6 px  at 272,444 of 360x720  beep=yes
+06:42:05.439  EDGE #34  FIELD-TOP  12 px  at 101,438 of 360x720  beep=yes
+06:42:06.151  EDGE #35  FIELD-TOP  5 px  at 255,445 of 360x720  beep=yes
+06:42:17.066  EDGE #36  FIELD-TOP  9 px  at 63,459 of 360x720  beep=yes
+06:42:18.578  EDGE #37  FIELD-TOP  10 px  at 261,460 of 360x720  beep=yes
+06:42:19.526  EDGE #38  FIELD-TOP  10 px  at 91,440 of 360x720  beep=yes
+06:42:20.080  EDGE #39  FIELD-TOP  8 px  at 278,442 of 360x720  beep=yes
+06:42:21.488  EDGE #40  FIELD-TOP  7 px  at 100,457 of 360x720  beep=yes
+06:42:22.543  EDGE #41  FIELD-TOP  10 px  at 263,460 of 360x720  beep=yes
+06:42:25.206  BREAK  o repeated, run=2  (#62)  x=266/360  beep=yes
+06:42:27.843  BREAK  o repeated, run=2  (#93)  x=301/360  beep=yes
+06:42:27.993  BREAK  . repeated, run=2  (#95)  x=110/360  beep=rate-limited
+06:42:28.299  BREAK  o repeated, run=2  (#97)  x=262/360  beep=yes
+06:42:37.093  BREAK  . repeated, run=2  (#178)  x=94/360  beep=yes
+06:42:48.967  BREAK  o repeated, run=2  (#306)  x=271/360  beep=yes
+06:43:40.983  BREAK  o repeated, run=2  (#376)  x=305/360  beep=yes
+06:43:46.884  BREAK  . repeated, run=2  (#420)  x=77/360  beep=yes
+06:43:48.738  EDGE #1  LEFT  19 px  at 19,550 of 360x720  beep=yes
+06:43:48.941  EDGE #2  LEFT  16 px  at 16,555 of 360x720  beep=rate-limited
+06:43:49.941  BREAK  . repeated, run=2  (#442)  x=51/360  beep=yes
+06:43:51.639  EDGE #3  BOTTOM  52 px  at 256,668 of 360x720  beep=yes
+06:43:51.777  EDGE #4  BOTTOM  48 px  at 66,672 of 360x720  beep=rate-limited
+06:43:51.923  EDGE #5  BOTTOM  35 px  at 258,685 of 360x720  beep=rate-limited
+06:43:52.040  EDGE #6  BOTTOM  38 px  at 68,682 of 360x720  beep=yes
+06:43:52.116  EDGE #7  BOTTOM  33 px  at 255,687 of 360x720  beep=rate-limited
+06:43:52.233  EDGE #8  BOTTOM  49 px  at 66,671 of 360x720  beep=rate-limited
+06:43:52.316  EDGE #9  BOTTOM  25 px  at 262,695 of 360x720  beep=rate-limited
+06:43:52.442  EDGE #10  BOTTOM  45 px  at 70,675 of 360x720  beep=yes
+06:43:52.578  EDGE #11  BOTTOM  31 px  at 262,689 of 360x720  beep=rate-limited
+06:43:52.656  EDGE #12  BOTTOM  42 px  at 72,678 of 360x720  beep=rate-limited
+06:43:52.752  EDGE #13  BOTTOM  38 px  at 257,682 of 360x720  beep=yes
+06:43:52.870  EDGE #14  BOTTOM  55 px  at 71,665 of 360x720  beep=rate-limited
+06:43:55.066  BREAK  . repeated, run=2  (#491)  x=64/360  beep=yes
+06:43:55.235  BREAK  o repeated, run=2  (#493)  x=260/360  beep=yes
+06:44:09.807  BREAK  o repeated, run=2  (#615)  x=284/360  beep=yes
+06:44:26.358  BREAK  o repeated, run=2  (#768)  x=253/360  beep=yes
+06:44:27.239  BREAK  . repeated, run=2  (#770)  x=100/360  beep=yes
+06:44:50.970  BREAK  . repeated, run=2  (#785)  x=64/360  beep=yes
+06:44:53.432  BREAK  . repeated, run=2  (#799)  x=84/360  beep=yes

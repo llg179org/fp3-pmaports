@@ -447,6 +447,7 @@ class TapTest(Gtk.ApplicationWindow):
         self.fullscreen()
         self.marks, self.n_dot, self.n_o = [], 0, 0
         self.n_edge = 0
+        self._pending_edge = None
         self.beeper = None   # built after the log is open, below
         self.breaks = self.n_mark = self.run_len = 0
         self.last = None
@@ -712,6 +713,11 @@ class TapTest(Gtk.ApplicationWindow):
         # record area and the MARK bar reach the bezel too, and the 05:41 drift
         # would not have been caught by a check that only looked at targets.
         # The distance is to the nearest of ALL FOUR edges, as asked.
+        # ☠️ Cleared unconditionally, so a held detection can never survive
+        # into the NEXT tap. A leak would not fail loudly - it would log a
+        # boundary with the previous tap's coordinates, which reads as a real
+        # detection and is unfalsifiable after the fact.
+        self._pending_edge = None
         cand = []
         if x < EDGE_MARGIN:
             cand.append(("left", x))
@@ -737,16 +743,16 @@ class TapTest(Gtk.ApplicationWindow):
             # margins at once and naming only one would understate it.
             where, near = min(cand, key=lambda c: c[1])
             self.n_edge += 1
-            fired = self.beeper.fire("edge", EDGE_REPEAT_S)
-            # The beep is feedback; THIS LINE is the evidence. A tone that was
-            # rate-limited, dropped, or simply inaudible on this speaker still
-            # leaves the detection in the record, so "I heard nothing" and "it
-            # did not fire" stay distinguishable. The side is logged because
-            # the warning is directionless by ear - one tone for five
-            # boundaries - and only the log says which one was approached.
-            self._log("%s  EDGE #%d  %s  %.0f px  at %.0f,%.0f of %dx%d  beep=%s"
-                      % (self._stamp(), self.n_edge, where.upper(), near,
-                         x, y, w, h, "yes" if fired else "rate-limited"))
+            # ☠️ HELD, NOT PLAYED YET. One tap must make at most ONE sound, and
+            # when a tap is both near a boundary and a BREAK the BREAK is the
+            # one that matters. Firing here put the EDGE tone in the queue
+            # first, so a double press at the edge came out as the LOW tone and
+            # was indistinguishable from an ordinary edge tap - measured
+            # 2026-09-08: 52 of 284 BREAKs had an EDGE within 0.35 s, and the
+            # closest pairs were the SAME tap, 1-2 ms apart. The operator heard
+            # it before the log was read, which is the whole reason the tones
+            # exist. Decided at the end of the tap instead; see _flush_edge.
+            self._pending_edge = (where, near, x, y, w, h)
         if y < h * MARK_TOP:
             # Tapping the record clears it, so a long run can be cut into
             # readable stretches without restarting the app. ☠️ The COUNTERS
@@ -761,6 +767,7 @@ class TapTest(Gtk.ApplicationWindow):
                 self.last = None
                 self.run_len = 0
                 self.area.queue_draw()
+            self._flush_edge()   # no BREAK is possible here, so EDGE stands
             return                            # the record area is not a target
         if y < h * HALVES_TOP:
             self.n_mark += 1
@@ -773,6 +780,7 @@ class TapTest(Gtk.ApplicationWindow):
             GLib.timeout_add(380, self._unflash)
             self._log("%s  MARK #%d  (operator felt a lost tap)"
                       % (self._stamp(), self.n_mark))
+            self._flush_edge()   # a MARK is never a BREAK, so EDGE stands
         else:
             sym = "." if x < w / 2 else "o"
             self.half_flash_until = time.time() + 0.20
@@ -799,8 +807,14 @@ class TapTest(Gtk.ApplicationWindow):
                 self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d  beep=%s"
                           % (self._stamp(), sym, self.run_len + 1, total, x, w,
                              "yes" if fired else "rate-limited"))
+                # ★ MISS OUTRANKS EDGE on the same tap. Being at a boundary is
+                # a standing condition the operator can see; the alternation
+                # breaking is an event they cannot. So the high tone gets the
+                # tap, and the edge detection still goes to the log.
+                self._flush_edge(superseded=True)
             else:
                 self.run_len = 0
+                self._flush_edge()
             self.last = sym
             # ☠️ A touch that landed while another finger was still down takes
             # the place of its side symbol, it does not follow it: the record
@@ -821,6 +835,28 @@ class TapTest(Gtk.ApplicationWindow):
         self.started = True
         del self.marks[:-MAX_MARKS]
         self.area.queue_draw()
+
+    def _flush_edge(self, superseded=False):
+        """Emit the held EDGE detection - the log line always, the tone only
+        when a MISS did not take precedence on this same tap."""
+        pend = getattr(self, "_pending_edge", None)
+        if not pend:
+            return
+        self._pending_edge = None
+        where, near, x, y, w, h = pend
+        if superseded:
+            status = "superseded-by-miss"
+        else:
+            status = "yes" if self.beeper.fire("edge", EDGE_REPEAT_S) \
+                     else "rate-limited"
+        # The tone is feedback; THIS LINE is the evidence. Rate-limited,
+        # superseded, or simply inaudible on this speaker, the detection still
+        # reaches the record, so "I heard nothing" and "it did not fire" stay
+        # distinguishable. The boundary is named because one tone serves five
+        # of them and the ear cannot tell which.
+        self._log("%s  EDGE #%d  %s  %.0f px  at %.0f,%.0f of %dx%d  beep=%s"
+                  % (self._stamp(), self.n_edge, where.upper(), near,
+                     x, y, w, h, status))
 
     def _resolve_present(self):
         pf, self.pending_frame = self.pending_frame, None

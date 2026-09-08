@@ -848,3 +848,52 @@ under the band's `0.45,0.45` at alpha 0.30, which composites to exactly that.
 The operator was tapping while the screenshot was taken. A value that does not
 match the prediction is a question about which of the two is wrong, and here it
 was the prediction's assumption about the state, not the code.
+
+### ☠️ A double press at the edge sounded like an edge tap — measured, and why
+
+The operator reported that a double press gives the **deeper** tone. The log
+settles it, and the fault was mine.
+
+First, two things were **ruled out by measurement** rather than by reading the
+code:
+
+- **The tone files are not swapped or stale.** Measured on the device:
+  `fp3-tone-edge.wav` 433.3 Hz, `fp3-tone-miss.wav` 860.0 Hz, primer peak 0.
+- **The MISS tone does fire.** 124 BREAK lines carry `beep=yes` against 25
+  `rate-limited`.
+
+The cause is ordering. `_handle_tap` checked the boundaries **first** and queued
+the EDGE tone before the BREAK branch could queue MISS, so a tap that was both
+produced the low tone first — indistinguishable by ear from an ordinary edge
+tap. And the two coincide far more often than one would guess, because a hand
+that has drifted to a boundary is also a hand that mis-hits:
+
+| | |
+|---|---|
+| EDGE detections | 264 |
+| BREAKs | 284 |
+| **BREAKs with an EDGE within 0.35 s** | **52 (18 %)** |
+| closest pairs | **the same tap**, 1–2 ms apart, same x |
+
+`edge-break-events.txt` holds the extract.
+
+### The rule now: one tap, one tone, and MISS outranks EDGE
+
+The edge detection is **held** rather than played, and decided at the end of the
+tap. A BREAK on the same tap takes the sound and the edge line is logged as
+`beep=superseded-by-miss`.
+
+★ The reasoning, not just the fix: **being at a boundary is a standing
+condition the operator can see** — the bands are drawn — **while the alternation
+breaking is an event they cannot see**. The scarce channel belongs to the thing
+the eye cannot supply.
+
+☠️ `_pending_edge` is cleared unconditionally at the top of every tap. A leak
+would not fail loudly; it would log a boundary with the *previous* tap's
+coordinates, which reads as a genuine detection and cannot be falsified
+afterwards.
+
+☠️ **NOT YET PROVEN ON THE DEVICE.** The instance carrying this started 06:47:43
+and no tap has reached it, so `superseded-by-miss` has fired **0 times**. The
+change is deployed and unverified until a double press at a boundary produces
+that line together with the high tone.
