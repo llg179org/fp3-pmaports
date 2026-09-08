@@ -897,3 +897,45 @@ afterwards.
 and no tap has reached it, so `superseded-by-miss` has fired **0 times**. The
 change is deployed and unverified until a double press at a boundary produces
 that line together with the high tone.
+
+### ★ The precedence fix, PROVEN on the device 07:07:48
+
+The previous section left the change deployed and unverified. It fired:
+
+```
+07:07:48.354  BREAK  . repeated, run=2  (#68)  x=95/360              beep=yes
+07:07:48.354  EDGE #23  FIELD-TOP  10 px  at 95,460  beep=superseded-by-miss
+```
+
+Same millisecond, same tap, same x: the BREAK took the tone and the boundary
+detection went to the log instead. The rule now holds in practice, not only in
+the source.
+
+### A third signal: the two-finger overlap
+
+The operator reported hearing nothing when a `0` is written to the record. That
+was correct — a `0` marks a tap that landed while another finger was still
+down, and it had **no tone and no log line at all**, only a glyph in a strip you
+would have to be watching.
+
+It deserves both. The overlap is the condition under which taps were *actually*
+being lost: GestureClick dropped **18 of 560** on 2026-09-06, every one with a
+second finger already down. And it is the one fault here the operator can
+correct on the spot — lift the previous finger before the next lands. It is not
+rare: **17 of the 79 taps** after the 06:47 restart were overlaps, 22 %, and
+nothing said so.
+
+| signal | tone | ratio to 432 |
+|---|---|---|
+| EDGE — inside a margin | 432 Hz, 90 ms | root |
+| **OVER — a finger was still down** | **648 Hz, 110 ms** | fifth |
+| MISS — the alternation broke | 864 Hz, 150 ms | octave |
+
+Rising with how much the operator needs to hear it. Measured on the device
+after deployment: 433.3, 654.5, 860.0 Hz — gated the same way as before.
+
+**Precedence is now MISS > OVER > EDGE**, one tap one tone, and the two that
+lose still log themselves as `beep=superseded-by-<winner>`. The supersession is
+**named** rather than flagged: "superseded" alone would record that a tone was
+withheld without recording why, and the log is the only account of what the
+operator actually heard.

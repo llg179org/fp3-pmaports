@@ -171,7 +171,14 @@ def _irq_count():
 #   EDGE  432 Hz            a tap landed inside a margin: any of the four
 #                           outer edges, either side of the vertical split, or
 #                           either side of the field's top boundary
+#   OVER  648 Hz (= 432*1.5) a tap landed while another finger was still down
 #   MISS  864 Hz (= 432*2)  the alternation broke, i.e. a tap may have been lost
+#
+# Root, fifth, octave, rising with how much the operator needs to hear it. The
+# overlap earns a tone of its own because it is the condition under which taps
+# were ACTUALLY being lost: GestureClick dropped 18 of 560 on 2026-09-06, every
+# one with a second finger already down. It is also the one an operator can act
+# on immediately - lift the previous finger before the next lands.
 #
 # ☠️ BOTH WERE ONE OCTAVE LOWER AND THE LOW ONE DID NOT ARRIVE. The first
 # version used 216 Hz for EDGE and 432 Hz for MISS; the operator reported the
@@ -189,6 +196,7 @@ def _irq_count():
 # while beeping, for any power, idle-residency or suspend measurement. Turn the
 # beeps off (BEEP_ENABLED = False) before using it for one.
 TONE_EDGE_HZ, TONE_EDGE_MS = 432.0, 90
+TONE_OVER_HZ, TONE_OVER_MS = 648.0, 110
 TONE_MISS_HZ, TONE_MISS_MS = 864.0, 150
 # ☠️ THE BOTTOM FRAME SITS HIGHER THAN THE OTHER THREE, on the operator's
 # instruction. It is not symmetry that matters here but where the hand actually
@@ -209,6 +217,7 @@ DIVIDER_MARGIN = 20       # either side of the vertical line
 # lost taps are counted from. So this line warns on both sides too.
 HALVES_TOP_MARGIN = 20    # either side of the halves/MARK boundary
 EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
+OVER_REPEAT_S = 0.20
 MISS_REPEAT_S = 0.15
 BEEP_ENABLED = True
 
@@ -276,6 +285,8 @@ class Beeper:
             self._files = {
                 "edge": _render_tone(os.path.join(dirpath, "fp3-tone-edge.wav"),
                                      TONE_EDGE_HZ, TONE_EDGE_MS),
+                "over": _render_tone(os.path.join(dirpath, "fp3-tone-over.wav"),
+                                     TONE_OVER_HZ, TONE_OVER_MS),
                 "miss": _render_tone(os.path.join(dirpath, "fp3-tone-miss.wav"),
                                      TONE_MISS_HZ, TONE_MISS_MS),
                 # ☠️ The sink is SUSPENDED when idle, so the FIRST tone pays for
@@ -296,11 +307,11 @@ class Beeper:
         # "margin 25 px" next to a bottom margin of 60 and a divider band of
         # 20 is a false record of the configuration, and the log is what a
         # reader trusts months later when the constants have moved on.
-        self._log("  beeper: %s, edge %.0f Hz/%d ms, miss %.0f Hz/%d ms; "
-                  "margins: sides/top %d px, bottom %d px, divider +-%d px, "
-                  "field-top +-%d px"
+        self._log("  beeper: %s, edge %.0f Hz/%d ms, over %.0f Hz/%d ms, "
+                  "miss %.0f Hz/%d ms; margins: sides/top %d px, bottom %d px, "
+                  "divider +-%d px, field-top +-%d px"
                   % (self._player, TONE_EDGE_HZ, TONE_EDGE_MS,
-                     TONE_MISS_HZ, TONE_MISS_MS,
+                     TONE_OVER_HZ, TONE_OVER_MS, TONE_MISS_HZ, TONE_MISS_MS,
                      EDGE_MARGIN, EDGE_MARGIN_BOTTOM, DIVIDER_MARGIN,
                      HALVES_TOP_MARGIN))
 
@@ -446,7 +457,7 @@ class TapTest(Gtk.ApplicationWindow):
         super().__init__(application=app, title="fp3-taptest")
         self.fullscreen()
         self.marks, self.n_dot, self.n_o = [], 0, 0
-        self.n_edge = 0
+        self.n_edge = self.n_over = 0
         self._pending_edge = None
         self.beeper = None   # built after the log is open, below
         self.breaks = self.n_mark = self.run_len = 0
@@ -648,8 +659,9 @@ class TapTest(Gtk.ApplicationWindow):
             stop_kcontacts(self._logline)
         b = getattr(self, "beeper", None)
         if b is not None and b.ok:
-            self._log("  beeper: %d played, %d dropped, %d edge detections"
-                      % (b.played, b.dropped, self.n_edge))
+            self._log("  beeper: %d played, %d dropped, %d edge detections, "
+                      "%d overlaps"
+                      % (b.played, b.dropped, self.n_edge, self.n_over))
         self._log("== taptest stop %s" % time.strftime("%F %H:%M:%S"))
         try:
             self.log.flush()
@@ -792,6 +804,10 @@ class TapTest(Gtk.ApplicationWindow):
             else:
                 self.n_o += 1
             total = self.n_dot + self.n_o
+            # ★ ONE TAP, ONE TONE, and the precedence is MISS > OVER > EDGE.
+            # `claimed` records which event took the sound, so the other two
+            # can say so in the log instead of going unrecorded.
+            claimed = None
             if sym == self.last:
                 self.run_len += 1
                 self.breaks += 1
@@ -804,17 +820,33 @@ class TapTest(Gtk.ApplicationWindow):
                 # therefore means "the alternation just broke", not "a tap was
                 # lost", and the log line below is what gets counted.
                 fired = self.beeper.fire("miss", MISS_REPEAT_S)
+                claimed = "miss"
                 self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d  beep=%s"
                           % (self._stamp(), sym, self.run_len + 1, total, x, w,
                              "yes" if fired else "rate-limited"))
-                # ★ MISS OUTRANKS EDGE on the same tap. Being at a boundary is
-                # a standing condition the operator can see; the alternation
-                # breaking is an event they cannot. So the high tone gets the
-                # tap, and the edge detection still goes to the log.
-                self._flush_edge(superseded=True)
             else:
                 self.run_len = 0
-                self._flush_edge()
+            # ☠️ The overlap is logged EVERY time, tone or not. Until now it was
+            # marked only as a '0' in the record - visible if you were looking
+            # at the strip, invisible otherwise, and never in the log at all.
+            # 17 of the 79 taps after 07:47 were overlaps and nothing said so.
+            if fingers >= 2:
+                self.n_over += 1
+                if claimed is None:
+                    st = ("yes" if self.beeper.fire("over", OVER_REPEAT_S)
+                          else "rate-limited")
+                    claimed = "over"
+                else:
+                    st = "superseded-by-" + claimed
+                self._log("%s  OVERLAP #%d  %s  (#%d)  x=%.0f/%d  "
+                          "fingers-down %d  beep=%s"
+                          % (self._stamp(), self.n_over, sym, total, x, w,
+                             fingers, st))
+            # ★ MISS and OVER both outrank EDGE. Being at a boundary is a
+            # standing condition the operator can SEE - the bands are drawn -
+            # while a break and an overlap are events they cannot. The scarce
+            # channel belongs to what the eye cannot supply.
+            self._flush_edge(superseded_by=claimed)
             self.last = sym
             # ☠️ A touch that landed while another finger was still down takes
             # the place of its side symbol, it does not follow it: the record
@@ -836,16 +868,21 @@ class TapTest(Gtk.ApplicationWindow):
         del self.marks[:-MAX_MARKS]
         self.area.queue_draw()
 
-    def _flush_edge(self, superseded=False):
+    def _flush_edge(self, superseded_by=None):
         """Emit the held EDGE detection - the log line always, the tone only
-        when a MISS did not take precedence on this same tap."""
+        when nothing of higher rank took this same tap.
+
+        `superseded_by` NAMES the event that took it. "superseded" alone would
+        say the tone was withheld without saying why, and the log is the only
+        record of what the operator actually heard.
+        """
         pend = getattr(self, "_pending_edge", None)
         if not pend:
             return
         self._pending_edge = None
         where, near, x, y, w, h = pend
-        if superseded:
-            status = "superseded-by-miss"
+        if superseded_by:
+            status = "superseded-by-" + superseded_by
         else:
             status = "yes" if self.beeper.fire("edge", EDGE_REPEAT_S) \
                      else "rate-limited"
