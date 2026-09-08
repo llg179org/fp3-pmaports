@@ -168,22 +168,26 @@ def _irq_count():
 # mattered. Nobody was watching that column, and a finger cannot feel where the
 # digitizer ends. So the instrument now says it out loud.
 #
-#   EDGE  216 Hz (= 432/2)  a tap landed within EDGE_MARGIN px of any edge
-#   MISS  432 Hz            the alternation broke, i.e. a tap may have been lost
+#   EDGE  432 Hz            a tap landed within EDGE_MARGIN px of any edge
+#   MISS  864 Hz (= 432*2)  the alternation broke, i.e. a tap may have been lost
 #
-# ☠️ THE 216 Hz TONE MAY BE INAUDIBLE ON THIS HARDWARE. A phone micro-speaker
-# rolls off steeply below roughly 400-800 Hz, so the low tone is the one most
-# likely not to arrive. If it cannot be heard, change TONE_EDGE_HZ - it is one
-# constant - rather than concluding the detector did not fire: every beep is
-# also written to the log, which is the authoritative record.
+# ☠️ BOTH WERE ONE OCTAVE LOWER AND THE LOW ONE DID NOT ARRIVE. The first
+# version used 216 Hz for EDGE and 432 Hz for MISS; the operator reported the
+# 216 as "sokkal halkabb" - much quieter - than the 432, which is the phone
+# micro-speaker's rolloff below roughly 400-800 Hz, measured by ear rather than
+# assumed. Both were doubled at their request, preserving the octave between
+# them. The lesson is not about these numbers: a tone the transducer cannot
+# reproduce is a detector that silently never reports, so pick the frequency
+# against the SPEAKER and confirm it by ear before trusting the channel. Every
+# beep is also written to the log, which stays the authoritative record.
 #
 # ☠️ AND AUDIO IS NOT FREE AS AN INSTRUMENT. Playing a tone wakes LPASS, the
 # SLIMbus link and the WCD9335 codec. That does not touch the input path, which
 # is interrupt-driven and independent of it - but it makes this app unsuitable,
 # while beeping, for any power, idle-residency or suspend measurement. Turn the
 # beeps off (BEEP_ENABLED = False) before using it for one.
-TONE_EDGE_HZ, TONE_EDGE_MS = 216.0, 90
-TONE_MISS_HZ, TONE_MISS_MS = 432.0, 150
+TONE_EDGE_HZ, TONE_EDGE_MS = 432.0, 90
+TONE_MISS_HZ, TONE_MISS_MS = 864.0, 150
 EDGE_MARGIN = 25          # logical px; the 05:41 drift was flagged by x < 29
 EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
 MISS_REPEAT_S = 0.15
