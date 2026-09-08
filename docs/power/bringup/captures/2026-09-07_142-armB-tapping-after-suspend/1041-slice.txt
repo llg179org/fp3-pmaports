@@ -1,0 +1,186 @@
+=== app taps 10:41:27-36 ===
+10:41:28.058  .  #1736  x=103/360
+10:41:28.176  o  #1737  x=271/360
+10:41:28.334  .  #1738  x=100/360
+10:41:28.465  o  #1739  x=262/360
+10:41:28.602  .  #1740  x=95/360
+10:41:28.686  o  #1741  x=259/360
+10:41:28.825  .  #1742  x=95/360
+10:41:28.951  o  #1743  x=261/360
+10:41:29.052  .  #1744  x=95/360
+10:41:29.166  o  #1745  x=256/360
+10:41:29.318  .  #1746  x=97/360
+10:41:29.424  o  #1747  x=257/360
+10:41:29.576  .  #1748  x=93/360
+10:41:29.655  o  #1749  x=265/360
+10:41:29.839  .  #1750  x=93/360
+10:41:29.941  o  #1751  x=261/360
+10:41:30.057  .  #1752  x=94/360
+10:41:30.331  .  #1753  x=99/360
+10:41:30.595  .  #1754  x=96/360
+10:41:30.688  o  #1755  x=284/360
+10:41:30.951  o  #1756  x=270/360
+10:41:31.242  o  #1757  x=263/360
+10:41:31.431  o  #1758  x=265/360
+10:41:31.711  o  #1759  x=264/360
+10:41:31.938  o  #1760  x=262/360
+10:41:32.201  o  #1761  x=256/360
+10:41:32.481  o  #1762  x=261/360
+10:41:32.756  o  #1763  x=256/360
+10:41:32.964  o  #1764  x=263/360
+10:41:33.246  o  #1765  x=265/360
+10:41:33.549  o  #1766  x=263/360
+10:41:33.787  o  #1767  x=262/360
+10:41:33.961  .  #1768  x=99/360
+10:41:34.101  o  #1769  x=250/360
+10:41:34.232  .  #1770  x=92/360
+10:41:34.366  o  #1771  x=257/360
+10:41:34.499  .  #1772  x=93/360
+10:41:34.647  o  #1773  x=263/360
+10:41:34.775  .  #1774  x=97/360
+10:41:34.911  o  #1775  x=258/360
+10:41:35.048  .  #1776  x=97/360
+10:41:35.175  o  #1777  x=261/360
+10:41:35.315  .  #1778  x=97/360
+10:41:35.408  o  #1779  x=263/360
+10:41:35.589  .  #1780  x=97/360
+10:41:35.658  o  #1781  x=261/360
+10:41:35.856  .  #1782  x=100/360
+10:41:35.940  o  #1783  x=261/360
+10:41:36.058  .  #1784  x=98/360
+10:41:36.291  o  #1785  x=255/360
+=== WINDOW rows ===
+10:41:25.234  WINDOW  irq 73  contact 5  raw 5  gest 5  tap 5  shown 5
+10:41:28.237  WINDOW  irq 8  contact 2  raw 2  gest 2  tap 2  shown 0
+10:41:29.237  WINDOW  irq 94  contact 8  raw 8  gest 7  tap 8  shown 7
+10:41:30.237  WINDOW  irq 94  contact 7  raw 7  gest 6  tap 7  shown 3
+10:41:31.244  WINDOW  irq 50  contact 5  raw 5  gest 5  tap 5  shown 2
+10:41:32.239  WINDOW  irq 54  contact 4  raw 4  gest 4  tap 4  shown 4
+10:41:33.240  WINDOW  irq 46  contact 3  raw 3  gest 3  tap 3  shown 4
+10:41:34.240  WINDOW  irq 56  contact 6  raw 6  gest 6  tap 6  shown 4
+10:41:35.240  WINDOW  irq 47  contact 7  raw 7  gest 7  tap 7  shown 2
+10:41:36.241  WINDOW  irq 84  contact 7  raw 7  gest 7  tap 7  shown 3
+10:41:37.242  WINDOW  irq 33  contact 1  raw 1  gest 1  tap 1  shown 0
+=== kernel contacts ===
+10:41:28.048  CONTACT #1773  slot=0 id=22122
+10:41:28.138  RELEASE #1773  slot=0  x 308->298 span 10  y 1801->1800 span 1  pts 4  dur 89ms
+10:41:28.172  CONTACT #1774  slot=0 id=22123
+10:41:28.298  RELEASE #1774  slot=0  x 813->820 span 7  y 1736->1744 span 8  pts 2  dur 126ms
+10:41:28.331  CONTACT #1775  slot=0 id=22124
+10:41:28.431  CONTACT #1776  slot=1 id=22125
+10:41:28.439  RELEASE #1775  slot=0  x 299->294 span 5  y 1848->1850 span 2  pts 2  dur 108ms
+10:41:28.507  RELEASE #1776  slot=1  x 785->785 span 0  y 1781->1781 span 0  pts 1  dur 75ms
+10:41:28.570  CONTACT #1777  slot=0 id=22126
+10:41:28.664  RELEASE #1777  slot=0  x 285->285 span 0  y 1866->1866 span 0  pts 1  dur 93ms
+10:41:28.680  CONTACT #1778  slot=0 id=22127
+10:41:28.770  RELEASE #1778  slot=0  x 778->783 span 5  y 1748->1751 span 3  pts 2  dur 90ms
+10:41:28.820  CONTACT #1779  slot=0 id=22128
+10:41:28.897  RELEASE #1779  slot=0  x 286->286 span 0  y 1884->1884 span 0  pts 1  dur 77ms
+10:41:28.938  CONTACT #1780  slot=0 id=22129
+10:41:29.013  RELEASE #1780  slot=0  x 783->783 span 0  y 1750->1750 span 0  pts 1  dur 75ms
+10:41:29.047  CONTACT #1781  slot=0 id=22130
+10:41:29.136  RELEASE #1781  slot=0  x 285->285 span 0  y 1893->1893 span 0  pts 1  dur 89ms
+10:41:29.164  CONTACT #1782  slot=0 id=22131
+10:41:29.246  RELEASE #1782  slot=0  x 768->775 span 7  y 1781->1787 span 6  pts 2  dur 82ms
+10:41:29.313  CONTACT #1783  slot=0 id=22132
+10:41:29.396  RELEASE #1783  slot=0  x 291->291 span 0  y 1904->1904 span 0  pts 1  dur 83ms
+10:41:29.413  CONTACT #1784  slot=0 id=22133
+10:41:29.496  RELEASE #1784  slot=0  x 772->777 span 5  y 1793->1796 span 3  pts 2  dur 83ms
+10:41:29.563  CONTACT #1785  slot=0 id=22134
+10:41:29.653  CONTACT #1786  slot=1 id=22135
+10:41:29.662  RELEASE #1785  slot=0  x 278->278 span 0  y 1871->1871 span 0  pts 1  dur 99ms
+10:41:29.752  RELEASE #1786  slot=1  x 796->796 span 0  y 1771->1771 span 0  pts 1  dur 99ms
+10:41:29.813  CONTACT #1787  slot=0 id=22136
+10:41:29.903  RELEASE #1787  slot=0  x 280->280 span 0  y 1860->1860 span 0  pts 1  dur 90ms
+10:41:29.920  CONTACT #1788  slot=0 id=22137
+10:41:30.029  RELEASE #1788  slot=0  x 783->789 span 6  y 1730->1736 span 6  pts 2  dur 109ms
+10:41:30.052  CONTACT #1789  slot=0 id=22138
+10:41:30.228  RELEASE #1789  slot=0  x 283->283 span 0  y 1876->1876 span 0  pts 1  dur 176ms
+10:41:30.328  CONTACT #1790  slot=0 id=22139
+10:41:30.428  RELEASE #1790  slot=0  x 297->291 span 6  y 1869->1869 span 0  pts 2  dur 100ms
+10:41:30.584  CONTACT #1791  slot=0 id=22140
+10:41:30.685  CONTACT #1792  slot=1 id=22141
+10:41:30.685  RELEASE #1791  slot=0  x 287->287 span 0  y 1762->1762 span 0  pts 1  dur 100ms
+10:41:30.860  RELEASE #1792  slot=1  x 851->851 span 0  y 1638->1638 span 0  pts 1  dur 176ms
+10:41:30.928  CONTACT #1793  slot=0 id=22142
+10:41:31.110  RELEASE #1793  slot=0  x 810->818 span 8  y 1639->1650 span 11  pts 3  dur 183ms
+10:41:31.184  CONTACT #1794  slot=0 id=22143
+10:41:31.377  RELEASE #1794  slot=0  x 790->800 span 10  y 1643->1649 span 6  pts 2  dur 194ms
+10:41:31.426  CONTACT #1795  slot=0 id=22144
+10:41:31.610  RELEASE #1795  slot=0  x 795->799 span 4  y 1635->1641 span 6  pts 2  dur 184ms
+10:41:31.661  CONTACT #1796  slot=0 id=22145
+10:41:31.842  RELEASE #1796  slot=0  x 793->793 span 0  y 1624->1624 span 0  pts 1  dur 182ms
+10:41:31.933  CONTACT #1797  slot=0 id=22146
+10:41:32.033  RELEASE #1797  slot=0  x 785->792 span 7  y 1625->1633 span 8  pts 3  dur 100ms
+10:41:32.175  CONTACT #1798  slot=0 id=22147
+10:41:32.375  RELEASE #1798  slot=0  x 768->777 span 9  y 1647->1653 span 6  pts 2  dur 200ms
+10:41:32.476  CONTACT #1799  slot=0 id=22148
+10:41:32.558  RELEASE #1799  slot=0  x 782->787 span 5  y 1621->1628 span 7  pts 2  dur 82ms
+10:41:32.715  CONTACT #1800  slot=0 id=22149
+10:41:32.891  RELEASE #1800  slot=0  x 768->774 span 6  y 1669->1675 span 6  pts 2  dur 176ms
+10:41:32.958  CONTACT #1801  slot=0 id=22150
+10:41:33.157  RELEASE #1801  slot=0  x 788->792 span 4  y 1649->1657 span 8  pts 2  dur 200ms
+10:41:33.240  CONTACT #1802  slot=0 id=22151
+10:41:33.424  RELEASE #1802  slot=0  x 795->806 span 11  y 1648->1655 span 7  pts 2  dur 183ms
+10:41:33.542  CONTACT #1803  slot=0 id=22152
+10:41:33.599  RELEASE #1803  slot=0  x 790->790 span 0  y 1625->1625 span 0  pts 1  dur 57ms
+10:41:33.764  CONTACT #1804  slot=0 id=22153
+10:41:33.940  RELEASE #1804  slot=0  x 787->791 span 4  y 1622->1628 span 6  pts 2  dur 176ms
+10:41:33.957  CONTACT #1805  slot=0 id=22154
+10:41:34.063  RELEASE #1805  slot=0  x 297->288 span 9  y 1804->1803 span 1  pts 2  dur 107ms
+10:41:34.097  CONTACT #1806  slot=0 id=22155
+10:41:34.189  RELEASE #1806  slot=0  x 751->759 span 8  y 1649->1656 span 7  pts 3  dur 92ms
+10:41:34.229  CONTACT #1807  slot=0 id=22156
+10:41:34.339  RELEASE #1807  slot=0  x 277->270 span 7  y 1736->1738 span 2  pts 2  dur 109ms
+10:41:34.356  CONTACT #1808  slot=0 id=22157
+10:41:34.439  RELEASE #1808  slot=0  x 771->780 span 9  y 1652->1658 span 6  pts 3  dur 83ms
+10:41:34.496  CONTACT #1809  slot=0 id=22158
+10:41:34.589  RELEASE #1809  slot=0  x 278->278 span 0  y 1739->1739 span 0  pts 1  dur 92ms
+10:41:34.623  CONTACT #1810  slot=0 id=22159
+10:41:34.723  RELEASE #1810  slot=0  x 790->802 span 12  y 1618->1630 span 12  pts 3  dur 100ms
+10:41:34.773  CONTACT #1811  slot=0 id=22160
+10:41:34.845  RELEASE #1811  slot=0  x 292->292 span 0  y 1786->1786 span 0  pts 1  dur 72ms
+10:41:34.879  CONTACT #1812  slot=0 id=22161
+10:41:34.955  RELEASE #1812  slot=0  x 774->781 span 7  y 1624->1630 span 6  pts 2  dur 77ms
+10:41:35.012  CONTACT #1813  slot=0 id=22162
+10:41:35.121  RELEASE #1813  slot=0  x 291->286 span 5  y 1767->1771 span 4  pts 2  dur 109ms
+10:41:35.155  CONTACT #1814  slot=0 id=22163
+10:41:35.238  RELEASE #1814  slot=0  x 783->783 span 0  y 1630->1630 span 0  pts 1  dur 83ms
+10:41:35.278  CONTACT #1815  slot=0 id=22164
+10:41:35.371  RELEASE #1815  slot=0  x 291->286 span 5  y 1830->1831 span 1  pts 2  dur 93ms
+10:41:35.405  CONTACT #1816  slot=0 id=22165
+10:41:35.494  RELEASE #1816  slot=0  x 790->834 span 44  y 1622->1671 span 49  pts 4  dur 89ms
+10:41:35.545  CONTACT #1817  slot=0 id=22166
+10:41:35.629  RELEASE #1817  slot=0  x 291->285 span 6  y 1783->1787 span 4  pts 2  dur 84ms
+10:41:35.645  CONTACT #1818  slot=0 id=22167
+10:41:35.721  RELEASE #1818  slot=0  x 784->791 span 7  y 1634->1641 span 7  pts 3  dur 76ms
+10:41:35.820  CONTACT #1819  slot=0 id=22168
+10:41:35.894  RELEASE #1819  slot=0  x 301->295 span 6  y 1799->1799 span 0  pts 2  dur 74ms
+10:41:35.938  CONTACT #1820  slot=0 id=22169
+10:41:36.010  RELEASE #1820  slot=0  x 782->789 span 7  y 1661->1671 span 10  pts 3  dur 72ms
+10:41:36.054  CONTACT #1821  slot=0 id=22170
+10:41:36.154  RELEASE #1821  slot=0  x 295->287 span 8  y 1806->1810 span 4  pts 3  dur 100ms
+10:41:36.287  CONTACT #1822  slot=0 id=22171
+10:41:36.304  RELEASE #1822  slot=0  x 765->765 span 0  y 1717->1717 span 0  pts 1  dur 17ms
+=== i2c / himax ===
+Sep 08 10:40:54 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:40:56 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:40:58 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:40:58 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:02 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:04 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:08 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:08 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:09 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:10 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:20 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:21 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:26 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:28 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:37 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:41:54 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:41:58 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:42:00 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:42:03 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...
+Sep 08 10:42:07 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: resuming...
+Sep 08 10:42:12 fp3 kernel: i2c_qup 78b7000.i2c: pm_runtime: suspending...

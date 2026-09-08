@@ -1281,3 +1281,94 @@ deleting the evidence that would have broken it.
 assumed**: both fds read `flags=02402001` in `/proc/<pid>/fdinfo`, i.e.
 `O_APPEND`, so writes seek to the end and no 8 MB hole is written back. Read off
 the running processes, not off the source.
+
+## ★★★ 2026-09-08 10:41:30 — the largest outage, and the constraint that narrows it
+
+Slice: `1041-slice.txt`. Run since the 10:35 rotation: 1 599 taps, 17 BREAKs,
+**16 of them `explained=NO`**, 3 overlaps, 1 boundary.
+
+Thirteen consecutive `o`, 10:41:30.951 → 10:41:33.787 — **2.8 s** — every one
+`explained=NO`, every one sounding the high tone.
+
+### It is TWO-PHASE, and that is the new thing
+
+```
+10:41:28.058 → 30.057   perfect . o . o alternation, ~130 ms per tap
+10:41:30.057  .  x=94  ┐
+10:41:30.331  .  x=99  │ three '.' in a row - the RIGHT side is gone
+10:41:30.595  .  x=96  ┘
+10:41:30.688  o  x=284 ┐
+      ... 13 'o' in a row, x=256..270 ...  the LEFT side is gone
+10:41:33.787  o  x=262 ┘
+10:41:33.961  .  x=99      perfect alternation returns
+```
+
+**Each hand vanishes in turn while the other reports perfectly.** The panel did
+not stop working — it kept delivering one finger flawlessly throughout. And it
+is confirmed on the kernel side: between 10:41:30.860 and 10:41:34.063 every
+contact sits at device x = 768–851, i.e. the right half (divider at 540). No
+left contact reached evdev at all.
+
+☠️ That two-phase shape is what an operator explanation now has to account for:
+pausing the right hand for half a second, then the left for three seconds, then
+resuming both in perfect alternation.
+
+### Every environmental cause is absent, and the merge is refuted by measurement
+
+| candidate | status |
+|---|---|
+| a boundary | logical x 256–284 and 93–103 — nowhere near any margin |
+| a hand drift | none: `.` stays 93–103, `o` stays 256–284, before during and after |
+| an overlap | none in the window |
+| the i2c bus suspending | transitions at 10:41:28 and 10:41:37 — awake throughout |
+| a driver error | none |
+| loss above evdev | none: the kernel delivered exactly the taps recorded |
+| **a merge** | **refuted**: the largest span during the outage is **11** device units (~4 logical px) and every contact sits at 768–851 |
+
+### The signature, now on its third occurrence
+
+| | before | during | after |
+|---|---|---|---|
+| down-time | 75–110 ms | **176–200 ms** | 72–110 ms |
+
+09:50, 10:22 and now 10:41. **The surviving finger's contacts last about twice
+as long, every time.**
+
+### ★ And the interrupt rate halves WITH the contacts, not against them
+
+| second | irq | contact | irq/contact |
+|---|---:|---:|---:|
+| 10:41:29 | **94** | 8 | 11.8 |
+| 10:41:30 | **94** | 7 | 13.4 |
+| **10:41:31** | **50** | 5 | 10.0 |
+| **10:41:32** | **54** | 4 | 13.5 |
+| **10:41:33** | **46** | 3 | 15.3 |
+| 10:41:34 | 56 | 6 | 9.3 |
+| 10:41:36 | 84 | 7 | 12.0 |
+
+★ This **excludes the driver receiving and discarding** reports: that has the
+opposite signature — irq staying at ~94 while contact collapses. It did not.
+The chip produced fewer reports; the driver turned every one of them into an
+event.
+
+☠️ **On its own it is circular** — half as many touches give half as many
+interrupts whether the controller missed them or the hand did not make them.
+What the hand does *not* explain is the pair of facts either side of it: the
+surviving hand's rhythm is **unchanged** (`o`→`o` 258 ms against a 270 ms cycle
+before) while that same hand's contacts last **twice as long**.
+
+### The measurement that removes the operator from the question entirely
+
+Every ambiguity in this whole investigation has the same root: a touch that is
+not reported leaves nothing, so "the finger did not tap" and "the panel did not
+see it" are indistinguishable. **A held finger has no such ambiguity.**
+
+> One finger rests **continuously** on one half — not tapping, held. The other
+> taps as usual.
+
+A held contact cannot fail to happen. If it is released while the finger is
+still down, that is a device fault with no judgement about the operator in it at
+all — and if it survives while the tapping finger's touches vanish, the
+controller is dropping to one *tracked* contact rather than losing touches. Both
+outcomes are readable straight off `kernel-contacts.log`, and neither needs the
+operator to say what their hand was doing.
