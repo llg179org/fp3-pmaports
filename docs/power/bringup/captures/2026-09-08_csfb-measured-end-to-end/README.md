@@ -184,9 +184,35 @@ The `Modem.Signal` interface switches which radio it reports:
 18:40:22   'Lte' + 'Gsm'            back
 ```
 
-So the fallback is now attested three ways, none depending on the others: the
-`AccessTechnologies` bitmask, the disappearance of LTE measurements (call 2),
-and the `Signal` interface changing which radio it describes (call 3).
+So the fallback is attested three ways: the `AccessTechnologies` bitmask, the
+disappearance of LTE measurements (call 2), and the `Signal` interface changing
+which radio it describes (call 3).
+
+## ☠️ CORRECTION: those three are not independent, and this page said they were
+
+The sentence above originally read *"none depending on the others"*. **That is
+wrong.** All three come from **ModemManager**, out of the same QMI reports from
+the same modem. They are separate code paths inside one daemon, not separate
+measurements of the radio. If the modem misreported its access technology, all
+three would agree and all three would be wrong together.
+
+The operator then reported a fourth: **the pmOS status icon changed from 4G to
+2.5G during the call**, which matches exactly — `2.5G` is GPRS, and the measured
+`AccessTechnologies: 10` is `GSM | GPRS`. It is worth recording, but it is a
+**fourth rendering of the same source**, not a fourth measurement: phosh draws
+that icon from ModemManager too.
+
+★ What it *does* add is that the fallback is **visible to the subscriber without
+any instrument**. That matters for the report: One HU are asking a customer what
+they observed, and "the icon dropped from 4G to 2.5G for the duration of every
+call" is an observation anyone can make and check, independent of this repository
+and its tooling.
+
+Two things would be genuinely independent, and only one is available:
+
+- reading the modem directly over QMI or AT, bypassing ModemManager entirely —
+  not done here, and the honest status of the claim until it is;
+- **the network side** — which is precisely what One HU are measuring now.
 
 ☠️ The GSM rssi (−67 … −70) reads stronger than the LTE rssi (−87). Different
 bands and different measurement definitions; nothing follows from the comparison
