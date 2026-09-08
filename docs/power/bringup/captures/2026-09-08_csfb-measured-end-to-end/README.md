@@ -433,3 +433,75 @@ networks.*
 where it is known to work, nor on an FP6 against One HU. Either would separate
 "the device" from "the network" in one measurement, and neither is available
 here.
+
+## ☠️☠️☠️ RETRACTED IN ITS CENTRAL CLAIM: we switch the modem's IMS off, on purpose
+
+The section headed *"Why there is no 4G call: the modem's own IMS is switched
+off"* is wrong about **why**, and the two conclusions built on it fall with it.
+Found by running the operator's test plan, in the journal, an hour later:
+
+```
+Sep 08 18:50:20  Starting Hold the modem's IMS service switches off
+                 (stops the 8.4 s IMS-PDN loop)...
+Sep 08 18:50:21  fp3-ims-reconcile: already want=off, nothing to do
+                 {'voice': False, 'vowifi': False, 'video': False, …}
+```
+
+`/usr/local/bin/fp3-ims-reconcile.py`, installed 2026-09-02 **by this port**,
+with a systemd timer that re-asserts it 90 s after boot and **every 5 minutes**
+thereafter.
+
+### What the switches actually mean, from its own header
+
+> The modem raises an IMS PDN and tears it down again **every 8.4 s forever**,
+> which holds the UE in `RRC_CONNECTED` and costs **~44 pp of modem duty**
+> (measured three times: 44.5→4.8, 45.6→asleep, 48.0→4.4). Switching every IMS
+> service off stops it dead, and **on this network costs nothing**: the phone
+> still rings, answers, carries audio both ways and receives SMS over the CS
+> path.
+>
+> ☠️ **BUT THE SETTING DOES NOT SURVIVE A REBOOT.** Measured 2026-09-02: after a
+> system reboot, before any write, the original vector was back.
+
+So the modem's IMS is **enabled by default**, and this port disables it
+deliberately, because enabling it does not produce VoLTE — it produces an
+endless failing loop at a large power cost.
+
+★ **"IMS voice enabled: no" is our own doing, and it is a symptom of the failure,
+not its cause.** Reading it as "a switch nobody flipped" inverted the causality.
+
+### Two errors, and both are in the skill's own worked examples
+
+1. **"libqmi 1.39 has no setter."** The *CLI* has none. The **library** does —
+   the reconciler calls `client.set_ims_services_enabled_setting()` through the
+   GObject bindings, and has since 2026-09-02. `fp3-kernel-test` carries this
+   verbatim: *"the CLI gap was real; the capability was not missing — a
+   reconciler doing exactly that write had been in the repository, installed on
+   the phone and covered by its own selftest for three days."* This is the same
+   reconciler.
+2. **"Before measuring a state, ask what is holding it."** A timer was
+   re-asserting the value every 5 minutes while it was being read as a static
+   fact. The skill adds the sharp edge: *"if the observation window is shorter
+   than its period, you will not even see it happen."* Four QMI reads inside one
+   5-minute window saw nothing.
+
+☠️ The prior-art check was run on the *tools* directory and on the leads before
+writing `fp3-callwatch.sh`, and it was not run on **what is installed and
+running on the device**. `systemctl list-units | grep fp3` costs one second.
+
+### The corrected picture, and it is stronger for the letter
+
+| | |
+|---|---|
+| network offers IMS voice | **yes** — `IMS voice support: 'yes'` |
+| modem has its own IMS stack | **yes** — services 18, 33, 77 |
+| modem's IMS by default | **enabled** — the vector returns after every reboot |
+| what happens when it is enabled | **IMS PDN up/down every 8.4 s, forever**, ~44 pp modem duty |
+| where that fails | **before SIP** — `ims-missing-ap-half.md`: the UE's own `PDN DISCONNECT` arrives ~30 ms after it accepted the bearer, no ESM cause |
+| what `imsd` does instead | reaches a **protected SIP REGISTER** and is answered `500` |
+| so | **two independent IMS implementations, the modem's firmware stack and a userspace daemon, both fail to establish IMS on this network — at different stages** |
+
+☠️ **They are not the same failure and must not be reported as one.** The modem's
+stack never gets to SIP; a local precondition fails between bearer-up and the
+first message. `imsd` gets all the way to a SIP response and is refused by the
+core. Two stages, two symptoms, one network.
