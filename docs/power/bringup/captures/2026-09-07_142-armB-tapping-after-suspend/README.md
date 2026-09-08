@@ -1429,3 +1429,91 @@ reported"; it does not settle anything.
   to different contacts. It reads as a matched pair and is not one. Worth
   fixing, at the cost of restarting the reader — which would end a held-finger
   run in progress, so it waits.
+
+## ☠️☠️ RETRACTED: the halved interrupt rate does NOT exclude the driver
+
+The 10:41 section above says the interrupt rate falling *with* the contacts
+"excludes the driver receiving and discarding reports, which has the opposite
+signature". **That is wrong, and the driver's own source says why.**
+
+```c
+devm_request_threaded_irq(dev, client->irq, NULL,
+                          himax_irq_handler, IRQF_ONESHOT, ...)
+```
+
+`IRQF_ONESHOT` on a **level-triggered** line keeps the interrupt **masked from
+the hard-IRQ until the threaded handler returns**. So the interrupt count does
+not measure how often the chip had data — it measures **how often the driver was
+free to notice**. A handler that takes twice as long halves the count with the
+chip behaving identically.
+
+★ And the same lengthening explains the rest of the signature at once: a touch
+that begins *and ends* inside the masked window is never reported, and a release
+noticed one long handler-cycle late stretches the contact's measured duration.
+One mechanism, all three observations.
+
+The claim is kept above rather than deleted, because the reasoning that produced
+it — "an absorbed event would leave irq high while contacts fall" — is correct
+for an *unmasked* line and was applied without reading how the IRQ is requested.
+
+## Four ways an interrupt produces no touch, and three of them are silent
+
+Read out of `himax_hx83112b.c`, not inferred:
+
+| path | what it does | trace |
+|---|---|---|
+| the read fails 3× | `HIMAX_READ_RETRIES` exhausted | `dev_err_ratelimited` — **visible** |
+| the read fails once or twice, then succeeds | the `do/while` retries | ☠️ **silent**, and 2–3× the handler time |
+| the checksum fails | `return 0` | ☠️ **completely silent — no log at all** |
+| zero points in the event | nothing reported | `dev_dbg` — currently **off** |
+
+plus the special case a previous session already instrumented: an **all-zero**
+buffer passes `himax_verify_checksum()` trivially, because that sums the bytes
+and only requires the low byte of the sum to be zero. Its comment describes this
+very investigation — *"taps vanish with the panel otherwise healthy, and the
+only evidence is an interrupt that produced no frame"*.
+
+### What the existing instruments say about the three outages
+
+The journal is retained from 01:15 today, so it covers 09:50, 10:22 and 10:41:
+
+| | count |
+|---|---|
+| `all-zero event accepted by the checksum` | **0** |
+| `Failed to read input event` | **0** |
+
+★ So the **all-zero path is refuted** for these outages, and the retry **never
+exhausted**. What remains open is precisely the two silent paths: a retry that
+*succeeded* on the second or third attempt, and a checksum that failed and was
+discarded without a word.
+
+## The instrument for it, armed 2026-09-08, no rebuild and no flash
+
+`himax_handle_input` is **inlined** — absent from `kallsyms` and from
+`available_filter_functions`, as a `static` function with one caller. The two
+that matter are there:
+
+```
+p:hx_rd    himax_read_events            r:hx_rd_r  himax_read_events  ret=$retval
+p:hx_irq   himax_irq_handler            r:hx_irq_r himax_irq_handler  ret=$retval
+```
+
+- **`himax_read_events`** is the i2c read itself. Its **return value** is the
+  silent retry made visible: a non-zero return that is followed by another entry
+  *is* path 2, and nothing else in the system records it.
+- **`himax_irq_handler`** entry→return **is the masked window**, measured
+  directly rather than inferred.
+
+Armed with a 2 MB/cpu ring buffer in overwrite mode — **nothing is written to
+disk**, which matters at 85 %. All four probes confirmed present and not
+disabled in `/sys/kernel/debug/kprobes/list`.
+
+☠️ **Not yet seen firing.** Five seconds of tracing produced only the header,
+because nobody was touching the panel. A probe that has not fired has proved
+nothing, and the buffer holds roughly two minutes at the observed rate — so it
+has to be read while an episode is still recent.
+
+☠️ **The observer effect, stated:** a kprobe costs a microsecond or two against
+a handler that takes milliseconds, so roughly 0.1 %. It is on the path being
+measured, which is unavoidable here, and small enough not to create the
+lengthening it is looking for — but the durations it reports include it.
