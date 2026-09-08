@@ -99,10 +99,44 @@ protected REGISTER went out. **This reproduces the 2026-09-06 result** whose
 `Warning: 399 5144.2233.S.260.5.94.255.255.5938.0.0` is the question put to the
 carrier — now with a fresh timestamp inside their measurement window.
 
-☠️ **No SIP dump from this run.** `DUMP_SIP=1`/`DUMP_DIR` were set and the binary
-carries both strings, yet `/tmp/imsd-sip` is empty. The 2026-09-05 capture holds
-`0001-dump-the-failing-protected-REGISTER.patch`, so the installed build probably
-does not carry it. Unresolved; the header for *this* occurrence was not captured.
+★ **The SIP dump of this occurrence exists** — `imsd-register-protected-sent.raw`
+(1438 B) and `imsd-register-fail.raw` (455 B), written 20:12 by the patch the
+installed `imsd-0.3.0_git1987275-r1` does carry. Raw files are kept **outside git**
+(they hold the IMSI, MSISDN and addresses): `/mnt/1TB/pmos/fp3-raw-logs/2026-09-08_imsd-sip/`.
+
+The response, in full apart from nothing:
+
+```
+SIP/2.0 500 Server Internal Error
+CSeq: 2 REGISTER
+Warning: 399 5144.2233.S.260.5.3.255.255.5938.0.0.ims.mnc070.mcc216.3gppnetwork.org "Server Internal Error"
+Content-Length: 0
+```
+
+★★ **Compare it with the 2026-09-06 occurrence quoted in the letter to One HU:**
+
+| | field |
+|---|---|
+| 2026-09-06 22:03:58 | `5144.2233.S.260.**5.94**.255.255.5938.0.0` |
+| 2026-09-08 20:12 | `5144.2233.S.260.**5.3**.255.255.5938.0.0` |
+
+**One sub-field changes between the two; everything else is identical.** Two
+occurrences two days apart, both `500 Server Internal Error`, both on `CSeq: 2
+REGISTER`. That is a sharper question for the carrier than a single code: it says
+which part of their diagnostic varies per attempt. The full host suffix
+`.ims.mnc070.mcc216.3gppnetwork.org` was also truncated in the earlier letter.
+
+Header names in our protected REGISTER (values withheld): `Allow, Authorization,
+CSeq, Call-ID, Contact, Content-Length, Expires, From, Max-Forwards,
+P-Access-Network-Info, Proxy-Require, Require, Security-Client, Security-Verify,
+Supported, To, User-Agent, Via`. The `Contact` carries the MMTEL ICSI tag.
+
+☠️ **Two false "it is empty" readings preceded this, both mine, both the same
+mistake.** `find / -xdev` does not cross a mount point and `/tmp` is a tmpfs, so
+it skipped the very directory; and `ls -la /tmp/imsd-sip/` was run *without sudo*
+against a 0700 root-owned directory with stderr discarded. Each produced no output,
+and each time the absence of output was read as a fact about the world. Same class
+as the `grep` without `-a` earlier the same evening.
 
 ☠️ **`systemctl start imsd.service` is the wrong door and was tried anyway.** Its
 `ExecStartPre=ims-pdn-up.sh` asks for `ip-type=ipv6` and this network answers
@@ -156,4 +190,5 @@ which is the network paging on the CS domain.
 
 - whether the modem's own IMS ever sends a REGISTER (needs the DIAG wall solved,
   or the UT oracle diff that #54/#64 stand at)
-- the SIP headers of the 20:13 occurrence (dump patch not in the installed build)
+- why the carrier's core answers 500 — only One HU can say; the two Warning
+  diagnostics now give them a varying field to look at
