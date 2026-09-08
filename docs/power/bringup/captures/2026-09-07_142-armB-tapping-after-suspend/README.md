@@ -1517,3 +1517,95 @@ has to be read while an episode is still recent.
 a handler that takes milliseconds, so roughly 0.1 %. It is on the path being
 measured, which is unavoidable here, and small enough not to create the
 lengthening it is looking for — but the durations it reports include it.
+
+## ★★★ 2026-09-08 11:25 — the kprobes fired, and they refute BOTH driver mechanisms
+
+Trace window: `hx-kprobe-window.txt.gz` (the 15 s around the outage, from a
+234 s / 18 689-interrupt ring buffer). The outage: **18 consecutive `.`**,
+x=102–111, all `explained=NO` — this time the *right* side vanished.
+
+### Every read succeeded on the first attempt
+
+| | |
+|---|---|
+| `himax_read_events` returns in the window | **455, every one `ret=0x0`** |
+| `hx_rd` entries vs `hx_irq` entries | **454 / 454** — exactly one read per interrupt |
+| `himax_irq_handler` returns | 455, all `0x1` = `IRQ_HANDLED` |
+
+★ The `do/while` retry loop **never iterated once**. So the **silent retry is
+refuted** for this outage, and so is the exhausted retry. Nothing in the driver's
+read path misbehaved.
+
+### And the masked window did not lengthen — the ONESHOT mechanism is refuted too
+
+Handler entry→return, by second (95667–95671 **is** the outage):
+
+| t | n | median | p90 | max |
+|---|---:|---:|---:|---:|
+| 95660 | 98 | 6.215 ms | 6.820 | 7.607 |
+| 95665 | 45 | 6.010 | 6.572 | 7.336 |
+| 95666 | 44 | 6.031 | 6.662 | 6.892 |
+| **95667** | 53 | **6.206** | 6.688 | 7.310 |
+| **95668** | 50 | **6.066** | 6.422 | 6.892 |
+| **95669** | 55 | **6.110** | 6.446 | 6.976 |
+| **95670** | 39 | **6.048** | 6.510 | 7.117 |
+| **95671** | 59 | **6.158** | 6.805 | 7.831 |
+
+**Flat at 6.0–6.2 ms throughout**, maximum 7.8 ms anywhere. The i2c read is
+6.0 ms of that 6.2, so the handler *is* the read.
+
+☠️ **That retires the hypothesis this instrument was armed to test** — the one
+retracted into two sections above. The masked window is constant, so the ONESHOT
+confound is now measured rather than argued, and with it excluded the earlier
+observation stands after all: **the interrupt rate fell from ~98/s to ~50/s with
+the handler unchanged, so the chip asserted less often.** The reduction is on the
+controller's side.
+
+★ Worth noting for its own sake: at 98 irq/s and 6 ms each, the line is masked
+**59 % of the time** in ordinary two-finger tapping. The ceiling is ~166/s.
+
+### ★★ The operator's prediction, made before the data was looked at
+
+Unprompted, mid-analysis: *"két 3s alvás után visszatérve jön elő"* — it comes
+out after two three-second sleeps, on returning. The trace has exactly that:
+
+```
+95654.846 -> 95659.601   4.76 s with no interrupt at all
+95661.116 -> 95665.122   4.01 s with no interrupt at all
+        outage 95667 - 95671, about 2 s after tapping resumed
+```
+
+and the bus tracked the pauses: `11:25:37 suspending → 11:25:41 resuming →
+11:25:43 suspending → 11:25:46 resuming`, then the outage.
+
+**All four outages of the day follow a bus resume:**
+
+| outage | preceding resume | delay |
+|---|---|---|
+| 09:50:24.5 | 09:50:15 | 9.5 s |
+| 10:22:26.3 | 10:22:18 | 8.3 s |
+| 10:41:30.9 | 10:41:28 | 2.9 s |
+| 11:25:49 | 11:25:46 | 3.0 s |
+
+☠️ **Four events are not statistics, and the base rate is missing.** If the bus
+resumes often and outages are rare, "every outage follows a resume" is close to
+guaranteed. What that objection does *not* touch is that **the operator stated
+the pattern before anyone looked** — it is a prediction that held, not a shape
+found in the data afterwards.
+
+☠️ **And two of those four rows were recovered from the preserved extract, not
+from the phone** — the 09:50 and 10:22 bus lines were deleted by this session's
+own `journalctl --vacuum-size` at 10:35. Exporting them first was the only
+reason the pattern could be tested across four events instead of two. The rule
+paid for itself within the hour.
+
+### The A/B that settles it, and it needs one write
+
+```sh
+echo on > /sys/bus/platform/devices/78b7000.i2c/power/control
+```
+
+Runtime PM off, the bus never suspends, the operator taps as usual with the same
+pauses. **Outages stop** ⇒ the transition is in the path. **They continue** ⇒ the
+bus is not, and what idles is the controller itself. Reversible with `auto`, no
+rebuild, no flash, and it does not need the operator to judge anything.
