@@ -84,10 +84,14 @@ Counting rules that have each cost a wrong conclusion here:
     once and nearly retracted a good measurement.
 """
 import atexit
+import math
 import os
+import queue
 import signal
 import struct
 import subprocess
+import threading
+import wave
 
 import gi
 gi.require_version("Gtk", "4.0")
@@ -150,6 +154,160 @@ def _irq_count():
                 return sum(int(x) for x in line.split(":")[1].split()[:8])
     except (OSError, ValueError, IndexError):
         pass
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Audible feedback, added 2026-09-08 at the operator's request.
+#
+# WHY. On 2026-09-08 05:41 the operator's hand drifted left over ~6 s until the
+# left finger left the digitizer entirely; 1.589 s and about seven taps
+# produced NOTHING - no contact, no interrupt - because a finger outside the
+# sensor generates nothing to lose. Every layer of this instrument was blind to
+# it, and the drift was plainly visible in the x column six seconds before it
+# mattered. Nobody was watching that column, and a finger cannot feel where the
+# digitizer ends. So the instrument now says it out loud.
+#
+#   EDGE  216 Hz (= 432/2)  a tap landed within EDGE_MARGIN px of any edge
+#   MISS  432 Hz            the alternation broke, i.e. a tap may have been lost
+#
+# ☠️ THE 216 Hz TONE MAY BE INAUDIBLE ON THIS HARDWARE. A phone micro-speaker
+# rolls off steeply below roughly 400-800 Hz, so the low tone is the one most
+# likely not to arrive. If it cannot be heard, change TONE_EDGE_HZ - it is one
+# constant - rather than concluding the detector did not fire: every beep is
+# also written to the log, which is the authoritative record.
+#
+# ☠️ AND AUDIO IS NOT FREE AS AN INSTRUMENT. Playing a tone wakes LPASS, the
+# SLIMbus link and the WCD9335 codec. That does not touch the input path, which
+# is interrupt-driven and independent of it - but it makes this app unsuitable,
+# while beeping, for any power, idle-residency or suspend measurement. Turn the
+# beeps off (BEEP_ENABLED = False) before using it for one.
+TONE_EDGE_HZ, TONE_EDGE_MS = 216.0, 90
+TONE_MISS_HZ, TONE_MISS_MS = 432.0, 150
+EDGE_MARGIN = 25          # logical px; the 05:41 drift was flagged by x < 29
+EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
+MISS_REPEAT_S = 0.15
+BEEP_ENABLED = True
+
+
+def _render_tone(path, hz, ms, rate=48000, amp=0.5):
+    """Write a mono 16-bit WAV of one sine, with 5 ms raised-cosine edges.
+
+    The fades are not decoration: a tone that starts and stops at full
+    amplitude clicks, and a click is broadband - it would be audible where the
+    tone itself is not, which would make the low beep look like it worked.
+    """
+    n = int(rate * ms / 1000.0)
+    fade = max(1, int(rate * 0.005))
+    frames = bytearray()
+    for i in range(n):
+        env = 1.0
+        if i < fade:
+            env = 0.5 - 0.5 * math.cos(math.pi * i / fade)
+        elif i > n - fade - 1:
+            env = 0.5 - 0.5 * math.cos(math.pi * (n - 1 - i) / fade)
+        v = int(32767 * amp * env * math.sin(2.0 * math.pi * hz * i / rate))
+        frames += struct.pack("<h", max(-32768, min(32767, v)))
+    with wave.open(path, "wb") as f:
+        f.setnchannels(1)
+        f.setsampwidth(2)
+        f.setframerate(rate)
+        f.writeframes(bytes(frames))
+    return path
+
+
+class Beeper:
+    """Plays a tone WITHOUT touching the GTK main loop.
+
+    ☠️ The whole point is that this must not sit in the input path. The
+    operator asked whether it could run on a parallel thread so it does not
+    slow the sampling; the honest answer is in two halves. The KERNEL's touch
+    path cannot be slowed by anything here - it is interrupt-driven, there is
+    no poll_interval on the input device, and nothing samples the panel. What
+    CAN be slowed is this app's own main loop, and that is what the thread is
+    for: the handler only drops a name into a queue and returns.
+
+    ☠️ maxsize=1 with a non-blocking put is deliberate. An unbounded queue
+    turns a burst of edge taps into a backlog of beeps that arrive seconds
+    late, describing a moment that has passed - feedback that lies about WHEN.
+    Dropping is the correct behaviour; the log keeps the count either way.
+    """
+
+    def __init__(self, log, dirpath="/tmp"):
+        self._log = log
+        self.ok = False
+        self.dropped = 0
+        self.played = 0
+        self._last = {}
+        self._q = queue.Queue(maxsize=1)
+        self._player = None
+        for cand in ("paplay", "pw-play", "aplay"):
+            if _which(cand):
+                self._player = cand
+                break
+        if self._player is None or not BEEP_ENABLED:
+            self._log("  beeper: DISABLED (%s)"
+                      % ("no player found" if self._player is None else "BEEP_ENABLED false"))
+            return
+        try:
+            self._files = {
+                "edge": _render_tone(os.path.join(dirpath, "fp3-tone-edge.wav"),
+                                     TONE_EDGE_HZ, TONE_EDGE_MS),
+                "miss": _render_tone(os.path.join(dirpath, "fp3-tone-miss.wav"),
+                                     TONE_MISS_HZ, TONE_MISS_MS),
+                # ☠️ The sink is SUSPENDED when idle, so the FIRST tone pays for
+                # waking LPASS and the codec and can be clipped or lost. A
+                # silent primer at startup pays that cost once, before any
+                # measurement, instead of inside the first event that matters.
+                "prime": _render_tone(os.path.join(dirpath, "fp3-tone-prime.wav"),
+                                      TONE_MISS_HZ, 60, amp=0.0),
+            }
+        except OSError as e:
+            self._log("  beeper: DISABLED (cannot write tones: %s)" % e)
+            return
+        self.ok = True
+        self._t = threading.Thread(target=self._run, daemon=True)
+        self._t.start()
+        self._q.put_nowait("prime")
+        self._log("  beeper: %s, edge %.0f Hz/%d ms, miss %.0f Hz/%d ms, margin %d px"
+                  % (self._player, TONE_EDGE_HZ, TONE_EDGE_MS,
+                     TONE_MISS_HZ, TONE_MISS_MS, EDGE_MARGIN))
+
+    def _run(self):
+        while True:
+            name = self._q.get()
+            path = self._files.get(name)
+            if not path:
+                continue
+            try:
+                subprocess.run([self._player, path],
+                               stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL, timeout=4)
+                self.played += 1
+            except Exception:
+                pass
+
+    def fire(self, name, gap):
+        """Queue a tone. Returns True if queued, False if rate-limited/dropped."""
+        if not self.ok:
+            return False
+        now = time.time()
+        if now - self._last.get(name, 0.0) < gap:
+            return False
+        self._last[name] = now
+        try:
+            self._q.put_nowait(name)
+            return True
+        except queue.Full:
+            self.dropped += 1
+            return False
+
+
+def _which(cmd):
+    for d in os.environ.get("PATH", "/usr/bin:/bin").split(":"):
+        f = os.path.join(d, cmd)
+        if os.path.isfile(f) and os.access(f, os.X_OK):
+            return f
     return None
 
 
@@ -257,6 +415,8 @@ class TapTest(Gtk.ApplicationWindow):
         super().__init__(application=app, title="fp3-taptest")
         self.fullscreen()
         self.marks, self.n_dot, self.n_o = [], 0, 0
+        self.n_edge = 0
+        self.beeper = None   # built after the log is open, below
         self.breaks = self.n_mark = self.run_len = 0
         self.last = None
         self.started = False
@@ -292,6 +452,12 @@ class TapTest(Gtk.ApplicationWindow):
         self.evt_offset_ok = None
         self.log = open(LOG, "a", buffering=1)
         self._log("== taptest start %s" % time.strftime("%F %H:%M:%S"))
+        # ☠️ AFTER the log is open, not before. Built at the top of __init__ it
+        # announced itself through self._logline into a self.log that did not
+        # exist yet, and the whole app died in its constructor - measured
+        # 2026-09-08 06:22, unit up for three seconds. Anything that reports
+        # for itself has to be created after the thing it reports into.
+        self.beeper = Beeper(self._logline)
 
         # ☠️ This app is blind below the compositor, so the kernel-side reader
         # is not optional - a run without it cannot tell "the finger did not
@@ -448,6 +614,10 @@ class TapTest(Gtk.ApplicationWindow):
         if getattr(self, "owns_kcontacts", False):
             self.owns_kcontacts = False
             stop_kcontacts(self._logline)
+        b = getattr(self, "beeper", None)
+        if b is not None and b.ok:
+            self._log("  beeper: %d played, %d dropped, %d edge detections"
+                      % (b.played, b.dropped, self.n_edge))
         self._log("== taptest stop %s" % time.strftime("%F %H:%M:%S"))
         try:
             self.log.flush()
@@ -506,6 +676,23 @@ class TapTest(Gtk.ApplicationWindow):
         w, h = self.area.get_width(), self.area.get_height()
         if not h:
             return
+        # ☠️ EDGE FIRST, before any region dispatch. A tap that is about to
+        # walk off the digitizer has to be announced wherever it landed - the
+        # record area and the MARK bar reach the bezel too, and the 05:41 drift
+        # would not have been caught by a check that only looked at targets.
+        # The distance is to the nearest of ALL FOUR edges, as asked.
+        near = min(x, w - x, y, h - y)
+        if near < EDGE_MARGIN:
+            self.n_edge += 1
+            fired = self.beeper.fire("edge", EDGE_REPEAT_S)
+            # The beep is feedback; THIS LINE is the evidence. A tone that was
+            # rate-limited, dropped, or simply inaudible on this speaker still
+            # leaves the detection in the record, so "I heard nothing" and "it
+            # did not fire" stay distinguishable.
+            self._log("%s  EDGE #%d  %.0f px from the nearest edge  "
+                      "at %.0f,%.0f of %dx%d  beep=%s"
+                      % (self._stamp(), self.n_edge, near, x, y, w, h,
+                         "yes" if fired else "rate-limited"))
         if y < h * MARK_TOP:
             # Tapping the record clears it, so a long run can be cut into
             # readable stretches without restarting the app. ☠️ The COUNTERS
@@ -546,8 +733,18 @@ class TapTest(Gtk.ApplicationWindow):
             if sym == self.last:
                 self.run_len += 1
                 self.breaks += 1
-                self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d"
-                          % (self._stamp(), sym, self.run_len + 1, total, x, w))
+                # ☠️ A BREAK is the only LIVE signal this app has that a tap
+                # may have gone missing, and it is deliberately a weak one:
+                # the app's own rules say a repeat also happens when the
+                # operator taps one side twice on purpose. It is used here
+                # because the alternative - a tap that produced no contact and
+                # no interrupt - leaves nothing at all to trigger on. The tone
+                # therefore means "the alternation just broke", not "a tap was
+                # lost", and the log line below is what gets counted.
+                fired = self.beeper.fire("miss", MISS_REPEAT_S)
+                self._log("%s  BREAK  %s repeated, run=%d  (#%d)  x=%.0f/%d  beep=%s"
+                          % (self._stamp(), sym, self.run_len + 1, total, x, w,
+                             "yes" if fired else "rate-limited"))
             else:
                 self.run_len = 0
             self.last = sym
