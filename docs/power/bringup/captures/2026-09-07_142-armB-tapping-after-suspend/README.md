@@ -331,3 +331,83 @@ that the instrument exists is new.
 (`echo on > /sys/bus/platform/devices/78b7000.i2c/power/control`) and repeat.
 If the bursts vanish, the bus transition is in the path; if they persist with an
 empty panel, they are the chip's own post-release reports.
+
+---
+
+# 2026-09-08 05:40 — the night that was not a night
+
+The operator asked whether to place the morning call of `#181`. **There is no
+morning corner to sample**, and the reason is worth recording in full because
+two separate failures produced it.
+
+## 1. The phone never suspended — 20 h 48 min, `success = 0`
+
+| | |
+|---|---|
+| uptime | **20 h 48 min** |
+| `/sys/power/suspend_stats/success` / `fail` | **0** / 0 |
+| `PM: suspend` lines in dmesg | **none** |
+| `/etc/systemd/logind.conf.d/` | **empty** |
+
+`#181` step 2 — install an `IdleAction=suspend` drop-in — **was never done**, so
+the default `ignore` applied and nothing ever put the phone down. This is the
+**third** and by far the longest confirmation of what `docs/power/` already
+records: pmOS does not suspend by itself on this device. `#181`'s own note
+measured 5 h 03 with `success = 0`; this is 20 h 48.
+
+★ So the corner `#63` calls dangerous and unsampled is *still* unsampled, and a
+call placed this morning would be an ordinary daytime sample — which `#63` says
+in its own words is the wrong instrument for it, "not too few of it".
+
+## 2. ☠️ And the measurement was poisoned anyway, by this session's own tooling
+
+Two background watchers started 2026-09-07 17:12 to report when `fp3-taptest`
+and `fp3-kcontacts` exited **polled the phone over ssh every 60 s all night**.
+The units never exited, so the watchers never stopped.
+
+That is the trap named in two places at once — `fp3-kernel-test`'s *"your own
+polling can be the wake source ... do not poll a phone whose sleep you are
+measuring"*, and `#181`'s own **DO NOT SSH IN BEFORE THE CALL**, which exists
+because `docs/power/` records a replication night lost exactly that way.
+
+**The watcher was correct to exist** (the hook that demanded it is right: an
+unattended run needs one) **and wrong to be a poller against a device whose
+sleep might matter.** The two requirements collide, and nothing in the setup
+noticed. Concretely: a watcher for a unit that ends only when a human closes a
+GUI has no bounded lifetime, and pairing that with a per-minute login makes an
+overnight sleep measurement impossible for as long as it runs.
+
+Killed 2026-09-08 05:39 by PID.
+
+## 3. What the night did measure, for free
+
+The app suppresses all-zero windows, so its silence is data. Last `WINDOW`
+**17:23:49**; next **05:40:57**. In the **12 h 17 min** between, with the screen
+off and no finger:
+
+- **no `WINDOW` at all** — not one himax interrupt worth recording
+- **0** `i2c_qup 78b7000.i2c` runtime-PM transitions
+- **0** himax / `-110` / `Disabling IRQ` lines
+
+★ This rules out one of yesterday's two candidate readings: **the chip does not
+raise interrupts spontaneously on an idle panel.** The bursts of 21–29 need
+activity.
+
+☠️ **It does not discriminate between the other two.** No touches meant no i2c
+traffic, so there were no bus transitions either — the quiet is equally
+consistent with "the bus transition stalls the read" and with "post-release
+reports". That test still needs the runtime-PM lever, not another quiet night.
+
+## 4. One live window worth a second look, not a conclusion
+
+At **05:40:57**, screen off, the first activity in twelve hours:
+
+```
+05:40:57.826  WINDOW  irq 23  contact 1  raw 0  gest 0  tap 0  shown 0
+```
+
+`contact 1` with `raw 0` is a loss between evdev and the client — **or** the
+1000 ms window boundary splitting one touch across two windows, which the
+`irq` column's 500 ms poll makes entirely possible. **One window is not a
+measurement**; it is recorded so it is not lost, and nothing is concluded from
+it.

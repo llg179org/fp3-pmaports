@@ -22,6 +22,33 @@ instruments, [`captures/`](captures/) the raw data, and
 
 ---
 
+## 2026-09-08 — pmOS still never suspends: 20 h 48 min at success = 0, and a night lost to our own poller
+
+Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
+
+`#181`'s morning call could not be placed: the phone had not suspended **once**
+in 20 h 48 min (`suspend_stats/success = 0`, no `PM: suspend` in dmesg,
+`logind.conf.d/` empty). The `IdleAction` drop-in was never installed, so the
+default `ignore` applied. This is the third and longest confirmation of what
+`../README.md` already says; the earlier one was 5 h 03.
+
+☠️ **And it would have been void regardless.** Two background watchers started
+the previous evening to report when the tap-test units exited polled the phone
+over ssh **every 60 s all night**, because the units only end when a human
+closes a GUI and the watchers therefore had no bounded lifetime. That is
+`fp3-kernel-test`'s "your own polling can be the wake source" and `#181`'s own
+"DO NOT SSH IN BEFORE THE CALL", tripped by tooling added for a different and
+also-correct reason — an unattended run does need a watcher. The collision
+between the two requirements is the lesson; neither rule is wrong.
+
+**What the night measured for free:** the tap app suppresses empty windows, so
+its silence is evidence. Between 17:23:49 and 05:40:57 — **12 h 17 min**, screen
+off, no finger — there was not one himax interrupt worth a window, zero i2c
+runtime-PM transitions and zero error lines. That kills one reading of the
+2026-09-07 interrupt bursts: **the chip does not raise interrupts spontaneously
+on an idle panel.** It does not separate the remaining two, because no touches
+meant no bus transitions either.
+
 ## 2026-09-07 — #142 arm B is armed; its control leg is clean over 15 445 touch interrupts
 
 Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
