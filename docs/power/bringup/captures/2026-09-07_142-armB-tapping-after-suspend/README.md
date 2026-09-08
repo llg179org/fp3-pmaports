@@ -1044,3 +1044,76 @@ unreadable, which for an instrument is the same thing. It is recorded here
 rather than deleted because the reasoning that produced it (rank by urgency)
 is sound and only the assumption underneath it was false: that the operator
 could resolve three pitches while attending to something else.
+
+## ★★★ 2026-09-08 09:50:24 — the cleanest outage yet, and a NEW independent signal
+
+Run of 2026-09-08 07:33 onward: **9 556 taps**, 70 BREAKs, of which
+**59 `explained=NO`**, 5 explained by an overlap, 6 by a boundary. 137 overlaps,
+26 boundary detections, 0 MARKs. Slice: `0950-slice.txt`.
+
+The event at the end is the one this instrument was built for.
+
+```
+09:50:24.336  o  #9536  x=267        <- alternation still good
+09:50:24.554  o  #9537  x=269   BREAK run=2  explained=NO  tone=caught
+09:50:24.763  o  #9538  x=268   BREAK run=3  explained=NO  tone=caught
+09:50:24.978  o  #9539  x=272   BREAK run=4  explained=NO  tone=caught
+09:50:25.203  o  #9540  x=276   BREAK run=5  explained=NO  tone=caught
+09:50:25.341  .  #9541  x=99         <- the '.' returns
+```
+
+Every circumstance that has explained a previous outage is **absent**:
+
+| candidate | status |
+|---|---|
+| a boundary | x = 267–276; the right band starts at 335, the divider band ends at 200 |
+| a hand drift off the sensor | the `.` sat at 79–83 before and 91–104 after, nowhere near the 25 px band |
+| a two-finger overlap | none logged in the window |
+| the i2c bus suspending | transitions at 09:50:15 and 09:50:28 — the bus was awake throughout |
+| a driver error | no `-110`, `-6`, `-5` or `Disabling IRQ` |
+| loss above evdev | the kernel delivered exactly one contact per recorded tap |
+
+### ★ And the new signal: the surviving finger was down twice as long
+
+This is **not** inferred from the missing taps. It is measured on the contacts
+that *did* arrive, so it cannot be an artefact of the absence:
+
+| | contacts | down-time (CONTACT→RELEASE) |
+|---|---|---|
+| before the run | 10 | **61.6 ms** — 67 57 74 57 51 65 68 59 51 67 |
+| **during** | 4 | **127.0 ms** — 66 **167 150 125** |
+| after | 7 | **51.3 ms** — 33 59 58 59 50 49 |
+
+More than doubled, exactly across the outage, and back to normal immediately
+after. And at the cadence in force (~100 ms between the two sides), a `.` would
+have landed **inside** the `o`'s own contact for **three of the four**:
+
+```
+o at 24.763  down 167 ms   a '.' at +100 ms falls INSIDE this contact
+o at 24.978  down 150 ms   INSIDE
+o at 25.203  down 125 ms   INSIDE
+```
+
+### Three readings, and what separates them
+
+1. **The controller merged two fingers into one reported contact.** Predicts the
+   doubled down-time, the vanished second finger, no overlap logged and no
+   error — all four, with nothing left over.
+2. **The release is reported late** and the other finger lands in that shadow.
+3. **The operator changed grip** — held one finger longer and paused the other.
+
+☠️ Reading 3 cannot be excluded from any log, as always: a touch that produces
+neither a contact nor an interrupt leaves nothing behind. But 1 and 2 are now
+**testable without any judgement about the finger**, which is new.
+
+### The next instrument, and it needs no operator testimony
+
+`kernel-contacts.py` logs only CONTACT and RELEASE. **Add the position stream
+inside each contact** — the `ABS_MT_POSITION_X` range between a contact's begin
+and its release.
+
+- A genuine long press stays near its own x (~270).
+- A **merge** wanders, or jumps, toward the other half.
+
+That single column separates reading 1 from readings 2 and 3, costs one change
+to a reader already running, and asks the operator for nothing at all.
