@@ -647,3 +647,76 @@ with nothing heavy running.
 
 ★ One thing worth noting without claiming it matters: IRQ 138 is serviced
 **entirely on CPU0** (62 639 there, zero on the other seven).
+
+## ★★★ RESOLVED — the hand drifted off the digitizer, and the instrument let it
+
+The operator asked how far the x coordinate moved either side of the outage.
+It moved a great deal, monotonically, and **both fingers moved together**.
+
+### The `.` trajectory (the taps that vanished)
+
+```
+05:41:10.068  x=29   ┐
+                     │  steady leftward drift over ~5.8 s
+05:41:15.881  x= 7   ┘
+05:41:16.295  x= 7      <-- last tap before the outage
+              [ 1.589 s, no '.' at all ]
+05:41:17.884  x= 0      <-- first tap after, the extreme value
+05:41:18.340  x= 7   ┐
+05:41:18.749  x=22   │  back out again
+05:41:19.157  x=32   ┘
+```
+
+### And the other finger moved with it
+
+| | `.` mean x | `o` mean x |
+|---|---|---|
+| before the outage | 14.9 (sd 8.9) | 241.4 (sd 11.2) |
+| **during** | — none | **229.9** (sd 2.1) — its leftmost |
+| after | 28.8 (sd 6.9) | **268.1** (sd 15.5) — its rightmost |
+
+The `o` is at its leftmost precisely while the `.` is missing, and at its
+rightmost immediately after. Two fingers of one hand, moving as one.
+
+### The reading
+
+The hand drifted left until the left finger **left the active touch area**.
+Nothing was generated while it was off — no contact, no interrupt, which is why
+every layer of this instrument was blind to it. The first report on the way back
+is at **x = 0**, the boundary value and almost certainly a clamp, then 7, 10, 22,
+32 as the hand returns.
+
+★ This is neither a panel fault nor an operator error in any useful sense. **It
+is a defect of the instrument**: the `.` target runs to x=0, i.e. to the bezel;
+the app gives no indication that a tap is landing at the edge; and a finger
+cannot feel where the digitizer ends. The hand walked out over six seconds and
+nothing said so.
+
+☠️ **It explains THIS event and not the 2026-09-07 17:16 one**, where the
+surviving `.` sat at x=73–78 and the missing `o` at x≈286 — neither near an
+edge, and with no drift. Two events, two different causes; the earlier one
+remains unexplained.
+
+### It also resolves the tension recorded above
+
+The operator's account that a skip never exceeds 2–3 signs and the measured
+seven-tap, 1.589 s outage are both correct: this was not one of their ordinary
+skips at all, it was a finger that had left the sensor. The discrepancy was the
+tell, and it is now closed.
+
+### ☠️ And it retires the slow-tapping test proposed above
+
+The operator's objection is right and the proposal is **withdrawn**. A 1.6 s
+outage at one tap per second costs one or two taps, and a single missing tap is
+exactly the observation that gets attributed to the finger. Fast tapping is what
+turns an outage into a *run*, which is the only form in which it is legible.
+Slowing down destroys the signal it was meant to isolate.
+
+### What the instrument needs instead
+
+1. **Inset the targets** so neither reaches the bezel, and draw the dead margin.
+2. **Log every tap's x against the target bounds**, and mark one landing within
+   ~15 px of an edge — the drift here was visible six seconds before the outage
+   and nobody was watching that column.
+3. **Warn on drift**: a monotonic trend in either target's mean x is the early
+   signature, and it is cheap to compute per window.
