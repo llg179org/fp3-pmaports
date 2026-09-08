@@ -1701,3 +1701,85 @@ fault but truncates it, which is a different and more interesting claim than
 `0 / 15` is to call it, and the pre-registration exists precisely because the
 comfortable reading arrives first. The number that decides this was fixed before
 the lever was pulled and has not moved.
+
+## ☠️☠️ The A/B settles it, and it settles it AGAINST the bus
+
+At 11:56, with `control=on`, `runtime_status=active` and **zero suspends logged
+since 11:40**, the fault happened anyway: nine consecutive `o` at
+11:56:20.9–22.0, then more, then a `.` run at 11:56:27 — the right side dropping
+out, which is what the operator reported.
+
+**The i2c bus runtime PM is not the cause.** The 5-of-5 association with a bus
+resume was real *as an association* and is not causal. What survives is the
+operator's original observation with the bus factored out: **the trigger is the
+pause, not the bus.** The bus merely suspends during pauses, as everything idle
+does.
+
+The bus was reverted to `auto` immediately afterwards, since holding a QUP awake
+costs power continuously.
+
+### The driver is exonerated on every measured count — twice now
+
+Second traced outage, this time with the bus held awake:
+
+| | |
+|---|---|
+| `himax_read_events` returns | **298, every one `ret=0x0`** — no retry, ever |
+| masked window (handler entry→return) | **5.8–6.3 ms median throughout**, max 7.95 ms |
+
+Identical to the 11:25 trace. Across both, not one read failed and the handler
+never lengthened.
+
+### The panel does not idle either
+
+`panel-himax-hx83112b.c` sets `MIPI_DSI_MODE_VIDEO_BURST` — a **video-mode**
+panel, so the DSI streams at 60 Hz whether or not anything changes. The display
+half of this TDDI die keeps running through a tapping pause, so "the display
+went quiet" is not the trigger.
+
+## ★★★ The oracle names the mechanism: the controller has an IDLE MODE
+
+`ubports-fp3-kernel/drivers/input/touchscreen/hxchipset83112b/himax_ic.c`, the
+vendor driver for **this exact chip**:
+
+```c
+void himax_idle_mode(struct i2c_client *client, int disable)
+{
+    tmp_addr = 0x10007088;
+    himax_register_read(client, tmp_addr, 4, tmp_data, false);
+    switch_cmd = disable ? 0x17 : 0x1F;   /* byte 0 */
+    himax_flash_write_burst(client, tmp_addr, tmp_data);
+    ...                                    /* read back, retry up to 20× */
+}
+```
+
+| register | value | meaning |
+|---|---|---|
+| `0x10007088` byte 0 | **`0x17`** | IDLE mode **OFF** |
+| | **`0x1F`** | IDLE mode **ON** |
+
+**The chip has an idle mode, and the mainline driver never touches it** — it only
+reads events, so the firmware default runs unmodified. An idle scan that engages
+after a pause and takes seconds to come back to full rate predicts every
+observation: the halved interrupt rate, the missed taps, the doubled apparent
+contact duration, the self-recovery, and the immunity to both the bus and the
+driver.
+
+### ☠️ But this is NOT "the vendor disables it and we forgot"
+
+Both call sites that pass `disable=1` bracket a **self-test**, and the second is
+followed by `//Enable IDLE Mode` → `himax_idle_mode(client, 0)`. The vendor
+turns idle off only for factory diagnostics and **puts it back**. So idle-on is
+the shipped production state on this chip, and simply disabling it is a
+*hypothesis to test*, not a defect that was found.
+
+### Two ways forward, and they answer different questions
+
+1. **Write `0x17` to `0x10007088` and tap.** Decisive for "is the idle mode the
+   mechanism". It needs the vendor's register protocol
+   (`himax_register_read` / `himax_flash_write_burst`), which is in the oracle
+   source — not a plain i2c register write.
+2. **Ask the oracle whether the stock stack shows this fault at all.** If the
+   downstream kernel taps cleanly with idle mode *on*, then idle mode is not
+   sufficient by itself and something else the vendor configures at probe is
+   missing from mainline — which is a different and larger answer.
