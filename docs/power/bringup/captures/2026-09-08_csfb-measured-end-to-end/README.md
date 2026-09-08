@@ -383,3 +383,53 @@ but **"turn on the IMS stack that already works"**.
 | ModemManager IMS support | **none** |
 | libqmi setter for it | **none in 1.39** |
 | result | CSFB on every call, three for three |
+
+## ☠️☠️ CORRECTION: "turn on the modem's IMS instead of imsd" was overstated
+
+The section above concludes that the highest-value lead is *"turn on the IMS
+stack that already works"* and that `imsd` "does what this modem already does in
+firmware". **The operator corrected it from the repository's own record, and
+they were right.**
+
+[`../../leads/imsd-is-code-now.md`](../../leads/imsd-is-code-now.md) states what
+`imsd` actually is: a GPL-3.0 **userspace** IMS/VoLTE daemon for mainline Linux
+phones — SIP registration with USIM AKA, call signalling, AMR-WB RTP through
+PipeWire, bridged to a stock dialer over D-Bus — with **inbound and outbound
+calls working on a Fairphone 6 running postmarketOS, across four carriers**
+(KPN NL, Telekom DE, Phonero, Telia NO), and emergency calling tested end to
+end on 2026-08-18.
+
+So the userspace route is not a workaround for something the modem could do
+better. **It is the route that demonstrably delivers VoLTE on mainline Linux on
+comparable hardware**, and the FP6's modem has an IMS stack too.
+
+### The two findings fit together; they do not compete
+
+[`../../leads/ims-missing-ap-half.md`](../../leads/ims-missing-ap-half.md)
+already said it: *"the modem is playing one half of a two-party protocol"* and
+we do not run the other half. Today's measurement is that same picture **seen
+from the modem**: every IMS service disabled, registration `not-registered`.
+That is exactly what a missing AP-side counterpart looks like from the firmware's
+side, and `imsd` **is** the counterpart.
+
+☠️ So the disabled flags are probably not a configuration we forgot — they are
+plausibly *set by* the counterpart as part of normal operation. Reading them as
+"a switch nobody flipped" assumes the switch is the interface, and nothing here
+establishes that.
+
+### ★ What the FP6 result actually sharpens
+
+`imsd` succeeds on FP6 against **KPN, Telekom, Phonero and Telia**. It is
+refused on the FP3 by **One HU**, with `500 Server Internal Error` and an
+operator-internal diagnostic.
+
+**None of the four carriers where it works is One HU.** So the 500 is at least
+as likely to be a One-HU-specific rejection as an FP3-specific one — which is
+precisely what the letter's question (a) asks, and it is now a sharper question
+than it was this morning: *the same daemon registers fine on four other
+networks.*
+
+☠️ Not established either way: nobody has run `imsd` on an FP3 against a carrier
+where it is known to work, nor on an FP6 against One HU. Either would separate
+"the device" from "the network" in one measurement, and neither is available
+here.
