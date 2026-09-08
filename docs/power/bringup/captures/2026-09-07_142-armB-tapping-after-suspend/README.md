@@ -1669,3 +1669,35 @@ resume.
 runtime suspend costs power continuously, and this device's power figures are
 the subject of half the captures in this directory. Leaving it on would quietly
 poison the next idle-current measurement, and nothing about the file says so.
+
+## The A/B, first reading 2026-09-08 11:47 — encouraging, NOT yet significant
+
+Counted by the metric registered before the lever was pulled: **episodes per
+idle gap > 2 s**, an episode being a run of ≥3 same-side taps with
+`explained=NO`, consecutive breaks within 1.5 s collapsed into one.
+
+| leg | taps | minutes | idle gaps > 2 s | `NO` breaks | of those run≥3 | **episodes** | per gap |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| **A** — `control=auto`, the bus suspends | 8 478 | 63.2 | **58** | 69 | 51 | **6** | **0.103** |
+| **B** — `control=on`, no suspends | 605 | 6.8 | **15** | 7 | **0** | **0** | **0.000** |
+
+☠️ **Zero in fifteen gaps is not a result yet.** At the A-leg rate, 15 gaps
+predict **1.55** episodes, and seeing none by luck alone has probability
+`0.897¹⁵ ≈ 0.20`. That is **p ≈ 0.20** — encouraging and no more.
+
+**About 28 idle gaps with zero episodes are needed for p < 0.05**
+(`0.897ⁿ < 0.05` ⇒ n > 27.5). Fifteen exist, so roughly the same again — about
+seven more minutes of the same tapping.
+
+★ One thing is already striking and is *not* the registered metric, so it is
+offered as an observation rather than a verdict: on the A leg 51 of 69
+`explained=NO` breaks grew to run≥3; on the B leg, **none of 7 did**. The
+isolated "the alternation just broke" events still happen — they simply stop
+developing into runs. If that holds up it says the lever does not abolish the
+fault but truncates it, which is a different and more interesting claim than
+"it went away".
+
+☠️ **Reported before the operator asked for a verdict.** The temptation with
+`0 / 15` is to call it, and the pre-registration exists precisely because the
+comfortable reading arrives first. The number that decides this was fixed before
+the lever was pulled and has not moved.
