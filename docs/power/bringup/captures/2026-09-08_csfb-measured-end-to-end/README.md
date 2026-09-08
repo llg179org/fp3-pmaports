@@ -82,3 +82,54 @@ answer the second. Older tracked call artefacts from earlier sessions —
 checked at the same time and carry **no** MSISDN, IMSI, IMEI or ICCID, but they
 are already on `origin/main`, so removing them is a history rewrite and the
 operator's call to make.
+
+## Second call, 18:34 — two for two, and the signature is reproducible
+
+| | call 1 (12:34) | call 2 (18:34) |
+|---|---|---|
+| LTE → GSM+GPRS | 12:34:**18** | 18:34:**20** |
+| call object appears | 12:34:20 (**+2 s**) | 18:34:22 (**+2 s**) |
+| answered | after 9 s of ringing | after 11 s |
+| ended | 19 s of talk | 16 s |
+| GSM+GPRS → LTE | 12:34:49 (**+1 s**) | 18:34:50 (**+1 s**) |
+| **off LTE** | **31 s** | **30 s** |
+
+Both calls audible in both directions, both answered. The two intervals that
+depend on the network rather than on the operator are **identical**: the drop
+leads the call object by exactly 2 s, and the return follows the end by exactly
+1 s.
+
+### ★ An independent confirmation the bitmask cannot give
+
+The `Modem.Signal` stream was running for this call and it **stops for the
+duration of it**:
+
+```
+18:34:12  rsrp -94  rsrq -12  snr 21.0     <- last LTE sample before
+    ...   (40 s with no LTE measurement at all)
+18:34:52  rsrp -84  rsrq  -9  snr 21.4     <- first after
+```
+
+There is nothing to measure because the modem is not on LTE. That is the same
+conclusion as `AccessTechnologies: 10`, reached through a different interface,
+and neither depends on the other.
+
+☠️ **One thing not to over-read**: `rsrp` improves from about −94 to about −86
+across the call and stays there. That may be a cell reselection on return to
+LTE, or the operator having moved. One instance, two possible causes, no
+instrument that separates them here.
+
+## The times for One HU
+
+Their trace window is 09-08 → 09-10 and they asked for the moments trouble
+occurred. These are the two so far, in their local time (CEST):
+
+- **2026-09-08 12:34:18** — subscriber moved LTE → GSM for an incoming voice call
+- **2026-09-08 18:34:20** — the same, 31 s and 30 s off LTE respectively
+
+Neither call *failed*: both rang, both were answered, audio was fine in both
+directions. **The fault being reported is not a broken call — it is that a
+handset registered on LTE with a live data bearer is moved to GSM for voice at
+all.** That distinction matters in the report: asking them why CSFB was chosen
+is a different question from reporting a service outage, and the letter already
+frames it that way.
