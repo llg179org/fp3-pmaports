@@ -507,3 +507,68 @@ state per tap that it landed. At that rate a missing contact is unambiguous.
 Fast tapping cannot settle it — not because the operator is unreliable, but
 because the log records only what arrived, and a per-tap claim is the only
 witness for what did not.
+
+## ★ The timing of the lost half — the sharpest number this capture produced
+
+Slices kept beside this page: `kernel-0541-slice.txt` (evdev), `taps-0541-slice.txt`
+(the client).
+
+### The operator's rhythm did not change
+
+| | before the run (`o.o.o.` × 31, no BREAK) | during the o-run (7 taps) |
+|---|---|---|
+| `o` → `o` | **203 ms** | **203 ms** (median 201, 189–218) |
+| `.` → `.` | 204 ms | — |
+| within a pair (`o` → `.`) | **74 ms** | — |
+| pair to pair (`.` → `o`) | 128 ms | — |
+
+The right-hand cadence is identical to the millisecond. What vanished is the
+`.` that sat **74 ms** after each `o`.
+
+### The surviving touches are physically identical
+
+| | before | during |
+|---|---|---|
+| contacts | 30 | 8 |
+| down-time (CONTACT→RELEASE) | **48.2 ms** mean, 49.5 median, 33–68 | **48.8 ms** mean, 50.5 median, 32–60 |
+| release → next contact | median **44 ms**, min 16 | median **150 ms**, min 16 |
+| gaps **< 60 ms** | **15**: 34 33 29 27 16 23 27 24 24 44 25 24 41 23 34 | **1**: 16 |
+
+### What that says
+
+The lost population is precisely the touches arriving **~16–45 ms after a
+release** — and the same controller had reported fifteen of those, correctly, in
+the three seconds before. So this is **not a fixed dead-time**: it is an
+intermittent loss of re-arm lasting ~1.2 s, while touches at the same rate and
+the same down-time kept being reported throughout.
+
+★ Three things keep this from being circular. That the short gaps disappear is
+partly definitional — if the `.` taps are lost, the surviving `o`→`o` gaps are
+long by construction. What is **not** definitional:
+
+1. the `o`→`o` interval is **203 ms on both sides** of the boundary, so the
+   surviving hand's rhythm did not change;
+2. the down-times are **48.2 vs 48.8 ms**, so the surviving touches are the same
+   physical event;
+3. the controller **demonstrably can** detect a 16–44 ms re-arm, having done so
+   15 times seconds earlier.
+
+### ☠️ And the whole thing rests on one testimony
+
+Every number above is **equally consistent with the operator having lifted the
+left hand** and continued at the same rate with the right. The logs cannot
+separate those two and never will: a touch that produces no contact and no
+interrupt leaves nothing to measure. The reading here is the one it is because
+the operator stated the finger landed, and that testimony is the only witness
+for the half that is missing. Recorded as resting on it, not as independent of
+it.
+
+### The measurement this now makes possible
+
+A **re-arm sweep**, which needs no judgement about whether a finger landed: tap
+deliberately with a *known* gap after each release — 20 ms, 40 ms, 80 ms,
+160 ms — and count what arrives against what was intended. If the loss is a
+re-arm window, the miss rate should fall away as the gap grows, and the number
+where it disappears is the controller's recovery time. That is a curve, not an
+anecdote, and the operator's per-tap claim only has to be "I tapped N times",
+not "that one landed".
