@@ -816,3 +816,35 @@ code**: at (180, 10) it expected `top` and got `divider`, because x=180 sits
 exactly on the split, distance 0, which really is the nearest boundary. The
 rule that separates the two is that a failing case is a question, not a verdict
 — read which of the two is wrong before changing either.
+
+### MARK pulled clear of the band, 06:4x
+
+Screenshot: `armb-frame-mark-clear.png`.
+
+The field-top band straddles `h·HALVES_TOP`, so it lay over the bottom 20 px of
+the MARK button. The button's **drawn face** now stops at
+`h·HALVES_TOP − HALVES_TOP_MARGIN`, with a dark gutter between it and the band.
+
+★ Its **hit area is deliberately unchanged** — a tap anywhere down to
+`h·HALVES_TOP` still marks. The visible target is therefore strictly *smaller*
+than the area that accepts it, which is the safe direction for a button sitting
+against a measurement surface: aiming at what you can see can no longer stray
+into the halves, and no press is lost to a shrunken target. The label is sized
+and centred against the drawn face rather than the old region, so it stays
+inside it.
+
+Measured at logical x=300:
+
+| logical y | transition | predicted |
+|---|---|---|
+| 360.0 | record area → MARK face | `h·MARK_TOP` |
+| **430.0** | MARK face → band | `h·HALVES_TOP − 20`, **no overlap** |
+| 450.0 | halves begin | `h·HALVES_TOP` |
+| 470.0 | band ends | `h·HALVES_TOP + 20` |
+
+☠️ The 450–470 pixels read `(144,159,204)` rather than the expected dark, which
+is not a drawing fault: it is the right half **mid-flash** (`0.40,0.70,0.95`)
+under the band's `0.45,0.45` at alpha 0.30, which composites to exactly that.
+The operator was tapping while the screenshot was taken. A value that does not
+match the prediction is a question about which of the two is wrong, and here it
+was the prediction's assumption about the state, not the code.

@@ -968,11 +968,24 @@ class TapTest(Gtk.ApplicationWindow):
         cr.set_source_rgb(0.06, 0.06, 0.08)   # record area
         cr.rectangle(0, 0, w, mark_y)
         cr.fill()
+        # ☠️ THE MARK BUTTON STOPS SHORT OF THE WARNING BAND, on the operator's
+        # instruction. Its drawn face now ends HALVES_TOP_MARGIN above the
+        # halves, so the band that guards that boundary never lies over it.
+        #
+        # ★ Its HIT AREA is deliberately left alone: a tap anywhere down to
+        # half_y still marks. So the visible target is now strictly smaller
+        # than the area that accepts it, which is the safe direction for a
+        # button sitting against a measurement surface - aiming at what you can
+        # see can no longer stray into the halves, and no press is lost.
+        btn_bot = half_y - HALVES_TOP_MARGIN
         if time.time() < self.mark_flash_until:
             cr.set_source_rgb(0.95, 0.85, 0.30)   # MARK, just pressed
         else:
             cr.set_source_rgb(0.40, 0.27, 0.27)
-        cr.rectangle(0, mark_y, w, half_y - mark_y)
+        cr.rectangle(0, mark_y, w, btn_bot - mark_y)
+        cr.fill()
+        cr.set_source_rgb(0.06, 0.06, 0.08)       # the gutter it leaves behind
+        cr.rectangle(0, btn_bot, w, half_y - btn_bot)
         cr.fill()
         flash = time.time() < self.half_flash_until
         if flash and self.half_flash_side == ".":
@@ -1031,12 +1044,14 @@ class TapTest(Gtk.ApplicationWindow):
         cr.show_text(".")
         cr.move_to(3 * w / 4 - 10, half_y + (h - half_y) * 0.65)
         cr.show_text("o")
-        cr.set_font_size((half_y - mark_y) * 0.45)
+        # Sized and placed against the BUTTON's height, not the old region's,
+        # so the label stays centred in the face that is actually drawn.
+        bh = btn_bot - mark_y
+        cr.set_font_size(bh * 0.45)
         if time.time() < self.mark_flash_until:
             cr.set_source_rgb(0.1, 0.1, 0.1)
         label = "MARK  %d" % self.n_mark if self.n_mark else "MARK"
-        cr.move_to(w / 2 - len(label) * (half_y - mark_y) * 0.13,
-                   mark_y + (half_y - mark_y) * 0.66)
+        cr.move_to(w / 2 - len(label) * bh * 0.13, mark_y + bh * 0.66)
         cr.show_text(label)
 
         if not self.started:
