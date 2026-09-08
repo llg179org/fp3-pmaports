@@ -411,3 +411,99 @@ At **05:40:57**, screen off, the first activity in twelve hours:
 `irq` column's 500 ms poll makes entirely possible. **One window is not a
 measurement**; it is recorded so it is not lost, and nothing is concluded from
 it.
+
+---
+
+# 2026-09-08 05:41 — an `oooooo` run, and the operator's testimony that changes it
+
+## The measurement
+
+Eight consecutive `o` taps, 05:41:16.153 → 05:41:17.811, all at x = 227–233.
+The `i2c_qup` bus was **awake throughout** — nearest transitions 05:41:02
+(resume) and 05:41:27 (suspend), well outside the run.
+
+**Every surviving tap has its kernel CONTACT within ~5 ms:**
+
+| app tap | kernel CONTACT |
+|---|---|
+| 16.153 | 16.148 #3558 |
+| 16.593 | 16.591 #3561 |
+| 16.811 | 16.790 #3562 |
+| 17.003 | 16.996 #3563 |
+| 17.211 | 17.206 #3564 |
+| 17.400 | 17.396 #3565 |
+| 17.617 | 17.612 #3566 |
+| 17.811 | 17.806 #3567 |
+
+and every window agrees at every layer:
+
+```
+05:41:15   irq 64   contact  9   raw  9   gest  9   tap  9
+05:41:16   irq 58   contact  7   raw  7   gest  7   tap  7
+05:41:17   irq 36   contact  6   raw  6   gest  6   tap  6
+05:41:18   irq 48   contact  8   raw  8   gest  8   tap  8
+05:41:19   irq 67   contact 10   raw 10   gest 10   tap 10
+```
+
+`irq / contact` = 7.1, 8.3, 6.0, 6.0, 6.7 — **stable across the run**.
+
+## The cadence
+
+Kernel inter-contact intervals **before** the run alternate short-long — 68,
+132, 67, 132, 84, 126, 73, 143, 73 ms — i.e. two contacts per ~200 ms cycle.
+**During** the run they settle to a single ~200 ms: 143, 83, 217, 199, 206,
+210, 190, 216, 194. Same cycle, half the contacts.
+
+## ☠️ The inference that was made, and rejected — for the second time in this port
+
+It was put to the operator that at 10 taps/s they could not be sure the finger
+had landed. Their answer: **"leért az ujjam"** — the finger landed.
+
+**That testimony outranks the reasoning, and the reasoning was the same mistake
+this port already recorded.**
+[`../2026-09-06_taps-arrive-frames-do-not/`](../2026-09-06_taps-arrive-frames-do-not/)
+carries a section headed *"…and the operator rejected that, with the standing
+they have and I do not"* — there, their perception was inferred from source
+code; here, their motor action was inferred from timestamps. Both are things
+only the person at the phone can observe. **The shape recurred within 36 hours
+of being written down**, which is the argument for the rule being in code rather
+than in prose.
+
+## What the touch that left no trace now implies
+
+A finger that landed and produced neither a contact nor an interrupt excludes
+every layer this capture can see:
+
+| candidate | verdict |
+|---|---|
+| driver dropped a delivered event | **excluded** — `contact = raw = gest = tap` in every window |
+| driver received and swallowed | **excluded** — `irq/contact` stayed 6–8; absorbed events would drive it **up**, and it went slightly down |
+| i2c bus runtime-PM stall | **excluded** — bus awake, no transition between 05:41:02 and 05:41:27 |
+| the `l6` rail | **excluded** — driver bound, `use=2`, both consumers |
+
+What remains is **the touch controller not reporting a touch that physically
+happened** — at or below the chip.
+
+☠️ **This is a different fault from the one `#142` and the rail work address.**
+Those are about a bus that stalls with the display down. This is a chip that
+misses a touch with the display **on**, the bus **awake** and the rail **held**.
+
+### A candidate mechanism, named as a candidate
+
+TDDI controllers of this class commonly run a **reduced-rate idle scan** and
+switch to active scan on first touch. A tap landing between two idle scans is
+never seen, and raises no interrupt — which matches exactly.
+
+★ Against it: the surviving taps' down-time (CONTACT→RELEASE) averages **49 ms
+before** the run and **51 ms during** it, so the survivors are not systematically
+longer, as "short taps get missed" would predict. The missing taps' durations
+are unknowable by construction, so this weakens the mechanism without refuting
+it.
+
+## The next measurement, and why the fast one cannot settle it
+
+Deliberate **slow** alternation, one finger, ~2 taps/s, where the operator can
+state per tap that it landed. At that rate a missing contact is unambiguous.
+Fast tapping cannot settle it — not because the operator is unreliable, but
+because the log records only what arrived, and a per-tap claim is the only
+witness for what did not.
