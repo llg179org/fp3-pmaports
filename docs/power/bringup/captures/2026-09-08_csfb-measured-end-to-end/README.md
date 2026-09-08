@@ -299,3 +299,87 @@ area code, location area code, MCC and MNC identify where the phone was standing
 The kept file carries `<redacted>` in their place, and a residual scan for any
 remaining 6-digit-or-longer number comes back empty. The unredacted output was
 never written to the repository.
+
+## ★★★ Why there is no 4G call: the modem's own IMS is switched OFF
+
+The operator asked whether the current stack can do 4G voice at all. The modem
+answers, and the answer is not the one the investigation had assumed.
+
+### The modem has an IMS stack of its own
+
+It advertises four IMS-capable QMI services (`qrtr-lookup`):
+
+| service | |
+|---|---|
+| 9 | Voice service |
+| **18** | **IMS settings service** |
+| 33 | IMS application service |
+| 77 | IMS QMI Priv service |
+
+So voice over IMS does **not** require an AP-side SIP stack on this hardware.
+The modem can register and place IMS calls itself; the AP's job would be to
+enable it and dial through the Voice service.
+
+### And every IMS service in it is disabled
+
+`--ims-get-ims-services-enabled-setting`, after `--ims-bind`:
+
+```
+          Voice service enabled: no
+Video Telephony service enabled: no
+     Voice WiFi service enabled: no
+      UE to TAS service enabled: no
+            SMS service enabled: no
+           USSD service enabled: no
+```
+
+and consequently `--imsa-get-ims-registration-status`:
+
+```
+    Status: 'not-registered'
+Technology: 'wwan'
+```
+
+★ **That is the answer.** Nothing is broken and nothing is refusing us: the
+modem's Voice-over-IMS is simply **switched off**, so it never registers, so
+voice has nowhere to go but the CS domain, so every call is CSFB. The stock
+software turns these on at boot; ModemManager has no notion of them —
+`mmcli -m 0` mentions IMS nowhere.
+
+☠️ These queries return `QMI protocol error (70): 'InvalidOperation'` until the
+client is **bound** (`--ims-bind` / `--imsa-bind`). An unbound query looks
+exactly like a service that does not work, and the first attempt read that way.
+
+### ★★ What it does to the imsd plan
+
+`#177` builds an **AP-side** SIP/IPsec stack (`imsd`) to do what this modem
+already does in firmware, and that stack is the one being answered with
+`500 Server Internal Error`. The stock software — which uses the **modem's**
+IMS — registers successfully, by the operator's own account in the letter.
+
+So the highest-value lead is no longer "make our SIP registration acceptable"
+but **"turn on the IMS stack that already works"**.
+
+☠️ **Stated as a lead and not a fix, for three reasons:**
+
+1. **libqmi 1.39 has no setter.** `--ims-get-ims-services-enabled-setting`
+   exists; there is no `--ims-set-…` in this build. Writing it needs a newer
+   libqmi, a raw QMI message, or ModemManager support that does not exist.
+2. **Enabling the flag may not be sufficient.** The modem's IMS also needs its
+   configuration — P-CSCF, the IMS APN, the vendor's provisioning — normally
+   supplied by the stack that also sets the flag.
+3. **It does not answer question (b).** Whether MMTEL is provisioned for the
+   subscription is still an HSS question, and still One HU's to answer. If it is
+   not, a registered modem IMS will still not carry voice.
+
+### What is measured, in one place
+
+| | |
+|---|---|
+| network offers IMS voice | **yes** (`IMS voice support: 'yes'`) |
+| modem has an IMS stack | **yes** (services 18, 33, 77) |
+| modem's IMS voice enabled | **NO** |
+| modem's IMS registered | **no** — `not-registered` |
+| ModemManager IMS support | **none** |
+| libqmi setter for it | **none in 1.39** |
+| result | CSFB on every call, three for three |

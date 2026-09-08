@@ -1,0 +1,26 @@
+=== FULL IMS services status (cid=1) ===
+[qrtr://0] IMS services:
+	SMS service
+	Voice service
+	Video Telephony service
+	UE to TAS service
+		    Status: 'unavailable'
+	Video Share service
+[qrtr://0] Client ID not released:
+	Service: 'imsa'
+	    CID: '1'
+=== registration status ===
+[qrtr://0] IMS registration:
+	    Status: 'not-registered'
+	Technology: 'wwan'
+=== and the IMS settings service, bound ===
+[qrtr://0] IMS Settings bind successful
+[qrtr://0] Client ID not released:
+	Service: 'ims'
+[qrtr://0] IMS services:
+	          Voice service enabled: no
+	Video Telephony service enabled: no
+	     Voice WiFi service enabled: no
+	      UE to TAS service enabled: no
+	            SMS service enabled: no
+	           USSD service enabled: no
