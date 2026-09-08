@@ -572,3 +572,78 @@ re-arm window, the miss rate should fall away as the gap grows, and the number
 where it disappears is the controller's recovery time. That is a curve, not an
 anecdote, and the operator's per-tap claim only has to be "I tapped N times",
 not "that one landed".
+
+## ☠️☠️ CORRECTION — the two intervals were reported the wrong way round, and it inverts the previous section
+
+The section above states the lost `.` sat **74 ms after** each `o`, and builds a
+re-arm-window hypothesis on the lost population having the *short* gap. **Both
+halves are wrong.** Labelling the intervals by side rather than by magnitude:
+
+| | measured |
+|---|---|
+| `o` → `.` | **128.3 ms** (n=15) |
+| `.` → `o` | **74.2 ms** (n=15) |
+
+With a ~48 ms down-time that makes the release→next-contact gap **~80 ms before
+each lost `.`** and **~26 ms before each surviving `o`**. So the taps that
+vanished are the ones with the *comfortable* gap, and the ones that survived are
+those arriving 26 ms after a release.
+
+★ **The re-arm-window hypothesis is therefore refuted, not weakened** — it
+predicts exactly the opposite of what happened. It is kept above rather than
+deleted, with this correction attached.
+
+## ★★ What was never looked at, and settles the shape: the x coordinate
+
+| tap | x, of 360 |
+|---|---|
+| `.` — **the ones that vanished** | **7 … 10, mean 8** |
+| `o` — the ones that survived | 228 … 238, mean 233 |
+
+**x ≈ 8 of 360 is the extreme left edge of the window** — on this panel a couple
+of millimetres from the bezel, the band where a digitizer's sensing is weakest
+and where edge/palm-rejection firmware deliberately suppresses contacts.
+
+So the loss is **position-selective, not time-selective**: every tap at x≈233
+arrived, every tap at x≈8 did not, for 1.6 s. And `.` taps at the edge do get
+through at other moments — #3532 (x=7), #3541 (**x=0**), #3544 (x=7) all
+registered — so it is marginal detection, not a dead region.
+
+☠️ **This does not carry over to the 2026-09-07 17:16 run**, where the surviving
+`.` were at x=73–78 and the missing `o` at x≈286 — neither near an edge. The two
+events do not share this explanation, and treating them as one fault would be an
+assumption, not a finding.
+
+## Answering the operator's arithmetic
+
+**"Every intermediate 100 ms was lost?"** No — the missing tap was not at the
+midpoint. It sat 128 ms after the survivor and 74 ms before the next, in a
+203 ms cycle.
+
+**How long?** The last `.` before the outage is #3532 at 05:41:16.295; the next
+is #3541 at 05:41:17.884. **1.589 s with no `.` at all**, i.e. about **seven**
+missing at a 203 ms cadence.
+
+☠️ **That is in tension with the operator's own account** that a skip never runs
+longer than 2–3 signs. Seven consecutive is well past that. Either the outage is
+longer than it feels from the front of the phone, or the left finger paused
+during part of it. Recorded as an open discrepancy, not resolved in either
+direction.
+
+**"What sampling Hz catches 200 ms but not 100 ms?"** No single rate can produce
+this, and the reason is decisive rather than arithmetic: a periodic sampler
+misses by *time*, so it would drop `o` taps at the same rate as `.` taps — both
+are 48 ms long. It dropped **none** of the `o` and **all** of the `.`. Put as
+arithmetic: catching every 48 ms `o` needs ≥ 21 Hz, and reliably missing an
+equally-long `.` needs < 21 Hz; both cannot hold.
+
+**"Which running process could slow the kernel's sampling?"** ★ **The kernel
+does not sample the panel.** `/sys/bus/i2c/devices/2-0048/input/input17/` has no
+`poll_interval`; the path is interrupt-driven (`msmgpio 65 Level`, IRQ 138). A
+busy process can *delay* the handler, and a delayed read still yields a contact —
+late, but present. Here there is **no contact and no interrupt**, so the event is
+missing upstream of anything a process could affect. Load at the time was 0.71
+with nothing heavy running.
+
+★ One thing worth noting without claiming it matters: IRQ 138 is serviced
+**entirely on CPU0** (62 639 there, zero on the other seven).
