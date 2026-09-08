@@ -228,3 +228,74 @@ All three rang, all three were answered, audio was good in both directions on
 all three. **Nothing failed.** The question put to them is why a handset
 registered on LTE, with a live data bearer, is moved to GSM for voice — and the
 outgoing call sharpens it, because there the handset demonstrably started on LTE.
+
+## ★★★ The direct QMI read — genuinely independent, and it changes the question
+
+Asked for by the operator after the correction above. `qmicli` speaks to the
+modem over QRTR **beside** ModemManager rather than through it, so this is the
+first evidence here that does not come from MM. Raw:
+`qmi-direct-system-info.txt`.
+
+☠️ **Done in proxy mode (`-p`) on purpose.** ModemManager owns the QMI channel;
+taking it would have killed the running callwatch measurement in the middle of
+One HU's window. The first attempt used the wrong node (`qrtr://1`) and failed
+with `QMI protocol error (3): 'Internal'` — MM was checked immediately
+afterwards and was untouched. `qrtr://0` is the modem.
+
+### The gate: it agrees where the answer is already known
+
+```
+Registration state: 'registered'      Radio interfaces: [0]: 'lte'
+CS: 'attached'                        PS: 'attached'
+```
+
+`lte` and `registered`, matching ModemManager. The instrument reproduces a
+regime whose answer is on record, which is what licenses the rest.
+
+★ And it already adds something MM's summary does not show: **`CS: 'attached'`**.
+The device is attached to the circuit-switched domain *while camped on LTE* —
+that is the standing precondition for CSFB, present before any call.
+
+### ★★ And then the field that reframes the whole investigation
+
+```
+Domain:                    'cs-ps'
+Voice support:             'yes'
+IMS voice support:         'yes'
+Cell access:               'all-calls'
+Registration restriction:  'unrestricted'
+```
+
+**`IMS voice support: 'yes'`** is the network's own indication — the *IMS Voice
+over PS Session Supported* bit the network returns in the LTE attach/TAU accept.
+**The network is telling this device, on this cell, that voice over IMS is
+available to it.**
+
+The 2026-09-06 letter *asserted* this ("a hálózat kifejezetten jelzi, hogy az
+IMS-en keresztüli hanghívást támogatja"). It is now **measured, with the field
+name**, from the modem, independently of ModemManager.
+
+### What that makes the chain
+
+1. The network says IMS voice is supported — **measured 2026-09-08, above.**
+2. The device's IMS registration is refused with `500 Server Internal Error` and
+   the operator's internal diagnostic — **measured 2026-09-06.**
+3. With no IMS registration there is nowhere to route voice but the CS domain,
+   so every call falls back — **measured 2026-09-08, three times.**
+
+★ **Every link is now measured, and only one is broken.** The single blocking
+point is the `500`. That is why question (a) of the letter — what does
+`399 5144.2233.S.260.5.94.255.255.5938.0.0` mean — is the one that matters:
+everything on either side of it works.
+
+☠️ **What `IMS voice support: yes` does NOT establish.** It is a *radio/network
+capability* indication for the cell and the attach, not a statement about the
+subscription. MMTEL provisioning lives in the HSS and this bit does not report
+it. So it does not answer question (b); it sharpens it, by removing the
+possibility that the network is simply not offering VoLTE here.
+
+☠️ **Location data was stripped before this was committed.** Cell ID, tracking
+area code, location area code, MCC and MNC identify where the phone was standing.
+The kept file carries `<redacted>` in their place, and a residual scan for any
+remaining 6-digit-or-longer number comes back empty. The unredacted output was
+never written to the repository.
