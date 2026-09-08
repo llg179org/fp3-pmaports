@@ -11417,3 +11417,46 @@ fall into this fault unattended. ☠️ That is exactly what #181 needs to put b
 so #181 and a usable screen cannot both be had until this is fixed.
 
 Capture: [`captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/`](captures/2026-09-07_phoc-cannot-restore-dsi-on-resume/)
+
+### ☠️ 2026-09-08 evening — the "IMS PDN loop" cannot be read out of the ModemManager journal
+
+Retraction of a caveat written the same day. The evening handover note said leg 1
+(the modem's own IMS switched **on**) was inconclusive because task #182 had
+rewritten the ModemManager debug drop-in and the 8.4 s PDN loop might simply not
+have been logged. **Both halves of that were wrong, and the second one matters.**
+
+- The drop-in **kept** `--log-level=DEBUG`. The running process proves it:
+  `argv[]=/usr/sbin/ModemManager --test-quick-suspend-resume --log-level=DEBUG`,
+  started 2026-09-07 08:51:40, still pid 1009. Logging was never lost.
+- ★ **But MM's journal could not have shown that loop at any log level.** Its QMI
+  debug dump this boot carries `service = "nas"` (6413), `"voice"` (53),
+  `"wds"` (30), `"dsd"` (24), `"wms"` (20) — and **not one `ims` message**. MM
+  binds no IMS client, so the modem's IMS traffic is not on a channel it can see.
+
+The instrument that *did* find the loop was never the journal: it is the **MPSS XO
+duty**, three measured pairs recorded in `fp3-ims-reconcile.py`'s own header —
+**44.5 → 4.8, 45.6 → asleep, 48.0 → 4.4**. That pair is also the gate the skill
+asks for: a regime where the value is *expected to differ*, already on record.
+New tool, deployed and md5-matched against this tree:
+[`tools/ims-duty-leg.sh`](tools/ims-duty-leg.sh) — dead-man armed **before** the
+change, `fp3-ims-reconcile.timer` stopped for the window (its 5 min period is
+shorter than the window, so leaving it running measures the reconciler), IMS on,
+`modem-window.sh`, restore.
+
+☠️ **And the way the first wrong answer arrived is worth more than the answer.**
+Seven patterns (`PDN`, `pdn`, `IMS`, `ims`, `WDS`, …) were grepped against
+`journalctl -b -u ModemManager` and **every one returned 0**, which reads exactly
+like "the loop never happened". The journal holds **143 861 lines** for that unit.
+`grep` without `-a` treats the QMI hex dump as binary and exits without counting —
+the trap already written down in the skill as rule 3a's neighbour, fired anyway.
+What caught it was that `WDS` returned 0 too, which is impossible in a QMI debug
+trace. The grep was then gated on a known positive (`LTE Signal Strength` → 3841)
+before any claim was made from it.
+
+**Third measured call of the day, 19:14 (MT, rejected — not answered):**
+`AccessTechnologies` → 10 (GSM/GPRS) at 19:14:27, **2 s before** the call object
+exists (19:14:29, band `gsm/gsm-900-extended`), state 3→7 at 19:14:39 after 10 s
+of ringing, back to 16384 (LTE) at 19:14:40 — **+1 s after the end, 13 s off LTE.**
+★ This confirms the ring-and-reject design: the fallback happens at paging, so
+declining the call yields the same measurement at no call cost. Incoming tally is
+now **36 of 36 on GSM, 0 on LTE** since 2026-09-03 (`fp3-ringlog`).
