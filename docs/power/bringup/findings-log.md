@@ -22,6 +22,38 @@ instruments, [`captures/`](captures/) the raw data, and
 
 ---
 
+## 2026-09-08 — CSFB measured end to end, with timestamps, from the handset
+
+Capture: [`captures/2026-09-08_csfb-measured-end-to-end/`](captures/2026-09-08_csfb-measured-end-to-end/).
+
+An incoming call, answered, both directions audible. `fp3-callwatch.sh` on its
+first real call brackets the whole fallback:
+
+| time | event | tech |
+|---|---|---|
+| 12:34:18 | `AccessTechnologies: <uint32 10>` | **LTE → GSM+GPRS** |
+| 12:34:20 | `CallAdded`, ringing | `gsm, gprs` |
+| 12:34:29 | answered, after 9 s ringing | `gsm, gprs` |
+| 12:34:48 | ended, 19 s of talk | `gsm, gprs` |
+| 12:34:49 | `AccessTechnologies: <uint32 16384>` | **GSM+GPRS → LTE** |
+
+★ The phone left LTE **two seconds before the call object appeared** and
+returned one second after it ended — **≈31 s off LTE for a 19 s call**. That is
+CSFB, measured with times from the handset rather than inferred, and it is the
+first timestamped device-side record of what the 2026-09-06 letter to One HU
+describes.
+
+It also lands inside One HU's own radio-side trace window (09-08 → 09-10,
+queue 185), so 12:34:18 is a time their measurement can be lined up against.
+
+☠️ Two corrections made in the same hour, both mine. Reading only the `CALL`
+lines produced "I did not capture the transition", which was false — the two
+`MODEM` lines held the entire answer, and printing the full log settled it. And
+the `rsrp`/`rsrq`/`snr` stream promised to One HU was **not running** for this
+call: the instrument's gate had set `--signal-setup=0` and never put it back. A
+gate that changes device state has to restore the state the measurement needs,
+not the state it found.
+
 ## 2026-09-08 — three more outages, the merge refuted, and a held finger that survived
 
 Capture: [`captures/2026-09-07_142-armB-tapping-after-suspend/`](captures/2026-09-07_142-armB-tapping-after-suspend/).
