@@ -720,3 +720,60 @@ Slowing down destroys the signal it was meant to isolate.
    and nobody was watching that column.
 3. **Warn on drift**: a monotonic trend in either target's mean x is the early
    signature, and it is cheap to compute per window.
+
+## The instrument after 2026-09-08: the frame is drawn, and it speaks
+
+Screenshot: `armb-frame-with-margins.png` (1080x2160, taken from the running
+app with `grim`).
+
+| boundary | margin | tone |
+|---|---|---|
+| left / right / top | 25 px | 432 Hz, 90 ms |
+| **bottom** | **60 px** — raised, on the operator's instruction | 432 Hz |
+| **either side of the vertical split** | **±20 px** | 432 Hz |
+| alternation broke (BREAK) | — | 864 Hz, 150 ms |
+
+The bottom frame is not symmetric with the others on purpose: that is where the
+gesture strip and the chin are, so a downward drift runs out of sensor sooner
+than a sideways one. The divider warns because crossing it does not *lose* the
+tap — it files it on the **wrong side**, which appears in the record as a BREAK,
+i.e. as exactly the failure this instrument exists to measure.
+
+★ The bands are drawn from the same constants the detector uses, so the picture
+and the beep cannot disagree. A frame that exists only as a threshold in code
+cannot be avoided by a hand: on 05:41 the finger walked from x=29 to x=7 over
+six seconds with nothing on screen marking where the sensor ends.
+
+### Verified in pixels, not by eye
+
+Every band edge was measured from the screenshot and lands exactly on the
+constant (1080 px / 360 logical = 3.0 px per logical px):
+
+| band | measured logical x/y | predicted |
+|---|---|---|
+| left ends | **25.0** | `EDGE_MARGIN` |
+| divider spans | **160.0 … 200.0** | `w/2 ± DIVIDER_MARGIN` |
+| right starts | **335.0** | `w − EDGE_MARGIN` |
+| bottom starts | **660.0** | `h − EDGE_MARGIN_BOTTOM` |
+
+☠️ The first scan found only three of the four, and the missing one was a
+**defect of the checker, not of the drawing**: the right band composites to
+`rgb(95,85,59)` over the blue half, and the warm-tint test asked for
+`r > g + 12`, i.e. 95 > 97 — short by two. Measured directly afterwards and the
+step is at 335 exactly. A checker that finds three of four looks like a partial
+failure of the thing under test, and here it was not.
+
+### Tones, and why they moved
+
+Started at 216 Hz (edge) and 432 Hz (miss). The operator reported the 216 as
+much quieter — the micro-speaker's rolloff below roughly 400–800 Hz, which the
+source had flagged as a risk and which is now measured by ear. Both doubled at
+their request, octave preserved. **A tone the transducer cannot reproduce is a
+detector that silently never reports**, so the frequency belongs to the speaker,
+not to the theory, and it has to be confirmed audibly before the channel is
+trusted at all.
+
+☠️ The stale `.wav` files were deleted before the restart that tested the new
+ones. The app regenerates them under the same names, so without that step the
+playback test would have played the **old** 216 Hz tone and been read as the
+new one.

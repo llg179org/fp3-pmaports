@@ -168,7 +168,8 @@ def _irq_count():
 # mattered. Nobody was watching that column, and a finger cannot feel where the
 # digitizer ends. So the instrument now says it out loud.
 #
-#   EDGE  432 Hz            a tap landed within EDGE_MARGIN px of any edge
+#   EDGE  432 Hz            a tap landed inside a margin: any of the four
+#                           outer edges, or either side of the vertical split
 #   MISS  864 Hz (= 432*2)  the alternation broke, i.e. a tap may have been lost
 #
 # ☠️ BOTH WERE ONE OCTAVE LOWER AND THE LOW ONE DID NOT ARRIVE. The first
@@ -188,7 +189,18 @@ def _irq_count():
 # beeps off (BEEP_ENABLED = False) before using it for one.
 TONE_EDGE_HZ, TONE_EDGE_MS = 432.0, 90
 TONE_MISS_HZ, TONE_MISS_MS = 864.0, 150
-EDGE_MARGIN = 25          # logical px; the 05:41 drift was flagged by x < 29
+# ☠️ THE BOTTOM FRAME SITS HIGHER THAN THE OTHER THREE, on the operator's
+# instruction. It is not symmetry that matters here but where the hand actually
+# leaves: the bottom of this panel carries the gesture strip and the chin, so a
+# drift downwards runs out of sensor sooner than a drift sideways does. A single
+# margin would either be too tight at the bottom or needlessly loud on the sides.
+EDGE_MARGIN = 25          # left / right / top; the 05:41 drift was flagged by x < 29
+EDGE_MARGIN_BOTTOM = 60   # bottom only - the frame raised, as asked
+# ☠️ The vertical split is an edge too, and a more treacherous one, because
+# crossing it does not lose the tap - it files it on the WRONG SIDE. That reads
+# in the record as a BREAK, i.e. as a lost tap, which is the one failure this
+# instrument exists to measure. So both sides of the divider warn.
+DIVIDER_MARGIN = 20       # either side of the vertical line
 EDGE_REPEAT_S = 0.30      # rate limit, so edge tapping does not become a buzz
 MISS_REPEAT_S = 0.15
 BEEP_ENABLED = True
@@ -273,9 +285,15 @@ class Beeper:
         self._t = threading.Thread(target=self._run, daemon=True)
         self._t.start()
         self._q.put_nowait("prime")
-        self._log("  beeper: %s, edge %.0f Hz/%d ms, miss %.0f Hz/%d ms, margin %d px"
+        # ☠️ Report EVERY margin, not just the first. A line reading
+        # "margin 25 px" next to a bottom margin of 60 and a divider band of
+        # 20 is a false record of the configuration, and the log is what a
+        # reader trusts months later when the constants have moved on.
+        self._log("  beeper: %s, edge %.0f Hz/%d ms, miss %.0f Hz/%d ms; "
+                  "margins: sides/top %d px, bottom %d px, divider +-%d px"
                   % (self._player, TONE_EDGE_HZ, TONE_EDGE_MS,
-                     TONE_MISS_HZ, TONE_MISS_MS, EDGE_MARGIN))
+                     TONE_MISS_HZ, TONE_MISS_MS,
+                     EDGE_MARGIN, EDGE_MARGIN_BOTTOM, DIVIDER_MARGIN))
 
     def _run(self):
         while True:
@@ -685,18 +703,33 @@ class TapTest(Gtk.ApplicationWindow):
         # record area and the MARK bar reach the bezel too, and the 05:41 drift
         # would not have been caught by a check that only looked at targets.
         # The distance is to the nearest of ALL FOUR edges, as asked.
-        near = min(x, w - x, y, h - y)
-        if near < EDGE_MARGIN:
+        cand = []
+        if x < EDGE_MARGIN:
+            cand.append(("left", x))
+        if (w - x) < EDGE_MARGIN:
+            cand.append(("right", w - x))
+        if y < EDGE_MARGIN:
+            cand.append(("top", y))
+        if (h - y) < EDGE_MARGIN_BOTTOM:
+            cand.append(("bottom", h - y))
+        dv = abs(x - w / 2.0)
+        if dv < DIVIDER_MARGIN:
+            cand.append(("divider", dv))
+        if cand:
+            # Report the WORST of them, not the first: a corner is inside two
+            # margins at once and naming only one would understate it.
+            where, near = min(cand, key=lambda c: c[1])
             self.n_edge += 1
             fired = self.beeper.fire("edge", EDGE_REPEAT_S)
             # The beep is feedback; THIS LINE is the evidence. A tone that was
             # rate-limited, dropped, or simply inaudible on this speaker still
             # leaves the detection in the record, so "I heard nothing" and "it
-            # did not fire" stay distinguishable.
-            self._log("%s  EDGE #%d  %.0f px from the nearest edge  "
-                      "at %.0f,%.0f of %dx%d  beep=%s"
-                      % (self._stamp(), self.n_edge, near, x, y, w, h,
-                         "yes" if fired else "rate-limited"))
+            # did not fire" stay distinguishable. The side is logged because
+            # the warning is directionless by ear - one tone for five
+            # boundaries - and only the log says which one was approached.
+            self._log("%s  EDGE #%d  %s  %.0f px  at %.0f,%.0f of %dx%d  beep=%s"
+                      % (self._stamp(), self.n_edge, where.upper(), near,
+                         x, y, w, h, "yes" if fired else "rate-limited"))
         if y < h * MARK_TOP:
             # Tapping the record clears it, so a long run can be cut into
             # readable stretches without restarting the app. ☠️ The COUNTERS
@@ -939,6 +972,23 @@ class TapTest(Gtk.ApplicationWindow):
         cr.fill()
         cr.set_source_rgb(1, 1, 1)            # the single vertical divider
         cr.rectangle(w / 2 - 1, half_y, 2, h - half_y)
+        cr.fill()
+
+        # ☠️ THE WARNING BANDS. A frame that only exists as a threshold in the
+        # code cannot be avoided by a hand: on 2026-09-08 the operator's finger
+        # walked from x=29 to x=7 over six seconds and off the digitizer, with
+        # nothing on screen marking where the sensor ends. These are the same
+        # numbers the detector uses, drawn - so the beep and the picture can
+        # never disagree, which they would the moment either had its own copy.
+        cr.set_source_rgba(0.95, 0.65, 0.15, 0.30)
+        th = h - half_y
+        cr.rectangle(0, half_y, EDGE_MARGIN, th)                    # left
+        cr.rectangle(w - EDGE_MARGIN, half_y, EDGE_MARGIN, th)      # right
+        cr.rectangle(0, h - EDGE_MARGIN_BOTTOM, w, EDGE_MARGIN_BOTTOM)   # bottom
+        cr.fill()
+        # Both sides of the split, drawn as one band centred on it.
+        cr.set_source_rgba(0.95, 0.45, 0.45, 0.30)
+        cr.rectangle(w / 2 - DIVIDER_MARGIN, half_y, 2 * DIVIDER_MARGIN, th)
         cr.fill()
 
         # Where the finger actually landed, for the whole flash. A tap that
