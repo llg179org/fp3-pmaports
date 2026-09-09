@@ -84,7 +84,8 @@ the modem sends a SIP REGISTER of its own is therefore **still unmeasured**.
 
 ## Configuration C: imsd reaches the network and is refused 500
 
-Run at **2026-09-08 20:13 CEST**, inside One HU's trace window, by
+Run at **2026-09-08 20:12:57 CEST** and again at **2026-09-09 06:29:54 CEST**,
+both inside One HU's trace window, by
 [`tools/imsd-leg.sh`](../../tools/imsd-leg.sh) — one attempt, no loop:
 
 ```
@@ -113,18 +114,28 @@ Warning: 399 5144.2233.S.260.5.3.255.255.5938.0.0.ims.mnc070.mcc216.3gppnetwork.
 Content-Length: 0
 ```
 
-★★ **Compare it with the 2026-09-06 occurrence quoted in the letter to One HU:**
+★★ **Three occurrences now, and the third settles what the second only hinted at.**
 
-| | field |
+| when | the diagnostic |
 |---|---|
-| 2026-09-06 22:03:58 | `5144.2233.S.260.**5.94**.255.255.5938.0.0` |
-| 2026-09-08 20:12 | `5144.2233.S.260.**5.3**.255.255.5938.0.0` |
+| 2026-09-06 22:03:58 | `5144.2233.S.260.`**`5.94`**`.255.255.5938.0.0` |
+| 2026-09-08 20:12:58 | `5144.2233.S.260.`**`5.3`**`.255.255.5938.0.0` |
+| 2026-09-09 06:29:54 | `5144.2233.S.260.`**`5.75`**`.255.255.5938.0.0` |
 
-**One sub-field changes between the two; everything else is identical.** Two
-occurrences two days apart, both `500 Server Internal Error`, both on `CSeq: 2
-REGISTER`. That is a sharper question for the carrier than a single code: it says
-which part of their diagnostic varies per attempt. The full host suffix
-`.ims.mnc070.mcc216.3gppnetwork.org` was also truncated in the earlier letter.
+**94 → 3 → 75.** One sub-field takes a different value on every attempt and every
+other character is identical, all three `500 Server Internal Error` on `CSeq: 2
+REGISTER`, all three from the same cell `2167014B4016712A`.
+
+★ **So that field is a per-attempt identifier, not a state code — and knowing this
+prevents a wasted question.** With two samples the natural move is to ask the
+carrier what the *differing* field means; with three it is clear that the varying
+part is noise and the question belongs to the **invariant**:
+`5144.2233.S.260. … .255.255.5938.0.0`. The full host suffix
+`.ims.mnc070.mcc216.3gppnetwork.org` was truncated in the 2026-09-06 letter and is
+recorded here in full.
+
+The bearer's IPv4 address differs per bring-up (`10.18.255.185` → `10.26.191.57`),
+which is expected and is why `LOCAL` is rewritten on every run.
 
 Header names in our protected REGISTER (values withheld): `Allow, Authorization,
 CSeq, Call-ID, Contact, Content-Length, Expires, From, Max-Forwards,
