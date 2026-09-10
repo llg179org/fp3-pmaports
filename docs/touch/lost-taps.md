@@ -1,5 +1,9 @@
 # The other touch fault: taps that vanish without a trace
 
+**Status 2026-09-10.** A fix is on the device and **not yet measured against
+the fault** — see [the trail at the end](#2026-09-10-the-fix-under-test-idle-mode-off-charger-mode-on).
+Earlier text below is kept as written on 2026-09-06.
+
 **Status 2026-09-06.** A *second*, distinct fault, separated from the i2c stall
 of [`142-i2c-stall.md`](142-i2c-stall.md) on this date. Taps go missing while
 the panel is otherwise healthy and the kernel logs **nothing at all**: no i2c
@@ -209,3 +213,62 @@ One session with the new build answers it. Nothing else here needs a kernel.
 counter), `fp3-touch-gaps.py` (kernel side), `fp3-screen-mark`. That page also
 lists the six ways these instruments produced confident, wrong output before
 they were trusted; that list is the transferable part of this investigation.
+
+
+## 2026-09-10 — the fix under test: idle mode off, charger mode on
+
+The four lines `/fp3-kernel-test` rule 6 asks for, written while the capture is
+open. The fourth is the one that is still empty.
+
+**Symptom.** Taps go missing in runs; the operator reports them as following a
+pause of a few seconds (*"két 3 s-os alvás után visszatérve jön elő"*, and on
+2026-09-10, that it is the touch controller that sleeps, not the display). At the
+kernel the shape is one finger's contacts arriving while the other finger's are
+absent from the event stream, no interrupt raised for them — the controller
+reported nothing (2026-09-10 14:09:38–39, four left contacts x 333/344/323/321
+device units, no right contact for 698 ms, `himax_irq_handler` entries only for
+the left ones). The driver was exonerated three layers deep on 2026-09-10 and the
+fault placed at or below the controller.
+
+**How to provoke it.** Alternate-tap in the `.O` app, pause 3 s or more without
+touching, resume. Hit rate: **not established** — the 2026-09-10 14:09 session
+contained no demonstrable loss, and the instrument cannot tell "finger not down"
+from "controller silent" (see `findings-log.md`, 2026-09-10).
+
+**The change** — `wip/7.1.3/touch` c03ea86b360b, 42b5f155c825, 519519bf9517; twins on
+`integration/7.1.3` and `debug-int/7.1.3`; module hot-swapped 19:10:
+
+1. `let the supplies settle before the reset` — 20 ms after enabling the rails;
+   measured: with the panel off, probe's ID read NACKed 3/3 without it.
+2. `keep the controller out of idle mode` — clears bit 3 of the firmware word at
+   `0x10007088` (the vendor's `himax_idle_mode()` writes `0x17`/`0x1f`). Three
+   things it had to learn, each measured before it was written in:
+   - the AHB *command* registers are one byte wide and adjacent; the regmap's
+     32-bit `regmap_write(0x13, 0x31)` puts three zero bytes into `0x14–0x16`,
+     after which a firmware-word read returns its first byte repeated
+     (`5a 5a 5a 5a` for `5a a5 5a a5`). The firmware words are reached with
+     one-byte SMBus command writes, the vendor's form;
+   - the firmware **reloads its configuration from flash after a reset** and
+     overwrites the idle word with the stored default: a value written 1 ms after
+     the reset was still there 10 ms after probe returned and gone by 50 ms, so
+     nothing is written for 100 ms after a reset (`HIMAX_FW_RELOAD_MS`) and the
+     first interrupt re-reads the words;
+   - the bit is a **configuration switch, not a state flag**: cleared from
+     userspace it stayed cleared for 30 touch-free seconds (0 interrupts).
+3. `tell the controller when a charger is present` — writes `a55aa55a` /
+   `77887788` to `0x10007f38` from a power-supply notifier via the interrupt
+   thread; the vendor does the same from its touch path. Proven by setting the
+   word to `77887788` from userspace and rebinding: the driver put `a55aa55a` back.
+
+**The effect.** On the *registers*, measured: idle byte0 `0x3f` → **`0x37`** at
++1 s and +5 s after probe, charger word **`a55aa55a`**, no `Failed to …` line.
+On the *fault*: **not measured yet.** The operator's next tapping session with
+the same pauses is the measurement, read with the same three instruments
+(`taptest.log` BREAK lines with `explained=NO`, `kernel-contacts.log`, the
+`hx_irq` kprobe). "No change" is a result too, and will be written here.
+
+☠️ Two things learned the expensive way while getting there, kept in
+`docs/power/bringup/findings-log.md` (2026-09-10): unbinding this driver with the
+display off kills the panel (the driver held the last reference to `iovcc`),
+and reloading the module with kprobes armed on its functions fires
+`WARNING kernel/trace/ftrace.c ftrace_bug` — `tools/hx-swap.sh` guards both.

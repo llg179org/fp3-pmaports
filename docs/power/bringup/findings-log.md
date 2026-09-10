@@ -11568,3 +11568,43 @@ two-finger overlap and a `slot=1` contact of 167 ms. Whether the right finger wa
 down cannot be separated from "the controller reported nothing" by any AP-side
 instrument — that is the wall, and the one configured difference above is the
 first thing to test against it.
+
+### 2026-09-10 evening — the fix built, and four things the controller taught while it was being written
+
+Three commits on `wip/7.1.3/touch` (settle the supplies; idle mode off; charger
+mode on), twins on `integration/7.1.3` and `debug-int/7.1.3`, module hot-swapped
+at 19:10 — the trail is on [`docs/touch/lost-taps.md`](../../touch/lost-taps.md).
+What was measured on the way, each of which changed the code:
+
+1. **The regmap's 32-bit command writes clobber the neighbouring command
+   registers.** `regmap_write(0x13, 0x31)` sends `13 31 00 00 00`; the AHB command
+   registers are one byte wide and adjacent. The event-stack read tolerates it. A
+   firmware-word read issued after it comes back as its first byte repeated
+   (`hx-seqtest.py`: T2 `5a 5a 5a 5a` where T0/T1 read `5a a5 5a a5`). The
+   firmware words are therefore accessed with one-byte SMBus command writes.
+2. **The firmware reloads its configuration after a reset and overwrites the idle
+   word** between +10 and +50 ms (`hx-reloadtest.py`: `17` at +10 ms, `3f` from
+   +50 ms on). The charger word survives the same reset. The vendor's "reload OK"
+   indicator at `0x100072c0` already reads done at +10 ms, so it is not a usable
+   gate; a 100 ms wait is, with the first interrupt re-reading the words.
+3. **Bit 3 of `0x10007088` is a switch, not a state flag**: cleared, it stayed
+   cleared for 30 touch-free seconds with zero interrupts (`hx-idlelong.py`).
+4. **The driver's first two attempts wrote nothing and reported success**: the
+   read-back agreed with the write because both were wrong the same way (1), and
+   later because the reload undid it after the read-back (2). A read-back proves
+   the write took *at that instant*; it does not prove it stays.
+
+☠️ **Two process faults of my own, both of the "a filter ate the error" class the
+skill names.** A `git stash pop` conflict and a cherry-pick conflict were each
+hidden by a `grep` on the command's output; the first cost a build of the wrong
+code, the second produced `integration`/`debug-int` with two commits instead of
+three while a "file identical to wip" check passed — because both sides were
+identically incomplete. The checks now count commits. And a `git stash drop`
+meant for my own stash dropped the operator's (`LPASSDBG throwaway prints`
+on `debug-int/7.1.3`): stashes are repo-wide, not per worktree. Recovery via
+`git fsck --unreachable` is running; the result goes here.
+
+☠️ **Reloading the module with kprobes armed on its functions fires
+`WARNING kernel/trace/ftrace.c:2254 ftrace_bug`** (`insmod`, 18:48). Tracing
+survived (`tracing_on 1`, `kprobes/enable 1`), but `hx-swap.sh` now disables the
+kprobe events across `rmmod`/`insmod`; measured clean twice after.
