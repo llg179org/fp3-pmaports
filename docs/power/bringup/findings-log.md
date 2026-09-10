@@ -11601,8 +11601,13 @@ code, the second produced `integration`/`debug-int` with two commits instead of
 three while a "file identical to wip" check passed — because both sides were
 identically incomplete. The checks now count commits. And a `git stash drop`
 meant for my own stash dropped the operator's (`LPASSDBG throwaway prints`
-on `debug-int/7.1.3`): stashes are repo-wide, not per worktree. Recovery via
-`git fsck --unreachable` is running; the result goes here.
+on `debug-int/7.1.3`): stashes are repo-wide, not per worktree. **Recovered**:
+`git fsck --unreachable --no-reflogs --connectivity-only` (the full fsck was
+killed twice for memory) listed 59 391 unreachable commits, one of them
+`74d762e668e7` (2026-08-21, 17 lines in `q6adm.c`/`q6afe.c`/`q6asm.c`); it is
+back as `stash@{0}` and pinned by the tag `archive/stash-lpassdbg-throwaway`.
+☠️ Between the drop and the recovery no `git gc` may run: the object was six
+weeks old and inside `gc.pruneExpire`.
 
 ☠️ **Reloading the module with kprobes armed on its functions fires
 `WARNING kernel/trace/ftrace.c:2254 ftrace_bug`** (`insmod`, 18:48). Tracing
