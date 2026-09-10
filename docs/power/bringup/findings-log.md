@@ -11460,3 +11460,58 @@ of ringing, back to 16384 (LTE) at 19:14:40 — **+1 s after the end, 13 s off L
 ★ This confirms the ring-and-reject design: the fallback happens at paging, so
 declining the call yields the same measurement at no call cost. Incoming tally is
 now **36 of 36 on GSM, 0 on LTE** since 2026-09-03 (`fp3-ringlog`).
+
+### 2026-09-10 — a tap session with no lost tap in it, and two instruments that cannot be trusted
+
+431 contacts, median cadence 100 ms, median contact duration 65 ms. Three operator
+MARKs in the log. **Nothing was lost.** Every tap the app counted has a kernel
+contact behind it, every contact sits inside a burst of `himax_irq_handler` entries
+from the armed kprobe, and every interval with no interrupts also has no contact
+and no tap. Three layers, no disagreement.
+
+☠️ **The MARK press is itself a touch, and it is not the event being reported.**
+All three marks are the touch that presses the button — `at 173,396` for #3,
+`at 298,448` for #1 and #2, all with y beyond the halves boundary. So the marked
+event is whatever preceded the press, and a pause before it is *expected*: the
+operator stops tapping in order to press. #3's preceding gap (1123 ms) was traced
+three layers deep before that occurred to me. It is one of **15 gaps over 400 ms**
+in the same session, up to 7048 ms — entirely ordinary. A first reading of it as
+"the controller raised no interrupt for 1.1 s while the operator was tapping" would
+have been true in every word and wrong as a whole.
+
+**Two instruments that must not be used as they stand:**
+
+☠️ **The `WINDOW` line's `irq` column does not measure what its name says.**
+`14:09:25.949 WINDOW irq 1 contact 6` — six contacts cannot come from one
+interrupt. Elsewhere the same session shows `irq 91 contact 6` and `irq 9
+contact 7`. Whatever the column samples, it is not the interrupts belonging to
+those contacts. It was about to be used to decide whether a touch had reached the
+controller.
+
+☠️ **ftrace timestamps cannot be aligned to the wall clock through `/proc/uptime`.**
+The ftrace clock is `local` (monotonic, suspend excluded); `/proc/uptime` includes
+suspend. Measured on this device, 2026-09-10: `/proc/uptime` put the offset at
+`1788763880.48`, and a direct `trace_marker` write with the wall clock in the same
+process gave `1788763882.2705` — **1.79 s apart**, on a cadence whose taps are
+180 ms. The method is one line and gives the offset by measurement:
+
+```sh
+sudo python3 -c "import time; t=time.time(); \
+  open('/sys/kernel/debug/tracing/trace_marker','w').write('CLOCKSYNC %.6f' % t)"
+```
+
+☠️ And `date +%s.%N` on this BusyBox prints `%N` empty, so the marker must be
+written from something that has sub-second time. The first attempt produced
+`1789051926.` and an offset good to ±1 s — useless at this cadence, and it looked
+like a successful measurement.
+
+★ The offset was confirmed independently before anything was built on it: with it
+applied, the interrupt gaps and the contact gaps fall on the same two intervals
+(14:09:40.05–40.69 and 14:09:41.84–42.97). Two logs, one answer.
+
+**What this leaves open.** The instrument still cannot separate "the finger was not
+down" from "the controller reported nothing", because both are silence. Marking
+during the run cannot fix it either, since pressing MARK requires stopping. The
+next design has to let the operator mark *without* interrupting the cadence — a
+hardware key, a second device, or marking after the fact against a replayed log.
+Queue **184** (himax idle mode) is untouched by today's session: it was not reached.
