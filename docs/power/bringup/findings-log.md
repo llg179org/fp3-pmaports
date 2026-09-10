@@ -11515,3 +11515,56 @@ during the run cannot fix it either, since pressing MARK requires stopping. The
 next design has to let the operator mark *without* interrupting the cadence — a
 hardware key, a second device, or marking after the fact against a replayed log.
 Queue **184** (himax idle mode) is untouched by today's session: it was not reached.
+
+### ☠️ 2026-09-10 — the touch controller read live, and a rebind that killed the panel
+
+**What the vendor writes into the controller that mainline never does.** The
+mainline `himax_hx83112b` writes **no** configuration at all: reset, product ID,
+input device, IRQ. The vendor driver (`hxchipset83112b`, the UT oracle's 4.9 tree)
+in *normal* operation — self-test excluded — writes exactly one FW-config word:
+**`0x10007F38`, the charger/USB noise mode**, `A55AA55A` when
+`/sys/class/power_supply/battery/status` reads Charging/Full and `77887788`
+otherwise (`himax_usb_detect_set`, driven from the IRQ work function on every
+touch and re-sent after each reset). `HX_SMART_WAKEUP`/`HX_HIGH_SENSE` are not
+built. Idle mode (`0x10007088`, queue 184) is only toggled inside the self-test.
+
+**The controller's registers, read live over `/dev/i2c-2`** with the vendor's
+own sequence (knock 0x08, burst 0x13=0x31/0x0D=0x10, addr→0x00, 0x0C=0, read 0x08),
+gated on the IC ID (`0x900000d0` → `83112b` ✓), phone on a charger (`Full`, `online 1`):
+
+| register | bytes | reading |
+|---|---|---|
+| `0x10007F38` charger mode | `5c a3 a6 a8` | **neither magic** — FW default, charger mode not engaged |
+| `0x10007000` CID | `a5 5a 08 04` | CID **0804**, = the vendor image `FP_DJN_Arima_CID0804_D02_C14` |
+| `0x10007084` cfg | touch `0x15`, display `0x02` | D02 matches; touch cfg **0x15** vs the image's C14 |
+| `0x10007004` | fw_ver `0x0209`, panel `06` | |
+| `0x10007088` idle | byte0 `0x3F` | not the vendor's `0x17`/`0x1F`; bit pattern `0x1F` present |
+| `0x900000E4` | `04` | FW state; vendor `sense_on` waits for `0100` |
+
+Tools: [`tools/hx-regs.py`](tools/hx-regs.py) (read) and
+[`tools/hx-charger-mode.py`](tools/hx-charger-mode.py) (`read|on|off`, reads back).
+
+☠️ **The controller answers userspace only while the display is on.** With the
+panel off (`DSI-1 dpms Off`) every transaction NACKs — 200 of 200 over 2 s, the
+driver's exact byte sequence and a bare address probe alike. The first reading of
+that was "the controller sleeps its I2C and wakes only for its own IRQ", which is
+**not established**: every attempt ran with the display off, and there is no
+measurement that the driver's IRQ path works in that state either. Retracted.
+
+☠️ **Unbinding the driver with the display off kills the touch panel.** The touch
+driver's regulator reference was the *last* holder of `l6` (iovcc): `unbind` dropped
+it, the rail fell, and `bind` failed `ENXIO` three times — probe enables the
+supplies, resets **0 ms** later and reads the ID 1 ms after that, and the
+controller is not up yet; `devm` then releases the rail again. Recovery was
+waking the display (`org.gnome.ScreenSaver.SetActive false`), which had the panel
+hold the rail; bind then succeeded first try. The driver's own comment in
+`himax_probe()` describes this rail dependency; it was read and the unbind done
+anyway. ~4 minutes with a dead touchscreen on the operator's phone.
+
+**Same-day touch session (14:09):** no lost tap demonstrable — taps, kernel
+contacts and `himax_irq_handler` entries agree everywhere; the four-left-tap run
+is real at the kernel (x 333/344/323/321 → 111/115/108/107 px), preceded by a
+two-finger overlap and a `slot=1` contact of 167 ms. Whether the right finger was
+down cannot be separated from "the controller reported nothing" by any AP-side
+instrument — that is the wall, and the one configured difference above is the
+first thing to test against it.
