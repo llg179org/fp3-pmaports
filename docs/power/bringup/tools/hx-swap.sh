@@ -32,4 +32,6 @@ sleep 0.3
 sleep 0.5
 say "driver: $(readlink /sys/bus/i2c/devices/2-0048/driver 2>/dev/null | sed 's#.*/##')  node: $(ls /sys/bus/i2c/devices/2-0048/input/input*/ 2>/dev/null | grep -o 'event[0-9]*')"
 say "kernel log:"; journalctl -k --since "-30s" --no-pager -o cat 2>/dev/null | grep -iE "himax|hx83112" | tail -5
-say "kprobes still armed: $(grep -c . /sys/kernel/debug/tracing/kprobe_events) events, enabled: $(cat /sys/kernel/debug/tracing/events/kprobes/enable 2>/dev/null)"
+# ☠️ Kprobes on the old module's addresses report "enabled" and count nothing
+# after a reload - re-create them against the live module.
+[ -x /usr/local/bin/hx-kprobes.sh ] && /usr/local/bin/hx-kprobes.sh | head -1

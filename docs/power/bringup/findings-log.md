@@ -11613,3 +11613,44 @@ weeks old and inside `gc.pruneExpire`.
 `WARNING kernel/trace/ftrace.c:2254 ftrace_bug`** (`insmod`, 18:48). Tracing
 survived (`tracing_on 1`, `kprobes/enable 1`), but `hx-swap.sh` now disables the
 kprobe events across `rmmod`/`insmod`; measured clean twice after.
+
+### ☠️ 2026-09-11 00:10 — the display reset undoes the fix: the panel driver reboots the touch half
+
+Four hours after the idle bit was verified cleared (`0x37` at +1 s and +5 s), it
+read `0x3f` again with no driver-issued reset in the log. Reproduced in one
+cycle: set `0x17`, `org.gnome.ScreenSaver.SetActive true` (dpms Off), `false`
+(dpms On) → **`0x3f`**. `panel-himax-hx83112b`'s `hx83112b_reset()` toggles the
+panel's reset line on every prepare; it is the same TDDI die, so the touch
+firmware reboots, reloads its flash defaults, and idle mode is back. The charger
+word survives (it is not in the reload set). The driver sees nothing — no
+interrupt is raised across the panel reset (the two `himax` lines in the journal
+during the cycle were my own kprobe-attach failures, see below).
+
+**Consequence for tonight's measurement:** every screen blank re-arms idle mode,
+so a tapping session after any blank measured the *un*fixed configuration.
+Interim instrument, labelled as such: `tools/hx-idle-keeper.sh` (transient unit
+`hx-idle-keeper`) re-applies idle-off + charger-mode from userspace 300 ms after
+each dpms Off→On edge and logs every action to `/var/log/fp3/hx-idle-keeper.log`.
+It writes the vendor's whole byte `0x17`, the driver writes `0x37` (bit 3 only);
+both were measured to stick.
+
+**The fix has an upstream shape**: `drm_panel_follower` (`include/drm/drm_panel.h`,
+stubs without `CONFIG_DRM_PANEL`; precedent `novatek-nvt-ts.c`, Kconfig
+`depends on I2C && (DRM || !DRM)`), with the touchscreen node carrying
+`panel = <&panel>` — a property the common `touchscreen.yaml` already defines for
+exactly this case ("power sequenced together with the panel … may share power
+and/or reset signals"). Driver commit and DTS commit stay separate; the DTS half
+needs a reboot to take.
+
+☠️ **Kprobes on a reloaded module count nothing while reporting `enabled`.**
+`hx_irq` sat at 113078 while `/proc/interrupts` advanced to 376106; the events
+still named the old module's addresses. `tools/hx-kprobes.sh` re-creates them
+(from a file — `$retval` in an ssh argument string gets eaten). In the rebuilt
+module `himax_read_events` is inlined and cannot be probed; `hx_irq`/`hx_irq_r`
+are what remain. The earlier "kprobes still armed: 4 events" line in `hx-swap.sh`
+was true and useless; it now runs `hx-kprobes.sh` instead.
+
+**The app "not reacting"** (00:07): the kernel contact `#120` and the app's tap
+`#14654` were both logged for that touch; the app's window drew nothing
+(`shown 0`) — it was not the surface in front after the display was woken from
+the host. Not a touch fault.
