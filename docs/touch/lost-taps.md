@@ -263,19 +263,38 @@ from "controller silent" (see `findings-log.md`, 2026-09-10).
 **The effect.** On the *registers*, measured: idle byte0 `0x3f` → **`0x37`** at
 +1 s and +5 s after probe, charger word **`a55aa55a`**, no `Failed to …` line.
 
-On the *fault*, first session 2026-09-11 00:27–00:30 with idle mode **off**
-(`0x17`, held by the interim keeper — the display reset had re-armed it, see
-below) and charger mode **on**: **no change.** 470 taps, 7 unexplained breaks
-(1.5 %; the 2026-09-08 sessions with idle on ran at 193 of ~14 000, 1.4 %). The
-00:28:56 break has the same signature as every earlier one: the surviving
-finger's contacts stretch to 132 and 159 ms against a ~45 ms median, the other
-finger's vanish, and `hx_irq` entries drop to 2/1/4 per 100 ms for 300 ms
-against 6–10 around it — with bit 3 of `0x10007088` clear the whole time.
-☠️ So the idle-mode switch is **not the whole mechanism** (queue 184's own
-DANGER note said as much). The controller has another reduced-rate state that
-fast two-finger alternation reaches. Next: sweep the two knobs from userspace
-(charger on/off × idle on/off, ~2 min each, same three instruments) before any
-further kernel work.
+On the *fault*: **no effect — measured as a 2×2 within one session,
+2026-09-11 00:27–00:53, same operator, same rhythm, the two firmware words
+toggled from userspace between legs** (`tools/hx-legs.py`, anchored on the
+day's restart):
+
+| idle mode | charger mode | taps | unexplained breaks | contacts ≥100 ms |
+|---|---|---|---|---|
+| off | on  | 943  | 11 (1.17 %) | 14 (1.5 %) |
+| off | off | 800  | 24 (3.00 %) | 14 (1.7 %) |
+| on  | off | 1001 |  6 (0.60 %) |  8 (0.8 %) |
+| **on** | **on** (shipped) | **1053** | **7 (0.66 %)** | 8 (0.8 %) |
+
+Neither switch lowers the rate; the idle-off legs were the worse ones, and they
+were also the first twelve minutes of the session, so rhythm is confounded with
+the setting. A short leg (123 taps) in the shipped state read 8.9 % and its
+repeat over 1053 taps read 0.66 % — sample size, not signal. The kernel-level
+signature is flat across all four legs: the surviving finger's contact stretches
+to 130–200 ms while the other finger's is absent and `hx_irq` entries dip to
+1–4 per 100 ms for ~300 ms (00:28:56, idle bit clear the whole time).
+
+☠️ **So the idle-mode switch and the charger-mode word are not the mechanism**,
+and queue 184 is closed as refuted. Commits 2 and 3 above are correct as code
+and carry no measured benefit; whether they stay on `wip/7.1.3/touch` is a
+decision, recorded on the queue. Commit 1 (supply settle) fixes a measured
+probe failure and stays.
+
+The fault is still at or below the controller — three layers agree, and the
+knobs the vendor driver touches do not move it. The next discriminator is the
+oracle: the same alternating tap run on Ubuntu Touch with an evdev logger. If
+the loss is there too, it is firmware or hardware and no kernel change on our
+side will reach it; if it is not, something the vendor stack does *other* than
+these two words is missing here.
 
 ☠️ Two things learned the expensive way while getting there, kept in
 `docs/power/bringup/findings-log.md` (2026-09-10): unbinding this driver with the

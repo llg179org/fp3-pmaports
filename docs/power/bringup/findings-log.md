@@ -11654,3 +11654,14 @@ was true and useless; it now runs `hx-kprobes.sh` instead.
 `#14654` were both logged for that touch; the app's window drew nothing
 (`shown 0`) — it was not the surface in front after the display was woken from
 the host. Not a touch fault.
+
+### 2026-09-11 00:53 — the 2×2 on the two firmware words: neither is the mechanism
+
+Within one session, toggled from userspace between legs, same hand: idle
+off/charger on 1.17 % unexplained breaks (943 taps), off/off 3.00 % (800),
+on/off 0.60 % (1001), on/on — the shipped state — 0.66 % (1053). Contacts
+≥100 ms 0.8–1.7 % everywhere. A 123-tap leg read 8.9 % and its 1053-tap repeat
+0.66 %: sample size. Queue 184 closed as refuted; the trail is on
+`docs/touch/lost-taps.md`. ☠️ The first "no change" written that night compared
+against a different day's rhythm and was withdrawn for this; a within-session
+A/B is the only comparison that holds for a rate this operator-dependent.
