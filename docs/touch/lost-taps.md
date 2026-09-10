@@ -284,14 +284,26 @@ to 130–200 ms while the other finger's is absent and `hx_irq` entries dip to
 1–4 per 100 ms for ~300 ms (00:28:56, idle bit clear the whole time).
 
 ☠️ **So the idle-mode switch and the charger-mode word are not the mechanism**,
-and queue 184 is closed as refuted. Commits 2 and 3 above are correct as code
-and carry no measured benefit; whether they stay on `wip/7.1.3/touch` is a
-decision, recorded on the queue. Commit 1 (supply settle) fixes a measured
-probe failure and stays.
+and queue 184 is closed as refuted. **Dropped on 2026-09-11 at the operator's
+decision** ("dobd el aminek nem volt hatása"): the idle-mode, charger-mode and
+panel-follower commits and the DT `panel` link — correct code with no measured
+effect. `wip/7.1.3/touch`, `integration/7.1.3` and `debug-int/7.1.3` were reset
+to the supply-settle commit and force-pushed **after** tagging the old tips
+`archive/{wip-7.1.3-touch,integration-7.1.3,debug-int-7.1.3}-fwwords-2026-09-11`,
+which also keep `965404d95138` (the `r89` pin) reachable. Commit 1 (supply
+settle) fixes a measured probe failure and stays; `r90` is built from it.
+What the dropped commits taught (the command-register write width, the
+firmware reload window, the panel reset) stays in `findings-log.md` and would
+be needed again by anyone who writes to those words.
 
 The fault is still at or below the controller — three layers agree, and the
-knobs the vendor driver touches do not move it. The next discriminator is the
-oracle: the same alternating tap run on Ubuntu Touch with an evdev logger. If
+knobs the vendor driver touches do not move it. Two things come next, in
+this order. **An automated stimulus** (queue 186): the rate is operator-
+and rhythm-dependent enough that a 2×2 needed four hand-tapped legs of ~1000
+taps to separate signal from sample size; the section "If r88 stays silent:
+automating the stimulus" above sketches it, and it is now required rather than
+optional. Then **the oracle**: the same alternating run on Ubuntu Touch with
+an evdev logger. If
 the loss is there too, it is firmware or hardware and no kernel change on our
 side will reach it; if it is not, something the vendor stack does *other* than
 these two words is missing here.
