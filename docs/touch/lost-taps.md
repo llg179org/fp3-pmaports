@@ -262,10 +262,20 @@ from "controller silent" (see `findings-log.md`, 2026-09-10).
 
 **The effect.** On the *registers*, measured: idle byte0 `0x3f` → **`0x37`** at
 +1 s and +5 s after probe, charger word **`a55aa55a`**, no `Failed to …` line.
-On the *fault*: **not measured yet.** The operator's next tapping session with
-the same pauses is the measurement, read with the same three instruments
-(`taptest.log` BREAK lines with `explained=NO`, `kernel-contacts.log`, the
-`hx_irq` kprobe). "No change" is a result too, and will be written here.
+
+On the *fault*, first session 2026-09-11 00:27–00:30 with idle mode **off**
+(`0x17`, held by the interim keeper — the display reset had re-armed it, see
+below) and charger mode **on**: **no change.** 470 taps, 7 unexplained breaks
+(1.5 %; the 2026-09-08 sessions with idle on ran at 193 of ~14 000, 1.4 %). The
+00:28:56 break has the same signature as every earlier one: the surviving
+finger's contacts stretch to 132 and 159 ms against a ~45 ms median, the other
+finger's vanish, and `hx_irq` entries drop to 2/1/4 per 100 ms for 300 ms
+against 6–10 around it — with bit 3 of `0x10007088` clear the whole time.
+☠️ So the idle-mode switch is **not the whole mechanism** (queue 184's own
+DANGER note said as much). The controller has another reduced-rate state that
+fast two-finger alternation reaches. Next: sweep the two knobs from userspace
+(charger on/off × idle on/off, ~2 min each, same three instruments) before any
+further kernel work.
 
 ☠️ Two things learned the expensive way while getting there, kept in
 `docs/power/bringup/findings-log.md` (2026-09-10): unbinding this driver with the
