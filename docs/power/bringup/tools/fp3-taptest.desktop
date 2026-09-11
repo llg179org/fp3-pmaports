@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=.O taptest
+Comment=FP3 touch tap-test instrument (restarts the running instance)
+Exec=/home/fp3/armb/fp3-taptest-launch.sh
+Icon=input-touchpad
+Terminal=false
+Categories=Utility;
+StartupNotify=false
