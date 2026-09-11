@@ -1,0 +1,1 @@
+fp3 ALL=(root) NOPASSWD: /usr/local/bin/fp3-taptest-deps.sh
